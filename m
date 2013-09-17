@@ -1,103 +1,169 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: linux-next: old trees
-Date: Tue, 17 Sep 2013 17:01:24 +1000
-Message-ID: <20130917170124.0afa2e103a9977355ad7c72c__41007.07159746$1379401359$gmane$org@canb.auug.org.au>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: make return type of
+ lock_policy_rwsem_{read|write}() as void
+Date: Tue, 17 Sep 2013 09:28:39 +0100
+Message-ID: <1379406519.3413.13.camel@linaro1.home>
+References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
+	 <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Tue__17_Sep_2013_17_01_24_+1000_ugYdwK6T7JDx0cPM"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 
---Signature=_Tue__17_Sep_2013_17_01_24_+1000_ugYdwK6T7JDx0cPM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2013-09-16 at 20:40 +0530, Viresh Kumar wrote:
+> lock_policy_rwsem_{read|write}() currently has return type of int but it always
+> return zero and hence its return type must be void instead. This patch makes its
+> return type void and fixes all users of it as well.
+> 
+> Reported-by: Jon Medhurst<tixy@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi all,
+Tested-by: Jon Medhurst <tixy@linaro.org>
 
-This message is bcc'd to each of the contacts for the trees listed below,
-so apologies if you get two copies.
+> ---
+>  drivers/cpufreq/cpufreq.c | 38 +++++++++++---------------------------
+>  1 file changed, 11 insertions(+), 27 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index c18bf7b..598af5c 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -67,13 +67,11 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+>  static DEFINE_PER_CPU(struct rw_semaphore, cpu_policy_rwsem);
+>  
+>  #define lock_policy_rwsem(mode, cpu)					\
+> -static int lock_policy_rwsem_##mode(int cpu)				\
+> +static void lock_policy_rwsem_##mode(int cpu)				\
+>  {									\
+>  	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);	\
+>  	BUG_ON(!policy);						\
+>  	down_##mode(&per_cpu(cpu_policy_rwsem, policy->cpu));		\
+> -									\
+> -	return 0;							\
+>  }
+>  
+>  lock_policy_rwsem(read, cpu);
+> @@ -653,13 +651,12 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
+>  {
+>  	struct cpufreq_policy *policy = to_policy(kobj);
+>  	struct freq_attr *fattr = to_attr(attr);
+> -	ssize_t ret = -EINVAL;
+> +	ssize_t ret;
+>  
+>  	if (!down_read_trylock(&cpufreq_rwsem))
+> -		goto exit;
+> +		return -EINVAL;
+>  
+> -	if (lock_policy_rwsem_read(policy->cpu) < 0)
+> -		goto up_read;
+> +	lock_policy_rwsem_read(policy->cpu);
+>  
+>  	if (fattr->show)
+>  		ret = fattr->show(policy, buf);
+> @@ -667,10 +664,8 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
+>  		ret = -EIO;
+>  
+>  	unlock_policy_rwsem_read(policy->cpu);
+> -
+> -up_read:
+>  	up_read(&cpufreq_rwsem);
+> -exit:
+> +
+>  	return ret;
+>  }
+>  
+> @@ -689,8 +684,7 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
+>  	if (!down_read_trylock(&cpufreq_rwsem))
+>  		goto unlock;
+>  
+> -	if (lock_policy_rwsem_write(policy->cpu) < 0)
+> -		goto up_read;
+> +	lock_policy_rwsem_write(policy->cpu);
+>  
+>  	if (fattr->store)
+>  		ret = fattr->store(policy, buf, count);
+> @@ -699,7 +693,6 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
+>  
+>  	unlock_policy_rwsem_write(policy->cpu);
+>  
+> -up_read:
+>  	up_read(&cpufreq_rwsem);
+>  unlock:
+>  	put_online_cpus();
+> @@ -1143,7 +1136,7 @@ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
+>  	if (ret) {
+>  		pr_err("%s: Failed to move kobj: %d", __func__, ret);
+>  
+> -		WARN_ON(lock_policy_rwsem_write(old_cpu));
+> +		lock_policy_rwsem_write(old_cpu);
+>  		cpumask_set_cpu(old_cpu, policy->cpus);
+>  		unlock_policy_rwsem_write(old_cpu);
+>  
+> @@ -1196,7 +1189,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>  			policy->governor->name, CPUFREQ_NAME_LEN);
+>  #endif
+>  
+> -	WARN_ON(lock_policy_rwsem_write(cpu));
+> +	lock_policy_rwsem_write(cpu);
+>  	cpus = cpumask_weight(policy->cpus);
+>  
+>  	if (cpus > 1)
+> @@ -1459,14 +1452,11 @@ unsigned int cpufreq_get(unsigned int cpu)
+>  	if (!down_read_trylock(&cpufreq_rwsem))
+>  		return 0;
+>  
+> -	if (unlikely(lock_policy_rwsem_read(cpu)))
+> -		goto out_policy;
+> +	lock_policy_rwsem_read(cpu);
+>  
+>  	ret_freq = __cpufreq_get(cpu);
+>  
+>  	unlock_policy_rwsem_read(cpu);
+> -
+> -out_policy:
+>  	up_read(&cpufreq_rwsem);
+>  
+>  	return ret_freq;
+> @@ -1690,14 +1680,12 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
+>  {
+>  	int ret = -EINVAL;
+>  
+> -	if (unlikely(lock_policy_rwsem_write(policy->cpu)))
+> -		goto fail;
+> +	lock_policy_rwsem_write(policy->cpu);
+>  
+>  	ret = __cpufreq_driver_target(policy, target_freq, relation);
+>  
+>  	unlock_policy_rwsem_write(policy->cpu);
+>  
+> -fail:
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_driver_target);
+> @@ -1988,10 +1976,7 @@ int cpufreq_update_policy(unsigned int cpu)
+>  		goto no_policy;
+>  	}
+>  
+> -	if (unlikely(lock_policy_rwsem_write(cpu))) {
+> -		ret = -EINVAL;
+> -		goto fail;
+> -	}
+> +	lock_policy_rwsem_write(cpu);
+>  
+>  	pr_debug("updating policy for CPU %u\n", cpu);
+>  	memcpy(&new_policy, policy, sizeof(*policy));
+> @@ -2020,7 +2005,6 @@ int cpufreq_update_policy(unsigned int cpu)
+>  
+>  	unlock_policy_rwsem_write(cpu);
+>  
+> -fail:
+>  	cpufreq_cpu_put(policy);
+>  no_policy:
+>  	return ret;
 
-I have been inspired to check the ages of the trees included in
-linux-next.  Below I have listed all the trees that have not been
-commited to in the past 6 months.  Please let me know if the tree is not
-longer in use.  I don't mind keeping these trees in linux-next if they
-will have continued use, but would like to remove any that are no longer
-needed.
 
-Tree		Last commit
-----		-----------
-4xx		1 year, 4 months ago
-apm		1 year, 5 months ago
-asm-generic	9 months ago
-audit		1 year, 8 months ago
-audit-current	1 year, 8 months ago
-configfs	1 year, 10 months ago
-cpupowerutils	1 year, 7 months ago
-cputime		1 year, 9 months ago
-davinci		2 years, 2 months ago
-dwmw2		6 months ago
-dwmw2-iommu	9 months ago
-embedded	5 years ago
-firmware	4 years, 4 months ago
-fsnotify	9 months ago
-fw-nohz		10 months ago
-hsi		1 year, 8 months ago
-hwpoison	2 years, 11 months ago
-hwspinlock	2 years ago
-ibft		1 year, 9 months ago
-isci		1 year, 2 months ago
-ixp4xx		7 months ago
-jc_docs		2 years, 6 months ago
-kconfig		12 months ago
-kgdb		7 months ago
-logfs		10 months ago
-lzo-update	7 months ago
-ocfs2		1 year, 1 month ago
-omfs		1 year, 11 months ago
-openrisc	6 months ago
-osd		9 months ago
-parisc		8 months ago
-pcmcia		1 year, 7 months ago
-pstore		6 months ago
-random		7 months ago
-sh		7 months ago
-sh-current	1 year, 2 months ago
-swiotlb		11 months ago
-sysctl		1 year, 6 months ago
-tmem		11 months ago
-uclinux		7 months ago
-unicore32	10 months ago
-uprobes		1 year, 6 months ago
-viafb		1 year, 6 months ago
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Tue__17_Sep_2013_17_01_24_+1000_ugYdwK6T7JDx0cPM
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.21 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSN/5KAAoJEECxmPOUX5FEfmEQAJA1Q8roqFRXsr+xD4Cqw9QJ
-mpmhbR5il0FMwrb9pgLJzO3bHhBZn+sOHgKUCSs2wXsbeLU4pYZ00GiM9zqcw4Ns
-LVzTT0bvQaC4F5svo2fLWzk8ShJ4UK5JhXCbRMtHZF4ZVsfdSF3at1j0I4S8/ST2
-iG0j3zSpynyJdwRCIp1P2+kbVVHLhQLUFqa7jpjmZelX4QP0nYXeFXKW1M09dhVA
-0L4pqgzHn6V0e7wTnGp9JDSYsylEtF23FPTGca9hAco8Brg9VCPgLoNXnChR4fbD
-Mu0nHDwhFstvf1ZThjbjZzxd0Vot2MYqPcV+47VKFmpkotj5kdLEeDAom4XAhrhb
-7AI85JPvX0PPcxp/vHWsEfDGZ8+cfWpobTnsTaInOy/F2Ji8m9FQFyHpCj7cr+VV
-o45YdBFj1oyZ9SCTUCNUgMM+7P0me7R9c7yDhHmZ1jJy6x8gNGXCVNZq5ooTSZsy
-L9Hf+Izl9D+HBVP3ek8UOo0LPf3ZJXHZ4LRXy/bC0PPFYAEGNfQz/4mAmbbzZBZC
-ak27e4JaiP8AcLMhiXG/fJ6xhZupQQIcLK+Zy6Q9CPHwMg3Jh9wBSUsQ+G9jJ7KT
-5tNJqrzl+XiE0pz3tiIprgE7kWF5U7LM4hw1hr5GaaDK8oL+nqwij4vmt1Tuq9PQ
-7aDLAP6RKiCMZ1Ean3Ye
-=3Ucm
------END PGP SIGNATURE-----
-
---Signature=_Tue__17_Sep_2013_17_01_24_+1000_ugYdwK6T7JDx0cPM--
