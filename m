@@ -1,125 +1,85 @@
-From: Gleb Natapov <gleb@redhat.com>
-Subject: Re: [Qemu-devel] cpufreq and QEMU guests
-Date: Tue, 17 Sep 2013 11:58:38 +0300
-Message-ID: <20130917085837.GV17294@redhat.com>
-References: <20130916121545.GH5105@irqsave.net>
- <8668D877-8B37-48E3-97B8-CE36DB884E54@suse.de>
- <20130916150544.GJ5105@irqsave.net>
- <20130916153239.GD906@redhat.com>
- <20130916154603.GK5105@irqsave.net>
- <20130916155840.GE906@redhat.com>
- <20130916184258.GO5105@irqsave.net>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH V2 1/2] cpufreq: unlock correct rwsem while updating
+ policy->cpu
+Date: Tue, 17 Sep 2013 10:24:46 +0100
+Message-ID: <1379409886.3413.14.camel@linaro1.home>
+References: <63ac1edc637ef2c8cf05579972506ad5365948c1.1379393377.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130916184258.GO5105@irqsave.net>
+In-Reply-To: <63ac1edc637ef2c8cf05579972506ad5365948c1.1379393377.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: =?utf-8?Q?Beno=C3=AEt?= Canet <benoit.canet@irqsave.net>
-Cc: "peter.maydell@linaro.org" <peter.maydell@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Alexander Graf <agraf@suse.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "pbonzini@redhat.com" <pbonzini@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 
-On Mon, Sep 16, 2013 at 08:42:58PM +0200, Beno=C3=AEt Canet wrote:
-> Le Monday 16 Sep 2013 =C3=A0 18:58:40 (+0300), Gleb Natapov a =C3=A9c=
-rit :
-> > On Mon, Sep 16, 2013 at 05:46:04PM +0200, Beno=C3=AEt Canet wrote:
-> > > Le Monday 16 Sep 2013 =C3=A0 18:32:39 (+0300), Gleb Natapov a =C3=
-=A9crit :
-> > > > On Mon, Sep 16, 2013 at 05:05:45PM +0200, Beno=C3=AEt Canet wro=
-te:
-> > > > > Le Monday 16 Sep 2013 =C3=A0 09:39:10 (-0500), Alexander Graf=
- a =C3=A9crit :
-> > > > > >=20
-> > > > > >=20
-> > > > > > Am 16.09.2013 um 07:15 schrieb Beno=C3=AEt Canet <benoit.ca=
-net@irqsave.net>:
-> > > > > >=20
-> > > > > > >=20
-> > > > > > > Hello,
-> > > > > > >=20
-> > > > > > > I know a cloud provider worried about the fact that the /=
-proc/cpuinfo of his
-> > > > > > > guests give a bogus frequency to his customer.
-> > > > > > >=20
-> > > > > > > QEMU and the guests kernel currently have no way to refle=
-ct the host frequency
-> > > > > > > changes to the guests.
-> > > > > > >=20
-> > > > > > > The customer compute intensive application then read this=
- information and take
-> > > > > > > wrong decisions.
-> > > > > >=20
-> > > > > > Why do they care about the frequency? Is it for scheduling =
-workloads? The only other case I can think of would be the TSC and that=
- should be fixed frequency these days.
-> > > > > >=20
-> > > > > > If it's scheduling, you could maybe expose the unavailable =
-compute time as steal time to the guest. Exposibg frequency in a virtua=
-l environment feels backwards.
-> > > > >=20
-> > > > > The final customer have a compute intensive workload.
-> > > > > At startup the code retrieve the cpu cache topology, the cpu =
-model, and various
-> > > > > informations including the guest cpu frequency before startin=
-g the compute job.
-> > > > > The QEMU instance typicaly use -cpu host.
-> > > > >=20
-> > > > > The code inspects the cpu frequency has seen by the guests to=
- choose the number
-> > > > > of vms to instanciate to compute the given task.
-> > > > I am not sure I understand. They look at guest cpu frequency to=
- estimate
-> > > > guest's performance?
-> > >=20
-> > > Yes they take guest cpu count, model and frequency to estimate th=
-e performance
-> > > of the guest.
-> > > Next they cluster enough guests to be able to compute the job in =
-a given time by
-> > > using this estimate.
-> > >=20
-> > They do it wrong. They should take guest cpu count, host cpu model =
-and
-> > frequency, pcpu/vcpu over commit (if any), guest/host memory overco=
-mmit
-> > (if any) and estimate performance based on this. For pure computati=
-onal
-> > performance guest core performance should be close to host core
-> > performance if there is not cpu/memory overcommit. With a lot of IO
-> > things become more complicated.
->=20
-> I ommited to write some details of the use case.
->=20
-> The cloud is a Amazon compatible one this means there is no guest age=
-nt in the
-> guest to help retrieve the host frequency and model.
->
-> Also the AWS APIs don't provide a way to communicate the host CPU inf=
-os to the
-> program responsible of the vm orchestrations.
->=20
-> So the only interface to access the host cpu info is QEMU and it's st=
-arted with
-> -cpu host to passthrough the cpu model to the guest.
->=20
-Why are they sure they are started with "-cpu host"? Do they know if
-host is overcommitted or guest's vcpu usage is restricted by any other
-means?
+On Tue, 2013-09-17 at 10:22 +0530, Viresh Kumar wrote:
+> Current code looks like this:
+> 
+>         WARN_ON(lock_policy_rwsem_write(cpu));
+>         update_policy_cpu(policy, new_cpu);
+>         unlock_policy_rwsem_write(cpu);
+> 
+> {lock|unlock}_policy_rwsem_write(cpu) takes/releases policy->cpu's rwsem.
+> Because cpu is changing with the call to update_policy_cpu(), the
+> unlock_policy_rwsem_write() will release the incorrect lock.
+> 
+> The right solution would be to release the same lock as was taken earlier. Also
+> update_policy_cpu() was also called from cpufreq_add_dev() without any locks and
+> so its better if we move this locking to inside update_policy_cpu().
+> 
+> Reported-and-Tested-by: Jon Medhurst<tixy@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Hi Rafael,
+> 
+> Only one patch is sent now as other one is unchanged.
 
-> What hurt the final customer badly is that the guest /proc/cpuinfo se=
-e the
-> regular max frequency of the host cpu but won't see the turbo frequen=
-cy or a
-> scaled down one.
->=20
-What he sees is host tsc frequency of the cpu a guest was booted on
-[1] which should be adequate to estimate performance if guest is not
-migrated. The frequency host cpu is running on at any given moment is
-out of guest control and depend on host frequency governor and load.
+This patch fixes a regression introduced in 3.12 by commit f9ba680d23
+(cpufreq: Extract the handover of policy cpu to a helper function).
 
-[1] the value comes from host, for not constant tsc hosts this is max
-    possible frequency
+The other patch is a tidyup of long-standing code.
 
---
-			Gleb.
+>  drivers/cpufreq/cpufreq.c | 13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 43c24aa..1479522 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -952,9 +952,20 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+>  	if (cpu == policy->cpu)
+>  		return;
+>  
+> +	/*
+> +	 * Take direct locks as lock_policy_rwsem_write wouldn't work here.
+> +	 * Also lock for last cpu is enough here as contention will happen only
+> +	 * after policy->cpu is changed and after it is changed, other threads
+> +	 * will try to acquire lock for new cpu. And policy is already updated
+> +	 * by then.
+> +	 */
+> +	down_write(&per_cpu(cpu_policy_rwsem, policy->cpu));
+> +
+>  	policy->last_cpu = policy->cpu;
+>  	policy->cpu = cpu;
+>  
+> +	up_write(&per_cpu(cpu_policy_rwsem, policy->last_cpu));
+> +
+>  #ifdef CONFIG_CPU_FREQ_TABLE
+>  	cpufreq_frequency_table_update_policy_cpu(policy);
+>  #endif
+> @@ -1203,9 +1214,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>  
+>  		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
+>  		if (new_cpu >= 0) {
+> -			WARN_ON(lock_policy_rwsem_write(cpu));
+>  			update_policy_cpu(policy, new_cpu);
+> -			unlock_policy_rwsem_write(cpu);
+>  
+>  			if (!frozen) {
+>  				pr_debug("%s: policy Kobject moved to cpu: %d "
+
+-- 
+Tixy
+
