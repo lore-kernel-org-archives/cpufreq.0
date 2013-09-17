@@ -1,37 +1,103 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Few clarifications on DVFS
-Date: Tue, 17 Sep 2013 10:31:27 +0530
-Message-ID: <CAKohpokp4QknDECgv2ecVbu-7L3jhcLtHy=TZh-3m5=ib_xDyg@mail.gmail.com>
-References: <CAOuKo4nZ5Yij3cnM=PuMR3awJ2QAbY4O+-mKi110xfc66xyWUg@mail.gmail.com>
-	<CAOh2x=n3PVMJhbrJE33Qe73=6ZUhh8yR1rs+ziWTD5tFNjW6RA@mail.gmail.com>
-	<CAOuKo4kZNv70OyEt6tRynfFmRex8DW+nJCg2pZGPoydnHn+LaA@mail.gmail.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: linux-next: old trees
+Date: Tue, 17 Sep 2013 17:01:24 +1000
+Message-ID: <20130917170124.0afa2e103a9977355ad7c72c__41007.07159746$1379401359$gmane$org@canb.auug.org.au>
 Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__17_Sep_2013_17_01_24_+1000_ugYdwK6T7JDx0cPM"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOuKo4kZNv70OyEt6tRynfFmRex8DW+nJCg2pZGPoydnHn+LaA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: karthik vm <meetvm@gmail.com>
-Cc: cpufreq <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus <torvalds@linux-foundation.org>
 
-On 17 September 2013 07:43, karthik vm <meetvm@gmail.com> wrote:
-> Yeah actually that is what my concern is. It seems that for changing
-> the frequency we need to acquire a lock (in cpufreq_driver_target()).
-> Hence even though the hardware is capable of ns level DVFS, OS
-> overhead may be large enough to take advantage of it. Can we measure
-> this overhead?
+--Signature=_Tue__17_Sep_2013_17_01_24_+1000_ugYdwK6T7JDx0cPM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There are a lot of other things that we really need to look before this
-one..
+Hi all,
 
-The way we are changing frequency currently is very delayed... There
-are few other threads that are going around power aware scheduler
-which you might be interested in.. Look for them in Archives..
+This message is bcc'd to each of the contacts for the trees listed below,
+so apologies if you get two copies.
 
-Coming back to your question, these kind of overheads will always be
-there, isn't it? Normally that lock will be acquired fairly quickly as there
-might be no contention..
+I have been inspired to check the ages of the trees included in
+linux-next.  Below I have listed all the trees that have not been
+commited to in the past 6 months.  Please let me know if the tree is not
+longer in use.  I don't mind keeping these trees in linux-next if they
+will have continued use, but would like to remove any that are no longer
+needed.
 
-Yeah, you can measure it but don't know who is your best friend in
-term of tools.. Maybe ftrace can get you some details.
+Tree		Last commit
+----		-----------
+4xx		1 year, 4 months ago
+apm		1 year, 5 months ago
+asm-generic	9 months ago
+audit		1 year, 8 months ago
+audit-current	1 year, 8 months ago
+configfs	1 year, 10 months ago
+cpupowerutils	1 year, 7 months ago
+cputime		1 year, 9 months ago
+davinci		2 years, 2 months ago
+dwmw2		6 months ago
+dwmw2-iommu	9 months ago
+embedded	5 years ago
+firmware	4 years, 4 months ago
+fsnotify	9 months ago
+fw-nohz		10 months ago
+hsi		1 year, 8 months ago
+hwpoison	2 years, 11 months ago
+hwspinlock	2 years ago
+ibft		1 year, 9 months ago
+isci		1 year, 2 months ago
+ixp4xx		7 months ago
+jc_docs		2 years, 6 months ago
+kconfig		12 months ago
+kgdb		7 months ago
+logfs		10 months ago
+lzo-update	7 months ago
+ocfs2		1 year, 1 month ago
+omfs		1 year, 11 months ago
+openrisc	6 months ago
+osd		9 months ago
+parisc		8 months ago
+pcmcia		1 year, 7 months ago
+pstore		6 months ago
+random		7 months ago
+sh		7 months ago
+sh-current	1 year, 2 months ago
+swiotlb		11 months ago
+sysctl		1 year, 6 months ago
+tmem		11 months ago
+uclinux		7 months ago
+unicore32	10 months ago
+uprobes		1 year, 6 months ago
+viafb		1 year, 6 months ago
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__17_Sep_2013_17_01_24_+1000_ugYdwK6T7JDx0cPM
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.21 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSN/5KAAoJEECxmPOUX5FEfmEQAJA1Q8roqFRXsr+xD4Cqw9QJ
+mpmhbR5il0FMwrb9pgLJzO3bHhBZn+sOHgKUCSs2wXsbeLU4pYZ00GiM9zqcw4Ns
+LVzTT0bvQaC4F5svo2fLWzk8ShJ4UK5JhXCbRMtHZF4ZVsfdSF3at1j0I4S8/ST2
+iG0j3zSpynyJdwRCIp1P2+kbVVHLhQLUFqa7jpjmZelX4QP0nYXeFXKW1M09dhVA
+0L4pqgzHn6V0e7wTnGp9JDSYsylEtF23FPTGca9hAco8Brg9VCPgLoNXnChR4fbD
+Mu0nHDwhFstvf1ZThjbjZzxd0Vot2MYqPcV+47VKFmpkotj5kdLEeDAom4XAhrhb
+7AI85JPvX0PPcxp/vHWsEfDGZ8+cfWpobTnsTaInOy/F2Ji8m9FQFyHpCj7cr+VV
+o45YdBFj1oyZ9SCTUCNUgMM+7P0me7R9c7yDhHmZ1jJy6x8gNGXCVNZq5ooTSZsy
+L9Hf+Izl9D+HBVP3ek8UOo0LPf3ZJXHZ4LRXy/bC0PPFYAEGNfQz/4mAmbbzZBZC
+ak27e4JaiP8AcLMhiXG/fJ6xhZupQQIcLK+Zy6Q9CPHwMg3Jh9wBSUsQ+G9jJ7KT
+5tNJqrzl+XiE0pz3tiIprgE7kWF5U7LM4hw1hr5GaaDK8oL+nqwij4vmt1Tuq9PQ
+7aDLAP6RKiCMZ1Ean3Ye
+=3Ucm
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__17_Sep_2013_17_01_24_+1000_ugYdwK6T7JDx0cPM--
