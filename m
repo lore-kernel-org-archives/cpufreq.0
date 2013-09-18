@@ -1,25 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 5/5] cpufreq: use correct values of cpus in __cpufreq_remove_dev_finish()
-Date: Wed, 18 Sep 2013 10:01:13 +0530
-Message-ID: <CAKohpon7PSd3Q1q8=UeRer7LY4Sgx22WLArYtK9zFj1WYgoodg@mail.gmail.com>
-References: <cover.1378963070.git.viresh.kumar@linaro.org>
-	<8f777cc6b41b2fed4bf71ce2adc36800353d5738.1378963070.git.viresh.kumar@linaro.org>
-	<52387343.7040007@wwwdotorg.org>
-	<CAKohpo=_bhaws44_XEf=DEjbVtiRfYHeMm-cK=bHo1Sed14kAg@mail.gmail.com>
-Mime-Version: 1.0
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/1] cpufreq: exynos5440: Fix potential NULL pointer dereference
+Date: Wed, 18 Sep 2013 10:44:53 +0530
+Message-ID: <1379481293-9003-1-git-send-email-sachin.kamat@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=_bhaws44_XEf=DEjbVtiRfYHeMm-cK=bHo1Sed14kAg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, rjw@sisk.pl, viresh.kumar@linaro.org, sachin.kamat@linaro.org, amit.daniel@samsung.com, patches@linaro.org
 
-On 17 September 2013 21:48, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 17 September 2013 20:50, Stephen Warren <swarren@wwwdotorg.org> wrote:
+If 'dvfs_info' is NULL (due to devm_kzalloc failure) the failure
+error message would try to dereference it. Use 'pdev' instead.
 
-> Yes, I have asked Rafael to get this in for rc2 and few others too..
-> Waiting for his reply though..
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/cpufreq/exynos5440-cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Its applied now by Rafael..
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index d514c15..be5380e 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -457,7 +457,7 @@ err_free_table:
+ 	opp_free_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
+ err_put_node:
+ 	of_node_put(np);
+-	dev_err(dvfs_info->dev, "%s: failed initialization\n", __func__);
++	dev_err(&pdev->dev, "%s: failed initialization\n", __func__);
+ 	return ret;
+ }
+ 
+-- 
+1.7.9.5
+
