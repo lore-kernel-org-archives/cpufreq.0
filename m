@@ -1,50 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: create per policy rwsem instead of per cpu cpu_policy_rwsem
-Date: Wed, 18 Sep 2013 13:31:26 +0530
-Message-ID: <CAKohpokZyxhwVqagTM4OfOGgHxPGKPQkFTHRfAo53OxCP77cEQ@mail.gmail.com>
-References: <141ec437a203e4384459abb22e393d83136f732d.1379432906.git.viresh.kumar@linaro.org>
-	<523951B4.5090601@linux.vnet.ibm.com>
-Mime-Version: 1.0
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH] cpufreq: return EEXIST instead of EBUSY for second registering
+Date: Wed, 18 Sep 2013 21:05:20 -0700
+Message-ID: <1379563520-7221-1-git-send-email-yinghai@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <523951B4.5090601@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
 
-On 18 September 2013 12:39, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> On 09/17/2013 09:20 PM, Viresh Kumar wrote:
+System that cpu support intel_pstate, acpi_cpufreq fail to
+load, and udev keep trying until trace get filled up and
+kernel crash.
 
-> The code looks good, but the patch doesn't apply properly, because of the code
-> change that went in in your patch "cpufreq: Clear policy->cpus bits in
-> __cpufreq_remove_dev_finish()".
+The root cause is driver return ret from cpufreq_register_driver
+and when some other driver take over before, it would return
+EBUSY, then udev will keep trying...
 
-Hmm.. Because of the number of patches floating now a days, it is getting more
-and more complex..
+cpufreq_register_driver should return EEXIST instead.
+then system could boot without appending intel_pstate=disable
+and still use intel_pstate.
 
-I will sort things out once Rafael starts picking stuff for 3.13..
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
->> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+---
+ drivers/cpufreq/cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->> +     /*
->> +      * The rules for this semaphore:
->> +      * - Any routine that wants to read from the policy structure will
->> +      *   do a down_read on this semaphore.
->> +      * - Any routine that will write to the policy structure and/or may take away
->> +      *   the policy altogether (eg. CPU hotplug), will hold this lock in write
->> +      *   mode before doing so.
->> +      *
->> +      * Additional rules:
->> +      * - Governor routines that can be called in cpufreq hotplug path should not
->> +      *   take this sem as top level hotplug notifier handler takes this.
->
-> I think this comment is obsolete. I don't see the top-level hotplug notifier handler
-> (cpufreq_cpu_callback) acquiring the rwsem. Good to fix this comment while we are
-> at it, perhaps in a separate patch. (The comment above __cpufreq_remove_dev about
-> the policy-rwsem appears to be similarly out of date).
-
-Yeah.. Will get that done, but will send these again only once Rafael is picking
-stuff for 3.13..
+Index: linux-2.6/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-2.6.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6/drivers/cpufreq/cpufreq.c
+@@ -2104,7 +2104,7 @@ int cpufreq_register_driver(struct cpufr
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	if (cpufreq_driver) {
+ 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-		return -EBUSY;
++		return -EEXIST;
+ 	}
+ 	cpufreq_driver = driver_data;
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
