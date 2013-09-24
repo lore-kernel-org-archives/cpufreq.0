@@ -1,73 +1,57 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] cpufreq: merge maple cpufreq driver to pmac64
-Date: Mon, 23 Sep 2013 19:20:49 +0200
-Message-ID: <14395146.Bt0Um0VYXe@amdc1032>
-References: <1379071806-17453-1-git-send-email-dmitry_eremin@mentor.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1379071806-17453-1-git-send-email-dmitry_eremin@mentor.com>
-Sender: cpufreq-owner@vger.kernel.org
+From: Mateusz Krawczuk <m.krawczuk@partner.samsung.com>
+Subject: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
+Date: Tue, 24 Sep 2013 14:50:06 +0200
+Message-ID: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl, kgene.kim@samsung.com
+Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk, kyungmin.park@samsung.com, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, rob.herring@calxeda.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, rob@landley.net, mturquette@linaro.org, tomasz.figa@gmail.com, thomas.abraham@linaro.org, s.nawrocki@samsung.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, t.stanislaws@samsung.com, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Mateusz Krawczuk <m.krawczuk@partner.samsung.com>
+
+This patch series is the new s5pv210 clock implementation
+(using common clk framework).
+
+This implementation is compatible with device tree definition and board
+files.
+
+This patch series is based on linux-next and has been tested on goni and
+aquila
+boards using board file.
+
+Since v4:
+Corrected mux flags for finpll.
+
+Since v3:
+
+Replace s5pv210_clk_register_finpll, by creating mux finpll
+with xusbxti and xxti as parrents.
 
 
-Hi,
+Mateusz Krawczuk (3):
+  clk: samsung: Add clock driver for s5pc110/s5pv210
+  Cpufreq: s5pv210 cpufreq fixes for CCF
+  ARM: s5pv210: Migrate clock handling to Common Clock Framework
 
-On Friday, September 13, 2013 03:30:06 PM Dmitry Eremin-Solenikov wrote:
-> Maple boards use the same frequency changing mechanism, as do newer
-> PowerMacs (write to SCOM). Thus maple-cpufreq.c is a reduced version
-> of pmac64 driver. Merge it back to pmac64-cpufreq.c
-> 
-> Signed-off-by: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
-> ---
->  drivers/cpufreq/Kconfig.powerpc  |  10 +-
->  drivers/cpufreq/Makefile         |   1 -
->  drivers/cpufreq/maple-cpufreq.c  | 308 ---------------------------------------
->  drivers/cpufreq/pmac64-cpufreq.c |  58 +++++---
->  4 files changed, 40 insertions(+), 337 deletions(-)
->  delete mode 100644 drivers/cpufreq/maple-cpufreq.c
-> 
-> diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-> index 25ca9db..2a802bd 100644
-> --- a/drivers/cpufreq/Kconfig.powerpc
-> +++ b/drivers/cpufreq/Kconfig.powerpc
-> @@ -17,14 +17,6 @@ config CPU_FREQ_CBE_PMI
->  	  frequencies. Using PMI, the processor will not only be able to run at
->  	  lower speed, but also at lower core voltage.
->  
-> -config CPU_FREQ_MAPLE
-> -	bool "Support for Maple 970FX Evaluation Board"
-> -	depends on PPC_MAPLE
-> -	select CPU_FREQ_TABLE
-> -	help
-> -	  This adds support for frequency switching on Maple 970FX
-> -	  Evaluation Board and compatible boards (IBM JS2x blades).
-> -
->  config PPC_CORENET_CPUFREQ
->  	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
->  	depends on PPC_E500MC && OF && COMMON_CLK
-> @@ -46,7 +38,7 @@ config CPU_FREQ_PMAC
->  
->  config CPU_FREQ_PMAC64
->  	bool "Support for some Apple G5s"
-> -	depends on PPC_PMAC && PPC64
-> +	depends on (PPC_PMAC || PPC_MAPLE) && PPC64
->  	select CPU_FREQ_TABLE
->  	help
->  	  This adds support for frequency switching on Apple iMac G5,
+ .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
+ arch/arm/mach-s5pv210/Kconfig                      |   9 +
+ arch/arm/mach-s5pv210/Makefile                     |   4 +-
+ arch/arm/mach-s5pv210/common.c                     |  17 +
+ arch/arm/mach-s5pv210/common.h                     |  10 +
+ arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
+ arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
+ arch/arm/plat-samsung/Kconfig                      |   2 +-
+ drivers/clk/samsung/Makefile                       |   3 +
+ drivers/clk/samsung/clk-s5pv210.c                  | 673 +++++++++++++++++++++
+ drivers/cpufreq/s5pv210-cpufreq.c                  |   6 +-
+ include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
+ 12 files changed, 1019 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+ create mode 100644 drivers/clk/samsung/clk-s5pv210.c
+ create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
 
-minor nit:
-
-Shouldn't the help entry be updated to reflect that this driver now also
-supports Maple 970FX board & friends (can be done in incremental patch if
-the original one is merged already)?
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+-- 
+1.8.1.2
 
