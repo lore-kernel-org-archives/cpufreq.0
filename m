@@ -1,53 +1,104 @@
-From: Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v5 1/3] clk: samsung: Add clock driver for s5pc110/s5pv210
-Date: Tue, 24 Sep 2013 16:26:01 +0200
-Message-ID: <2095838.ED3sWFjloW@amdc1227>
-References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
- <1380027009-2239-2-git-send-email-m.krawczuk@partner.samsung.com>
- <52419A6E.9020203@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
+Date: Wed, 25 Sep 2013 20:37:10 +0200
+Message-ID: <1791712.tJBFGgQvyI@vostro.rjw.lan>
+References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org> <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <52419A6E.9020203-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Mateusz Krawczuk <m.krawczuk-GrGkmOP51GdLN7c7dRTbYkEOCMrvLtNR@public.gmane.org>, rjw-KKrjLPT3xs0@public.gmane.org, kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, ben-linux-elnMNo+KYs3YtjvyW6yDsg@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thomas.abraham-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, t.stanislaws-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, g.liakhovetski@gmx.de, amit.daniel@samsung.com, kgene.kim@samsung.com, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On Tuesday 24 of September 2013 15:58:06 Sylwester Nawrocki wrote:
-> Hi,
+On Thursday, September 12, 2013 03:40:46 PM Viresh Kumar wrote:
+> Some part of this patch was pushed in mainline earlier but was then removed due
+> to loopholes in the patch. Those are now fixed and this patch is tested by the
+> people who reported these problems.
 > 
-> On 24/09/13 14:50, Mateusz Krawczuk wrote:
-> > +++ b/Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
-> > @@ -0,0 +1,75 @@
-> > +* Samsung S5PC110/S5PV210 Clock Controller
-> > +
-> > +The S5PV210 clock controller generates and supplies clock to various controllers
-> > +within the SoC. The clock binding described here is applicable to all SoCs in
-> > +the S5PC110/S5PV210 family.
-> > +
-> > +Required Properties:
-> > +
-> > +- compatible: should be "samsung,s5pv210-clock".
+> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
+> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
+> shouldn't be called twice contiguously. Also, calls to cpufreq_driver_target()
+> or cpufreq_driver->target() must also be serialized. Following examples show why
+> this is important:
 > 
-> I have nothing against this compatible value, but wouldn't it be more
-> accurate to use, e.g. "samsung,s5pv210-cmu" - for Clock Management Unit,
-> as this IP block is also referred to in the documentation ?
+> Scenario 1:
+> -----------
+> One thread reading value of cpuinfo_cur_freq, which will call
+> __cpufreq_cpu_get()->cpufreq_out_of_sync()->cpufreq_notify_transition()..
 > 
-> May just be me, but "samsung,s5pv210-clock" sounds like just one
-> specific clock type.
+> And ondemand governor trying to change freq of cpu at the same time and so
+> sending notification via ->target()..
+> 
+> Notifiers are not serialized and suppose this is what happened
+> - PRECHANGE Notification for freq A (from cpuinfo_cur_freq)
+> - PRECHANGE Notification for freq B (from target())
+> - Freq changed by target() to B
+> - POSTCHANGE Notification for freq B
+> - POSTCHANGE Notification for freq A
+> 
+> Now the last POSTCHANGE Notification happened for freq A and hardware is
+> currently running at freq B :)
+> 
+> Where would we break then?: adjust_jiffies() in cpufreq.c,
+> cpufreq_callback() in arch/arm/kernel/smp.c (which is also adjusting
+> jiffies).. All loops_per_jiffy based stuff is broken..
+> 
+> Scenario 2:
+> -----------
+> Governor is changing freq and has called __cpufreq_driver_target(). At the same
+> time we are changing scaling_{min|max}_freq from sysfs, which would eventually
+> end up calling governor's: CPUFREQ_GOV_LIMITS notification, that will also call:
+> __cpufreq_driver_target().. And hence concurrent calls to ->target()
+> 
+> And Platform have something like this in their ->target()
+> (Like: cpufreq-cpu0, omap, exynos, etc)
+> 
+> A. If new freq is more than old: Increase voltage
+> B. Change freq
+> C. If new freq is less than old: decrease voltage
+> 
+> Now, two concurrent calls to target are X and Y, where X is trying to increase
+> freq and Y is trying to decrease it..
+> 
+> And this is the sequence that followed due to races..
+> 
+> X.A: voltage increased for larger freq
+> Y.A: nothing happened here
+> Y.B: freq decreased
+> Y.C: voltage decreased
+> X.B: freq increased
+> X.C: nothing happened..
+> 
+> We ended up setting a freq which is not supported by the voltage we have
+> set.. That will probably make clock to CPU unstable and system wouldn't
+> be workable anymore...
+> 
+> This patch adds some protection against to make transitions serialized.
+> 
+> Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-In the user's manual I have, this IP is referred to either as "CMU", as
-you suggested, or simply as "clock controller". "CMU" is not very
-meaningfull, so "samsung,s5pv210-clock-controller" would be the best here
-I guess, but for consistency with other Samsung's clock bindings, I'd
-suggest leaving this as is in the patch.
+So the problem is real, but the fix seems to be of a "quick and dirty" kind.
 
-Best regards,
-Tomasz
+First of all, it looks like we need a clear "begin transition" call that
+I suppose drivers should execute from their .target() methods once they have
+decided to do a transition.  That would increment the "ongoing" counter etc.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Second, we need a corresponding "end transition" call that would be executed
+whenever appropriate from the driver's perspective.
+
+Clearly, these two things should be independent of the notifiers and the
+notifications should only be done between "begin transition" and "end
+transition" and only by whoever called the "begin transition" to start with.
+
+Now, question is what should happen if "begin transition" is called when
+the previous transition hasn't been completed yet, should it block or should
+it fail?  There seem to be arguments for both, but I suppose blocking would be
+easier to implement.
+
+Thanks,
+Rafael
+
