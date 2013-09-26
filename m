@@ -1,95 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 4/4] cpufreq: stats: create sysfs entries when cpufreq_stats is a module
-Date: Thu, 26 Sep 2013 15:59:54 +0530
-Message-ID: <ddc1b65b5fa7a84fa12d620d7a94675f70a819d1.1380190886.git.viresh.kumar@linaro.org>
-References: <cover.1380190886.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <cover.1380190886.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1380190886.git.viresh.kumar@linaro.org>
-References: <cover.1380190886.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH -v2] cpufreq: skip loading acpi_cpufreq after intel_pstate
+Date: Thu, 26 Sep 2013 08:41:18 -0700
+Message-ID: <CAE9FiQUtZAe2Y1CUNKYRsSV3UM4g2N67EP5cAEcX7C786bXcaQ@mail.gmail.com>
+References: <1379699036-7380-1-git-send-email-yinghai@kernel.org>
+	<CAE9FiQV+K9QSEiRMA8BtqC8k2OHm4aZWODNL+vgfFmpsuBfzQg@mail.gmail.com>
+	<CAKohpom3SkbGk-XgjXXFWZw2asAkxaM=XBYebWHxKQFN_WoXBw@mail.gmail.com>
+Mime-Version: 1.0
+Return-path: <linux-acpi-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type;
+        bh=yhN/Q3+hha2TpIWVDpCDhh4LuccSQcT/b1sqZ0qkY6Y=;
+        b=HoQXG9pP9oQjhJdGBAxma/YOLpaNOReB0+000haeogeCnJolNZJbcIun3PNurY740l
+         hH4g3pBqKqsiARKhi0ci1wNnXjlRV8hHKYe5ZoQjNkgPd9QE9BPAnFRj6TURJM+On/Ji
+         BQGDuBV55AQ29Qp/nieZJR8awf+rlT4lN0rNGzqozXOD+EQJtznc/Yd3BxoKguaRG9GF
+         q8aB/Ikm5qexvoiUcSAZ4EJGTvXeUUOmh+ZhQjXF6bxd/zi+xDKPLWf9sMps2wpm9xdH
+         l6zxh2WrzmH3RTSQiNvz8GmvB273GgxQQrFFgRot1tj+kUwRV68WAtf0k6E38vFBE4uX
+         QWig==
+In-Reply-To: <CAKohpom3SkbGk-XgjXXFWZw2asAkxaM=XBYebWHxKQFN_WoXBw@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, nicolas.pitre@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-When cpufreq_stats is compiled in as a module, cpufreq driver would have already
-been registered. And so the CPUFREQ_CREATE_POLICY notifiers wouldn't be called
-for it. Hence no sysfs entries for stats. :(
+On Wed, Sep 25, 2013 at 10:40 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 26 September 2013 10:47, Yinghai Lu <yinghai@kernel.org> wrote:
+>> can you put this one in acpi tree?
+>
+> Its already applied in Rafael's linux-next branch.. Do you want something
+> else?
 
-This patch calls cpufreq_stats_create_table() for each online cpu from
-cpufreq_stats_init() and so if policy is already created for CPUx then we will
-register sysfs stats for it.
+sorry, I missed that.
 
-When its not compiled as module, we will return early as policy wouldn't be
-found for any of the CPUs.
+I still had that in local patches directory, but looks like quilt is
+not smart enough and did not report that patch is already applied.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq_stats.c | 27 +++++++++++++++++++++++++--
- 1 file changed, 25 insertions(+), 2 deletions(-)
+Thanks
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 9dd5883..5793e14 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -180,7 +180,7 @@ static void cpufreq_stats_free_table(unsigned int cpu)
- 	cpufreq_cpu_put(policy);
- }
- 
--static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
-+static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
- 		struct cpufreq_frequency_table *table)
- {
- 	unsigned int i, j, count = 0, ret = 0;
-@@ -253,6 +253,26 @@ error_get_fail:
- 	return ret;
- }
- 
-+static void cpufreq_stats_create_table(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy;
-+	struct cpufreq_frequency_table *table;
-+
-+	/*
-+	 * "likely(!policy)" because normally cpufreq_stats will be registered
-+	 * before cpufreq driver
-+	 */
-+	policy = cpufreq_cpu_get(cpu);
-+	if (likely(!policy))
-+		return;
-+
-+	table = cpufreq_frequency_get_table(policy->cpu);
-+	if (likely(table))
-+		__cpufreq_stats_create_table(policy, table);
-+
-+	cpufreq_cpu_put(policy);
-+}
-+
- static void cpufreq_stats_update_policy_cpu(struct cpufreq_policy *policy)
- {
- 	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table,
-@@ -284,7 +304,7 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
- 		return 0;
- 
- 	if (val == CPUFREQ_CREATE_POLICY)
--		ret = cpufreq_stats_create_table(policy, table);
-+		ret = __cpufreq_stats_create_table(policy, table);
- 	else if (val == CPUFREQ_REMOVE_POLICY)
- 		__cpufreq_stats_free_table(policy);
- 
-@@ -346,6 +366,9 @@ static int __init cpufreq_stats_init(void)
- 	if (ret)
- 		return ret;
- 
-+	for_each_online_cpu(cpu)
-+		cpufreq_stats_create_table(cpu);
-+
- 	ret = cpufreq_register_notifier(&notifier_trans_block,
- 				CPUFREQ_TRANSITION_NOTIFIER);
- 	if (ret) {
--- 
-1.7.12.rc2.18.g61b472e
-
+Yinghai
