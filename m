@@ -1,104 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
-Date: Wed, 25 Sep 2013 20:37:10 +0200
-Message-ID: <1791712.tJBFGgQvyI@vostro.rjw.lan>
-References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org> <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH -v2] cpufreq: skip loading acpi_cpufreq after intel_pstate
+Date: Wed, 25 Sep 2013 22:17:49 -0700
+Message-ID: <CAE9FiQV+K9QSEiRMA8BtqC8k2OHm4aZWODNL+vgfFmpsuBfzQg@mail.gmail.com>
+References: <1379699036-7380-1-git-send-email-yinghai@kernel.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type;
+        bh=D0Ltn8/RoZ3icWxogNMRf/8AVlLv5SzLQ6G50Ex9Clk=;
+        b=AdQs5wFbNu0+JqMj064QoLv0MIqsRAHL0XSBB+QfqqS1+HnGd1PCYyWpC8aqyGMAgC
+         NTN7Kyv8SvbjO5kTXX7iNDWUm59N/kQEwztKmvc5bpnouySN4WiL+9qUtArQDAbrmOsE
+         dDRFBJYiDFMTQyQPh/VWqy+eJqyOQ5Sc2DR97JVrXJLjnlD2qJt9iM9WcfoGiYjW9BF/
+         j3GG/VurAgsYTtsIMM8LtiE3hGvoafcJhZNlESLRbaFfprmrHc/J9V6ZeNKJCvvuA0ee
+         1Zrrs47iE3jK6txXPozISZPjexYzZCgP3wwIaz9XN+1uGDt440jq5MBa2zocIlH1cXfd
+         yZmg==
+In-Reply-To: <1379699036-7380-1-git-send-email-yinghai@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, g.liakhovetski@gmx.de, amit.daniel@samsung.com, kgene.kim@samsung.com, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>
 
-On Thursday, September 12, 2013 03:40:46 PM Viresh Kumar wrote:
-> Some part of this patch was pushed in mainline earlier but was then removed due
-> to loopholes in the patch. Those are now fixed and this patch is tested by the
-> people who reported these problems.
-> 
-> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
-> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
-> shouldn't be called twice contiguously. Also, calls to cpufreq_driver_target()
-> or cpufreq_driver->target() must also be serialized. Following examples show why
-> this is important:
-> 
-> Scenario 1:
-> -----------
-> One thread reading value of cpuinfo_cur_freq, which will call
-> __cpufreq_cpu_get()->cpufreq_out_of_sync()->cpufreq_notify_transition()..
-> 
-> And ondemand governor trying to change freq of cpu at the same time and so
-> sending notification via ->target()..
-> 
-> Notifiers are not serialized and suppose this is what happened
-> - PRECHANGE Notification for freq A (from cpuinfo_cur_freq)
-> - PRECHANGE Notification for freq B (from target())
-> - Freq changed by target() to B
-> - POSTCHANGE Notification for freq B
-> - POSTCHANGE Notification for freq A
-> 
-> Now the last POSTCHANGE Notification happened for freq A and hardware is
-> currently running at freq B :)
-> 
-> Where would we break then?: adjust_jiffies() in cpufreq.c,
-> cpufreq_callback() in arch/arm/kernel/smp.c (which is also adjusting
-> jiffies).. All loops_per_jiffy based stuff is broken..
-> 
-> Scenario 2:
-> -----------
-> Governor is changing freq and has called __cpufreq_driver_target(). At the same
-> time we are changing scaling_{min|max}_freq from sysfs, which would eventually
-> end up calling governor's: CPUFREQ_GOV_LIMITS notification, that will also call:
-> __cpufreq_driver_target().. And hence concurrent calls to ->target()
-> 
-> And Platform have something like this in their ->target()
-> (Like: cpufreq-cpu0, omap, exynos, etc)
-> 
-> A. If new freq is more than old: Increase voltage
-> B. Change freq
-> C. If new freq is less than old: decrease voltage
-> 
-> Now, two concurrent calls to target are X and Y, where X is trying to increase
-> freq and Y is trying to decrease it..
-> 
-> And this is the sequence that followed due to races..
-> 
-> X.A: voltage increased for larger freq
-> Y.A: nothing happened here
-> Y.B: freq decreased
-> Y.C: voltage decreased
-> X.B: freq increased
-> X.C: nothing happened..
-> 
-> We ended up setting a freq which is not supported by the voltage we have
-> set.. That will probably make clock to CPU unstable and system wouldn't
-> be workable anymore...
-> 
-> This patch adds some protection against to make transitions serialized.
-> 
-> Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Fri, Sep 20, 2013 at 10:43 AM, Yinghai Lu <yinghai@kernel.org> wrote:
+> If the hw support intel_pstate and acpi_cpufreq, intel_pstate will
+> get loaded first.
+>
+> acpi_cpufreq_init will call acpi_cpufreq_early_init()
+> and that will allocate perf data and init those perf data in ACPI core,
+> (that will cover all cpus). But later it will free them as
+> cpufreq_register_driver(acpi_cpufreq) will fail as init_pstate is
+> already registered
+>
+> Use cpufreq_get_current_driver() to check if we can skip the
+> acpi_cpufreq loading.
+>
+> -v2: update changelog and separate second part to another patch, according
+>      to Viresh.
+>
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> Index: linux-2.6/drivers/cpufreq/acpi-cpufreq.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/cpufreq/acpi-cpufreq.c
+> +++ linux-2.6/drivers/cpufreq/acpi-cpufreq.c
+> @@ -986,6 +986,10 @@ static int __init acpi_cpufreq_init(void
+>  {
+>         int ret;
+>
+> +       /* don't keep reloading if cpufreq_driver exists */
+> +       if (cpufreq_get_current_driver())
+> +               return 0;
+> +
+>         if (acpi_disabled)
+>                 return 0;
+>
 
-So the problem is real, but the fix seems to be of a "quick and dirty" kind.
+Rafael,
 
-First of all, it looks like we need a clear "begin transition" call that
-I suppose drivers should execute from their .target() methods once they have
-decided to do a transition.  That would increment the "ongoing" counter etc.
+can you put this one in acpi tree?
 
-Second, we need a corresponding "end transition" call that would be executed
-whenever appropriate from the driver's perspective.
+Thanks
 
-Clearly, these two things should be independent of the notifiers and the
-notifications should only be done between "begin transition" and "end
-transition" and only by whoever called the "begin transition" to start with.
-
-Now, question is what should happen if "begin transition" is called when
-the previous transition hasn't been completed yet, should it block or should
-it fail?  There seem to be arguments for both, but I suppose blocking would be
-easier to implement.
-
-Thanks,
-Rafael
-
+Yinghai
