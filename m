@@ -1,142 +1,28 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv4 06/18] cpufreq: cpufreq-cpu0: add dt node parsing for cooling device properties
-Date: Thu, 26 Sep 2013 23:13:13 -0400
-Message-ID: <1380251605-3804-7-git-send-email-eduardo.valentin@ti.com>
-References: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] cpufreq: make return type of lock_policy_rwsem_{read|write}() as void
+Date: Mon, 30 Sep 2013 20:28:21 +0200
+Message-ID: <2382588.IckWbq3JRN@vostro.rjw.lan>
+References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org> <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com
-Cc: grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: tixy@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 
-This patch changes the cpufreq-cpu0 driver to consider if
-a cpu needs cooling (with cpufreq). In case the cooling is needed,
-the cpu0 device tree node needs to be properly configured
-with cooling device properties.
+On Monday, September 16, 2013 08:40:17 PM Viresh Kumar wrote:
+> lock_policy_rwsem_{read|write}() currently has return type of int but it always
+> return zero and hence its return type must be void instead. This patch makes its
+> return type void and fixes all users of it as well.
+> 
+> Reported-by: Jon Medhurst<tixy@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-In case these properties are present,, the driver will
-load a cpufreq cooling device in the system. The cpufreq-cpu0
-driver is not interested in determining how the system should
-be using the cooling device. The driver is responsible
-only of loading the cooling device.
+This doesn't apply to bleeding-edge for me any more after I have applied your
+series of 44 patches to it.  Care to resend?
 
-Describing how the cooling device will be used can be
-accomplished by setting up a thermal zone that references
-and is composed by the cpufreq cooling device.
-
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Grant Likely <grant.likely@linaro.org>
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: devicetree-discuss@lists.ozlabs.org
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt         |  7 +++++++
- drivers/cpufreq/Kconfig                                  |  2 +-
- drivers/cpufreq/cpufreq-cpu0.c                           | 16 ++++++++++++++++
- 3 files changed, 24 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-index 051f764..f055515 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-@@ -15,6 +15,10 @@ Optional properties:
- - clock-latency: Specify the possible maximum transition latency for clock,
-   in unit of nanoseconds.
- - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
-+- #cooling-cells:
-+- cooling-min-level:
-+- cooling-max-level:
-+     Please refer to Documentation/devicetree/bindings/thermal/thermal.txt.
- 
- Examples:
- 
-@@ -33,6 +37,9 @@ cpus {
- 			198000  850000
- 		>;
- 		clock-latency = <61036>; /* two CLK32 periods */
-+		#cooling-cells = <2>;
-+		cooling-min-level = <0>;
-+		cooling-max-level = <2>;
- 	};
- 
- 	cpu@1 {
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 534fcb8..fc1e9a5 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -186,7 +186,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
- 
- config GENERIC_CPUFREQ_CPU0
- 	tristate "Generic CPU0 cpufreq driver"
--	depends on HAVE_CLK && REGULATOR && PM_OPP && OF
-+	depends on HAVE_CLK && REGULATOR && PM_OPP && OF && THERMAL && CPU_THERMAL
- 	select CPU_FREQ_TABLE
- 	help
- 	  This adds a generic cpufreq driver for CPU0 frequency management.
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 78c49d8..fd707b8 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -13,7 +13,9 @@
- 
- #include <linux/clk.h>
- #include <linux/cpu.h>
-+#include <linux/cpu_cooling.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpumask.h>
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
-@@ -21,6 +23,7 @@
- #include <linux/platform_device.h>
- #include <linux/regulator/consumer.h>
- #include <linux/slab.h>
-+#include <linux/thermal.h>
- 
- static unsigned int transition_latency;
- static unsigned int voltage_tolerance; /* in percentage */
-@@ -29,6 +32,7 @@ static struct device *cpu_dev;
- static struct clk *cpu_clk;
- static struct regulator *cpu_reg;
- static struct cpufreq_frequency_table *freq_table;
-+static struct thermal_cooling_device *cdev;
- 
- static int cpu0_verify_speed(struct cpufreq_policy *policy)
- {
-@@ -260,6 +264,17 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 		goto out_free_table;
- 	}
- 
-+	/*
-+	 * For now, just loading the cooling device;
-+	 * thermal DT code takes care of matching them.
-+	 */
-+	if (of_find_property(np, "#cooling-cells", NULL)) {
-+		cdev = of_cpufreq_cooling_register(np, cpu_present_mask);
-+		if (IS_ERR(cdev))
-+			pr_err("running cpufreq without cooling device: %ld\n",
-+			       PTR_ERR(cdev));
-+	}
-+
- 	of_node_put(np);
- 	return 0;
- 
-@@ -272,6 +287,7 @@ out_put_node:
- 
- static int cpu0_cpufreq_remove(struct platform_device *pdev)
- {
-+	cpufreq_cooling_unregister(cdev);
- 	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
- 	opp_free_cpufreq_table(cpu_dev, &freq_table);
- 
--- 
-1.8.2.1.342.gfa7285d
+Rafael
 
