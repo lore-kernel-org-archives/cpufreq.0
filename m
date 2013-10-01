@@ -1,28 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] cpufreq: make return type of lock_policy_rwsem_{read|write}() as void
-Date: Mon, 30 Sep 2013 20:28:21 +0200
-Message-ID: <2382588.IckWbq3JRN@vostro.rjw.lan>
-References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org> <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH] cpufreq: arm-big-little: use clk_get instead of clk_get_sys
+Date: Tue,  1 Oct 2013 10:30:03 +0100
+Message-ID: <1380619803-2760-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: tixy@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Sudeep.KarkadaNagesha@arm.com, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On Monday, September 16, 2013 08:40:17 PM Viresh Kumar wrote:
-> lock_policy_rwsem_{read|write}() currently has return type of int but it always
-> return zero and hence its return type must be void instead. This patch makes its
-> return type void and fixes all users of it as well.
-> 
-> Reported-by: Jon Medhurst<tixy@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-This doesn't apply to bleeding-edge for me any more after I have applied your
-series of 44 patches to it.  Care to resend?
+Currently clk_get_sys is used with cpu-cluster.<n> as the device id
+which is incorrect. It should be connection/consumer ID instead.
 
-Rafael
+It is possible to specify input clock in the cpu device node along
+with the optional clock-name. clk_get_sys can't handle that.
+
+This patch replaces clk_get_sys with clk_get to extend support for
+clocks specified in the device tree cpu node.
+
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+---
+ drivers/cpufreq/arm_big_little.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 3549f07..501a091 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -127,7 +127,7 @@ static int get_cluster_clk_and_freq_table(struct device *cpu_dev)
+ 	}
+ 
+ 	name[12] = cluster + '0';
+-	clk[cluster] = clk_get_sys(name, NULL);
++	clk[cluster] = clk_get(cpu_dev, name);
+ 	if (!IS_ERR(clk[cluster])) {
+ 		dev_dbg(cpu_dev, "%s: clk: %p & freq table: %p, cluster: %d\n",
+ 				__func__, clk[cluster], freq_table[cluster],
+-- 
+1.8.1.2
 
