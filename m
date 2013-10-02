@@ -1,181 +1,51 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v2 2/5] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Tue, 01 Oct 2013 17:46:10 +0100
-Message-ID: <524AFC52.8080201@arm.com>
-References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1380634382-15609-3-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH RESEND 00/11] CPUFreq: Cleanups/fixes for v3.13
+Date: Wed,  2 Oct 2013 14:13:08 +0530
+Message-ID: <cover.1380703248.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>, "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <Pawel.Moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 01/10/13 14:32, Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
-> 
-> Currently we need to replicate the OPP entries in all the nodes even
-> though they share OPPs being in the same clock domain.
-> 
-> Few drivers like cpufreq depend on physical cpu0 node to specify the
-> OPPs and only that node is referred irrespective of the logical cpu
-> accessing it. Alternatively to support cpuhotplug path, few drivers
-> parse all the cpu nodes for OPPs. Instead we can specify the phandle
-> of the node which contains the OPP tuples.
-> 
-> This patch adds support to the new property 'operating-points-phandle'
-> which specifies the phandle pointing to another node which contains the
-> actual OPP tuples.
-> 
-> Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
-> Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
-> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-> Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-> Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-> Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
-> ---
->  drivers/base/power/opp.c | 15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index ef89897..bb6ff64 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -708,12 +708,20 @@ struct srcu_notifier_head *opp_get_notifier(struct device *dev)
->  int of_init_opp_table(struct device *dev)
->  {
->  	const struct property *prop;
-> +	struct device_node *opp_node;
->  	const __be32 *val;
->  	int nr;
->  
-> -	prop = of_find_property(dev->of_node, "operating-points", NULL);
-> -	if (!prop)
-> +	opp_node = of_parse_phandle(dev->of_node,
-> +					"operating-points-phandle", 0);
-> +	if (!opp_node) /* if no OPP phandle, search for OPPs in current node */
-> +		opp_node = dev->of_node;
-> +	prop = of_find_property(opp_node, "operating-points", NULL);
-> +	if (!prop) {
-> +		dev_warn(dev, "node %s missing operating-points property\n",
-> +							opp_node->full_name);
->  		return -ENODEV;
-> +	}
->  	if (!prop->value)
->  		return -ENODATA;
->  
-> @@ -740,6 +748,9 @@ int of_init_opp_table(struct device *dev)
->  		nr -= 2;
->  	}
->  
-> +	if (opp_node != dev->of_node)
-> +		of_node_put(opp_node);
-> +
-There are several exit paths on error conditions where we need to do this.
-I missed them all. Here is the updated patch:
+Hi Rafael,
 
--->8--
+As asked by you the first patch is rebased over your bleeding edge. Other minor
+patches are also added in this series (sent earlier too) which can also go in.
+Let me know if you see/face any issues with them.
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+Viresh Kumar (11):
+  cpufreq: make return type of lock_policy_rwsem_{read|write}() as void
+  cpufreq: create per policy rwsem instead of per cpu cpu_policy_rwsem
+  cpufreq: remove invalid comment from __cpufreq_remove_dev()
+  cpufreq: Remove extra blank line
+  cpufreq: don't break string in print statements
+  cpufreq: remove __cpufreq_remove_dev()
+  cpufreq: Optimize cpufreq_frequency_table_verify()
+  cpufreq: rename __cpufreq_set_policy() as cpufreq_set_policy()
+  cpufreq: rewrite cpufreq_driver->flags using shift operator
+  cpufreq: use cpufreq_driver->flags to mark
+    CPUFREQ_HAVE_GOVERNOR_PER_POLICY
+  cpufreq: add new routine cpufreq_verify_within_cpu_limits()
 
-Currently we need to replicate the OPP entries in all the nodes even
-though they share OPPs being in the same clock domain.
+ drivers/cpufreq/arm_big_little.c     |   4 +-
+ drivers/cpufreq/cpufreq-nforce2.c    |   4 +-
+ drivers/cpufreq/cpufreq.c            | 189 ++++++++++-------------------------
+ drivers/cpufreq/cpufreq_governor.h   |   5 +-
+ drivers/cpufreq/davinci-cpufreq.c    |   4 +-
+ drivers/cpufreq/freq_table.c         |  27 +++--
+ drivers/cpufreq/integrator-cpufreq.c |   9 +-
+ drivers/cpufreq/intel_pstate.c       |   4 +-
+ drivers/cpufreq/longrun.c            |   4 +-
+ drivers/cpufreq/pcc-cpufreq.c        |   3 +-
+ drivers/cpufreq/sh-cpufreq.c         |   7 +-
+ drivers/cpufreq/unicore2-cpufreq.c   |   4 +-
+ include/linux/cpufreq.h              |  51 +++++++---
+ 13 files changed, 120 insertions(+), 195 deletions(-)
 
-Few drivers like cpufreq depend on physical cpu0 node to specify the
-OPPs and only that node is referred irrespective of the logical cpu
-accessing it. Alternatively to support cpuhotplug path, few drivers
-parse all the cpu nodes for OPPs. Instead we can specify the phandle
-of the node which contains the OPP tuples.
-
-This patch adds support to the new property 'operating-points-phandle'
-which specifies the phandle pointing to another node which contains the
-actual OPP tuples.
-
-Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
-Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
----
- drivers/base/power/opp.c | 34 +++++++++++++++++++++++++---------
- 1 file changed, 25 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index ef89897..cd4dbb3 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -708,14 +708,25 @@ struct srcu_notifier_head *opp_get_notifier(struct device
-*dev)
- int of_init_opp_table(struct device *dev)
- {
- 	const struct property *prop;
-+	struct device_node *opp_node;
- 	const __be32 *val;
--	int nr;
--
--	prop = of_find_property(dev->of_node, "operating-points", NULL);
--	if (!prop)
--		return -ENODEV;
--	if (!prop->value)
--		return -ENODATA;
-+	int nr, ret = 0;
-+
-+	opp_node = of_parse_phandle(dev->of_node,
-+					"operating-points-phandle", 0);
-+	if (!opp_node) /* if no OPP phandle, search for OPPs in current node */
-+		opp_node = dev->of_node;
-+	prop = of_find_property(opp_node, "operating-points", NULL);
-+	if (!prop) {
-+		dev_warn(dev, "node %s missing operating-points property\n",
-+							opp_node->full_name);
-+		ret = -ENODEV;
-+		goto put_node;
-+	}
-+	if (!prop->value) {
-+		ret = -ENODATA;
-+		goto put_node;
-+	}
-
- 	/*
- 	 * Each OPP is a set of tuples consisting of frequency and
-@@ -724,7 +735,8 @@ int of_init_opp_table(struct device *dev)
- 	nr = prop->length / sizeof(u32);
- 	if (nr % 2) {
- 		dev_err(dev, "%s: Invalid OPP list\n", __func__);
--		return -EINVAL;
-+		ret = -EINVAL;
-+		goto put_node;
- 	}
-
- 	val = prop->value;
-@@ -740,7 +752,11 @@ int of_init_opp_table(struct device *dev)
- 		nr -= 2;
- 	}
-
--	return 0;
-+put_node:
-+	if (opp_node != dev->of_node)
-+		of_node_put(opp_node);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(of_init_opp_table);
- #endif
 -- 
-1.8.1.2
+1.7.12.rc2.18.g61b472e
 
-
-
-
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
