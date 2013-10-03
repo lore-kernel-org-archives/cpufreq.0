@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 58/92] cpufreq: p4: don't initialize part of policy that is set by core too
-Date: Thu,  3 Oct 2013 20:28:52 +0530
-Message-ID: <141618c10f90a5477c5a9d77d9369ef1a16506d5.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 59/92] cpufreq: pcc: don't initialize part of policy that is set by core too
+Date: Thu,  3 Oct 2013 20:28:53 +0530
+Message-ID: <945e3f35296bbca5e38a815f7ae3d0c27b35c95b.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
@@ -13,7 +13,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
 Many common initializations of struct policy are moved to core now and hence
 this driver doesn't need to do it. This patch removes such code.
@@ -21,24 +21,29 @@ this driver doesn't need to do it. This patch removes such code.
 Most recent of those changes is to call ->get() in the core after calling
 ->init().
 
-Cc: David S. Miller <davem@davemloft.net>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/p4-clockmod.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/cpufreq/pcc-cpufreq.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/drivers/cpufreq/p4-clockmod.c b/drivers/cpufreq/p4-clockmod.c
-index 4fe6d4c..6164c1c 100644
---- a/drivers/cpufreq/p4-clockmod.c
-+++ b/drivers/cpufreq/p4-clockmod.c
-@@ -230,7 +230,6 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
- 	/* the transition latency is set to be 1 higher than the maximum
- 	 * transition latency of the ondemand governor */
- 	policy->cpuinfo.transition_latency = 10000001;
--	policy->cur = stock_freq;
+diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+index 70438de..c265fd1 100644
+--- a/drivers/cpufreq/pcc-cpufreq.c
++++ b/drivers/cpufreq/pcc-cpufreq.c
+@@ -559,13 +559,6 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		ioread32(&pcch_hdr->nominal) * 1000;
+ 	policy->min = policy->cpuinfo.min_freq =
+ 		ioread32(&pcch_hdr->minimum_frequency) * 1000;
+-	policy->cur = pcc_get_freq(cpu);
+-
+-	if (!policy->cur) {
+-		pr_debug("init: Unable to get current CPU frequency\n");
+-		result = -EINVAL;
+-		goto out;
+-	}
  
- 	return cpufreq_table_validate_and_show(policy, &p4clockmod_table[0]);
- }
+ 	pr_debug("init: policy->max is %d, policy->min is %d\n",
+ 		policy->max, policy->min);
 -- 
 1.7.12.rc2.18.g61b472e
 
