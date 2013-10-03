@@ -1,103 +1,209 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
- of another node for OPP
-Date: Thu, 03 Oct 2013 14:05:07 +0100
-Message-ID: <524D6B83.5030308@arm.com>
-References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <524D65A3.5090906@ti.com>
+From: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v2 2/5] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Thu, 3 Oct 2013 09:20:12 -0500
+Message-ID: <524D7D1C.30207@ti.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-3-git-send-email-Sudeep.KarkadaNagesha@arm.com> <524AFC52.8080201@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <524D65A3.5090906-l0cyMroinI0@public.gmane.org>
+In-Reply-To: <524AFC52.8080201-5wv7dgnIgG8@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Cc: "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <Pawel.Moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
 
-Hi Nishanth,
-
-Thanks for reviewing it.
-
-On 03/10/13 13:40, Nishanth Menon wrote:
-> On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
+On 10/01/2013 11:46 AM, Sudeep KarkadaNagesha wrote:
+> On 01/10/13 14:32, Sudeep KarkadaNagesha wrote:
 >> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
-[...]
->> +4. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of
->> +   CPUs. Each cluster has 2 CPUs and all the CPUs within the cluster share
->> +   the clock domain.
->> +
->> +	cpu0: cpu@0 {
->> +		compatible = "arm,cortex-a15";
->> +		reg = <0>;
->> +		operating-points-phandle = <&cluster0_opp>;
->> +	};
->> +
->> +	cpu1: cpu@1 {
->> +		compatible = "arm,cortex-a15";
->> +		reg = <1>;
->> +		operating-points-phandle = <&cluster0_opp>;
->> +	};
->> +
->> +	cpu2: cpu@100 {
->> +		compatible = "arm,cortex-a7";
->> +		reg = <100>;
->> +		operating-points-phandle = <&cluster1_opp>;
->> +	};
->> +
->> +	cpu3: cpu@101 {
->> +		compatible = "arm,cortex-a7";
->> +		reg = <101>;
->> +		operating-points-phandle = <&cluster1_opp>;
->> +	};
->> +
->> +	opps-table {
->> +		cluster0_opp: cluster0_opp {
->> +			operating-points = <
->> +				/* kHz    uV */
->> +				792000  1100000
->> +				396000  950000
->> +				198000  850000
->> +			>;
->> +		};
-> Style comment - add an EOL
-Ok will fix up.
-
->> +		cluster1_opp: cluster1_opp {
->> +			operating-points = <
->> +				/* kHz    uV */
->> +				792000  950000
->> +				396000  750000
->> +				198000  450000
->> +			>;
->> +		};
->> +		... /* other device OPP nodes */
->> +	}
->> +
->> +Container Node
->> +--------------
->> +	- It's highly recommended to place all the shared OPPs under single
->> +	  node for consistency and better readability
->> +	- It's quite similar to clocks or pinmux container nodes
->> +	- In the above examples, "opps-table" is the container node
 >>
-> 
-> in short, I love this - thanks for doing this.
-> 
-> However, could you squash this to patch #2 -> having implementation
-> and binding together is better for git log history.
-> 
-Based on some arguments on the other threads[1] on devicetree list, I thought
-having separate patches for binding and driver changes is preferred. Hence the
-split, I am OK either way.
+>> Currently we need to replicate the OPP entries in all the nodes even
+>> though they share OPPs being in the same clock domain.
+>>
+>> Few drivers like cpufreq depend on physical cpu0 node to specify the
+>> OPPs and only that node is referred irrespective of the logical cpu
+>> accessing it. Alternatively to support cpuhotplug path, few drivers
+>> parse all the cpu nodes for OPPs. Instead we can specify the phandle
+>> of the node which contains the OPP tuples.
+>>
+>> This patch adds support to the new property 'operating-points-phandle'
+>> which specifies the phandle pointing to another node which contains the
+>> actual OPP tuples.
+>>
+>> Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+>> Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
+>> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+>> Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+>> Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+>> Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+>> ---
+>>  drivers/base/power/opp.c | 15 +++++++++++++--
+>>  1 file changed, 13 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>> index ef89897..bb6ff64 100644
+>> --- a/drivers/base/power/opp.c
+>> +++ b/drivers/base/power/opp.c
+>> @@ -708,12 +708,20 @@ struct srcu_notifier_head *opp_get_notifier(struct device *dev)
+>>  int of_init_opp_table(struct device *dev)
+>>  {
+>>  	const struct property *prop;
+>> +	struct device_node *opp_node;
+>>  	const __be32 *val;
+>>  	int nr;
+>>  
+>> -	prop = of_find_property(dev->of_node, "operating-points", NULL);
+>> -	if (!prop)
+>> +	opp_node = of_parse_phandle(dev->of_node,
+>> +					"operating-points-phandle", 0);
+>> +	if (!opp_node) /* if no OPP phandle, search for OPPs in current node */
+>> +		opp_node = dev->of_node;
+>> +	prop = of_find_property(opp_node, "operating-points", NULL);
+>> +	if (!prop) {
+>> +		dev_warn(dev, "node %s missing operating-points property\n",
+>> +							opp_node->full_name);
+>>  		return -ENODEV;
+>> +	}
+>>  	if (!prop->value)
+>>  		return -ENODATA;
+>>  
+>> @@ -740,6 +748,9 @@ int of_init_opp_table(struct device *dev)
+>>  		nr -= 2;
+>>  	}
+>>  
+>> +	if (opp_node != dev->of_node)
+>> +		of_node_put(opp_node);
+>> +
+> There are several exit paths on error conditions where we need to do this.
+> I missed them all. Here is the updated patch:
 
-Can I add your ACK/Reviewed-by otherwise ?
+> 
+> -->8--
+> 
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+> 
+> Currently we need to replicate the OPP entries in all the nodes even
+> though they share OPPs being in the same clock domain.
+> 
+> Few drivers like cpufreq depend on physical cpu0 node to specify the
+> OPPs and only that node is referred irrespective of the logical cpu
+> accessing it. Alternatively to support cpuhotplug path, few drivers
+> parse all the cpu nodes for OPPs. Instead we can specify the phandle
+> of the node which contains the OPP tuples.
+> 
+> This patch adds support to the new property 'operating-points-phandle'
+> which specifies the phandle pointing to another node which contains the
+> actual OPP tuples.
+> 
+> Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+> Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
+> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+> Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+> Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+> Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+> ---
+>  drivers/base/power/opp.c | 34 +++++++++++++++++++++++++---------
+>  1 file changed, 25 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index ef89897..cd4dbb3 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -708,14 +708,25 @@ struct srcu_notifier_head *opp_get_notifier(struct device
+> *dev)
+^^
+<minor crib>
+When reposting, could you avoid having word wrap? - kinda hard to get
+https://patchwork.kernel.org/patch/2971091/ to apply clean :(
 
+wget -O a.patch 'https://patchwork.kernel.org/patch/2971091/mbox/'
+patch -p1< a.patch --dry-run
+patching file drivers/base/power/opp.c
+patch: **** malformed patch at line 143: *dev)
+
+also when i look at the mbox patch, I see it split up.. did not dig in
+why.. manually fixed it up.
+</minor crib>
+
+minor comments follow (other than squashing it with patch #1)
+>  int of_init_opp_table(struct device *dev)
+>  {
+>  	const struct property *prop;
+> +	struct device_node *opp_node;
+>  	const __be32 *val;
+> -	int nr;
+> -
+> -	prop = of_find_property(dev->of_node, "operating-points", NULL);
+> -	if (!prop)
+> -		return -ENODEV;
+> -	if (!prop->value)
+> -		return -ENODATA;
+> +	int nr, ret = 0;
+> +
+> +	opp_node = of_parse_phandle(dev->of_node,
+> +					"operating-points-phandle", 0);
+> +	if (!opp_node) /* if no OPP phandle, search for OPPs in current node */
+If you do not have a strong opinion, could you move the comment above
+the if?
+> +		opp_node = dev->of_node;
+add an eol here.
+> +	prop = of_find_property(opp_node, "operating-points", NULL);
+> +	if (!prop) {
+> +		dev_warn(dev, "node %s missing operating-points property\n",
+> +							opp_node->full_name);
+^^ align the opp_node->full_name to the d in dev in dev_warn(dev?
+Checkpatch.sh --strict reports
+CHECK: Alignment should match open parenthesis
+#57: FILE: drivers/base/power/opp.c:722:
++		dev_warn(dev, "node %s missing operating-points property\n",
++							opp_node->full_name);
+
+total: 0 errors, 0 warnings, 1 checks, 53 lines checked
+
+
+> +		ret = -ENODEV;
+> +		goto put_node;
+> +	}
+> +	if (!prop->value) {
+> +		ret = -ENODATA;
+> +		goto put_node;
+> +	}
+> 
+>  	/*
+>  	 * Each OPP is a set of tuples consisting of frequency and
+> @@ -724,7 +735,8 @@ int of_init_opp_table(struct device *dev)
+>  	nr = prop->length / sizeof(u32);
+>  	if (nr % 2) {
+>  		dev_err(dev, "%s: Invalid OPP list\n", __func__);
+> -		return -EINVAL;
+> +		ret = -EINVAL;
+> +		goto put_node;
+>  	}
+> 
+>  	val = prop->value;
+> @@ -740,7 +752,11 @@ int of_init_opp_table(struct device *dev)
+>  		nr -= 2;
+>  	}
+> 
+> -	return 0;
+> +put_node:
+> +	if (opp_node != dev->of_node)
+> +		of_node_put(opp_node);
+> +
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(of_init_opp_table);
+>  #endif
+> 
+other than that, please feel free to add
+Acked-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+
+-- 
 Regards,
-Sudeep
-
-[1] http://www.spinics.net/lists/devicetree/msg04855.html
-
-
+Nishanth Menon
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
