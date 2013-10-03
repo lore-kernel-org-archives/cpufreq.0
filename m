@@ -1,55 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: highbank-cpufreq: Enable Midway/ECX-2000
-Date: Thu, 3 Oct 2013 10:38:37 +0530
-Message-ID: <CAOh2x=mZ__gYkhi6o_goUkw+JB==VY2PSk-T_1G+6QBxDZGFFg@mail.gmail.com>
-References: <1380641424-5666-1-git-send-email-mark.langsdorf@calxeda.com>
+Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
+Date: Thu, 3 Oct 2013 11:06:13 +0530
+Message-ID: <CAKohponHLGsjTXA3XRRGM+CFpMrsgTuCx00YPrCbkST5drB-ng@mail.gmail.com>
+References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org>
+	<793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
+	<1791712.tJBFGgQvyI@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=ehpIuUuf1SGuHQU4pDpD0FBP4nI2jmQtrLwMzqunqpg=;
-        b=S/A/63L3nOK/0USGAUWslO4bL8EH0kkdkENkeph9rgxTTdF80o4uMgSMztyBJLJUdT
-         OecRh92RyN23nu9dlWFzvAV8auuoU8dtS8VQEZmwV6m9eCkdMnQzFKJoztl7WNWnqLUZ
-         KmcgxVc0QGbo6TldfqQmodwj+s6XWLStqirR8UoCDJNI4d8pZOZppksiw9qKAt2hv+8N
-         qUYg6DSm4J8qi2kJA4i1L0muvcI/cVT+lE+XBSiyqRbtZzvLEm0zSW7MFPeXyIVhirD6
-         Zrn6SM37bdhY83lyl/V3UuxlQZFqymoaRVAf3EkYBkwHwUI8gAQKLFCdcIS5ZoOLwUKV
-         FcTg==
-In-Reply-To: <1380641424-5666-1-git-send-email-mark.langsdorf@calxeda.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1791712.tJBFGgQvyI@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On Tue, Oct 1, 2013 at 9:00 PM, Mark Langsdorf
-<mark.langsdorf@calxeda.com> wrote:
-> Calxeda's new ECX-2000 part uses the same cpufreq interface as highbank,
-> so add it to the driver's compatibility list.
->
-> This is a minor change that can safely be applied to the 3.10 and 3.11
-> stable trees.
->
-> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-> ---
->  drivers/cpufreq/highbank-cpufreq.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
-> index 794123f..bf8902a 100644
-> --- a/drivers/cpufreq/highbank-cpufreq.c
-> +++ b/drivers/cpufreq/highbank-cpufreq.c
-> @@ -66,7 +66,8 @@ static int hb_cpufreq_driver_init(void)
->         struct device_node *np;
->         int ret;
->
-> -       if (!of_machine_is_compatible("calxeda,highbank"))
-> +       if ((!of_machine_is_compatible("calxeda,highbank")) &&
-> +               (!of_machine_is_compatible("calxeda,ecx-2000")))
->                 return -ENODEV;
->
->         cpu_dev = get_cpu_device(0);
+On 26 September 2013 00:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> So the problem is real, but the fix seems to be of a "quick and dirty" kind.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hmm..
+
+> First of all, it looks like we need a clear "begin transition" call that
+> I suppose drivers should execute from their .target() methods once they have
+> decided to do a transition.  That would increment the "ongoing" counter etc.
+>
+> Second, we need a corresponding "end transition" call that would be executed
+> whenever appropriate from the driver's perspective.
+
+Hmm..
+
+> Clearly, these two things should be independent of the notifiers and the
+> notifications should only be done between "begin transition" and "end
+> transition" and only by whoever called the "begin transition" to start with.
+
+So, we need to have begin/end calls in cpufreq_out_of_sync() as well?
+As that is sending notifications..
+
+> Now, question is what should happen if "begin transition" is called when
+> the previous transition hasn't been completed yet, should it block or should
+> it fail?  There seem to be arguments for both, but I suppose blocking would be
+> easier to implement.
+
+Hmm.. I will repost this once my other patches are in now.. as that will
+change ->target() routine for multiple drivers and things would be simple
+to fix then..
