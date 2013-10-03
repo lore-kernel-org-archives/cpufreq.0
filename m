@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 37/92] cpufreq: acpi: don't initialize part of policy that is set by core too
-Date: Thu,  3 Oct 2013 20:28:31 +0530
-Message-ID: <8fa3d4a49724fc9a298c0b2f0b266b37d4a13310.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 38/92] cpufreq: arm_big_little: don't initialize part of policy that is set by core too
+Date: Thu,  3 Oct 2013 20:28:32 +0530
+Message-ID: <849b2bb0f42c26b237c5cc4af6c71e21c91dc7e4.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,21 +23,22 @@ Most recent of those changes is to call ->get() in the core after calling
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/acpi-cpufreq.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/cpufreq/arm_big_little.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 94a5a1d..a8dac7b 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -842,7 +842,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		break;
- 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
- 		acpi_cpufreq_driver.get = get_cur_freq_on_cpu;
--		policy->cur = get_cur_freq_on_cpu(cpu);
- 		break;
- 	default:
- 		break;
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 7e92586..8075eb6 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -171,8 +171,6 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ 	else
+ 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 
+-	policy->cur = bL_cpufreq_get(policy->cpu);
+-
+ 	cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
+ 
+ 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
 -- 
 1.7.12.rc2.18.g61b472e
 
