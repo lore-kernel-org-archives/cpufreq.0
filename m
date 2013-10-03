@@ -1,37 +1,28 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: arm-big-little: use clk_get instead of clk_get_sys
-Date: Thu, 03 Oct 2013 10:23:08 +0100
-Message-ID: <524D377C.90200@arm.com>
-References: <1380619803-2760-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>	<CAKohpom0iYB=HF+YaG9VzHu7LxVQsJww3oEVABRmeHTmwSnxTA@mail.gmail.com>	<524D3170.7080406@arm.com> <CAKohpo=90LQawdZGmm2-CU3U-kHL6uUkmFKGRGZFCwY5YckLEg@mail.gmail.com>
+Date: Thu, 3 Oct 2013 15:08:33 +0530
+Message-ID: <CAKohpomaymtyvz=5W34ofHo5xBZyUz1N5oHNR-Ur4MfAAfehTg@mail.gmail.com>
+References: <1380619803-2760-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+	<CAKohpom0iYB=HF+YaG9VzHu7LxVQsJww3oEVABRmeHTmwSnxTA@mail.gmail.com>
+	<524D3170.7080406@arm.com>
+	<CAKohpo=90LQawdZGmm2-CU3U-kHL6uUkmFKGRGZFCwY5YckLEg@mail.gmail.com>
+	<524D377C.90200@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=90LQawdZGmm2-CU3U-kHL6uUkmFKGRGZFCwY5YckLEg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <524D377C.90200@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On 03/10/13 10:00, Viresh Kumar wrote:
-> On 3 October 2013 14:27, Sudeep KarkadaNagesha
-> <Sudeep.KarkadaNagesha@arm.com> wrote:
->> Agreed, but there's no cluster node in DT. So platforms using DT would have
->> these clocks in cpu@n node as it's used for CPU frequency scaling. One example I
->> can see is highbank(it uses cpufreq-cpu0 meaning its single cluster clock). So
->> AFAICT if any big-little systems wants to pass cluster clocks through DT, it has
->> to be cpu@n nodes. Let me know if you have any alternate thoughts ?
-> 
-> I understand your point, but shouldn't we name it then: cpu clock?
-> Probably cluster clock was wrong from the beginning.. As there is no cluster clock,
-> or there is ? :)
-> 
+On 3 October 2013 14:53, Sudeep KarkadaNagesha
+<Sudeep.KarkadaNagesha@arm.com> wrote:
+> Ok I would phrase it as, it's a clock shared by all the cpus in the cluster.
+> So like any other shared clocks in the system, each device sharing it would have
+> it as input clock but it would be single clock output from the clock/power
+> controller. Does it make any sense ?
 
-Ok I would phrase it as, it's a clock shared by all the cpus in the cluster.
-So like any other shared clocks in the system, each device sharing it would have
-it as input clock but it would be single clock output from the clock/power
-controller. Does it make any sense ?
-
-Regards,
-Sudeep
-
+Sure.. I already know that :) .. what I am not able to decide is, if we should
+talk about CPU clocks in our driver or cluster clocks..
