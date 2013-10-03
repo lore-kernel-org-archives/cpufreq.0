@@ -1,45 +1,143 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
- of another node for OPP
-Date: Thu, 3 Oct 2013 09:29:23 -0500
-Message-ID: <524D7F43.60102@ti.com>
-References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <524D65A3.5090906@ti.com> <524D6B83.5030308@arm.com>
+From: Brennan Shacklett <bp.shacklett@gmail.com>
+Subject: [PATCH] cpufreq: intel_pstate: Improve accuracy by not truncating
+ until final result
+Date: Thu, 3 Oct 2013 07:38:40 -0700
+Message-ID: <20131003143840.GB6982@hulk.osd.wednet.edu>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <524D6B83.5030308@arm.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        bh=QbAGm/Pczp2T6ScPehWnG1Yql0WuRFMhATcEhuxIYEI=;
+        b=IfuaHtQihm9a9nHdC1dQ7YKKjl/EhBVV1+JGLiUE/QlvXXSV9Iz7/HtsO+PzC6byMa
+         Mse9H74SRBXRqqx3kkzdxlrmFpCrEWB5qanI0uHm9C6Ahvz02IFFHg8ZYI1MBeXGDcGy
+         hFSa/XTFPocg25SsFpapbxTmjAqb9GET+zyvPhNeAUVhuZML1b6SBendq/NGp0qkEo2j
+         hQb6O+3NesUJVTyTen8m6ZftlCTtbmUXXsVAqzXBT0+5R5n8mx52DKDbyRkLxOzLcblJ
+         q3oXLCovJv+HzDRfmKSZSorlgFg7E8hY9wYkM5Cx+yDE1miMm+KKMSfC/RY2gisJ1rlT
+         FBUQ==
+Content-Disposition: inline
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Cc: "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 10/03/2013 08:05 AM, Sudeep KarkadaNagesha wrote:
-[...]
->> However, could you squash this to patch #2 -> having implementation
->> and binding together is better for git log history.
->>
-> Based on some arguments on the other threads[1] on devicetree list, I thought
-> having separate patches for binding and driver changes is preferred. Hence the
-> split, I am OK either way.
-Thanks for pointing the discussion out.
+From: Brennan Shacklett <brennan@genyes.org>
 
-/me might rant about this ;) -> if someone has a strong opinion about
-this, they should probably propose a change to submitting patches
-guideline.. Grr..
+This patch addresses Bug 60727
+(https://bugzilla.kernel.org/show_bug.cgi?id=60727)
+which was due to the truncation of intermediate values in the
+calculations, which causes the code to consistently underestimate the
+current cpu frequency, specifically 100% cpu utilization was truncated
+down to the setpoint of 97%. This patch fixes the problem by keeping 
+the results of all intermediate calculations as fixed point numbers 
+rather scaling them back and forth between integers and fixed point.
 
-I leave this to Rafael as to how he'd like this to be squashed/split
+Signed-off-by: Brennan Shacklet <bpshacklett@gmail.com>
+---
+Tested on my Intel Core i7 2640M which also suffered from bug 60727. It
+is possible that some of the constants in the default_policy should 
+be changed, because I notice that my cpu tends to run slightly faster
+with this patch, which makes sense because calculated values would have
+been consistently low without the patch.
 
-> 
-> Can I add your ACK/Reviewed-by otherwise ?
-> 
-> Regards,
-> Sudeep
-> 
-> [1] http://www.spinics.net/lists/devicetree/msg04855.html
-> 
+ drivers/cpufreq/intel_pstate.c | 33 +++++++++++++++------------------
+ 1 file changed, 15 insertions(+), 18 deletions(-)
 
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 9733f29..2409f7f 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -48,7 +48,7 @@ static inline int32_t div_fp(int32_t x, int32_t y)
+ }
+ 
+ struct sample {
+-	int core_pct_busy;
++	int32_t core_pct_busy;
+ 	u64 aperf;
+ 	u64 mperf;
+ 	int freq;
+@@ -68,7 +68,7 @@ struct _pid {
+ 	int32_t i_gain;
+ 	int32_t d_gain;
+ 	int deadband;
+-	int last_err;
++	int32_t last_err;
+ };
+ 
+ struct cpudata {
+@@ -153,16 +153,15 @@ static inline void pid_d_gain_set(struct _pid *pid, int percent)
+ 	pid->d_gain = div_fp(int_tofp(percent), int_tofp(100));
+ }
+ 
+-static signed int pid_calc(struct _pid *pid, int busy)
++static signed int pid_calc(struct _pid *pid, int32_t busy)
+ {
+-	signed int err, result;
++	signed int result;
+ 	int32_t pterm, dterm, fp_error;
+ 	int32_t integral_limit;
+ 
+-	err = pid->setpoint - busy;
+-	fp_error = int_tofp(err);
++	fp_error = int_tofp(pid->setpoint) - busy;
+ 
+-	if (abs(err) <= pid->deadband)
++	if (abs(fp_error) <= int_tofp(pid->deadband))
+ 		return 0;
+ 
+ 	pterm = mul_fp(pid->p_gain, fp_error);
+@@ -176,8 +175,8 @@ static signed int pid_calc(struct _pid *pid, int busy)
+ 	if (pid->integral < -integral_limit)
+ 		pid->integral = -integral_limit;
+ 
+-	dterm = mul_fp(pid->d_gain, (err - pid->last_err));
+-	pid->last_err = err;
++	dterm = mul_fp(pid->d_gain, fp_error - pid->last_err);
++	pid->last_err = fp_error;
+ 
+ 	result = pterm + mul_fp(pid->integral, pid->i_gain) + dterm;
+ 
+@@ -432,8 +431,9 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu,
+ 					struct sample *sample)
+ {
+ 	u64 core_pct;
+-	core_pct = div64_u64(sample->aperf * 100, sample->mperf);
+-	sample->freq = cpu->pstate.max_pstate * core_pct * 1000;
++	core_pct = div64_u64(int_tofp(sample->aperf * 100),
++			     sample->mperf);
++	sample->freq = fp_toint(cpu->pstate.max_pstate * core_pct * 1000);
+ 
+ 	sample->core_pct_busy = core_pct;
+ }
+@@ -465,22 +465,19 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+ 	mod_timer_pinned(&cpu->timer, jiffies + delay);
+ }
+ 
+-static inline int intel_pstate_get_scaled_busy(struct cpudata *cpu)
++static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ {
+-	int32_t busy_scaled;
+ 	int32_t core_busy, max_pstate, current_pstate;
+ 
+-	core_busy = int_tofp(cpu->samples[cpu->sample_ptr].core_pct_busy);
++	core_busy = cpu->samples[cpu->sample_ptr].core_pct_busy;
+ 	max_pstate = int_tofp(cpu->pstate.max_pstate);
+ 	current_pstate = int_tofp(cpu->pstate.current_pstate);
+-	busy_scaled = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+-
+-	return fp_toint(busy_scaled);
++	return mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+ }
+ 
+ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ {
+-	int busy_scaled;
++	int32_t busy_scaled;
+ 	struct _pid *pid;
+ 	signed int ctl = 0;
+ 	int steps;
 -- 
-Regards,
-Nishanth Menon
+1.8.3.2
+
