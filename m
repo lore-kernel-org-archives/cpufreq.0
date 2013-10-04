@@ -1,28 +1,32 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 Resend 07/92] cpufreq: cris: Use generic cpufreq routines
-Date: Thu, 3 Oct 2013 21:16:32 +0530
-Message-ID: <CAKohpo=+5adkr_OfDhq4WELNb-wk5LdphWmbjHPjVRBz9joQyg@mail.gmail.com>
-References: <cover.1380783079.git.viresh.kumar@linaro.org>
-	<2906aa4a654021836ca97e717e1cee68ebec93d8.1380783079.git.viresh.kumar@linaro.org>
-	<20131003152542.GR11028@axis.com>
+From: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 038/228] cpufreq: sa11x0: Expose frequency table
+Date: Thu, 3 Oct 2013 19:53:51 -0700
+Message-ID: <CAOesGMjE9s4KqHaAbkejZ-2GG4zv4Y1AxpgWzcMKovuMJFZ_-w@mail.gmail.com>
+References: <cover.1379063063.git.viresh.kumar@linaro.org>
+	<e689bd437918e56ae50541a90a4b9c606bfb8bf4.1379063063.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20131003152542.GR11028@axis.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <e689bd437918e56ae50541a90a4b9c606bfb8bf4.1379063063.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jesper Nilsson <jespern@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel <linux-cris-kernel@axis.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Patch Tracking <patches@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 3 October 2013 20:55, Jesper Nilsson <jesper.nilsson@axis.com> wrote:
-> On Thu, Oct 03, 2013 at 04:58:01PM +0200, Viresh Kumar wrote:
->> Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
->> and .attr. So its better if we have generic routines for them which can be used
->> by cpufreq drivers then.
->>
->> This patch uses these generic routines for this driver.
+On Fri, Sep 13, 2013 at 5:59 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> This patch exposes sa11x0's frequency table to cpufreq core. It always existed
+> but not as an array frequencies and not in the format cpufreq core wants it to.
+> Also it was present in the unit of 100kHz earlier which is made consistent with
+> cpufreq core now, i.e. kHz.
 >
-> You should already have gotten my Acked-by: for this series, but here it is again:
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Yeah.. So sorry for missing those :(
+This causes breakage in linux-next for any SA1100 target:
+
+In file included from ../../arch/arm/mach-sa1100/irq.c:24:0:
+../../arch/arm/mach-sa1100/generic.h:24:39: error: array type has
+incomplete element type
+ extern struct cpufreq_frequency_table sa11x0_freq_table[];
+
+-Olof
