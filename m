@@ -1,26 +1,32 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 62551] The system freezes for a moment when the CPU scaling is
- enabled
-Date: Sat, 05 Oct 2013 07:19:46 +0000
-Message-ID: <bug-62551-12968-ykjD0h5Aiv@https.bugzilla.kernel.org/>
-References: <bug-62551-12968@https.bugzilla.kernel.org/>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH V2 Resend 41/92] cpufreq: cpu0: don't initialize part of
+ policy that is set by core too
+Date: Sat, 5 Oct 2013 16:00:23 +0800
+Message-ID: <20131005080021.GI2734@S2101-09.ap.freescale.net>
+References: <cover.1380783079.git.viresh.kumar@linaro.org>
+ <fbb20ba98d8b17473c34e6798f1ab0ac8d9b5c0d.1380783079.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-62551-12968@https.bugzilla.kernel.org/>
+Content-Disposition: inline
+In-Reply-To: <fbb20ba98d8b17473c34e6798f1ab0ac8d9b5c0d.1380783079.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=62551
+On Thu, Oct 03, 2013 at 08:28:35PM +0530, Viresh Kumar wrote:
+> Many common initializations of struct policy are moved to core now and hence
+> this driver doesn't need to do it. This patch removes such code.
+> 
+> Most recent of those changes is to call ->get() in the core after calling
+> ->init().
+> 
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-zerobertons@yahoo.com changed:
+For cpu0 and imx6q changes,
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-     Kernel Version|3.10.14                     |3.10.14-smp
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
