@@ -1,240 +1,160 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
- of another node for OPP
-Date: Mon, 07 Oct 2013 11:01:23 -0500
-Message-ID: <5252DAD3.6040903@gmail.com>
-References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RESEND PATCH 6/6] cpufreq: probe the Integrator cpufreq driver from DT
+Date: Mon, 07 Oct 2013 21:49:54 +0200
+Message-ID: <11922424.2GnUz8ms0E@vostro.rjw.lan>
+References: <1381154027-9197-1-git-send-email-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=mNsoorCW/sgawx1FOhLAD4PumdcVEf2yds1M/yOUnHk=;
-        b=bZXj4VrpDRX6x/jZuY2Cz6Cv/oTMxzzt/e5mMkWxI4GneeMqEgwL0ZXSH0axE5/dsP
-         3MPccwnv2PnD6k8zafrfpkvAMQrWnKOG7TesqC/kWJGjttjhflF0dY1/lgwmA8u/0eMP
-         RYhRs4uGOC46ljHlOIA05V/+2ddI2L7MYjC09N4uOPHW8KDDnbBDmw9dNkqQa9XGRMrS
-         JUPlw9aWAHL6B7+xBxb1JZEqfqrS5iO2Gyu1cHpE3qffBYNZhVoVmkGXqp4nwVAHXBWG
-         cFak5/bx6OFBoUHfh6hMqoIpyM7NhQ4r4bEouC2EAOvw5wdJ1XuBHjYlxqSugAZInIS3
-         Q+Aw==
-In-Reply-To: <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1381154027-9197-1-git-send-email-linus.walleij@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On Monday, October 07, 2013 03:53:47 PM Linus Walleij wrote:
+> This makes the Integrator cpufreq driver probe from the core
+> module device tree node through it's registered platforms
+> device, getting the memory base from the device tree,
+> remapping it and removing dependencies to <mach/platform.h>
+> and <mach/hardware.h> by moving the two affected CM
+> register offsets into the driver.
 > 
-> If more than one similar devices share the same operating points(OPPs)
-> being in the same clock domain, currently we need to replicate the
-> OPP entries in all the nodes.
-> 
-> This patch extends existing binding by adding a new property named
-> 'operating-points-phandle' to specify the phandle in any device node
-> pointing to another node which contains the actual OPP tuples.
-> This helps to avoid replication if multiple devices share the OPPs.
-> 
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 > ---
->  Documentation/devicetree/bindings/power/opp.txt | 161 ++++++++++++++++++++++--
->  1 file changed, 149 insertions(+), 12 deletions(-)
+> CPUfreq guys - can either of you ACK this patch so I can take
+> it through the ARM SoC tree?
+
+Formally, Viresh is responsible for ARM cpufreq, but I have no objections,
+so please feel free to add:
+
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+to this patch.
+
+> ---
+>  drivers/cpufreq/integrator-cpufreq.c | 56 ++++++++++++++++++++++++------------
+>  1 file changed, 38 insertions(+), 18 deletions(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-> index 74499e5..f59b878 100644
-> --- a/Documentation/devicetree/bindings/power/opp.txt
-> +++ b/Documentation/devicetree/bindings/power/opp.txt
-> @@ -4,22 +4,159 @@ SoCs have a standard set of tuples consisting of frequency and
->  voltage pairs that the device will support per voltage domain. These
->  are called Operating Performance Points or OPPs.
+> diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
+> index f7c99df..9faf0ca 100644
+> --- a/drivers/cpufreq/integrator-cpufreq.c
+> +++ b/drivers/cpufreq/integrator-cpufreq.c
+> @@ -15,18 +15,19 @@
+>  #include <linux/smp.h>
+>  #include <linux/init.h>
+>  #include <linux/io.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
 >  
-> -Properties:
-> +Required Properties:
->  - operating-points: An array of 2-tuples items, and each item consists
->    of frequency and voltage like <freq-kHz vol-uV>.
->  	freq: clock frequency in kHz
->  	vol: voltage in microvolt
+> -#include <mach/hardware.h>
+> -#include <mach/platform.h>
+>  #include <asm/mach-types.h>
+>  #include <asm/hardware/icst.h>
 >  
-> +- operating-points-phandle: phandle to the device tree node which contains
-> +	the operating points tuples(recommended to be used if multiple
-> +	devices are in the same clock domain and hence share OPPs, as it
-> +	avoids replication of OPPs)
-> +
-> +  operating-points and operating-points-phandle are mutually exclusive, only
-> +  one of them can be present in any device node.
-> +
->  Examples:
+> -static struct cpufreq_driver integrator_driver;
+> +static void __iomem *cm_base;
+> +/* The cpufreq driver only use the OSC register */
+> +#define INTEGRATOR_HDR_OSC_OFFSET       0x08
+> +#define INTEGRATOR_HDR_LOCK_OFFSET      0x14
 >  
-> -cpu@0 {
-> -	compatible = "arm,cortex-a9";
-> -	reg = <0>;
-> -	next-level-cache = <&L2>;
-> -	operating-points = <
-> -		/* kHz    uV */
-> -		792000  1100000
-> -		396000  950000
-> -		198000  850000
-> -	>;
-> -};
-> +1. A uniprocessor system (phandle not required)
+> -#define CM_ID  	__io_address(INTEGRATOR_HDR_ID)
+> -#define CM_OSC	__io_address(INTEGRATOR_HDR_OSC)
+> -#define CM_STAT __io_address(INTEGRATOR_HDR_STAT)
+> -#define CM_LOCK __io_address(INTEGRATOR_HDR_LOCK)
+> +static struct cpufreq_driver integrator_driver;
+>  
+>  static const struct icst_params lclk_params = {
+>  	.ref		= 24000000,
+> @@ -100,7 +101,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
+>  	BUG_ON(cpu != smp_processor_id());
+>  
+>  	/* get current setting */
+> -	cm_osc = __raw_readl(CM_OSC);
+> +	cm_osc = __raw_readl(cm_base + INTEGRATOR_HDR_OSC_OFFSET);
+>  
+>  	if (machine_is_integrator()) {
+>  		vco.s = (cm_osc >> 8) & 7;
+> @@ -128,7 +129,7 @@ static int integrator_set_target(struct cpufreq_policy *policy,
+>  
+>  	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+>  
+> -	cm_osc = __raw_readl(CM_OSC);
+> +	cm_osc = __raw_readl(cm_base + INTEGRATOR_HDR_OSC_OFFSET);
+>  
+>  	if (machine_is_integrator()) {
+>  		cm_osc &= 0xfffff800;
+> @@ -138,9 +139,9 @@ static int integrator_set_target(struct cpufreq_policy *policy,
+>  	}
+>  	cm_osc |= vco.v;
+>  
+> -	__raw_writel(0xa05f, CM_LOCK);
+> -	__raw_writel(cm_osc, CM_OSC);
+> -	__raw_writel(0, CM_LOCK);
+> +	__raw_writel(0xa05f, cm_base + INTEGRATOR_HDR_LOCK_OFFSET);
+> +	__raw_writel(cm_osc, cm_base + INTEGRATOR_HDR_OSC_OFFSET);
+> +	__raw_writel(0, cm_base + INTEGRATOR_HDR_LOCK_OFFSET);
+>  
+>  	/*
+>  	 * Restore the CPUs allowed mask.
+> @@ -165,7 +166,7 @@ static unsigned int integrator_get(unsigned int cpu)
+>  	BUG_ON(cpu != smp_processor_id());
+>  
+>  	/* detect memory etc. */
+> -	cm_osc = __raw_readl(CM_OSC);
+> +	cm_osc = __raw_readl(cm_base + INTEGRATOR_HDR_OSC_OFFSET);
+>  
+>  	if (machine_is_integrator()) {
+>  		vco.s = (cm_osc >> 8) & 7;
+> @@ -202,19 +203,38 @@ static struct cpufreq_driver integrator_driver = {
+>  	.name		= "integrator",
+>  };
+>  
+> -static int __init integrator_cpu_init(void)
+> +static int __init integrator_cpufreq_probe(struct platform_device *pdev)
+>  {
+> +	struct device_node *np = pdev->dev.of_node;
 > +
-> +	cpu0: cpu@0 {
-> +		compatible = "arm,cortex-a9";
-> +		reg = <0>;
-> +		operating-points = <
-> +			/* kHz    uV */
-> +			792000  1100000
-> +			396000  950000
-> +			198000  850000
-> +		>;
-> +	};
+> +	cm_base = of_iomap(np, 0);
+> +	if (!cm_base)
+> +		return -ENODEV;
+>  	return cpufreq_register_driver(&integrator_driver);
+>  }
+>  
+> -static void __exit integrator_cpu_exit(void)
+> +static void __exit integrator_cpufreq_remove(struct platform_device *pdev)
+>  {
+>  	cpufreq_unregister_driver(&integrator_driver);
+>  }
+>  
+> +static const struct of_device_id integrator_cpufreq_match[] = {
+> +	{ .compatible = "arm,core-module-integrator"},
+> +	{ },
+> +};
 > +
-> +2a. Consider a SMP system with 4 CPUs in the same clock domain(no phandle)
-> +    Some existing DTs describe homogenous SMP systems by only listing the
-> +    OPPs in the cpu@0 node. For compatiblity with existing DTs, an
-> +    operating system may handle this case specially.
+> +static struct platform_driver integrator_cpufreq_driver = {
+> +	.driver = {
+> +		.name = "integrator-cpufreq",
+> +		.owner = THIS_MODULE,
+> +		.of_match_table = integrator_cpufreq_match,
+> +	},
+> +	.remove = __exit_p(integrator_cpufreq_remove),
+> +};
 > +
-> +	cpu0: cpu@0 {
-> +		compatible = "arm,cortex-a9";
-> +		reg = <0>;
-> +		operating-points = <
-> +			/* kHz    uV */
-> +			792000  1100000
-> +			396000  950000
-> +			198000  850000
-> +		>;
-> +	};
+> +module_platform_driver_probe(integrator_cpufreq_driver,
+> +			     integrator_cpufreq_probe);
 > +
-> +	cpu1: cpu@1 {
-> +		compatible = "arm,cortex-a9";
-> +		reg = <1>;
-> +	};
-> +
-> +	cpu2: cpu@2 {
-> +		compatible = "arm,cortex-a9";
-> +		reg = <2>;
-> +	};
-> +
-> +	cpu3: cpu@3 {
-> +		compatible = "arm,cortex-a9";
-> +		reg = <3>;
-> +	};
-> +
-> +2b. Consider a SMP system with 4 CPUs in the same clock domain(with phandle)
-> +    If more than one device of same type share the same OPPs, for example
-> +    all the CPUs on a SoC or in a single cluster on a SoC, then we can avoid
-> +    replicating the OPPs in all the nodes. We can specify the phandle of
-> +    the node which contains the OPP tuples instead.
-> +
-> +	cpu0: cpu@0 {
-> +		compatible = "arm,cortex-a9";
-> +		reg = <0>;
-> +		operating-points-phandle = <&cpu_opp>;
-> +	};
-> +
-> +	cpu1: cpu@1 {
-> +		compatible = "arm,cortex-a9";
-> +		reg = <1>;
-> +		operating-points-phandle = <&cpu_opp>;
-> +	};
-> +
-> +	cpu2: cpu@2 {
-> +		compatible = "arm,cortex-a9";
-> +		reg = <2>;
-> +		operating-points-phandle = <&cpu_opp>;
-> +	};
-> +
-> +	cpu3: cpu@3 {
-> +		compatible = "arm,cortex-a9";
-> +		reg = <3>;
-> +		operating-points-phandle = <&cpu_opp>;
-> +	};
-> +
-> +	opps-table {
-> +		cpu_opp: cpu_opp {
-> +			operating-points = <
-> +				/* kHz    uV */
-> +				792000  1100000
-> +				396000  950000
-> +				198000  850000
-> +			>;
-> +		};
-> +		... /* other device OPP nodes */
-
-But this is a subnode of /cpus. IMO, OPPs should be located near what
-they control.
-
-
-> +	}
-> +
-> +4. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of
-> +   CPUs. Each cluster has 2 CPUs and all the CPUs within the cluster share
-> +   the clock domain.
-> +
-> +	cpu0: cpu@0 {
-> +		compatible = "arm,cortex-a15";
-> +		reg = <0>;
-> +		operating-points-phandle = <&cluster0_opp>;
-> +	};
-> +
-> +	cpu1: cpu@1 {
-> +		compatible = "arm,cortex-a15";
-> +		reg = <1>;
-> +		operating-points-phandle = <&cluster0_opp>;
-> +	};
-> +
-> +	cpu2: cpu@100 {
-> +		compatible = "arm,cortex-a7";
-> +		reg = <100>;
-> +		operating-points-phandle = <&cluster1_opp>;
-> +	};
-> +
-> +	cpu3: cpu@101 {
-> +		compatible = "arm,cortex-a7";
-> +		reg = <101>;
-> +		operating-points-phandle = <&cluster1_opp>;
-> +	};
-> +
-> +	opps-table {
-> +		cluster0_opp: cluster0_opp {
-
-Why not use the cpu topology? Then the operating point can apply to
-cores based on the position in the topology. You don't even need a
-phandle in that case. You can look for OPPs in either a cpu node or in
-the topology.
-
-
-> +			operating-points = <
-> +				/* kHz    uV */
-> +				792000  1100000
-> +				396000  950000
-> +				198000  850000
-> +			>;
-> +		};
-> +		cluster1_opp: cluster1_opp {
-> +			operating-points = <
-> +				/* kHz    uV */
-> +				792000  950000
-> +				396000  750000
-> +				198000  450000
-> +			>;
-> +		};
-> +		... /* other device OPP nodes */
-> +	}
-> +
-> +Container Node
-> +--------------
-> +	- It's highly recommended to place all the shared OPPs under single
-> +	  node for consistency and better readability
-> +	- It's quite similar to clocks or pinmux container nodes
-> +	- In the above examples, "opps-table" is the container node
+>  MODULE_AUTHOR ("Russell M. King");
+>  MODULE_DESCRIPTION ("cpufreq driver for ARM Integrator CPUs");
+>  MODULE_LICENSE ("GPL");
+> -
+> -module_init(integrator_cpu_init);
+> -module_exit(integrator_cpu_exit);
 > 
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
