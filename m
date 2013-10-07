@@ -1,40 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 Resend 27/92] cpufreq: s3cx4xx: Use generic cpufreq routines
-Date: Mon, 7 Oct 2013 08:29:31 +0530
-Message-ID: <CAKohpokeS2OuEc8xxvSYp=FZGibFOTruAy3uvN689UP7_KJKWg@mail.gmail.com>
-References: <cover.1380783079.git.viresh.kumar@linaro.org>
-	<d43483a3c36ca89e75975485762f7ae9f75c8538.1380783079.git.viresh.kumar@linaro.org>
-	<0d8a01cec172$7a008510$6e018f30$@org>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
+ of another node for OPP
+Date: Mon, 07 Oct 2013 13:40:16 +0100
+Message-ID: <5252ABB0.9010603@arm.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <0d8a01cec172$7a008510$6e018f30$@org>
+In-Reply-To: <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene@kernel.org>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>
 
-On 05/10/2013, Kukjin Kim <kgene@kernel.org> wrote:
-> Viresh Kumar wrote:
->>
->> Most of the CPUFreq drivers do similar things in .exit() and .verify()
->> routines
->> and .attr. So its better if we have generic routines for them which can
->> be
->> used
->> by cpufreq drivers then.
->>
->> This patch uses these generic routines for this driver.
->>
->> Cc: Kukjin Kim <kgene.kim@samsung.com>
->
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->
-> BTW, would be helpful to me if you could add regarding maintainers in cc on
-> the common stuff of this changes :-)
+Hi Mark, Stephen,
 
-I forgot to add --supress-cc while sending these patches.. These
-weren't out for review, but for applying.. :)
+On 01/10/13 14:32, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> If more than one similar devices share the same operating points(OPPs)
+> being in the same clock domain, currently we need to replicate the
+> OPP entries in all the nodes.
+> 
+> This patch extends existing binding by adding a new property named
+> 'operating-points-phandle' to specify the phandle in any device node
+> pointing to another node which contains the actual OPP tuples.
+> This helps to avoid replication if multiple devices share the OPPs.
+> 
 
-I have already sent the common stuff cc'd to all maintainers earlier..
+Can you review this version ?
+
+Regards,
+Sudeep
+
