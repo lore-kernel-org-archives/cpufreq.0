@@ -1,151 +1,50 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v2 2/2] cpufreq: exynos4210: Use the common clock framework to
- set APLL clock rate
-Date: Wed, 09 Oct 2013 14:08:43 +0200
-Message-ID: <1381320523-28183-3-git-send-email-l.majewski@samsung.com>
-References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
- <1381320523-28183-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-reply-to: <1381320523-28183-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Manish Badarkhe <badarkhe.manish@gmail.com>
+Subject: [PATCH] cpufreq: fix false return check from "regulator_set_voltage"
+Date: Wed,  9 Oct 2013 20:43:37 +0530
+Message-ID: <1381331617-14703-1-git-send-email-badarkhe.manish@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=from:to:cc:subject:date:message-id;
+        bh=y/Ft4xg7BWvtqyR4SbjEYilZpiqxnEA9YQrH6K7ikgI=;
+        b=cLE4eHI9pjVs2GSM8Q6Zq2J1aWIHwT2wU5XGtS6sryr3xCDLhtCJ8rcxBIn98P3VNx
+         dS/nN7xEvFFklEgsIVAOjI6lPOJtVrB7d5Dm+UDZWQRR3DVdsGkBnCbd3Ss29pVo2BW7
+         2EZdEJ7BmJcaeFACDDyF9L99juEtyHRCBmi7a7mf5N2ATegmPAIDT9KBl1ONh/JsrIb8
+         ok6VCi4ZWRbaih/+l+pqHj7Gn3N09MeystCjOB4v9ktdi4rPWvq/PexygQmrfnGx149B
+         LlvTPouwRsEXY/0Bebb/w6A5APHxMHL14Vc1fauwo+Gs05kxm9dPB8JruXoqMSD6dJIS
+         +7Uw==
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Yadwinder Singh Brar <yadi.brar01@gmail.com>, Tomasz Figa <t.figa@samsung.com>
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: rjw@sisk.pl, badarkhe.manish@gmail.com, viresh.kumar@linaro.org, kgene.kim@samsung.com
 
-In the exynos4210_set_apll() function, the APLL frequency is set with
-direct register manipulation.
+Currently, code checks false return value from "regulator_set_voltage"
+to show failure message. Modify the code to check proper return
+value from "regulator_set_voltage".
 
-Such approach is not allowed in the common clock framework. The frequency
-is changed, but the corresponding clock value is not updated. This causes
-wrong frequency read from cpufreq's cpuinfo_cur_freq sysfs attribute.
-
-Also direct manipulation with PLL's S parameter has been removed. It is
-already done at PLL35xx code.
-
-Tested at:
-- Exynos4210 - Trats board (linux 3.12-rc4)
-
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-
-Changes for v2:
-- Remove PLL's S parameter setting via registers. It is now done with PLL35xx
-  code.
-- Remove exynos4210_pms_change() function
-
-Change-Id: Ie5fb3c7946ba77b6f3d5e91af72eef2fd06770c1
+Signed-off-by: Manish Badarkhe <badarkhe.manish@gmail.com>
 ---
- drivers/cpufreq/exynos4210-cpufreq.c |   67 ++++------------------------------
- 1 file changed, 8 insertions(+), 59 deletions(-)
+Based on master branch of linux-mainline.
 
-diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
-index add7fbe..f2c7506 100644
---- a/drivers/cpufreq/exynos4210-cpufreq.c
-+++ b/drivers/cpufreq/exynos4210-cpufreq.c
-@@ -81,9 +81,9 @@ static void exynos4210_set_clkdiv(unsigned int div_index)
- 
- static void exynos4210_set_apll(unsigned int index)
- {
--	unsigned int tmp;
-+	unsigned int tmp, freq = apll_freq_4210[index].freq;
- 
--	/* 1. MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
-+	/* MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
- 	clk_set_parent(moutcore, mout_mpll);
- 
- 	do {
-@@ -92,21 +92,9 @@ static void exynos4210_set_apll(unsigned int index)
- 		tmp &= 0x7;
- 	} while (tmp != 0x2);
- 
--	/* 2. Set APLL Lock time */
--	__raw_writel(EXYNOS4_APLL_LOCKTIME, EXYNOS4_APLL_LOCK);
--
--	/* 3. Change PLL PMS values */
--	tmp = __raw_readl(EXYNOS4_APLL_CON0);
--	tmp &= ~((0x3ff << 16) | (0x3f << 8) | (0x7 << 0));
--	tmp |= apll_freq_4210[index].mps;
--	__raw_writel(tmp, EXYNOS4_APLL_CON0);
-+	clk_set_rate(mout_apll, freq * 1000);
- 
--	/* 4. wait_lock_time */
--	do {
--		tmp = __raw_readl(EXYNOS4_APLL_CON0);
--	} while (!(tmp & (0x1 << EXYNOS4_APLLCON0_LOCKED_SHIFT)));
--
--	/* 5. MUX_CORE_SEL = APLL */
-+	/* MUX_CORE_SEL = APLL */
- 	clk_set_parent(moutcore, mout_apll);
- 
- 	do {
-@@ -115,53 +103,15 @@ static void exynos4210_set_apll(unsigned int index)
- 	} while (tmp != (0x1 << EXYNOS4_CLKSRC_CPU_MUXCORE_SHIFT));
- }
- 
--static bool exynos4210_pms_change(unsigned int old_index, unsigned int new_index)
--{
--	unsigned int old_pm = apll_freq_4210[old_index].mps >> 8;
--	unsigned int new_pm = apll_freq_4210[new_index].mps >> 8;
--
--	return (old_pm == new_pm) ? 0 : 1;
--}
--
- static void exynos4210_set_frequency(unsigned int old_index,
- 				     unsigned int new_index)
- {
--	unsigned int tmp;
--
- 	if (old_index > new_index) {
--		if (!exynos4210_pms_change(old_index, new_index)) {
--			/* 1. Change the system clock divider values */
--			exynos4210_set_clkdiv(new_index);
--
--			/* 2. Change just s value in apll m,p,s value */
--			tmp = __raw_readl(EXYNOS4_APLL_CON0);
--			tmp &= ~(0x7 << 0);
--			tmp |= apll_freq_4210[new_index].mps & 0x7;
--			__raw_writel(tmp, EXYNOS4_APLL_CON0);
--		} else {
--			/* Clock Configuration Procedure */
--			/* 1. Change the system clock divider values */
--			exynos4210_set_clkdiv(new_index);
--			/* 2. Change the apll m,p,s value */
--			exynos4210_set_apll(new_index);
--		}
-+		exynos4210_set_clkdiv(new_index);
-+		exynos4210_set_apll(new_index);
- 	} else if (old_index < new_index) {
--		if (!exynos4210_pms_change(old_index, new_index)) {
--			/* 1. Change just s value in apll m,p,s value */
--			tmp = __raw_readl(EXYNOS4_APLL_CON0);
--			tmp &= ~(0x7 << 0);
--			tmp |= apll_freq_4210[new_index].mps & 0x7;
--			__raw_writel(tmp, EXYNOS4_APLL_CON0);
--
--			/* 2. Change the system clock divider values */
--			exynos4210_set_clkdiv(new_index);
--		} else {
--			/* Clock Configuration Procedure */
--			/* 1. Change the apll m,p,s value */
--			exynos4210_set_apll(new_index);
--			/* 2. Change the system clock divider values */
--			exynos4210_set_clkdiv(new_index);
--		}
-+		exynos4210_set_apll(new_index);
-+		exynos4210_set_clkdiv(new_index);
- 	}
- }
- 
-@@ -194,7 +144,6 @@ int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
- 	info->volt_table = exynos4210_volt_table;
- 	info->freq_table = exynos4210_freq_table;
- 	info->set_freq = exynos4210_set_frequency;
--	info->need_apll_change = exynos4210_pms_change;
- 
- 	return 0;
- 
+:100644 100644 0fac344... 1537f32... M	drivers/cpufreq/exynos-cpufreq.c
+ drivers/cpufreq/exynos-cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 0fac344..1537f32 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -141,7 +141,7 @@ post_notify:
+ 	if ((freqs.new < freqs.old) ||
+ 	   ((freqs.new > freqs.old) && safe_arm_volt)) {
+ 		/* down the voltage after frequency change */
+-		regulator_set_voltage(arm_regulator, arm_volt,
++		ret = regulator_set_voltage(arm_regulator, arm_volt,
+ 				arm_volt);
+ 		if (ret) {
+ 			pr_err("%s: failed to set cpu voltage to %d\n",
 -- 
 1.7.10.4
-
