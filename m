@@ -1,41 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RESEND PATCH 6/6] cpufreq: probe the Integrator cpufreq driver
- from DT
-Date: Tue, 8 Oct 2013 18:44:13 +0530
-Message-ID: <CAKohpo=2jA=0QYPU9coBvu-wJi-DtTD=K4afNxKkDW=t47BbgQ@mail.gmail.com>
-References: <1381154027-9197-1-git-send-email-linus.walleij@linaro.org>
-	<11922424.2GnUz8ms0E@vostro.rjw.lan>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <11922424.2GnUz8ms0E@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v2 0/2] cpufreq: exynos: Fixes for v3.12
+Date: Wed, 09 Oct 2013 14:08:41 +0200
+Message-ID: <1381320523-28183-1-git-send-email-l.majewski@samsung.com>
+References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-reply-to: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Walleij <linus.walleij@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Yadwinder Singh Brar <yadi.brar01@gmail.com>, Tomasz Figa <t.figa@samsung.com>
 
-On 8 October 2013 01:19, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, October 07, 2013 03:53:47 PM Linus Walleij wrote:
->> This makes the Integrator cpufreq driver probe from the core
->> module device tree node through it's registered platforms
->> device, getting the memory base from the device tree,
->> remapping it and removing dependencies to <mach/platform.h>
->> and <mach/hardware.h> by moving the two affected CM
->> register offsets into the driver.
->>
->> Cc: Rafael J. Wysocki <rjw@sisk.pl>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
->> ---
->> CPUfreq guys - can either of you ACK this patch so I can take
->> it through the ARM SoC tree?
->
-> Formally, Viresh is responsible for ARM cpufreq, but I have no objections,
-> so please feel free to add:
->
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Attached commits provide cpufreq regression fixes for Trats and Trats2
+Exynos4 boards.
+Since v3.12 Exynos4 uses common clock framework for clock manipulation.
+Those patches restore correct output for cpuinfo_cur_freq [1] sysfs
+attribute.
+Without them, the [1] provides default frequency (800 MHz) set at driver
+initialization.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Sorry, I am currently on vacation so couldn't respond earlier. :(
+Lukasz Majewski (2):
+  cpufreq: exynos4x12: Use the common clock framework to set APLL clock
+    rate
+  cpufreq: exynos4210: Use the common clock framework to set APLL clock
+    rate
+
+ drivers/cpufreq/exynos4210-cpufreq.c |   67 ++++-----------------------------
+ drivers/cpufreq/exynos4x12-cpufreq.c |   69 ++++------------------------------
+ 2 files changed, 16 insertions(+), 120 deletions(-)
+
+-- 
+1.7.10.4
+
