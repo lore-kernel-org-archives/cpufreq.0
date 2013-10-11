@@ -1,146 +1,51 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Improve accuracy by not truncating
- until final result
-Date: Thu, 10 Oct 2013 07:55:00 -0700
-Message-ID: <5256BFC4.70604@gmail.com>
-References: <20131003143840.GB6982@hulk.osd.wednet.edu>
+From: Jungseok Lee <jays.lee@samsung.com>
+Subject: [PATCH] cpufreq: exynos: Show a list of available frequencies
+Date: Fri, 11 Oct 2013 14:21:14 +0900
+Message-ID: <00bd01cec641$b4dbf150$1e93d3f0$%lee@samsung.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=8pr9rX0QfOgH284WYbCWpZ3raYR9iqAnelWUmIbstkc=;
-        b=fy9Sd5ZsktyZeNkpwUBL1y94fHk0wUK/pxBgcOEej0qF1rYXCl/MRZic1b1FiajSW6
-         b4sTlIza7CTyCJlv/Ldnj3E2tqq+f/8VZrieQmS7K0f1BFKa523ZWcNHOBGWZfL05KlT
-         DrYZXZY4fP5aJHBC170wPskI2nJ0lnRxkC7h6CF3FqIGJNW+RAPrW1sFfDAMBCqPSDEP
-         +FXCzoY6vOl+Dr8jgMqE82Pxfj2FzDgXaSgs4QN5LJu4L9Sk/VeKg0L2hR+qoCMqg8dk
-         tYzu9ZPmrqxJEwOdIae6QGmJKYjw+oAQjyhUzfjMEDiuIkyQUFhz/7dJkS4tkXIwU7hT
-         gJ0A==
-In-Reply-To: <20131003143840.GB6982@hulk.osd.wednet.edu>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-language: ko
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Brennan Shacklett <bp.shacklett@gmail.com>
-Cc: rjw@sisk.pl, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, dirk.brandewie@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+To: rjw@sisk.pl, viresh.kumar@linaro.org, amit.daniel@samsung.com
+Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kgene.kim@samsung.com
 
-On 10/03/2013 07:38 AM, Brennan Shacklett wrote:
-> From: Brennan Shacklett <brennan@genyes.org>
->
-> This patch addresses Bug 60727
-> (https://bugzilla.kernel.org/show_bug.cgi?id=60727)
-> which was due to the truncation of intermediate values in the
-> calculations, which causes the code to consistently underestimate the
-> current cpu frequency, specifically 100% cpu utilization was truncated
-> down to the setpoint of 97%. This patch fixes the problem by keeping
-> the results of all intermediate calculations as fixed point numbers
-> rather scaling them back and forth between integers and fixed point.
->
-> Signed-off-by: Brennan Shacklet <bpshacklett@gmail.com>
-Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> ---
-> Tested on my Intel Core i7 2640M which also suffered from bug 60727. It
-> is possible that some of the constants in the default_policy should
-> be changed, because I notice that my cpu tends to run slightly faster
-> with this patch, which makes sense because calculated values would have
-> been consistently low without the patch.
->
->   drivers/cpufreq/intel_pstate.c | 33 +++++++++++++++------------------
->   1 file changed, 15 insertions(+), 18 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 9733f29..2409f7f 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -48,7 +48,7 @@ static inline int32_t div_fp(int32_t x, int32_t y)
->   }
->
->   struct sample {
-> -	int core_pct_busy;
-> +	int32_t core_pct_busy;
->   	u64 aperf;
->   	u64 mperf;
->   	int freq;
-> @@ -68,7 +68,7 @@ struct _pid {
->   	int32_t i_gain;
->   	int32_t d_gain;
->   	int deadband;
-> -	int last_err;
-> +	int32_t last_err;
->   };
->
->   struct cpudata {
-> @@ -153,16 +153,15 @@ static inline void pid_d_gain_set(struct _pid *pid, int percent)
->   	pid->d_gain = div_fp(int_tofp(percent), int_tofp(100));
->   }
->
-> -static signed int pid_calc(struct _pid *pid, int busy)
-> +static signed int pid_calc(struct _pid *pid, int32_t busy)
->   {
-> -	signed int err, result;
-> +	signed int result;
->   	int32_t pterm, dterm, fp_error;
->   	int32_t integral_limit;
->
-> -	err = pid->setpoint - busy;
-> -	fp_error = int_tofp(err);
-> +	fp_error = int_tofp(pid->setpoint) - busy;
->
-> -	if (abs(err) <= pid->deadband)
-> +	if (abs(fp_error) <= int_tofp(pid->deadband))
->   		return 0;
->
->   	pterm = mul_fp(pid->p_gain, fp_error);
-> @@ -176,8 +175,8 @@ static signed int pid_calc(struct _pid *pid, int busy)
->   	if (pid->integral < -integral_limit)
->   		pid->integral = -integral_limit;
->
-> -	dterm = mul_fp(pid->d_gain, (err - pid->last_err));
-> -	pid->last_err = err;
-> +	dterm = mul_fp(pid->d_gain, fp_error - pid->last_err);
-> +	pid->last_err = fp_error;
->
->   	result = pterm + mul_fp(pid->integral, pid->i_gain) + dterm;
->
-> @@ -432,8 +431,9 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu,
->   					struct sample *sample)
->   {
->   	u64 core_pct;
-> -	core_pct = div64_u64(sample->aperf * 100, sample->mperf);
-> -	sample->freq = cpu->pstate.max_pstate * core_pct * 1000;
-> +	core_pct = div64_u64(int_tofp(sample->aperf * 100),
-> +			     sample->mperf);
-> +	sample->freq = fp_toint(cpu->pstate.max_pstate * core_pct * 1000);
->
->   	sample->core_pct_busy = core_pct;
->   }
-> @@ -465,22 +465,19 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
->   	mod_timer_pinned(&cpu->timer, jiffies + delay);
->   }
->
-> -static inline int intel_pstate_get_scaled_busy(struct cpudata *cpu)
-> +static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
->   {
-> -	int32_t busy_scaled;
->   	int32_t core_busy, max_pstate, current_pstate;
->
-> -	core_busy = int_tofp(cpu->samples[cpu->sample_ptr].core_pct_busy);
-> +	core_busy = cpu->samples[cpu->sample_ptr].core_pct_busy;
->   	max_pstate = int_tofp(cpu->pstate.max_pstate);
->   	current_pstate = int_tofp(cpu->pstate.current_pstate);
-> -	busy_scaled = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-> -
-> -	return fp_toint(busy_scaled);
-> +	return mul_fp(core_busy, div_fp(max_pstate, current_pstate));
->   }
->
->   static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
->   {
-> -	int busy_scaled;
-> +	int32_t busy_scaled;
->   	struct _pid *pid;
->   	signed int ctl = 0;
->   	int steps;
->
+This patch adds freq_attr to show a list of exynos5440 scaling
+available frequencies through sysfs. Common exynos driver already
+supports this attribute.
+
+Signed-off-by: Jungseok Lee <jays.lee@samsung.com>
+---
+ drivers/cpufreq/exynos5440-cpufreq.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index 24df155..2cc4797 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -345,6 +345,11 @@ static int exynos_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
++static struct freq_attr *exynos_cpufreq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
++};
++
+ static struct cpufreq_driver exynos_driver = {
+ 	.flags		= CPUFREQ_STICKY,
+ 	.verify		= exynos_verify_speed,
+@@ -353,6 +358,7 @@ static struct cpufreq_driver exynos_driver = {
+ 	.init		= exynos_cpufreq_cpu_init,
+ 	.exit		= exynos_cpufreq_cpu_exit,
+ 	.name		= CPUFREQ_NAME,
++	.attr		= exynos_cpufreq_attr,
+ };
+ 
+ static const struct of_device_id exynos_cpufreq_match[] = {
+-- 
+1.7.10.4
+
 
