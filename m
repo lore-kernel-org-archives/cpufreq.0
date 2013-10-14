@@ -1,26 +1,54 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 58001] "ondemand" CPU governor never raises frequency (Dell XPS
- 12)
-Date: Mon, 14 Oct 2013 11:34:45 +0000
-Message-ID: <bug-58001-12968-kuWaW4PcXB@https.bugzilla.kernel.org/>
-References: <bug-58001-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/2] cpufreq: exynos: Fixes for v3.12
+Date: Mon, 14 Oct 2013 13:55:02 +0200
+Message-ID: <1843510.1qhvR1ALD2@vostro.rjw.lan>
+References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com> <2822925.9aRTDAMrLp@vostro.rjw.lan> <20131014075546.72e0dc61@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-58001-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <20131014075546.72e0dc61@amdc308.digital.local>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Yadwinder Singh Brar <yadi.brar01@gmail.com>, Tomasz Figa <t.figa@samsung.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=58001
+On Monday, October 14, 2013 07:55:46 AM Lukasz Majewski wrote:
+> Hi Rafael,
+> 
+> > On Friday, October 11, 2013 01:22:57 PM Rafael J. Wysocki wrote:
+> > > On Wednesday, October 09, 2013 02:08:41 PM Lukasz Majewski wrote:
+> > > > Attached commits provide cpufreq regression fixes for Trats and
+> > > > Trats2 Exynos4 boards.
+> > > > Since v3.12 Exynos4 uses common clock framework for clock
+> > > > manipulation. Those patches restore correct output for
+> > > > cpuinfo_cur_freq [1] sysfs attribute.
+> > > > Without them, the [1] provides default frequency (800 MHz) set at
+> > > > driver initialization.
+> > > > 
+> > > > 
+> > > > Lukasz Majewski (2):
+> > > >   cpufreq: exynos4x12: Use the common clock framework to set APLL
+> > > > clock rate
+> > > >   cpufreq: exynos4210: Use the common clock framework to set APLL
+> > > > clock rate
+> > > > 
+> > > >  drivers/cpufreq/exynos4210-cpufreq.c |   67
+> > > > ++++-----------------------------
+> > > > drivers/cpufreq/exynos4x12-cpufreq.c |   69
+> > > > ++++------------------------------ 2 files changed, 16
+> > > > insertions(+), 120 deletions(-)
+> > > 
+> > > Can you please resend [1/2], it got lost somewhere (at least I
+> > > can't see it now)?
+> > 
+> > Scratch this, it's there in patchwork.
+> > 
+> 
+> Rafael, do you need any more help with those fixes? 
 
---- Comment #10 from Lan Tianyu <tianyu.lan@intel.com> ---
-This becauses Raymond said he had such machine and would debug. I have asked
-him to try v3.12-rc1 kernel but no response
-
-http://markmail.org/message/ovbop4rizgwwumdv
+Well, if I do, you'll know that. :-)
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
