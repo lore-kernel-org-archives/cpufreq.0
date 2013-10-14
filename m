@@ -1,32 +1,33 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 60839] scaling_max_freq cannot be set to values larger than
- bios_limit
-Date: Mon, 14 Oct 2013 07:58:39 +0000
-Message-ID: <bug-60839-12968-5Er4suavoO@https.bugzilla.kernel.org/>
-References: <bug-60839-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 58001] "ondemand" CPU governor never raises frequency (Dell XPS
+ 12)
+Date: Mon, 14 Oct 2013 11:08:53 +0000
+Message-ID: <bug-58001-12968-tEc80LbxhL@https.bugzilla.kernel.org/>
+References: <bug-58001-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-60839-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-58001-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=60839
+https://bugzilla.kernel.org/show_bug.cgi?id=58001
 
 Zhang Rui <rui.zhang@intel.com> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEEDINFO                    |CLOSED
+             Status|REOPENED                    |RESOLVED
                  CC|                            |rui.zhang@intel.com
-         Resolution|---                         |INSUFFICIENT_DATA
+         Resolution|---                         |UNREPRODUCIBLE
 
---- Comment #10 from Zhang Rui <rui.zhang@intel.com> ---
-Bug closed as there is no response for more than a month.
-please feel free to reopen it when you can provide the information request in
-comment #7
+--- Comment #9 from Zhang Rui <rui.zhang@intel.com> ---
+I'm not sure why this bug is reopened.
+But we can not make any progress because there is no way to reproduce/debug the
+issue.
+Bug closed.
 
 -- 
 You are receiving this mail because:
