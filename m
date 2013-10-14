@@ -1,41 +1,42 @@
-From: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
-Subject: [PATCH] cpufreq: s3c64xx: Rename index to driver_data
-Date: Mon, 14 Oct 2013 19:36:47 +0100
-Message-ID: <1381775807-20144-1-git-send-email-ckeepax@opensource.wolfsonmicro.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Jungseok Lee <jays.lee@samsung.com>
+Subject: [PATCH V2] cpufreq: exynos: Show a list of available frequencies
+Date: Tue, 15 Oct 2013 08:31:13 +0900
+Message-ID: <00a301cec935$786cf7e0$6946e7a0$%lee@samsung.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, patches@opensource.wolfsonmicro.com, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-language: ko
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: rjw@sisk.pl, viresh.kumar@linaro.org, amit.daniel@samsung.com
+Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kgene.kim@samsung.com
 
-The index field of cpufreq_frequency_table has been renamed to driver
-data in this commit:
+This patch adds freq_attr to show a list of exynos5440 scaling
+available frequencies through sysfs. Common exynos driver already
+supports this attribute.
 
-commit 5070158804b5339c71809f5e673cea1cfacd804d
-cpufreq: rename index as driver_data in cpufreq_frequency_table
-
-This patch updates the s3c64xx driver to match.
-
-Signed-off-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
+Signed-off-by: Jungseok Lee <jays.lee@samsung.com>
 ---
- drivers/cpufreq/s3c64xx-cpufreq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Changes since v1:
+- Used a generic attribute, not a specific one.
 
-diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-index 8a72b0c..15631f9 100644
---- a/drivers/cpufreq/s3c64xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-@@ -166,7 +166,7 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
- 		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
- 			continue;
+ drivers/cpufreq/exynos5440-cpufreq.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index 06b73e8..fecc3da 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -330,6 +330,7 @@ static struct cpufreq_driver exynos_driver = {
+ 	.init		= exynos_cpufreq_cpu_init,
+ 	.exit		= cpufreq_generic_exit,
+ 	.name		= CPUFREQ_NAME,
++	.attr		= cpufreq_generic_attr,
+ };
  
--		dvfs = &s3c64xx_dvfs_table[freq->index];
-+		dvfs = &s3c64xx_dvfs_table[freq->driver_data];
- 		found = 0;
- 
- 		for (i = 0; i < count; i++) {
+ static const struct of_device_id exynos_cpufreq_match[] = {
 -- 
-1.7.2.5
+1.7.10.4
+
+
