@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 58001] "ondemand" CPU governor never raises frequency (Dell XPS
  12)
-Date: Mon, 14 Oct 2013 11:08:53 +0000
-Message-ID: <bug-58001-12968-tEc80LbxhL@https.bugzilla.kernel.org/>
+Date: Mon, 14 Oct 2013 11:34:45 +0000
+Message-ID: <bug-58001-12968-kuWaW4PcXB@https.bugzilla.kernel.org/>
 References: <bug-58001-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,19 +15,11 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=58001
 
-Zhang Rui <rui.zhang@intel.com> changed:
+--- Comment #10 from Lan Tianyu <tianyu.lan@intel.com> ---
+This becauses Raymond said he had such machine and would debug. I have asked
+him to try v3.12-rc1 kernel but no response
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REOPENED                    |RESOLVED
-                 CC|                            |rui.zhang@intel.com
-         Resolution|---                         |UNREPRODUCIBLE
-
---- Comment #9 from Zhang Rui <rui.zhang@intel.com> ---
-I'm not sure why this bug is reopened.
-But we can not make any progress because there is no way to reproduce/debug the
-issue.
-Bug closed.
+http://markmail.org/message/ovbop4rizgwwumdv
 
 -- 
 You are receiving this mail because:
