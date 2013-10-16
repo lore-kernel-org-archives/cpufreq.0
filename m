@@ -1,53 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove unnecessary braces
-Date: Thu, 17 Oct 2013 00:34 +0200
-Message-ID: <2444417.nOPH9ihodY@vostro.rjw.lan>
-References: <20131015174251.GA4366@eee-laptop> <CAKohpo=4AyyVkiwQikPDMXQzSFLhhOeVsGjFBcUqYDMvkFkruw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/5] cpufreq: arm-big-little: use clk_get instead of clk_get_sys
+Date: Thu, 17 Oct 2013 00:52:40 +0200
+Message-ID: <2716826.jtNDRqEJYG@vostro.rjw.lan>
+References: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1381931563-16785-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=4AyyVkiwQikPDMXQzSFLhhOeVsGjFBcUqYDMvkFkruw@mail.gmail.com>
+In-Reply-To: <1381931563-16785-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Evgeny Kapaev <orener300@gmail.com>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Nicolas Pitre <nico@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-On Wednesday, October 16, 2013 10:02:45 AM Viresh Kumar wrote:
-> On 15/10/2013, Evgeny Kapaev <orener300@gmail.com> wrote:
-> > As per coding style, braces {} are not necessary for single statement block
-> >
-> > Signed-off-by: Evgeny Kapaev <orener300@gmail.com>
-
-Queued up for 3.13, thanks!
-
-> > ---
-> >  drivers/cpufreq/speedstep-centrino.c | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/speedstep-centrino.c
-> > b/drivers/cpufreq/speedstep-centrino.c
-> > index f897d51..98797a6 100644
-> > --- a/drivers/cpufreq/speedstep-centrino.c
-> > +++ b/drivers/cpufreq/speedstep-centrino.c
-> > @@ -373,9 +373,8 @@ static int centrino_cpu_init(struct cpufreq_policy
-> > *policy)
-> >  		return -ENODEV;
-> >  	}
-> >
-> > -	if (centrino_cpu_init_table(policy)) {
-> > +	if (centrino_cpu_init_table(policy))
-> >  		return -ENODEV;
-> > -	}
-> >
-> >  	/* Check to see if Enhanced SpeedStep is enabled, and try to
-> >  	   enable it if not. */
+On Wednesday, October 16, 2013 02:52:39 PM Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
+> Currently clk_get_sys is used with cpu-cluster.<n> as the device id
+> which is incorrect. It should be connection/consumer ID instead.
+> 
+> It is possible to specify input clock in the cpu device node along
+> with the optional clock-name. clk_get_sys can't handle that.
+> 
+> This patch replaces clk_get_sys with clk_get to extend support for
+> clocks specified in the device tree cpu node.
+> 
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+I've queued up this one for 3.13, for the rest of the series I need ACKs
+from the people in the CC list.
+
+Thanks!
+
+> ---
+>  drivers/cpufreq/arm_big_little.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+> index 3549f07..501a091 100644
+> --- a/drivers/cpufreq/arm_big_little.c
+> +++ b/drivers/cpufreq/arm_big_little.c
+> @@ -127,7 +127,7 @@ static int get_cluster_clk_and_freq_table(struct device *cpu_dev)
+>  	}
+>  
+>  	name[12] = cluster + '0';
+> -	clk[cluster] = clk_get_sys(name, NULL);
+> +	clk[cluster] = clk_get(cpu_dev, name);
+>  	if (!IS_ERR(clk[cluster])) {
+>  		dev_dbg(cpu_dev, "%s: clk: %p & freq table: %p, cluster: %d\n",
+>  				__func__, clk[cluster], freq_table[cluster],
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
