@@ -1,67 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: Add dummy cpufreq_cpu_get/put for CONFIG_CPU_FREQ=n
-Date: Thu, 17 Oct 2013 01:00:42 +0200
-Message-ID: <3064536.Uv6oZedeVB@vostro.rjw.lan>
-References: <1381222571-20317-1-git-send-email-daniel.vetter@ffwll.ch>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/5] PM / OPP: updates to enable sharing OPPs info
+Date: Thu, 17 Oct 2013 01:12:50 +0200
+Message-ID: <3220965.oF35vmiThF@vostro.rjw.lan>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1381222571-20317-1-git-send-email-daniel.vetter@ffwll.ch>
+In-Reply-To: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Chris Wilson <chris@chris-wilson.co.uk>, kbuild test robot <fengguang.wu@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-On Tuesday, October 08, 2013 10:56:11 AM Daniel Vetter wrote:
-> The drm/i915 driver wants to adjust it's own power policies using the
-> cpu policies as a guideline (we can implicitly boost the cpus through
-> the gpus on some platforms). To avoid a dreaded select (since a
-> depends will leave users wondering where where their driver has gone
-> too) add dummy functions.
+On Tuesday, October 01, 2013 02:32:57 PM Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> Reported-by: kbuild test robot <fengguang.wu@intel.com>
-> Cc: kbuild test robot <fengguang.wu@intel.com>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> ---
-> A quick ack for merging this this through the drm-intel tree is
-> probably the simplest way forward.
-
-Well, ACK, or please let me know if you want me to take this.
-
-Thanks!
-
-> ---
->  include/linux/cpufreq.h | 8 ++++++++
->  1 file changed, 8 insertions(+)
+> Hi,
 > 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index fcabc42..5ad9a4e 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -93,8 +93,16 @@ struct cpufreq_policy {
->  #define CPUFREQ_SHARED_TYPE_ALL	 (2) /* All dependent CPUs should set freq */
->  #define CPUFREQ_SHARED_TYPE_ANY	 (3) /* Freq can be set from any dependent CPU*/
->  
-> +#ifdef CONFIG_CPU_FREQ
->  struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
->  void cpufreq_cpu_put(struct cpufreq_policy *policy);
-> +#else
-> +static inline struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
-> +{
-> +	return NULL;
-> +}
-> +static inline void cpufreq_cpu_put(struct cpufreq_policy *policy) { }
-> +#endif
->  
->  static inline bool policy_is_shared(struct cpufreq_policy *policy)
->  {
+> These are few updates to existing device tree binding and the PM/OPP
+> library to support sharing of OPPs between different device nodes.
 > 
+> Currently all the cpu nodes are parsed until the OPPs are found. This
+> is essential to support cpuhotplug without having to replicate OPP
+> information in all the cpu nodes.
+> 
+> However in systems with multiple cpu power domain, its better to have
+> OPP entry for each cpu. To avoid replication, phandle can be specified
+> to the node which contains the full OPP information.
+> 
+> The table node containing all the OPPs and device nodes pointing to an
+> entry into it through phandle might also solve the problem of describing
+> multiple OPP profiles.
+
+It looks like this still is under discussion, isn't it?
+
+If not, care to obtain ACKs from the people involved and resubmit?
+
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
