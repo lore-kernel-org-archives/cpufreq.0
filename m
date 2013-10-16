@@ -1,168 +1,111 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH 3/5] ARM: vexpress/TC2: add cpu clock support
-Date: Wed, 16 Oct 2013 14:52:41 +0100
-Message-ID: <1381931563-16785-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: [PATCH] cpufreq: exynos: Convert exynos-cpufreq to platform driver
+Date: Wed, 16 Oct 2013 18:00:38 +0200
+Message-ID: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Pawel Moll <pawel.moll@arm.com>, Nicolas Pitre <nico@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Pawel Moll <Pawel.Moll@arm.com>
+To: linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukasz Majewski <l.majewski@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
 
-On TC2, the cpu clocks are controlled by the external M3 microcontroller
-and SPC provides the interface between the CPU and the power controller.
+To make the driver multiplatform-friendly, unconditional initialization
+in an initcall is replaced with a platform driver probed only if
+respective platform device is registered.
 
-The generic cpufreq drivers use the clock APIs to get the cpu clocks.
-This patch add virtual spc clocks for all the cpus to control the cpu
-operating frequency via the clock framework.
-
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-Cc: Pawel Moll <Pawel.Moll@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- arch/arm/mach-vexpress/spc.c | 119 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 119 insertions(+)
+ arch/arm/mach-exynos/common.c          |  5 +++++
+ arch/arm/mach-exynos/common.h          |  1 +
+ arch/arm/mach-exynos/mach-exynos4-dt.c |  1 +
+ arch/arm/mach-exynos/mach-exynos5-dt.c |  1 +
+ drivers/cpufreq/exynos-cpufreq.c       | 11 ++++++++++-
+ 5 files changed, 18 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-vexpress/spc.c b/arch/arm/mach-vexpress/spc.c
-index ef7e652..a8b8310 100644
---- a/arch/arm/mach-vexpress/spc.c
-+++ b/arch/arm/mach-vexpress/spc.c
-@@ -17,6 +17,9 @@
-  * GNU General Public License for more details.
-  */
- 
-+#include <linux/clk-provider.h>
-+#include <linux/clkdev.h>
-+#include <linux/cpu.h>
- #include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/interrupt.h>
-@@ -416,3 +419,119 @@ int __init ve_spc_init(void __iomem *baseaddr, u32 a15_clusid, int irq)
- 
- 	return 0;
+diff --git a/arch/arm/mach-exynos/common.c b/arch/arm/mach-exynos/common.c
+index c17407b..4414d70 100644
+--- a/arch/arm/mach-exynos/common.c
++++ b/arch/arm/mach-exynos/common.c
+@@ -305,6 +305,11 @@ void __init exynos_cpuidle_init(void)
+ 	platform_device_register(&exynos_cpuidle);
  }
+ 
++void __init exynos_cpufreq_init(void)
++{
++	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
++}
 +
-+struct clk_spc {
-+	struct clk_hw hw;
-+	int cluster;
+ void __init exynos_init_late(void)
+ {
+ 	if (of_machine_is_compatible("samsung,exynos5440"))
+diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
+index b2ac188..61e5f3a 100644
+--- a/arch/arm/mach-exynos/common.h
++++ b/arch/arm/mach-exynos/common.h
+@@ -23,6 +23,7 @@ void exynos_init_io(void);
+ void exynos4_restart(enum reboot_mode mode, const char *cmd);
+ void exynos5_restart(enum reboot_mode mode, const char *cmd);
+ void exynos_cpuidle_init(void);
++void exynos_cpufreq_init(void);
+ void exynos_init_late(void);
+ 
+ void exynos_firmware_init(void);
+diff --git a/arch/arm/mach-exynos/mach-exynos4-dt.c b/arch/arm/mach-exynos/mach-exynos4-dt.c
+index 53a3dc3..2cbaf63 100644
+--- a/arch/arm/mach-exynos/mach-exynos4-dt.c
++++ b/arch/arm/mach-exynos/mach-exynos4-dt.c
+@@ -26,6 +26,7 @@
+ static void __init exynos4_dt_machine_init(void)
+ {
+ 	exynos_cpuidle_init();
++	exynos_cpufreq_init();
+ 
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+diff --git a/arch/arm/mach-exynos/mach-exynos5-dt.c b/arch/arm/mach-exynos/mach-exynos5-dt.c
+index c9f7dd1..9144549 100644
+--- a/arch/arm/mach-exynos/mach-exynos5-dt.c
++++ b/arch/arm/mach-exynos/mach-exynos5-dt.c
+@@ -48,6 +48,7 @@ static void __init exynos5_dt_machine_init(void)
+ 	}
+ 
+ 	exynos_cpuidle_init();
++	exynos_cpufreq_init();
+ 
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 0ef13e8..706570e 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -17,6 +17,7 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/cpufreq.h>
+ #include <linux/suspend.h>
++#include <linux/platform_device.h>
+ 
+ #include <plat/cpu.h>
+ 
+@@ -277,4 +278,12 @@ err_vdd_arm:
+ 	kfree(exynos_info);
+ 	return -EINVAL;
+ }
+-late_initcall(exynos_cpufreq_init);
++
++static struct platform_driver exynos_cpufreq_platdrv = {
++	.driver = {
++		.name	= "exynos-cpufreq",
++		.owner	= THIS_MODULE,
++	},
++	.probe = exynos_cpufreq_init,
 +};
-+
-+#define to_clk_spc(spc) container_of(spc, struct clk_spc, hw)
-+static unsigned long spc_recalc_rate(struct clk_hw *hw,
-+		unsigned long parent_rate)
-+{
-+	struct clk_spc *spc = to_clk_spc(hw);
-+	u32 freq;
-+
-+	if (ve_spc_get_performance(spc->cluster, &freq))
-+		return -EIO;
-+
-+	return freq * 1000;
-+}
-+
-+static long spc_round_rate(struct clk_hw *hw, unsigned long drate,
-+		unsigned long *parent_rate)
-+{
-+	struct clk_spc *spc = to_clk_spc(hw);
-+
-+	return ve_spc_round_performance(spc->cluster, drate);
-+}
-+
-+static int spc_set_rate(struct clk_hw *hw, unsigned long rate,
-+		unsigned long parent_rate)
-+{
-+	struct clk_spc *spc = to_clk_spc(hw);
-+
-+	return ve_spc_set_performance(spc->cluster, rate / 1000);
-+}
-+
-+static struct clk_ops clk_spc_ops = {
-+	.recalc_rate = spc_recalc_rate,
-+	.round_rate = spc_round_rate,
-+	.set_rate = spc_set_rate,
-+};
-+
-+static struct clk *ve_spc_clk_register(struct device *cpu_dev)
-+{
-+	struct clk_init_data init;
-+	struct clk_spc *spc;
-+
-+	spc = kzalloc(sizeof(*spc), GFP_KERNEL);
-+	if (!spc) {
-+		pr_err("could not allocate spc clk\n");
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	spc->hw.init = &init;
-+	spc->cluster = topology_physical_package_id(cpu_dev->id);
-+
-+	init.name = dev_name(cpu_dev);
-+	init.ops = &clk_spc_ops;
-+	init.flags = CLK_IS_ROOT | CLK_GET_RATE_NOCACHE;
-+	init.num_parents = 0;
-+
-+	return devm_clk_register(cpu_dev, &spc->hw);
-+}
-+
-+static int ve_init_opp_table(struct device *cpu_dev)
-+{
-+	int cluster = topology_physical_package_id(cpu_dev->id);
-+	int idx, ret = 0, max_opp = info->num_opps[cluster];
-+	struct ve_spc_opp *opps = info->opps[cluster];
-+
-+	for (idx = 0; idx < max_opp; idx++, opps++) {
-+		ret = opp_add(cpu_dev, opps->freq * 1000, opps->u_volt);
-+		if (ret) {
-+			dev_warn(cpu_dev, "failed to add opp %lu %lu\n",
-+				 opps->freq, opps->u_volt);
-+			return ret;
-+		}
-+	}
-+	return ret;
-+}
-+
-+static int __init ve_spc_clk_init(void)
-+{
-+	int cpu;
-+	struct clk *clk;
-+
-+	if (!info)
-+		return 0; /* Continue only if SPC is initialised */
-+
-+	if (ve_spc_populate_opps(0) || ve_spc_populate_opps(1)) {
-+		pr_err("failed to build OPP table\n");
-+		return -ENODEV;
-+	}
-+
-+	for_each_possible_cpu(cpu) {
-+		struct device *cpu_dev = get_cpu_device(cpu);
-+		if (!cpu_dev) {
-+			pr_warn("failed to get cpu%d device\n", cpu);
-+			continue;
-+		}
-+		clk = ve_spc_clk_register(cpu_dev);
-+		if (IS_ERR(clk)) {
-+			pr_warn("failed to register cpu%d clock\n", cpu);
-+			continue;
-+		}
-+		if (clk_register_clkdev(clk, NULL, dev_name(cpu_dev))) {
-+			pr_warn("failed to register cpu%d clock lookup\n", cpu);
-+			continue;
-+		}
-+
-+		if (ve_init_opp_table(cpu_dev))
-+			pr_warn("failed to initialise cpu%d opp table\n", cpu);
-+	}
-+
-+	return 0;
-+}
-+module_init(ve_spc_clk_init);
++module_platform_driver(exynos_cpufreq_platdrv);
 -- 
-1.8.1.2
+1.8.3.2
 
