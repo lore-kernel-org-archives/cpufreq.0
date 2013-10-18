@@ -1,69 +1,33 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 34/34] cpufreq: tegra: Convert to light weight ->target_index() routine
-Date: Fri, 18 Oct 2013 19:29:57 +0530
-Message-ID: <0dd5f7232b4c4782e5434b39b399835a2eb7ea94.1382104515.git.viresh.kumar@linaro.org>
-References: <cover.1382104514.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
-References: <cover.1382104514.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH V2 Resend 29/34] cpufreq: sa11x0: Convert to light
+	weight ->target_index() routine
+Date: Fri, 18 Oct 2013 16:46:44 +0100
+Message-ID: <20131018154644.GC25034@n2100.arm.linux.org.uk>
+References: <cover.1382104514.git.viresh.kumar@linaro.org> <fb85256f34e1a61c6c2c37c3e6fa8b1398bad683.1382104515.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=fLswbErnOfji2yp+Bu3BEVS2NRlCyT0st9t63nmcBxY=;
+	b=nm9ymK8DWGgpzSlICq8C3I5G/5FF7YvujEZuzFBcAejorqoBk96rh4syo2Ymnd3vb5nAfDR/ywpogzv9nZJjcQISnv13sDS50RXoVxFtUeliHTk/Lx3iPbJKDbeIKDc7/zh8j8vztR5eMUYGak7kLZG1WUjiUjSI7lkCzihdsRk=;
+Content-Disposition: inline
+In-Reply-To: <fb85256f34e1a61c6c2c37c3e6fa8b1398bad683.1382104515.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@nvidia.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch converts existing .target() to newly defined light weight
-.target_index() routine for this driver.
+On Fri, Oct 18, 2013 at 07:29:52PM +0530, Viresh Kumar wrote:
+> This patch converts existing .target() to newly defined light weight
+> .target_index() routine for this driver.
+> 
+> CPUFreq core will call cpufreq_frequency_table_target() before calling this
+> routine and will pass index to it.
+> 
+> Some existing routines are no more required and so are removed now.
+> 
+> Cc: Russell King <linux@arm.linux.org.uk>
 
-CPUFreq core will call cpufreq_frequency_table_target() before calling this
-routine and will pass index to it.
-
-Cc: Stephen Warren <swarren@nvidia.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/tegra-cpufreq.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index 32483ef..bd7d89c 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -150,11 +150,8 @@ static unsigned long tegra_cpu_highest_speed(void)
- 	return rate;
- }
- 
--static int tegra_target(struct cpufreq_policy *policy,
--		       unsigned int target_freq,
--		       unsigned int relation)
-+static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	unsigned int idx;
- 	unsigned int freq;
- 	int ret = 0;
- 
-@@ -165,10 +162,7 @@ static int tegra_target(struct cpufreq_policy *policy,
- 		goto out;
- 	}
- 
--	cpufreq_frequency_table_target(policy, freq_table, target_freq,
--		relation, &idx);
--
--	freq = freq_table[idx].frequency;
-+	freq = freq_table[index].frequency;
- 
- 	target_cpu_speed[policy->cpu] = freq;
- 
-@@ -238,7 +232,7 @@ static int tegra_cpu_exit(struct cpufreq_policy *policy)
- 
- static struct cpufreq_driver tegra_cpufreq_driver = {
- 	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= tegra_target,
-+	.target_index	= tegra_target,
- 	.get		= tegra_getspeed,
- 	.init		= tegra_cpu_init,
- 	.exit		= tegra_cpu_exit,
--- 
-1.7.12.rc2.18.g61b472e
+I think I acked this patch.  Please ensure that my ack appears on all
+that I did ack, thanks.
