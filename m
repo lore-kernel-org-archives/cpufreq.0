@@ -1,158 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/1] Skip the driver if ACPI has power mgmt option
-Date: Thu, 17 Oct 2013 23:21:11 +0200
-Message-ID: <4334478.yhzGFGWLbQ@vostro.rjw.lan>
-References: <1379662368-6580-1-git-send-email-adrian.huang@hp.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle of
+ another node for OPP
+Date: Fri, 18 Oct 2013 09:40:41 +0100
+Message-ID: <20131018084041.GC398@e102568-lin.cambridge.arm.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <5252DAD3.6040903@gmail.com>
+ <525400B4.8060203@arm.com>
+ <CAL_JsqKPprCKorvfgCH3usvX6hw5moypQYvKTdAznFVoTV-pyg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1379662368-6580-1-git-send-email-adrian.huang@hp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAL_JsqKPprCKorvfgCH3usvX6hw5moypQYvKTdAznFVoTV-pyg@mail.gmail.com>
+Content-Disposition: inline
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Adrian Huang <adrian.huang@hp.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linda.knippers@hp.com
+To: Rob Herring <robherring2@gmail.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>
 
-On Friday, September 20, 2013 03:32:48 PM Adrian Huang wrote:
-> I re-sent this email becuase my system time was incorrect for my first submission (The sent time of the first submission showed "2012/8/16  08:12PM"). Sorry for any inconvenience. 
+On Thu, Oct 17, 2013 at 02:22:44PM +0100, Rob Herring wrote:
+
+[...]
+
+> >>> +    cpu3: cpu@101 {
+> >>> +            compatible = "arm,cortex-a7";
+> >>> +            reg = <101>;
+> >>> +            operating-points-phandle = <&cluster1_opp>;
+> >>> +    };
+> >>> +
+> >>> +    opps-table {
+> >>> +            cluster0_opp: cluster0_opp {
+> >>
+> >> Why not use the cpu topology? Then the operating point can apply to
+> >> cores based on the position in the topology. You don't even need a
+> >> phandle in that case. You can look for OPPs in either a cpu node or in
+> >> the topology.
+> >>
+> > Agreed but few thoughts behind this binding:
+> >
+> > 1. OPPs are not just cpu specific:
+> >    How do we share OPPs for 2 devices in the same clock domain ?
+> >    Also moving the OPP into cpu-topo makes parsing specific to cpu.
+> >    Currently the OPP library fetches the of_node from the device struct
+> >    which is applicable to any devices.
 > 
-> Do not load the Intel pstate driver if the platform firmware
-> (ACPI BIOS) supports the power management alternatives.
-> The ACPI BIOS indicates that the OS control mode can be used
-> if the _PSS (Performance Supported States) is defined in ACPI
-> table. For the OS control mode, the Intel pstate driver will be
-> loaded.
+> But an OPP for a cpu is cpu specific, so put it there. For devices, we
+> may need something different. Perhaps it should be part of the clock
+> binding in some way.
 > 
-> Signed-off-by: Adrian Huang <adrian.huang@hp.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 84 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 84 insertions(+)
+> > 2. Should cpu topology(i.e. cpu-map) just contain the topology info ? and
+> >    phandles to these nodes should be used to setup any affinity ?
 > 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 6efd96c..c181109 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -25,6 +25,9 @@
->  #include <linux/types.h>
->  #include <linux/fs.h>
->  #include <linux/debugfs.h>
-> +#include <linux/acpi.h>
-> +#include <acpi/processor.h>
-> +
->  #include <trace/events/power.h>
->  
->  #include <asm/div64.h>
-> @@ -129,6 +132,18 @@ static struct perf_limits limits = {
->  	.max_sysfs_pct = 100,
->  };
->  
-> +struct hw_vendor_info {
-> +	u16  valid;
-> +	char oem_id[ACPI_OEM_ID_SIZE];
-> +	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
-> +};
-> +
-> +/* Hardware vendor-specific info that has its own power management modes */
-> +static struct hw_vendor_info vendor_info[] = {
-> +	{1, "HP    ", "ProLiant"},
-> +	{0, "", ""},
-> +};
-> +
->  static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
->  			int deadband, int integral) {
->  	pid->setpoint = setpoint;
-> @@ -692,6 +707,66 @@ static int intel_pstate_msrs_not_valid(void)
->  
->  	return 0;
->  }
-> +
-> +static bool intel_pstate_no_acpi_pss(void)
-> +{
-> +	struct acpi_processor *pr;
-> +	acpi_status status = AE_OK;
-> +	union acpi_object *pss = NULL;
-> +	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-> +	int i;
-> +
-> +	for_each_possible_cpu(i) {
-> +		pr = per_cpu(processors, i);
-> +
-> +		if (pr) {
-> +			status = acpi_evaluate_object(pr->handle, "_PSS",
-> +						      NULL, &buffer);
-> +
-> +			pss = buffer.pointer;
-> +
-> +			if (ACPI_SUCCESS(status) && pss) {
-> +				/* Found _PSS */
-> +				if (pss->type == ACPI_TYPE_PACKAGE)
-> +					return false;
-> +			}
+> Can't the OPP just be in the topology nodes at the appropriate level.
+> Then the kernel can look for the OPPs in either place. Perhaps Lorenzo
+> has thoughts on this.
 
-buffer.pointer has been dynamically allocated by acpi_evaluate_object(), so it
-should be freed here.  Besides, you need to define the buffer variable inside
-the loop so that it is initialized on every iteration and not just once.
+The reason we introduced the topology nodes (ie cpu-map) was to provide
+a topology description of the system with leaf nodes linked to cpu
+nodes; nodes in the topology do not map to HW entities.
+Put it differently, IMHO we should attach no HW meaning to nodes in the
+cpu-map so we should not add eg OPPs under cluster nodes because those
+nodes do not represent HW entities, I would like to keep cpu-map a pure
+DT representation of the topology, no more, but debate is open.
 
-> +		}
-> +	}
-> +
-> +	/* No _PSS */
-> +	return true;
-> +}
-> +
-> +static bool intel_pstate_check_platform_pwr_mgmt(void)
-> +{
-> +	struct acpi_table_header hdr;
-> +	struct hw_vendor_info *v_info;
-> +
-> +	if (acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr) == AE_OK) {
-> +		for (v_info = vendor_info; v_info->valid; v_info++) {
-> +			/*
-> +			 * Check if the hardware/platform is in the
-> +			 * predefined vendor data.
-> +			 */
-> +			if (!strncmp(hdr.oem_id, v_info->oem_id,
-> +				     ACPI_OEM_ID_SIZE) &&
-> +			    !strncmp(hdr.oem_table_id, v_info->oem_table_id,
-> +				     ACPI_OEM_TABLE_ID_SIZE)) {
-> +
-> +				/*
-> +				 * No _PSS defintion in ACPI BIOS means that
-> +				 * the platform firmware has its own power
-> +				 * management modes.
-> +				 */
-> +				if (intel_pstate_no_acpi_pss())
-> +					return true;
-> +			}
-> +		}
-> +	}
-> +
-> +	return false;
-> +}
-> +
->  static int __init intel_pstate_init(void)
->  {
->  	int cpu, rc = 0;
-> @@ -700,6 +775,15 @@ static int __init intel_pstate_init(void)
->  	if (no_load)
->  		return -ENODEV;
->  
-> +	if (!acpi_disabled) {
-> +		/*
-> +		 * Check if the platform has its own power management modes.
-> +		 * If so, the pstate cpufreq driver will be ignored.
-> +		 */
-> +		if (intel_pstate_check_platform_pwr_mgmt())
-> +			return 0;
-> +	}
-> +
->  	id = x86_match_cpu(intel_pstate_cpu_ids);
->  	if (!id)
->  		return -ENODEV;
-> 
+Lorenzo
 
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
