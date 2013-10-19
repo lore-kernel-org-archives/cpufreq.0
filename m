@@ -1,36 +1,78 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 62861] Maximum CPU voltage level never reached on AMD A8-5500
- if radeon.dpm=1 is used
-Date: Sat, 19 Oct 2013 13:13:52 +0000
-Message-ID: <bug-62861-12968-Bu8h26eP5J@https.bugzilla.kernel.org/>
-References: <bug-62861-12968@https.bugzilla.kernel.org/>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
+Date: Sat, 19 Oct 2013 18:03:26 +0200
+Message-ID: <1816869.ggMDlA1qNY@flatron>
+References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-62861-12968@https.bugzilla.kernel.org/>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=from:to:cc:subject:date:message-id:user-agent:in-reply-to
+         :references:mime-version:content-transfer-encoding:content-type;
+        bh=lOap8TmDCfJgCKNSWDo4xvn5tRMm7hF9WGrPxnii3NI=;
+        b=Ro7v3byMOU2Llgv+YAAvhEvDd2w3fVmD87kkuNQz57d/AQxOT5oE8s3dCF3KQ2KwJ7
+         1jfUsh6HRjes4z31JSZrya5wwpOTHXYGekgTC+ilnNDsfRNEV8KFA72l63xKtZUFCScI
+         RvtJhdM4mDTtZFiaP5/+4st68k784Dt4wnjSGfwlsYQvQB3Kk30FnNLGatNsUnUan1GV
+         vzyKYIMvucLr2F4dF0jg2Brd69VmSh1y/m6tBziTqwpC6r+krOsZ869zz0ZIsPDXUKGk
+         OfA2wet4kLSgeOSR6L2IWANDJwrEVImx4y3QIwJpyfyMqqjaoKjLq73geSFm7A89SRX6
+         vrwA==
+In-Reply-To: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: rjw@sisk.pl, kgene.kim@samsung.com, mturquette@linaro.org
+Cc: Mateusz Krawczuk <m.krawczuk@partner.samsung.com>, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk, kyungmin.park@samsung.com, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, rob.herring@calxeda.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, rob@landley.net, thomas.abraham@linaro.org, s.nawrocki@samsung.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, t.stanislaws@samsung.com, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=62861
+Hi Mike, Kukjin, Rafael,
 
-Kertesz Laszlo <laszlo.kertesz@gmail.com> changed:
+On Tuesday 24 of September 2013 14:50:06 Mateusz Krawczuk wrote:
+> This patch series is the new s5pv210 clock implementation
+> (using common clk framework).
+> 
+> This implementation is compatible with device tree definition and board
+> files.
+> 
+> This patch series is based on linux-next and has been tested on goni and
+> aquila
+> boards using board file.
+> 
+> Since v4:
+> Corrected mux flags for finpll.
+> 
+> Since v3:
+> 
+> Replace s5pv210_clk_register_finpll, by creating mux finpll
+> with xusbxti and xxti as parrents.
+> 
+> 
+> Mateusz Krawczuk (3):
+>   clk: samsung: Add clock driver for s5pc110/s5pv210
+>   Cpufreq: s5pv210 cpufreq fixes for CCF
+>   ARM: s5pv210: Migrate clock handling to Common Clock Framework
+> 
+>  .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
+>  arch/arm/mach-s5pv210/Kconfig                      |   9 +
+>  arch/arm/mach-s5pv210/Makefile                     |   4 +-
+>  arch/arm/mach-s5pv210/common.c                     |  17 +
+>  arch/arm/mach-s5pv210/common.h                     |  10 +
+>  arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
+>  arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
+>  arch/arm/plat-samsung/Kconfig                      |   2 +-
+>  drivers/clk/samsung/Makefile                       |   3 +
+>  drivers/clk/samsung/clk-s5pv210.c                  | 673
+> +++++++++++++++++++++ drivers/cpufreq/s5pv210-cpufreq.c                
+>  |   6 +-
+>  include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
+>  12 files changed, 1019 insertions(+), 8 deletions(-)
+>  create mode 100644
+> Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+> create mode 100644 drivers/clk/samsung/clk-s5pv210.c
+>  create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-            Product|Power Management            |Drivers
-            Summary|Maximum CPU voltage level   |Maximum CPU voltage level
-                   |never reached on AMD        |never reached on AMD
-                   |A8-5500                     |A8-5500 if radeon.dpm=1 is
-                   |                            |used
-          Component|cpufreq                     |Video(DRI - non Intel)
+I believe this series is reasonable to be applied. Could we agree on
+the tree it would go through and get all tne required acks?
 
---- Comment #4 from Kertesz Laszlo <laszlo.kertesz@gmail.com> ---
-This issue is related to the radeon driver's dpm code.
-If i dont append radeon.dpm=1 to the kernel boot options, i have 0.9-1.34v and
-correct CPU speeds (including torbo boost).
+Best regards,
+Tomasz
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
