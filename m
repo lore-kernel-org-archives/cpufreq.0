@@ -1,78 +1,188 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
-Date: Sat, 19 Oct 2013 18:03:26 +0200
-Message-ID: <1816869.ggMDlA1qNY@flatron>
-References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH] cpufreq, highbank: enable ECME thermal notifications
+Date: Sat, 19 Oct 2013 18:54:49 -0500
+Message-ID: <1382226889-11062-1-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=from:to:cc:subject:date:message-id:user-agent:in-reply-to
-         :references:mime-version:content-transfer-encoding:content-type;
-        bh=lOap8TmDCfJgCKNSWDo4xvn5tRMm7hF9WGrPxnii3NI=;
-        b=Ro7v3byMOU2Llgv+YAAvhEvDd2w3fVmD87kkuNQz57d/AQxOT5oE8s3dCF3KQ2KwJ7
-         1jfUsh6HRjes4z31JSZrya5wwpOTHXYGekgTC+ilnNDsfRNEV8KFA72l63xKtZUFCScI
-         RvtJhdM4mDTtZFiaP5/+4st68k784Dt4wnjSGfwlsYQvQB3Kk30FnNLGatNsUnUan1GV
-         vzyKYIMvucLr2F4dF0jg2Brd69VmSh1y/m6tBziTqwpC6r+krOsZ869zz0ZIsPDXUKGk
-         OfA2wet4kLSgeOSR6L2IWANDJwrEVImx4y3QIwJpyfyMqqjaoKjLq73geSFm7A89SRX6
-         vrwA==
-In-Reply-To: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-To: rjw@sisk.pl, kgene.kim@samsung.com, mturquette@linaro.org
-Cc: Mateusz Krawczuk <m.krawczuk@partner.samsung.com>, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk, kyungmin.park@samsung.com, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, rob.herring@calxeda.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, rob@landley.net, thomas.abraham@linaro.org, s.nawrocki@samsung.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, t.stanislaws@samsung.com, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-Hi Mike, Kukjin, Rafael,
+The ECME sends thermal messages with a maximum and minimum allowed
+frequency when the SoC status reaches certain trip points known to the
+ECME. Use a notifier function to capture those messages and pass them
+to a work-queued function that can trigger a policy re-evaluation by
+cpufreq, capping the allowable frequencies.
 
-On Tuesday 24 of September 2013 14:50:06 Mateusz Krawczuk wrote:
-> This patch series is the new s5pv210 clock implementation
-> (using common clk framework).
-> 
-> This implementation is compatible with device tree definition and board
-> files.
-> 
-> This patch series is based on linux-next and has been tested on goni and
-> aquila
-> boards using board file.
-> 
-> Since v4:
-> Corrected mux flags for finpll.
-> 
-> Since v3:
-> 
-> Replace s5pv210_clk_register_finpll, by creating mux finpll
-> with xusbxti and xxti as parrents.
-> 
-> 
-> Mateusz Krawczuk (3):
->   clk: samsung: Add clock driver for s5pc110/s5pv210
->   Cpufreq: s5pv210 cpufreq fixes for CCF
->   ARM: s5pv210: Migrate clock handling to Common Clock Framework
-> 
->  .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
->  arch/arm/mach-s5pv210/Kconfig                      |   9 +
->  arch/arm/mach-s5pv210/Makefile                     |   4 +-
->  arch/arm/mach-s5pv210/common.c                     |  17 +
->  arch/arm/mach-s5pv210/common.h                     |  10 +
->  arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
->  arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
->  arch/arm/plat-samsung/Kconfig                      |   2 +-
->  drivers/clk/samsung/Makefile                       |   3 +
->  drivers/clk/samsung/clk-s5pv210.c                  | 673
-> +++++++++++++++++++++ drivers/cpufreq/s5pv210-cpufreq.c                
->  |   6 +-
->  include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
->  12 files changed, 1019 insertions(+), 8 deletions(-)
->  create mode 100644
-> Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
-> create mode 100644 drivers/clk/samsung/clk-s5pv210.c
->  create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
+The core of the policy adjusting code was taken from
+drivers/thermal/cpu_cooling.c.
 
-I believe this series is reasonable to be applied. Could we agree on
-the tree it would go through and get all tne required acks?
+Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+---
+ drivers/cpufreq/highbank-cpufreq.c | 117 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 117 insertions(+)
 
-Best regards,
-Tomasz
-
+diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
+index b61b5a3..f0521d3 100644
+--- a/drivers/cpufreq/highbank-cpufreq.c
++++ b/drivers/cpufreq/highbank-cpufreq.c
+@@ -17,15 +17,32 @@
+ #include <linux/module.h>
+ #include <linux/clk.h>
+ #include <linux/cpu.h>
++#include <linux/cpufreq.h>
+ #include <linux/err.h>
+ #include <linux/of.h>
+ #include <linux/mailbox.h>
+ #include <linux/platform_device.h>
++#include <linux/cpumask.h>
++#include <linux/workqueue.h>
+ 
+ #define HB_CPUFREQ_CHANGE_NOTE	0x80000001
++#define HB_CPUFREQ_HEALTH_NOTE  0x00001001
++#define HB_CPUFREQ_TPS_REPORT	1
+ #define HB_CPUFREQ_IPC_LEN	7
+ #define HB_CPUFREQ_VOLT_RETRIES	15
+ 
++#define NOTIFY_INVALID NULL
++
++struct hb_notify_device {
++	unsigned long max_freq;
++	unsigned long min_freq;
++	unsigned long thermal_state;
++	struct cpumask *allowed_cpus;
++};
++
++static struct hb_notify_device hb_records, *notify_device = NOTIFY_INVALID;
++static struct work_struct hb_thermal_wq;
++
+ static int hb_voltage_change(unsigned int freq)
+ {
+ 	u32 msg[HB_CPUFREQ_IPC_LEN] = {HB_CPUFREQ_CHANGE_NOTE, freq / 1000000};
+@@ -33,6 +50,89 @@ static int hb_voltage_change(unsigned int freq)
+ 	return pl320_ipc_transmit(msg);
+ }
+ 
++static int hb_thermal_cpufreq_notify(struct notifier_block *nb,
++				    unsigned long event, void *data)
++{
++	struct cpufreq_policy *policy = data;
++	unsigned long max_freq = 0, min_freq = 0;
++
++	if (event != CPUFREQ_ADJUST || notify_device == NOTIFY_INVALID)
++		return 0;
++
++	if (cpumask_test_cpu(policy->cpu, notify_device->allowed_cpus)) {
++		max_freq = notify_device->max_freq;
++		min_freq = notify_device->min_freq;
++	}
++
++	/* Never exceed user_policy.max */
++	if (max_freq > policy->user_policy.max)
++		max_freq = policy->user_policy.max;
++	if (min_freq < policy->user_policy.min)
++		min_freq = policy->user_policy.min;
++
++	if ((policy->max != max_freq) || (policy->min != min_freq))
++		cpufreq_verify_within_limits(policy, min_freq, max_freq);
++
++	return 0;
++}
++
++static struct notifier_block hb_thermal_cpufreq_nb = {
++	.notifier_call = hb_thermal_cpufreq_notify,
++};
++
++/*
++ * We can't call cpufreq_adjust_policy from inside a notifier, so
++ * do it from inside a workqueue
++ */
++static void hb_thermal_wq_task(struct work_struct *work)
++{
++	unsigned int cpuid;
++	struct cpumask *mask = hb_records.allowed_cpus;
++
++	notify_device = &hb_records;
++
++	for_each_cpu(cpuid, mask) {
++		struct cpufreq_policy policy;
++		if (cpufreq_get_policy(&policy, cpuid) == 0) {
++			cpufreq_update_policy(cpuid);
++			break;
++		}
++	}
++	notify_device = NOTIFY_INVALID;
++}
++
++static int hb_thermal_tps_notify(struct notifier_block *nb,
++				unsigned long action, void *mailbox)
++{
++	unsigned long *data = (unsigned long *) mailbox;
++
++	if ((action != HB_CPUFREQ_HEALTH_NOTE) &&
++			(data[0] != HB_CPUFREQ_TPS_REPORT))
++		return 0;
++
++	/*
++	 * If we're already at this thermal state, or if ECME isn't
++	 * sending frequency data, there's nothing to do
++	 */
++	if ((hb_records.thermal_state == data[1]) || !data[2] || !data[3])
++		return NOTIFY_DONE;
++
++	hb_records.thermal_state = data[1];
++	hb_records.min_freq = data[2];
++	hb_records.max_freq = data[3];
++	notify_device = &hb_records;
++
++	schedule_work(&hb_thermal_wq);
++
++	pr_warn("ECME TPS event: frequencies limited to %lu-%lu MHz\n",
++	       hb_records.min_freq, hb_records.max_freq);
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block hb_thermal_tps_nb = {
++	.notifier_call = hb_thermal_tps_notify,
++};
++
+ static int hb_cpufreq_clk_notify(struct notifier_block *nb,
+ 				unsigned long action, void *hclk)
+ {
+@@ -100,6 +200,23 @@ static int hb_cpufreq_driver_init(void)
+ 		goto out_put_node;
+ 	}
+ 
++	/*
++	 * Set up thermal state notifications from ECME, but continue
++	 * running even if they don't work.
++	 */
++	ret = pl320_ipc_register_notifier(&hb_thermal_tps_nb);
++	if (!ret) {
++		ret = cpufreq_register_notifier(&hb_thermal_cpufreq_nb,
++				CPUFREQ_POLICY_NOTIFIER);
++		if (ret)
++			pl320_ipc_unregister_notifier(&hb_thermal_tps_nb);
++		else {
++			hb_records.allowed_cpus = (struct cpumask *)
++						cpu_possible_mask;
++			INIT_WORK(&hb_thermal_wq, hb_thermal_wq_task);
++		}
++	}
++
+ 	/* Instantiate cpufreq-cpu0 */
+ 	platform_device_register_full(&devinfo);
+ 
+-- 
+1.8.3.1
