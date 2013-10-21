@@ -1,52 +1,37 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 1/1] cpufreq: intel_pstate: skip the driver if ACPI has
- power mgmt option
-Date: Mon, 21 Oct 2013 09:03:07 -0700
-Message-ID: <5265503B.7000804@gmail.com>
-References: <1382333227-28231-1-git-send-email-adrian.huang@hp.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
+Date: Tue, 22 Oct 2013 00:39:45 +0200
+Message-ID: <4207904.oBhTxYOkzS@vostro.rjw.lan>
+References: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org> <CAKohpo=wHN1wTsh-UfYMO-XBDtj0=SFuxjTPqw9aZAG6iRJ0mQ@mail.gmail.com> <CAKohpomXxodtUvGyo3SXRAVE8W9nZiYSU9Zak+zDt9+rOjonxw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=mA4jIgcEApCm9DflrrE8wVfYMKeL+oObkhcxeNsuYIM=;
-        b=qZKPp+TudvaDddZpCj6z9G+kl9AYpZhp7rjXhObSgDXjSnjsASl0zXb3r3yvek1CPD
-         1OG2rXCh9Jb7okKkh4BpWL9HCGvzW98GmEp7xguijv3avkxeMp52AKJIBj/Gjp9r1jOZ
-         abeGX1pl+YOC5Cu/X2m5M31hokqPFAK5a1GL8CyJbCpWTQv0ymKsyyof/lZIZlF1fXIJ
-         wYzy/L0iNCjnHiM9Ye6a5oTX5/z2E5MeqpTk4Mqb9hB/sObFyC4Bv645iXzjpOI421iX
-         5AE327D0dkyYNiwsCzSMiGlN4Xdf2UPs0J4j/Xjcmr0+0JAUlcZcNqJbuw8VNof/KTQg
-         d92g==
-In-Reply-To: <1382333227-28231-1-git-send-email-adrian.huang@hp.com>
+In-Reply-To: <CAKohpomXxodtUvGyo3SXRAVE8W9nZiYSU9Zak+zDt9+rOjonxw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Adrian Huang <adrian.huang@hp.com>, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linda.knippers@hp.com
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 10/20/2013 10:27 PM, Adrian Huang wrote:
->   static int __init intel_pstate_init(void)
->   {
->   	int cpu, rc = 0;
-> @@ -708,6 +779,15 @@ static int __init intel_pstate_init(void)
->   	if (no_load)
->   		return -ENODEV;
->
-> +	if (!acpi_disabled) {
-> +		/*
-> +		 * Check if the platform has its own power management modes.
-> +		 * If so, the pstate cpufreq driver will be ignored.
-> +		 */
-> +		if (intel_pstate_platform_pwr_mgmt_exists())
-> +			return 0;
+On Monday, October 21, 2013 12:43:32 PM Viresh Kumar wrote:
+> On 13 October 2013 06:07, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 13/10/2013, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> -> What about this:
+> >>
+> >>       /*
+> >>        * The core will not set policy->cur, because cpufreq_driver->get is NULL,
+> >>        * so we need to set it here.  However, we have to guess it, because the
+> >>        * current speed is unknown and not detectable via IO ports.
+> >>        */
+> >
+> > Far better. Attached again. Thanks.
+> 
+> Have you missed applying this one? Attached again..
 
-Please return -ENODEV here instead of 0
+I don't think I've missed it.  It should be commit 1bab64d in my tree.
 
-> +	}
-> +
->   	id = x86_match_cpu(intel_pstate_cpu_ids);
->   	if (!id)
->   		return -ENODEV;
->
+Thanks!
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
