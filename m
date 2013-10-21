@@ -1,38 +1,31 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 62861] Maximum CPU voltage level never reached on AMD A8-5500
- if radeon.dpm=1 is used
-Date: Mon, 21 Oct 2013 03:39:06 +0000
-Message-ID: <bug-62861-12968-Cm939CvOj3@https.bugzilla.kernel.org/>
-References: <bug-62861-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: create per policy rwsem instead of per CPU cpu_policy_rwsem
+Date: Mon, 21 Oct 2013 10:28:15 +0530
+Message-ID: <CAKohpon2b1D+d-wf34dUQ0OxE8+wMP0MyNnYSoDzjjiozpsT-Q@mail.gmail.com>
+References: <b2f8d731c817a5bd72842095d18eab81a63a6de4.1382103344.git.viresh.kumar@linaro.org>
+	<20131018161510.GA8615@lunn.ch>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-62861-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <20131018161510.GA8615@lunn.ch>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=62861
+On 18 October 2013 21:45, Andrew Lunn <andrew@lunn.ch> wrote:
 
---- Comment #5 from Kertesz Laszlo <laszlo.kertesz@gmail.com> ---
-I reverted commit 4076a65544e2de310cbf4eaadb13ee15bbfaaf4f. Reverting this
-commit changed back the CPU voltage handling as it was before.
+> Hi Viresh
+>
+> I tested on my Marvell Dove, which crashed and burned before with
+> cpufreq-bench. This version works fine so far. The benchmark has been
+> running for ten minutes, whereas before it was lucky to reach ten
+> seconds.
+>
+> Tested-by: Andrew Lunn <andrew@lunn.ch>
 
-It seems that the CPU power management is best for APUs in its latest form - if
-dpm is not used or with 4076a65544e2de310cbf4eaadb13ee15bbfaaf4f reverted and
-dpm activated, the CPU is scaled with voltages between 0.9 and 1.34, using all
-frequencies, but if all cores are used, after a while (sometimes after a few
-seconds) the CPU becomes throttled (no obvious reasons) and the effective
-frequencies go down to around ~3 GHz or even lower, in some cases even ~ 2GHz
-or lower (temps go as high as 60C withut dpm and ~56C with dpm).
+Hi Andrew,
 
-With the new code we have ~0.65 - 1.22 volts, the frequencies are maxed out at
-3.168GHz (rarely 3.2) coupled with a lower max temperature(max 51C, mostly 49),
-but the frequencies are stable, i can compile a whole kernel with 4 threads and
-there is absolutely no throttling. Only thing is missing its the highest
-voltage level (1.34) which enables turbo mode.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Thanks a lot for reporting and testing this patch :) ..
+Hopefully it will not cause any issues ones Rafael applies it for linux-next.
