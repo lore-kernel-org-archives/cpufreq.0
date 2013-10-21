@@ -1,74 +1,51 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH 5/5] ARM: vexpress/TC2: register vexpress-spc cpufreq
- device
-Date: Mon, 21 Oct 2013 09:00:30 -0400 (EDT)
-Message-ID: <alpine.LFD.2.03.1310210857370.1951@syhkavp.arg>
-References: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1381931563-16785-6-git-send-email-Sudeep.KarkadaNagesha@arm.com> <alpine.LFD.2.03.1310181457010.1951@syhkavp.arg> <5264F1A2.8040802@arm.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: fix possible integer overflow
+Date: Mon, 21 Oct 2013 08:56:22 -0700
+Message-ID: <52654EA6.6020805@gmail.com>
+References: <1382239876-12688-1-git-send-email-geyslan@gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <5264F1A2.8040802@arm.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=gmu0ATKlbIVe6OmcpuaHyPs1wjhOp4egsxKg7R3o7l4=;
+        b=vuNObyS4pcRVeWet+yxpVHeIJtfHswAWC4ImIpjGIEEr1RdOhF0rplWgSX60QWmCsy
+         DHOXMmHyamd8gG7DdiTs+ku1sBXLXBzxdxAkn8SYRIF6t2yyiAOUUzDdtwptOL6jWNjG
+         GdtCl8B5dcgbpXAtDl6LFQBeBmZ+vLU8EhGVR7GjT4rdcmoWX9EEzYoOQBbISRfeDrUm
+         9RFwRwYsUGnKjk1a9qg5sPExdjtGnDS1TPmk0Y8W2u46wXyyo3e9cO4ekfiW4PmMdcxT
+         AzSFkZ9GAyQO4q7jwWZbSq4KENhCWRXCc1MYxxfd8Vs5luOtAiIYqF7FO9ktisFmD4hn
+         uSkQ==
+In-Reply-To: <1382239876-12688-1-git-send-email-geyslan@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Geyslan G. Bem" <geyslan@gmail.com>, kernel-br@googlegroups.com
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>, "open list:CPU FREQUENCY DRI..." <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Mon, 21 Oct 2013, Sudeep KarkadaNagesha wrote:
+On 10/19/2013 08:31 PM, Geyslan G. Bem wrote:
+> The expression 'pstate << 8' is evaluated using 32-bit arithmetic while
+> 'val' expects an expression of type u64.
+>
+> Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
+Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> ---
+>   drivers/cpufreq/intel_pstate.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index badf620..43446b5 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -395,7 +395,7 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
+>   	trace_cpu_frequency(pstate * 100000, cpu->cpu);
+>
+>   	cpu->pstate.current_pstate = pstate;
+> -	val = pstate << 8;
+> +	val = (u64)pstate << 8;
+>   	if (limits.no_turbo)
+>   		val |= (u64)1 << 32;
+>
+>
 
-> Hi Nico,
-> 
-> On 18/10/13 19:58, Nicolas Pitre wrote:
-> > On Wed, 16 Oct 2013, Sudeep KarkadaNagesha wrote:
-> > 
-> >> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> >>
-> >> This patch adds vexpress-spc platform device to enables the vexpress
-> >> SPC cpufreq interface driver.
-> >>
-> >> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> >> Cc: Pawel Moll <Pawel.Moll@arm.com>
-> >> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> >> ---
-> >>  arch/arm/mach-vexpress/spc.c | 2 ++
-> >>  1 file changed, 2 insertions(+)
-> >>
-> >> diff --git a/arch/arm/mach-vexpress/spc.c b/arch/arm/mach-vexpress/spc.c
-> >> index a8b8310..4ddfbfe 100644
-> >> --- a/arch/arm/mach-vexpress/spc.c
-> >> +++ b/arch/arm/mach-vexpress/spc.c
-> >> @@ -25,6 +25,7 @@
-> >>  #include <linux/interrupt.h>
-> >>  #include <linux/io.h>
-> >>  #include <linux/opp.h>
-> >> +#include <linux/platform_device.h>
-> >>  #include <linux/slab.h>
-> >>  #include <linux/semaphore.h>
-> >>  
-> >> @@ -532,6 +533,7 @@ static int __init ve_spc_clk_init(void)
-> >>  			pr_warn("failed to initialise cpu%d opp table\n", cpu);
-> >>  	}
-> >>  
-> >> +	platform_device_register_simple("vexpress-spc-cpufreq", -1, NULL, 0);
-> >>  	return 0;
-> >>  }
-> >>  module_init(ve_spc_clk_init);
-> > 
-> > OK... this solves my concern about initcall ordering.  Please just 
-> > disregard my suggestions on patch #3.  I'd suggest folding this patch 
-> > into patch 3/5 though.
-> >
-> Thanks for the review. All the comments provided in other patches are fixed.
-> Since this would not cause any ordering issue, do you still think it needs to be
-> folded in PATCH 3/5. One concern I have with that is we will be adding device
-> first and then the driver. Either I will have to reorder patch 3 and 4 after
-> folding this patch or leave it as it is now.
-
-It doesn't matter if you introduce the device before the driver.  It is 
-just that this patch on its own seemed a bit thin.
-
-In any case this is not very important and doesn't justify another post.
-
-
-
-Nicolas
