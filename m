@@ -1,47 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 Subject: Re: [PATCH] cpufreq: intel_pstate: fix possible integer overflow
-Date: Tue, 22 Oct 2013 00:47:18 +0200
-Message-ID: <1734089.XZ0ga7sQd1@vostro.rjw.lan>
-References: <1382239876-12688-1-git-send-email-geyslan@gmail.com> <52654EA6.6020805@gmail.com>
+Date: Mon, 21 Oct 2013 15:43:51 -0700
+Message-ID: <5265AE27.90600@gmail.com>
+References: <1382239876-12688-1-git-send-email-geyslan@gmail.com> <52654EA6.6020805@gmail.com> <1734089.XZ0ga7sQd1@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52654EA6.6020805@gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=wuPnHwPPPLYJgip2g4CvhfISiUXgcfR+4nIZqYGhX9o=;
+        b=lnp+e+UMVmiQo01dxlrQvlgWxEc7ZcjllUmqFAHag2g/4K9NAxVEOHZOFRQdiTeKBn
+         AD7DEPUTmr+5AUgKfy0cZNgTNCYvwylxeHf6lfMa80Vvau0ioMFVLhQJcdzkLaeWgaUo
+         lDPXwynoYJA7O7sY17CFnq2/h6IkRqc3qq0UuRVe/3zep0PcU84h65JCEKnnAdLnEylp
+         1nQluWncO/p1dKBQZFuUQVrXDA2LEPXr4NAJyArZPuCBICLAmO3jOqedF+nqtYHFI+oE
+         Zxypl2VaJ0mijp7+b00QcFCSq3CMVyKsHT6VZqotDkOiaY9V85XJCm8OsYwzZ12QI7x9
+         553Q==
+In-Reply-To: <1734089.XZ0ga7sQd1@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: "Geyslan G. Bem" <geyslan@gmail.com>, kernel-br@googlegroups.com, Viresh Kumar <viresh.kumar@linaro.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>, "open list:CPU FREQUENCY DRI..." <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Monday, October 21, 2013 08:56:22 AM Dirk Brandewie wrote:
-> On 10/19/2013 08:31 PM, Geyslan G. Bem wrote:
-> > The expression 'pstate << 8' is evaluated using 32-bit arithmetic while
-> > 'val' expects an expression of type u64.
-> >
-> > Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
-> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On 10/21/2013 03:47 PM, Rafael J. Wysocki wrote:
+> On Monday, October 21, 2013 08:56:22 AM Dirk Brandewie wrote:
+>> On 10/19/2013 08:31 PM, Geyslan G. Bem wrote:
+>>> The expression 'pstate << 8' is evaluated using 32-bit arithmetic while
+>>> 'val' expects an expression of type u64.
+>>>
+>>> Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
+>> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>
+> Actually, isn't (pstate << 8) guaranteed not to overflow?
+>
 
-Actually, isn't (pstate << 8) guaranteed not to overflow?
+Yes, I was assuming this was caught by a static checking tool. I
+didn't see a downside to giving the compilier complete information.
 
-> > ---
-> >   drivers/cpufreq/intel_pstate.c | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index badf620..43446b5 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -395,7 +395,7 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
-> >   	trace_cpu_frequency(pstate * 100000, cpu->cpu);
-> >
-> >   	cpu->pstate.current_pstate = pstate;
-> > -	val = pstate << 8;
-> > +	val = (u64)pstate << 8;
-> >   	if (limits.no_turbo)
-> >   		val |= (u64)1 << 32;
-> >
-> >
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>>> ---
+>>>    drivers/cpufreq/intel_pstate.c | 2 +-
+>>>    1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>>> index badf620..43446b5 100644
+>>> --- a/drivers/cpufreq/intel_pstate.c
+>>> +++ b/drivers/cpufreq/intel_pstate.c
+>>> @@ -395,7 +395,7 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
+>>>    	trace_cpu_frequency(pstate * 100000, cpu->cpu);
+>>>
+>>>    	cpu->pstate.current_pstate = pstate;
+>>> -	val = pstate << 8;
+>>> +	val = (u64)pstate << 8;
+>>>    	if (limits.no_turbo)
+>>>    		val |= (u64)1 << 32;
+>>>
+>>>
+>>
