@@ -1,37 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
-Date: Tue, 22 Oct 2013 00:39:45 +0200
-Message-ID: <4207904.oBhTxYOkzS@vostro.rjw.lan>
-References: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org> <CAKohpo=wHN1wTsh-UfYMO-XBDtj0=SFuxjTPqw9aZAG6iRJ0mQ@mail.gmail.com> <CAKohpomXxodtUvGyo3SXRAVE8W9nZiYSU9Zak+zDt9+rOjonxw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: intel_pstate: fix possible integer overflow
+Date: Tue, 22 Oct 2013 00:47:18 +0200
+Message-ID: <1734089.XZ0ga7sQd1@vostro.rjw.lan>
+References: <1382239876-12688-1-git-send-email-geyslan@gmail.com> <52654EA6.6020805@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomXxodtUvGyo3SXRAVE8W9nZiYSU9Zak+zDt9+rOjonxw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52654EA6.6020805@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: "Geyslan G. Bem" <geyslan@gmail.com>, kernel-br@googlegroups.com, Viresh Kumar <viresh.kumar@linaro.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>, "open list:CPU FREQUENCY DRI..." <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Monday, October 21, 2013 12:43:32 PM Viresh Kumar wrote:
-> On 13 October 2013 06:07, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 13/10/2013, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> -> What about this:
-> >>
-> >>       /*
-> >>        * The core will not set policy->cur, because cpufreq_driver->get is NULL,
-> >>        * so we need to set it here.  However, we have to guess it, because the
-> >>        * current speed is unknown and not detectable via IO ports.
-> >>        */
+On Monday, October 21, 2013 08:56:22 AM Dirk Brandewie wrote:
+> On 10/19/2013 08:31 PM, Geyslan G. Bem wrote:
+> > The expression 'pstate << 8' is evaluated using 32-bit arithmetic while
+> > 'val' expects an expression of type u64.
 > >
-> > Far better. Attached again. Thanks.
+> > Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
+> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+
+Actually, isn't (pstate << 8) guaranteed not to overflow?
+
+> > ---
+> >   drivers/cpufreq/intel_pstate.c | 2 +-
+> >   1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > index badf620..43446b5 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -395,7 +395,7 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
+> >   	trace_cpu_frequency(pstate * 100000, cpu->cpu);
+> >
+> >   	cpu->pstate.current_pstate = pstate;
+> > -	val = pstate << 8;
+> > +	val = (u64)pstate << 8;
+> >   	if (limits.no_turbo)
+> >   		val |= (u64)1 << 32;
+> >
+> >
 > 
-> Have you missed applying this one? Attached again..
-
-I don't think I've missed it.  It should be commit 1bab64d in my tree.
-
-Thanks!
-
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
