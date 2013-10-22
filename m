@@ -1,65 +1,103 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH v2 0/5] ARM: vexpress/TC2: cpufreq support
-Date: Tue, 22 Oct 2013 10:51:16 +0100
-Message-ID: <52664A94.3040508@arm.com>
-References: <1382349534-31502-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <CAKohpo=7Z7D9VsF5GHXKTUy70muNSr-q4nf8k8_qzWBzitzmvA@mail.gmail.com>
+From: =?UTF-8?Q?Geyslan_Greg=C3=B3rio_Bem?= <geyslan@gmail.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: fix possible integer overflow
+Date: Tue, 22 Oct 2013 08:25:36 -0200
+Message-ID: <CAGG-pUSmM3E8iYg2dKPMzLmH4tLQkzjdxGRHMup5z0xKkXonTQ@mail.gmail.com>
+References: <1382239876-12688-1-git-send-email-geyslan@gmail.com>
+	<1734089.XZ0ga7sQd1@vostro.rjw.lan>
+	<5265AE27.90600@gmail.com>
+	<7950903.3bCg8Tn2fH@vostro.rjw.lan>
+	<CANOOhLRCC360exKKePsJGxYqx3ULZf1Ac0y16hsnPQNP69OHwA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=7Z7D9VsF5GHXKTUy70muNSr-q4nf8k8_qzWBzitzmvA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        bh=zlnS2vfZ54y0Gb8eMT2YC9ppmFJ9qTWwcRpwd9gARS8=;
+        b=SzjbgQv8M4PjvdGh/yjS+/FryBw6LoVCiJvFBEzH891MFgqinznf1fhFVbqJHYlOyn
+         iCQyw6ll1B6t9rqszJMMaBmLFBTOw/uAfDV2ep1Gt4prETgTswr/w5jubYkyAA2Oa2Iz
+         GR4NQ/itmaHyb5rI/zxG0SKZMey1CFXXNi5yOp92dojSER0K0HZPz+l3VGtNyHIzh6yW
+         0I0heYN5VbeRPxi5mjD2IqApEZq7VnCwCUv1fCGeVbNwAl4UId+6y2YUiyVnmr7ZwXj2
+         9E9gILXtIDCCdrdiUnL0JjaJ18I0F7T5TamX1rUHlW5tGNSDGIzqqide6InlZTLi52BC
+         iMtQ==
+In-Reply-To: <CANOOhLRCC360exKKePsJGxYqx3ULZf1Ac0y16hsnPQNP69OHwA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Nicolas Pitre <nico@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Content-Transfer-Encoding: 7bit
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>, "open list:CPU FREQUENCY DRI..." <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On 22/10/13 09:22, Viresh Kumar wrote:
-> On 21 October 2013 15:28, Sudeep KarkadaNagesha
-> <Sudeep.KarkadaNagesha@arm.com> wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+2013/10/21 Dirk Brandewie <dirk.brandewie@gmail.com>:
+>
+>
+> On Monday, October 21, 2013, Rafael J. Wysocki wrote:
 >>
->> Hi,
+>> On Monday, October 21, 2013 03:43:51 PM Dirk Brandewie wrote:
+>> > On 10/21/2013 03:47 PM, Rafael J. Wysocki wrote:
+>> > > On Monday, October 21, 2013 08:56:22 AM Dirk Brandewie wrote:
+>> > >> On 10/19/2013 08:31 PM, Geyslan G. Bem wrote:
+>> > >>> The expression 'pstate << 8' is evaluated using 32-bit arithmetic
+>> > >>> while
+>> > >>> 'val' expects an expression of type u64.
+>> > >>>
+>> > >>> Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
+>> > >> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>> > >
+>> > > Actually, isn't (pstate << 8) guaranteed not to overflow?
+>> > >
+>> >
+>> > Yes, I was assuming this was caught by a static checking tool.
 >>
->> The SPC(Serial Power Controller) on Versatile Express V2P-CA15_A7(TC2)
->> not only controls low-power states, wake-up irqs and per-CPU jump addresses
->> but also the CPU performance operating points which is essential to provide
->> CPU DVFS. The M3 microcontroller can provide upto eight performance values,
->> one set for each cluster (CA15 or CA7). Each of this value contains the
->> frequency(kHz) and voltage(mV) at that performance level. It expects
->> these performance level to be passed through the SPC PERF_LVL registers.
+
+Yes, it was caught by Coverity, and I didn't debug the possibles pstate's.
+
+>> What was caught by the tool was the fact that 1UL << 32 might overflow on
+>> 32-bit, so using BIT(32) wasn't correct.
+
+This is the entire output:
+
+CID 1108110 (#1 of 1): Unintentional integer overflow
+(OVERFLOW_BEFORE_WIDEN)overflow_before_widen: Potentially overflowing
+expression "pstate << 8" with type "int" (32 bits, signed) is
+evaluated using 32-bit arithmetic before being used in a context which
+expects an expression of type "u64" (64 bits, unsigned). To avoid
+overflow, cast the left operand to "u64" before performing the left
+shift.
+
 >>
->> This patch series adds support to populate those OPPs, add them to the
->> cpu devices and runtime programming of these performance levels through
->> clock framework. It also adds a small interface cpufreq driver to validate
->> the OPPs and register the arm_big_little cpufreq driver.
+>> > I didn't see a downside to giving the compilier complete information.
 >>
->> Changes v1->v2:
->>         - Introduced ARCH_VEXPRESS_SPC config to make dependency
->>           selection cleaner
->>         - Other minor review comments from Nico implemented
+>> Well, in that case the function's argument should be u64 rather than int.
 >>
->> Regards,
->> Sudeep
+>> Either you know that it won't overflow, in which case the explicit type
+>> casting doesn't change anything, or you are not sure, in which case it's
+>> better to use u64 as the original type anyway in my opinion.
+>
+>
+> pstate << 8 can't overflow we can drop this
+
+I realized that are five calls to intel_pstate_set_pstate()
+
+/drivers/cpufreq/intel_pstate.c:410
+/drivers/cpufreq/intel_pstate.c:417
+/drivers/cpufreq/intel_pstate.c:432
+/drivers/cpufreq/intel_pstate.c:514
+/drivers/cpufreq/intel_pstate.c:566
+
+I really don't know if the values that pstate assumes could cause
+overflow. And I really don't know if these values may change in the
+future. So I have assumed that the most careful is to cast, making the
+code error proof.
+
+But you know the code, thus know what is better. ;)
+
+Cheers.
+
+>
 >>
->> Sudeep KarkadaNagesha (5):
->>   cpufreq: arm-big-little: use clk_get instead of clk_get_sys
->>   ARM: vexpress/TC2: add support for CPU DVFS
->>   ARM: vexpress/TC2: add cpu clock support
->>   cpufreq: arm_big_little: add vexpress SPC interface driver
->>   ARM: vexpress/TC2: register vexpress-spc cpufreq device
-> 
-> For All Patches:
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-
-Thanks Nico, Pawel and Viresh for the review and acks.
-
-Hi Rafael,
-
-Do you prefer a pull request for this or are you OK to pull from the mails ?
-
-Regards,
-Sudeep
-
-
+>> Thanks!
+>>
+>> --
+>> I speak only for myself.
+>> Rafael J. Wysocki, Intel Open Source Technology Center.
