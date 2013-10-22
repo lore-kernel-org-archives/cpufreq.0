@@ -1,68 +1,46 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH v2 0/5] ARM: vexpress/TC2: cpufreq support
-Date: Tue, 22 Oct 2013 18:38:12 +0100
-Message-ID: <5266B804.3080407@arm.com>
-References: <1382349534-31502-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <CAKohpo=7Z7D9VsF5GHXKTUy70muNSr-q4nf8k8_qzWBzitzmvA@mail.gmail.com> <52664A94.3040508@arm.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH 0/4] CPUFreq stats: Bug fixes
+Date: Tue, 22 Oct 2013 17:06:08 -0400 (EDT)
+Message-ID: <alpine.LFD.2.03.1310221659450.1951@syhkavp.arg>
+References: <cover.1380190886.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <52664A94.3040508@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1380190886.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Pawel Moll <Pawel.Moll@arm.com>, Nicolas Pitre <nico@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 
-(resending with correct/new Rafael's email address)
+On Thu, 26 Sep 2013, Viresh Kumar wrote:
 
-On 22/10/13 10:51, Sudeep KarkadaNagesha wrote:
-> On 22/10/13 09:22, Viresh Kumar wrote:
->> On 21 October 2013 15:28, Sudeep KarkadaNagesha
->> <Sudeep.KarkadaNagesha@arm.com> wrote:
->>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>
->>> Hi,
->>>
->>> The SPC(Serial Power Controller) on Versatile Express V2P-CA15_A7(TC2)
->>> not only controls low-power states, wake-up irqs and per-CPU jump addresses
->>> but also the CPU performance operating points which is essential to provide
->>> CPU DVFS. The M3 microcontroller can provide upto eight performance values,
->>> one set for each cluster (CA15 or CA7). Each of this value contains the
->>> frequency(kHz) and voltage(mV) at that performance level. It expects
->>> these performance level to be passed through the SPC PERF_LVL registers.
->>>
->>> This patch series adds support to populate those OPPs, add them to the
->>> cpu devices and runtime programming of these performance levels through
->>> clock framework. It also adds a small interface cpufreq driver to validate
->>> the OPPs and register the arm_big_little cpufreq driver.
->>>
->>> Changes v1->v2:
->>>         - Introduced ARCH_VEXPRESS_SPC config to make dependency
->>>           selection cleaner
->>>         - Other minor review comments from Nico implemented
->>>
->>> Regards,
->>> Sudeep
->>>
->>> Sudeep KarkadaNagesha (5):
->>>   cpufreq: arm-big-little: use clk_get instead of clk_get_sys
->>>   ARM: vexpress/TC2: add support for CPU DVFS
->>>   ARM: vexpress/TC2: add cpu clock support
->>>   cpufreq: arm_big_little: add vexpress SPC interface driver
->>>   ARM: vexpress/TC2: register vexpress-spc cpufreq device
->>
->> For All Patches:
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>
+> There are several problems/bugs in cpufreq-stats specially with cpufreq drivers
+> as modules and suspend/resume path. These are mentioned well in changelogs.
 > 
-Thanks Nico, Pawel and Viresh for the review and acks.
+> These are tested over my thinkpad (acpi-cpufreq) in following way:
+> [1] offline+online all CPUs except boot cpu in a while loop
+> [2] then do suspend resume
+> [3] repeat [1] and [2] several times.
+> 
+> No issues found..
+> 
+> Also tested on my exynos board:
+> - Added cpufreq_unregister/register while loop in exynos-cpufreq.c so that we
+>   continuously register/unregister driver... Stats were working fine now..
+> - Compile cpufreq-stats as module and insert/remove it several times after
+>   removing above hack (as that doesn't let linux boot :) )..
+> 
+> @Nico: Can you remove the hacky code from IKS tree and test these instead to see
+> if we still have any issues?
 
-Hi Rafael,
+My testing of those patches took a long and winding path but finally I 
+was able to do it today.
 
-Do you prefer a pull request for this or are you OK to pull from the mails ?
+So for the 4 patches:
 
-Regards,
-Sudeep
+Tested-by: Nicolas Pitre <nico@linaro.org>
+Acked-by: Nicolas Pitre <nico@linaro.org>
 
 
+Nicolas
