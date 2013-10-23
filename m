@@ -1,118 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
-Date: Wed, 23 Oct 2013 14:43:12 +0530
-Message-ID: <CAKohpomWjBZfLLqYjnP=n059bTC6pDseqfWbJmZy894fqHW7Nw@mail.gmail.com>
-References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org>
-	<793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
-	<1791712.tJBFGgQvyI@vostro.rjw.lan>
+From: Melanie Kambadur <melanie@cs.columbia.edu>
+Subject: powersave governor runs programs faster and uses more power than
+ performance governor
+Date: Wed, 23 Oct 2013 19:17:25 -0400
+Message-ID: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1791712.tJBFGgQvyI@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:date:message-id:subject:from:to:content-type;
+        bh=X495fTBhp62Ucfn/Wjt8hwTPB3U87BTszmrxJDRlZ2Q=;
+        b=MWtldtemOD8pix1CFJlnnn3C3jO+42OoS/eSmpxxqAarQKiz68oSL0I3ZbYQIzhZLT
+         UxRhfA4LLC/b+IfwzUO3jFWMtFZomdqtPRUQPVbAlSh8n3djzY9AQkDxDaAVw9sNED8x
+         1NkYeSb0Qvu/ZNvdWp+337Tz1JirkWWkb71/OwSXQGtR5qhPyHpdWpRs+h5MBYeetbBW
+         Q9K9cAKg/qts2brwq4KadEF2EasDLMeqLin/NhtXiB+hnpfEA/McIirQj+//znPk6bI5
+         Pl2DhV59X9mJmP4oPAY9meEjGsPQDO5ZU5TRS5yo8AmZPoUKlx50BlSVawa9O7ATseQv
+         2z/g==
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: cpufreq@vger.kernel.org
 
-On 26 September 2013 00:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> So the problem is real, but the fix seems to be of a "quick and dirty" kind.
->
-> First of all, it looks like we need a clear "begin transition" call that
-> I suppose drivers should execute from their .target() methods once they have
-> decided to do a transition.  That would increment the "ongoing" counter etc.
->
-> Second, we need a corresponding "end transition" call that would be executed
-> whenever appropriate from the driver's perspective.
->
-> Clearly, these two things should be independent of the notifiers and the
-> notifications should only be done between "begin transition" and "end
-> transition" and only by whoever called the "begin transition" to start with.
->
-> Now, question is what should happen if "begin transition" is called when
-> the previous transition hasn't been completed yet, should it block or should
-> it fail?  There seem to be arguments for both, but I suppose blocking would be
-> easier to implement.
+Hi all,
 
-I got another solution which is much simpler, and I really can't believe
-(psychologically) that it will solve all the problems we were talking about..
-Please see if there is any loophole in there..
+I am trying to understand some strange results I've observed using the
+3.9.11 kernel version of the powersave cpufreq governor on a Intel
+Xeon machine, and hoping you all can help.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index ec391d7..e4ed89a 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -340,6 +340,13 @@ static void __cpufreq_notify_transition(struct
-cpufreq_policy *policy,
-        }
- }
+More specifically, I am using a 24 core Intel Xeon 2430 machine
+running Ubuntu 12.04 and v 3.9.11 of the kernel. As I understand it,
+this configuration affords me two cpufreq scaling governors, powersave
+and performance. At least these are the options I get by running:
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
 
-+void cpufreq_notify_transition_each_cpu(struct cpufreq_policy *policy,
-+               struct cpufreq_freqs *freqs, unsigned int state)
-+{
-+       for_each_cpu(freqs->cpu, policy->cpus)
-+               __cpufreq_notify_transition(policy, freqs, state);
-+}
-+
- /**
-  * cpufreq_notify_transition - call notifier chain and adjust_jiffies
-  * on frequency transition.
-@@ -351,8 +358,34 @@ static void __cpufreq_notify_transition(struct
-cpufreq_policy *policy,
- void cpufreq_notify_transition(struct cpufreq_policy *policy,
-                struct cpufreq_freqs *freqs, unsigned int state)
- {
--       for_each_cpu(freqs->cpu, policy->cpus)
--               __cpufreq_notify_transition(policy, freqs, state);
-+       if ((state != CPUFREQ_PRECHANGE) && (state != CPUFREQ_POSTCHANGE))
-+               return cpufreq_notify_transition_each_cpu(policy, freqs, state);
-+
-+       /* Serialize pre-post notifications */
-+       mutex_lock(&policy->transition_lock);
-+       if (unlikely(WARN_ON(!policy->transition_ongoing &&
-+                               (state == CPUFREQ_POSTCHANGE)))) {
-+               mutex_unlock(&policy->transition_lock);
-+               return;
-+       }
-+
-+       if (state == CPUFREQ_PRECHANGE) {
-+               while (policy->transition_ongoing) {
-+                       mutex_unlock(&policy->transition_lock);
-+                       cpu_relax();
-+                       mutex_lock(&policy->transition_lock);
-+               }
-+
-+               policy->transition_ongoing = true;
-+               mutex_unlock(&policy->transition_lock);
-+       }
-+
-+       cpufreq_notify_transition_each_cpu(policy, freqs, state);
-+
-+       if (state == CPUFREQ_POSTCHANGE) {
-+               policy->transition_ongoing = false;
-+               mutex_unlock(&policy->transition_lock);
-+       }
- }
- EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
+Here's the issue. When I turn on the powersave governor, I have
+measured the power consumed to INCREASE relative to the performance
+governor. More surprisingly, I consistently see BETTER performance
+(i.e., shorter runtimes) with the powersave governor than with the
+performance governor for many applications out of a few sets of
+commonly used benchmark applications.  I repeated my experiments
+several times, even trying different cpuidle governors, and observed
+the same trends. To toggle between governors, I have been using the
+cpufreq-set -g command and confirming the updates by checking
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor.
 
-@@ -950,6 +983,8 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
-                goto err_free_cpumask;
+From what I've read (e.g., here:
+www.kernel.org/doc/Documentation/cpu-freq/governors.txt), the
+powersave governor's policy is to statically set the cpu frequency at
+the system minimum, whereas the performance governor aims to set the
+cpu frequency higher (or, depending on the documentation, at maximum).
+However, the fact that applications sped up for the powersave vs. the
+performance governor with these policies seemed incorrect to me, so I
+investigated further...
 
-        INIT_LIST_HEAD(&policy->policy_list);
-+       mutex_init(&policy->transition_lock);
-+
-        return policy;
+I profiled the current system frequency by periodically polling
+/sys/devices/system/cpu/cpu${N}/cpufreq/cpuinfo_cur_freq
+for all the available "N" values (0-23) on my machine.  I found that
+not only does the powersave governor not seem to be running at the
+system minimum, it actually seems to be running at a frequency higher
+than the performance governor. This would explain why I am seeing
+better performance and higher power for the powersave governor, but it
+certainly doesn't fit the policy descriptions in the documentation.
+Here are the results of my mini experiment:
 
- err_free_cpumask:
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 0aba2a6c..bb76909 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -85,6 +85,8 @@ struct cpufreq_policy {
-        struct list_head        policy_list;
-        struct kobject          kobj;
-        struct completion       kobj_unregister;
-+       bool                    transition_ongoing; /* Tracks
-transition status */
-+       struct mutex            transition_lock;
- };
+-Minimum system frequency=1.20 * 10^6
+-Maximum system frequency=2.70 * 10^6
+
+Avg. cpu frequency across all CPUs for 30 seconds of...
+-Powersave governor with no applications running = 1.77 * 10^6
+-Powersave governor with a benchmark app running = 2.23 * 10^6
+-Performance governor with no apps running = 1.23 * 10^6
+-Performance governor with a benchmark app running = 1.34 * 10^6
+
+Am I misunderstanding the policies of the powersave vs. performance
+governor, or is this possibly a system bug?
+
+Thanks for your help.
+
+Sincerely,
+Melanie Kambadur
