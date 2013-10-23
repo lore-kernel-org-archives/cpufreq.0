@@ -1,26 +1,30 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/4] CPUFreq stats: Bug fixes
-Date: Wed, 23 Oct 2013 09:53:54 +0530
-Message-ID: <CAKohpomJXw4W1rpN_QfTomiookqb2xXSNPcG+wS4WfH5LqD9jQ@mail.gmail.com>
-References: <cover.1380190886.git.viresh.kumar@linaro.org>
-	<alpine.LFD.2.03.1310221659450.1951@syhkavp.arg>
+Subject: Re: [PATCH V2 Resend 13/34] cpufreq: ia64: Convert to light weight
+ ->target_index() routine
+Date: Wed, 23 Oct 2013 09:56:30 +0530
+Message-ID: <CAKohpomR1rtRFP2bLi2M6gf6sN6Rc5H8Q8v9mk9M7+9EWHxsnw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.03.1310221659450.1951@syhkavp.arg>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 23 October 2013 02:36, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
-> My testing of those patches took a long and winding path but finally I
-> was able to do it today.
+On 22 October 2013 22:02, Luck, Tony <tony.luck@intel.com> wrote:
+>> This patch converts existing .target() to newly defined light weight
+>> .target_index() routine for this driver.
+>>
+>> CPUFreq core will call cpufreq_frequency_table_target() before calling this
+>> routine and will pass index to it.
+>>
+>> Cc: Tony Luck <tony.luck@intel.com>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 >
-> So for the 4 patches:
->
-> Tested-by: Nicolas Pitre <nico@linaro.org>
-> Acked-by: Nicolas Pitre <nico@linaro.org>
+> Tested-by: Tony Luck <tony.luck@intel.com>
 
-Ahh.. Thanks Nico.. that would be pretty helpful :)
+Thanks Tony..
+
+@Rafael: Count this Tested-by for 1/34 and 31/34 as he actually
+tested both :)
