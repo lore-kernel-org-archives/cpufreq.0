@@ -1,30 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
-Date: Wed, 23 Oct 2013 00:08:06 +0200
-Message-ID: <7442253.8xUmVU5UE1@vostro.rjw.lan>
-References: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org> <4207904.oBhTxYOkzS@vostro.rjw.lan> <CAKohponpp_RRdpHTdmZYXbmMGSaWsb-AsnedGiBHFKSMJPkHHA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: [PATCH 0/2] cpufreq support for the big.LITTLE switcher
+Date: Tue, 22 Oct 2013 23:58:09 -0400
+Message-ID: <1382500691-634-1-git-send-email-nicolas.pitre@linaro.org>
+Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponpp_RRdpHTdmZYXbmMGSaWsb-AsnedGiBHFKSMJPkHHA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: viresh.kumar@linaro.org, sudeep.karkadanagesha@arm.com, dave.martin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 
-On Tuesday, October 22, 2013 06:12:08 AM Viresh Kumar wrote:
-> On 22 October 2013 04:09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > I don't think I've missed it.  It should be commit 1bab64d in my tree.
-> 
-> I fetched your tree yesterday and this wasn't there in linux-next or
-> bleeding-edge branch.. When I fetched it now again, it is there..
+This is the third and final set of patches towards a fully functional
+and production quality switcher solution for big.LITTLE systems,
+establishing a landmark to compare against for any scheduler based
+solution meant to eventually surpass the switcher's power efficiency
+available in the mainline kernel.
 
-That's because I pushed an old branch by mistake on Sunday.  Sorry about
-that.
+Rationale for this code: http://lwn.net/Articles/481055/
 
-Thanks!
+The first and second patch sets have already been merged by RMK.  They
+implement the core switcher mechanism.  This set adds the necessary code
+to drive the switcher based on cpufreq governor decisions.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+
+ drivers/cpufreq/arm_big_little.c | 418 ++++++++++++++++++++++++++++++---
+ drivers/cpufreq/arm_big_little.h |   5 -
+ 2 files changed, 389 insertions(+), 34 deletions(-)
+
+
+
