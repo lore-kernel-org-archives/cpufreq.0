@@ -1,86 +1,164 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: powersave governor runs programs faster and uses more power than
- performance governor
-Date: Thu, 24 Oct 2013 09:56:11 -0400
-Message-ID: <526926FB.7010505@verisign.com>
-References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with regulators suspended
+Date: Thu, 24 Oct 2013 13:08:07 -0500
+Message-ID: <1382638087-32054-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Melanie Kambadur <melanie@cs.columbia.edu>
-Cc: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>
 
-Melanie,
+For platforms where regulators are used, regulator access tends to be
+disabled as part of the suspend path. In SMP systems such as OMAP,
+CPU1 is disabled as post suspend_noirq. This results in the following
+tail end sequence of actions:
+cpufreq_cpu_callback gets called with CPU_POST_DEAD
+	__cpufreq_remove_dev_finish is invoked as a result
+		__cpufreq_governor(policy, CPUFREQ_GOV_START) is
+		triggered
 
-By "Xeon 2430", I take it you mean dual E5-2430 CPUs in a 2-socket server or workstation?  What brand and model of machine is this in?
+At this point, with ondemand governor, if the cpu entered suspend path
+at a lower OPP, this triggers a transition request. However, since
+irqs are disabled, typically, regulator control using I2C operations
+are not possible either, regulator operations will naturally fail
+(even though clk_set_rate might succeed depending on the platform).
 
-There is a good chance your machine's BIOS is overriding the intentions of your p-state governor and doing whatever it feels like.  Both Dell and HP default to firmware-based governors vaguely like "ondemand" but less effective.  If the firmware is calling the shots, it could explain what you are seeing.  It would be worth seeing what your power management settings are in the BIOS, looking at what p-state driver you are using (e.g. acpi-cpufreq), and see what frequency your CPUs are really running at (the utility i7z may be able to help you if, like on some Dell BIOS settings, cpufreq cannot see the current frequency reliably).
+Unfortunately, cpufreq_driver->suspend|resume is too late as well, since
+they are invoked as part of syscore_ops (after CPU1 is hotplugged out).
 
-Your kernel is also rather odd if it has only the "powersave" and "performance" governors, which are not even really governors but rather static clock speed settings.  Ondemand is usually a good choice for servers, and can be configured to match the performance of the "performance" governor while consuming less power at idle.  Note that "performance" is sometimes not a very good way to get max performance, as it forces idle cores to run fast which eats up your power envelope unproductively, giving your busy cores less ability to go into boost.  Preventing the use of C1E is likewise usually a bad idea for the same reason, and typically makes power consumption go through the roof.
+The proposal here is to use pm notifier suspend to disable any
+requests to target, as we may very well expect this to fail at a later
+suspend sequence.
 
-DCN
+Reported-by: J Keerthy <j-keerthy@ti.com>
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+based on: v3.12-rc6
+Tested on v3.12-rc6 vendor forked tree which supports suspend
+Platform: OMAP5uEVM
 
-On 10/23/13 19:17, Melanie Kambadur wrote:
-> Hi all,
->
-> I am trying to understand some strange results I've observed using the
-> 3.9.11 kernel version of the powersave cpufreq governor on a Intel
-> Xeon machine, and hoping you all can help.
->
-> More specifically, I am using a 24 core Intel Xeon 2430 machine
-> running Ubuntu 12.04 and v 3.9.11 of the kernel. As I understand it,
-> this configuration affords me two cpufreq scaling governors, powersave
-> and performance. At least these are the options I get by running:
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
->
-> Here's the issue. When I turn on the powersave governor, I have
-> measured the power consumed to INCREASE relative to the performance
-> governor. More surprisingly, I consistently see BETTER performance
-> (i.e., shorter runtimes) with the powersave governor than with the
-> performance governor for many applications out of a few sets of
-> commonly used benchmark applications.  I repeated my experiments
-> several times, even trying different cpuidle governors, and observed
-> the same trends. To toggle between governors, I have been using the
-> cpufreq-set -g command and confirming the updates by checking
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor.
->
-> From what I've read (e.g., here:
-> www.kernel.org/doc/Documentation/cpu-freq/governors.txt), the
-> powersave governor's policy is to statically set the cpu frequency at
-> the system minimum, whereas the performance governor aims to set the
-> cpu frequency higher (or, depending on the documentation, at maximum).
-> However, the fact that applications sped up for the powersave vs. the
-> performance governor with these policies seemed incorrect to me, so I
-> investigated further...
->
-> I profiled the current system frequency by periodically polling
-> /sys/devices/system/cpu/cpu${N}/cpufreq/cpuinfo_cur_freq
-> for all the available "N" values (0-23) on my machine.  I found that
-> not only does the powersave governor not seem to be running at the
-> system minimum, it actually seems to be running at a frequency higher
-> than the performance governor. This would explain why I am seeing
-> better performance and higher power for the powersave governor, but it
-> certainly doesn't fit the policy descriptions in the documentation.
-> Here are the results of my mini experiment:
->
-> -Minimum system frequency=1.20 * 10^6
-> -Maximum system frequency=2.70 * 10^6
->
-> Avg. cpu frequency across all CPUs for 30 seconds of...
-> -Powersave governor with no applications running = 1.77 * 10^6
-> -Powersave governor with a benchmark app running = 2.23 * 10^6
-> -Performance governor with no apps running = 1.23 * 10^6
-> -Performance governor with a benchmark app running = 1.34 * 10^6
->
-> Am I misunderstanding the policies of the powersave vs. performance
-> governor, or is this possibly a system bug?
->
-> Thanks for your help.
->
-> Sincerely,
-> Melanie Kambadur
+Sample of the stack with i2c failure: http://pastebin.com/m5KxnB7a
+With i2c failure fixed: http://pastebin.com/8AfX4e7r
 
+I am open to alternative proposals if any - one option might be to
+introduce a similar behavior at cpufreq level as allowing cpufreq
+transitions in suspend path is probably not necessary.
+
+If folks think that respinning this patch such that there is no
+dependency on regulator to set is_suspended, it is fine with me as
+well.
+
+ drivers/cpufreq/cpufreq-cpu0.c |   47 +++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 44 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index c522a95..401d975 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -21,6 +21,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/slab.h>
++#include <linux/suspend.h>
+ 
+ static unsigned int transition_latency;
+ static unsigned int voltage_tolerance; /* in percentage */
+@@ -29,6 +30,8 @@ static struct device *cpu_dev;
+ static struct clk *cpu_clk;
+ static struct regulator *cpu_reg;
+ static struct cpufreq_frequency_table *freq_table;
++static DEFINE_MUTEX(cpu_lock);
++static bool is_suspended;
+ 
+ static int cpu0_verify_speed(struct cpufreq_policy *policy)
+ {
+@@ -50,12 +53,19 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ 	unsigned int index;
+ 	int ret;
+ 
++	mutex_lock(&cpu_lock);
++
++	if (is_suspended) {
++		ret = -EBUSY;
++		goto out;
++	}
++
+ 	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
+ 					     relation, &index);
+ 	if (ret) {
+ 		pr_err("failed to match target freqency %d: %d\n",
+ 		       target_freq, ret);
+-		return ret;
++		goto out;
+ 	}
+ 
+ 	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
+@@ -65,8 +75,10 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ 	freqs.new = freq_Hz / 1000;
+ 	freqs.old = clk_get_rate(cpu_clk) / 1000;
+ 
+-	if (freqs.old == freqs.new)
+-		return 0;
++	if (freqs.old == freqs.new) {
++		ret = 0;
++		goto out;
++	}
+ 
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+ 
+@@ -122,9 +134,32 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ post_notify:
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ 
++out:
++	mutex_unlock(&cpu_lock);
+ 	return ret;
+ }
+ 
++static int cpu0_pm_notify(struct notifier_block *nb, unsigned long event,
++	void *dummy)
++{
++	mutex_lock(&cpu_lock);
++	switch (event) {
++	case PM_SUSPEND_PREPARE:
++		is_suspended = true;
++		break;
++	case PM_POST_SUSPEND:
++		is_suspended = false;
++		break;
++	}
++	mutex_unlock(&cpu_lock);
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block cpu_pm_notifier = {
++	.notifier_call = cpu0_pm_notify,
++};
++
+ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	int ret;
+@@ -147,11 +182,17 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ 
+ 	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
+ 
++	if (!IS_ERR(cpu_reg))
++		register_pm_notifier(&cpu_pm_notifier);
++
+ 	return 0;
+ }
+ 
+ static int cpu0_cpufreq_exit(struct cpufreq_policy *policy)
+ {
++	if (!IS_ERR(cpu_reg))
++		unregister_pm_notifier(&cpu_pm_notifier);
++
+ 	cpufreq_frequency_table_put_attr(policy->cpu);
+ 
+ 	return 0;
+-- 
+1.7.9.5
