@@ -1,36 +1,167 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: powersave governor runs programs faster and uses more power than
- performance governor
-Date: Fri, 25 Oct 2013 14:27:31 -0400
-Message-ID: <526AB813.1080708@verisign.com>
-References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com> <CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com> <CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com> <526A82CC.1040709@gmail.com> <CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com> <526A9092.5000800@gmail.com> <CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] cpufreq: intel_pstate: skip the driver if ACPI has power mgmt option
+Date: Sat, 26 Oct 2013 00:15:08 +0200
+Message-ID: <2169245.5j9Xk20sM5@vostro.rjw.lan>
+References: <1382333227-28231-1-git-send-email-adrian.huang@hp.com> <5265503B.7000804@gmail.com> <1382620988.6298.2.camel@adrian-F6S>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1382620988.6298.2.camel@adrian-F6S>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Melanie Kambadur <melanie@cs.columbia.edu>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: adrian <adrian.huang@hp.com>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linda.knippers@hp.com
 
+On Thursday, October 24, 2013 09:23:08 PM adrian wrote:
+> Thanks, Dirk. The patch has been modified accordingly. 
+> 
+> Signed-off-by: Adrian Huang <adrian.huang@hp.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 80 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 80 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index badf620..8c00394 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -26,6 +26,8 @@
+>  #include <linux/fs.h>
+>  #include <linux/debugfs.h>
+>  #include <trace/events/power.h>
+> +#include <linux/acpi.h>
+> +#include <acpi/processor.h>
+>  
+>  #include <asm/div64.h>
+>  #include <asm/msr.h>
+> @@ -129,6 +131,18 @@ static struct perf_limits limits = {
+>  	.max_sysfs_pct = 100,
+>  };
+>  
+> +struct hw_vendor_info {
+> +	u16  valid;
+> +	char oem_id[ACPI_OEM_ID_SIZE];
+> +	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
+> +};
+> +
+> +/* Hardware vendor-specific info that has its own power management modes */
+> +static struct hw_vendor_info vendor_info[] = {
+> +	{1, "HP    ", "ProLiant"},
+> +	{0, "", ""},
+> +};
+> +
+>  static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+>  			int deadband, int integral) {
+>  	pid->setpoint = setpoint;
+> @@ -700,6 +714,63 @@ static int intel_pstate_msrs_not_valid(void)
+>  
+>  	return 0;
+>  }
+> +
+> +static bool intel_pstate_no_acpi_pss(void)
+> +{
+> +	struct acpi_processor *pr;
+> +	union acpi_object *pss = NULL;
+> +	int i;
+> +
+> +	for_each_possible_cpu(i) {
 
-I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
+Can you possibly reduce the max indentation level of this function,
+perhaps using the continue instruction?
 
-speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
+Also please move the definition of pss to the block in which that
+variable is used.
 
-It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
+> +
+> +		pr = per_cpu(processors, i);
+> +
+> +		if (pr) {
+> +			struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER,
+> +							NULL };
+> +
+> +			if (ACPI_SUCCESS(acpi_evaluate_object(pr->handle,
+> +						"_PSS", NULL, &buffer))) {
+> +
+> +				pss = buffer.pointer;
+> +
+> +				if (pss && pss->type == ACPI_TYPE_PACKAGE) {
+> +					kfree(buffer.pointer);
+> +					return false;
+> +				}
+> +
+> +				kfree(buffer.pointer);
+> +			}
+> +		}
+> +	}
+> +
+> +	return true;
+> +}
+> +
+> +static bool intel_pstate_platform_pwr_mgmt_exists(void)
+> +{
+> +	struct acpi_table_header hdr;
+> +	struct hw_vendor_info *v_info;
+> +
+> +	if (acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr) == AE_OK) {
 
-Meanwhile, can you rmmod intel-pstate?
+I'd do
 
-DCN
+	if (ACPI_FAILURE(acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr))
+		return false;
 
-On 10/25/13 12:35, Melanie Kambadur wrote:
-> If I disable intel_pstate on my kernel command line, I end up with
-> access only to the speedstep and p4-clockmod drivers, and no
-> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
-> driver? I've tried a couple of things without success.
->
-> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
-> sysadmin).
-> -Melanie
+and then the indentation level can be reduced.
+
+> +		for (v_info = vendor_info; v_info->valid; v_info++) {
+> +			/*
+> +			 * Check if the hardware/platform is in the
+> +			 * predefined vendor data.
+> +			 */
+> +			if (!strncmp(hdr.oem_id, v_info->oem_id,
+> +				     ACPI_OEM_ID_SIZE) &&
+> +			    !strncmp(hdr.oem_table_id, v_info->oem_table_id,
+> +				     ACPI_OEM_TABLE_ID_SIZE)) {
+> +				if (intel_pstate_no_acpi_pss())
+> +					return true;
+
+I think the above should be
+
+	if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE)
+	    && !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE)
+	    && intel_pstate_no_acpi_pss())
+		return true;
+
+(you don't need to break the lines longer than 80 characters if that makes
+the code less readable).
+
+> +			}
+> +		}
+> +	}
+> +
+> +	return false;
+> +}
+> +
+>  static int __init intel_pstate_init(void)
+>  {
+>  	int cpu, rc = 0;
+> @@ -708,6 +779,15 @@ static int __init intel_pstate_init(void)
+>  	if (no_load)
+>  		return -ENODEV;
+>  
+> +	if (!acpi_disabled) {
+> +		/*
+> +		 * Check if the platform has its own power management modes.
+> +		 * If so, the pstate cpufreq driver will be ignored.
+> +		 */
+> +		if (intel_pstate_platform_pwr_mgmt_exists())
+> +			return -ENODEV;
+> +	}
+> +
+>  	id = x86_match_cpu(intel_pstate_cpu_ids);
+>  	if (!id)
+>  		return -ENODEV;
+
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
