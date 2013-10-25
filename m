@@ -1,13 +1,12 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Subject: Re: [BUG 3.12.rc4] Oops: unable to handle kernel paging request
  during shutdown
-Date: Fri, 25 Oct 2013 02:08:09 -0700
-Message-ID: <20131025090809.GZ4118@linux.vnet.ibm.com>
+Date: Fri, 25 Oct 2013 10:13:42 +0100
+Message-ID: <20131025091342.GA10037@kroah.com>
 References: <525BD08C.2080101@t-online.de>
  <CA+55aFwN++wO=rTFaH7m6YYQX+Fv3qDt6Hxs7UnPUJpFsrwSkA@mail.gmail.com>
  <CA+55aFy7TpvkVuPEOJ7Qqirwap1gXoD1_MrYLhgPAYuVpN8u=w@mail.gmail.com>
  <CA+55aFyPffR=kt4njmB7oG012kayrKJPsP-u5JR+s7rERjofCg@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
@@ -17,7 +16,7 @@ List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Knut Petersen <Knut_Petersen@t-online.de>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, rusty@rustcorp.com.au
+Cc: Knut Petersen <Knut_Petersen@t-online.de>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org
 
 On Fri, Oct 25, 2013 at 10:02:22AM +0100, Linus Torvalds wrote:
 > Adding more people, so quoting the whole email for them.
@@ -29,13 +28,7 @@ On Fri, Oct 25, 2013 at 10:02:22AM +0100, Linus Torvalds wrote:
 > 
 > (a few times because unloading one module will then potentially make
 > other modules unloadable).
-
-Isn't it still the user's responsibility to ensure that a module will
-no longer being used before rmmod-ing it?  Or were all those race
-conditions fixed?
-
-							Thanx, Paul
-
+> 
 > On my machine, I can trigger this, for example:
 > 
 >   ------------[ cut here ]------------
@@ -66,32 +59,30 @@ conditions fixed?
 > This particular cpufreq issue may be triggered by the fact that
 > acpi-cpufreq isn't actually in use (pstate is). Or it might be some
 > generic cpufreq/sysfs bug. Rafael, Greg, ideas?
-> 
+
+It looks like a cpufreq bug as the sysfs core is telling the driver that
+it tried to delete an attribute file that had already been cleaned up.
+That's usually true if the kobject was deleted previously (which
+recursively removes the files.)
+
+In looking at the cpufreq_sysfs code, there's a hack of a reference
+count that is trying to determine if the kobject should be freed or not.
+Using an integer that is not protected by a lock to try to duplicate the
+internal kobject reference count seems like a race condition waiting to
+happen, which I'm guessing is happening here.
+
+I'm slowly working on cleaning up the attribute code in sysfs and the
+driver core and the cpufreq handling of attributes is on my list of
+places that need the rework, so it will get resolved soon.
+
 > I don't see that this particular one would be the one that causes the
 > timer issues, but it's an example of the fact that module unload tends
 > to be special and not necessarily well tested.
-> 
->                    Linus
-> 
-> On Fri, Oct 25, 2013 at 9:38 AM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >
-> > Hmm.. I just got a run_timer_softirq oops on my own laptop, slightly
-> > different. That was not during shutdown, although there was a "yum
-> > upgrade" finishing when that happened, so it's quite likely that there
-> > was a service shutdown (and then restart).
-> >
-> > I think it's related. But my oops has almost no information: the IP
-> > that was jumped to was bogus, and the callchain is just CPU idle
-> > followed by the softirq -> run_timers_softirq handling, so there's no
-> > real way to see *what* triggered it.
-> >
-> > The bad rip was ffffffffa051e250, which is not a valid code address.
-> > It *might* be a module address, though. So this might be triggered by
-> > rmmod on some module that doesn't remove all its timers...
-> >
-> > Ideas?
-> >
-> >                  Linus
-> 
 
+Yeah, this is a warning that can be safely ignored (the sysfs core
+handles the error just fine), it's a warning to the developer that they
+did something foolish.
+
+thanks,
+
+greg k-h
