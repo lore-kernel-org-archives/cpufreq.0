@@ -1,50 +1,85 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+From: Melanie Kambadur <melanie@cs.columbia.edu>
 Subject: Re: powersave governor runs programs faster and uses more power than
  performance governor
-Date: Fri, 25 Oct 2013 07:40:12 -0700
-Message-ID: <526A82CC.1040709@gmail.com>
-References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>	<CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com> <CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>
+Date: Fri, 25 Oct 2013 11:13:15 -0400
+Message-ID: <CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com>
+References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
+	<CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>
+	<CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>
+	<526A82CC.1040709@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=/bryH0ouJAfLBElL5bJS0owKdYOA8ALfyr4jgXG/x58=;
-        b=y8TcOx1vtX0G7/fGdzbjZ4GCxnwqs0dRuxVzxmjdN0ILhnrpQmn8M2O7PtFk9nFFQC
-         V5edqsnwiIoUXcnaJ5nL9pj3qic3KwYz/J8tn1wQia7xEPBxBswjuCk+hFoJlCMS67yw
-         Br3ibyRa5EDx5zLhCes4JYuZLuVy2AsW8fRJW2lTzzzQxYmfd3QDygY98saVgx047dqU
-         65v7fWjrQuFSBcXBWggu/cn8NT9R1lq7AIu8sAPs+uD4HRoAriDBeZmHTYLZ5Rs5Y1Qf
-         4FkL++9HuVpH+reQHd27XexjsSovHSr9N+rYU2om7b5Cv82HGsQCBA6hMeb1xVWogAQ1
-         l6FA==
-In-Reply-To: <CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type;
+        bh=/4as5HR2V/yvoKjrSbEmprXMBfO6RQAjBac8z/57OxY=;
+        b=iwKKPGUe6zBOn1Q38987EKmRjhfncm+QHMLmsLzWK1FwgxyKpBpGJIKuyY0ufbe16S
+         lkNnZUb9wS/TmuoMWe545rxs0lumIAZdK0sCztW/IDTT4PaWBVgMn909PjwgZVhYbzhm
+         jl7C6QdWkNSjpCl85UIY2WciRg3t8mBUrsevREzTQfH4NfLiklmw6UGYeTpXDuS5yPMb
+         Y6/oFdtd6MNv0z3vKeEipU8Tt+Ev+ob++ibqXnWg2SAmwBGO2YB+P70lH3NpTaCPW49T
+         P2UsSv7PjfhxCCDOKjSq1tjzKRb+/3fWOVGsAAqw0+7Oyfi8ZHKDRnZ/gaMxGwQKS3Mu
+         iZ0g==
+In-Reply-To: <526A82CC.1040709@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Melanie Kambadur <melanie@cs.columbia.edu>, Viresh Kumar <viresh.kumar@linaro.org>, David C Niemi <dniemi@verisign.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, David C Niemi <dniemi@verisign.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 10/24/2013 12:42 PM, Melanie Kambadur wrote:
+I appreciate you all taking the time to walk me through this.  Let me
+see if I understand the new comments. Intel p-states is a HW-based
+power manager, and strictly an alternative to (i.e., it cannot be
+combined with) OS governors and drivers. If I want to use ondemand
+with my Dell server I need to:
+
+1) Modify the BIOS to give the OS exclusive power management control
+because otherwise an OS driver won't be able to work properly. (I
+think I know how to do this now after some more reading, e.g. here
+http://en.community.dell.com/techcenter/power-cooling/w/wiki/best-practices-in-power-management.aspx
+if anyone is curious.)
+2) Set the O/S cpufreq driver to acpi_cpufreq, and
+3) Set the O/S cpufreq governor to ondemand.
+
+Is that correct?
+
+Also, which driver should I try to use if I want to test the
+performance & powersave governors again (or if I replicate the
+behavior of the performance governor by manually modifying the
+min_perf_pct value as Dirk suggested)? Will it still be acpi_cpufreq?
+
+Finally, the behavior of the C-states is totally independent of
+P-states and any kind of OS-based frequency tuning policy, correct?
+However, David recommends that leaving C1E on rarely hurts performance
+while significantly improving power.
+
+-Melanie
+
+On Fri, Oct 25, 2013 at 10:40 AM, Dirk Brandewie
+<dirk.brandewie@gmail.com> wrote:
+> On 10/24/2013 12:42 PM, Melanie Kambadur wrote:
+>>
+>>
+>>  From /sys/devices/system/cpu/cpuN/cpufreq/scaling_driver I get that
+>> the current p-state driver is called "intel_pstate". David, you
+>> mention that the firmware governors are not very efficient, do you
+>> suggest replacing the intel_pstate driver with a different driver?
 >
->  From /sys/devices/system/cpu/cpuN/cpufreq/scaling_driver I get that
-> the current p-state driver is called "intel_pstate". David, you
-> mention that the firmware governors are not very efficient, do you
-> suggest replacing the intel_pstate driver with a different driver?
-
-I will need to look and see why changing to performance isn't working
-correctly.
-
-To get the behavior of the performance governor you can use
-
-    echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
-
-This will force intel_pstate to select the highest P state and
-leave it there.
-
-Turbostat is useful for collecting frequency (P state) and idle (C state)
-information.
-
---Dirk
-
-
+>
+> I will need to look and see why changing to performance isn't working
+> correctly.
+>
+> To get the behavior of the performance governor you can use
+>
+>    echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+>
+> This will force intel_pstate to select the highest P state and
+> leave it there.
+>
+> Turbostat is useful for collecting frequency (P state) and idle (C state)
+> information.
+>
+> --Dirk
+>
+>
