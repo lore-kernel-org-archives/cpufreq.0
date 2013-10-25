@@ -1,38 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V2 Resend 00/34] CPUFreq Cleanup Part III
-Date: Fri, 25 Oct 2013 14:56:53 +0200
-Message-ID: <14730355.7hm7UiW5IU@vostro.rjw.lan>
-References: <cover.1382104514.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [BUG 3.12.rc4] Oops: unable to handle kernel paging request
+ during shutdown
+Date: Fri, 25 Oct 2013 19:19:57 +0530
+Message-ID: <CAKohpo=QV831nP1WcdrWRCB7vkAtKPiSvSujbeE3usM+LCZpTg@mail.gmail.com>
+References: <525BD08C.2080101@t-online.de>
+	<3005031.0yf0g1BPEE@vostro.rjw.lan>
+	<CA+55aFy3dFGsN_Ckaq8egmaEi_JV_qAVOjR6h3gojyBWwA-jpA@mail.gmail.com>
+	<1529148.xq0P7G6L83@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1529148.xq0P7G6L83@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Knut Petersen <Knut_Petersen@t-online.de>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Friday, October 18, 2013 07:29:23 PM Viresh Kumar wrote:
-> As Part II is already in your linux-next branch, I am sending Part III for
-> inclusion in bleeding-edge.
-> 
-> This is oriented around a light weight ->target_index() routine. CPUFreq
-> notifications would be moved to CPUFreq core in the next patchset that I will
-> send, as you suggested not to merge multiple series together.. Although both of
-> them are oriented towards a light weight ->target_index() routine.
-> 
-> This is rebased over your bleeding-edge branch + "cpufreq: create per policy
-> rwsem instead of per CPU cpu_policy_rwsem"..
+On 25 October 2013 16:40, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
+> +++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
+> @@ -986,12 +986,12 @@ static int __init acpi_cpufreq_init(void
+>  {
+>         int ret;
+>
+> +       if (acpi_disabled)
+> +               return -ENODEV;
+> +
+>         /* don't keep reloading if cpufreq_driver exists */
+>         if (cpufreq_get_current_driver())
+> -               return 0;
+> -
+> -       if (acpi_disabled)
+> -               return 0;
+> +               return -EEXIST;
+>
+>         pr_debug("acpi_cpufreq_init\n");
 
-Having considered that a bit I think that I'd prefer one patch doing all of
-these changes in one go (and with all applicable ACKs collected), one of the
-reasons being that if it is necessary to revert that stuff, whatever the
-reason, it will be much easier to do that with just one commit than with
-34 of them.
+Even better,
 
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
