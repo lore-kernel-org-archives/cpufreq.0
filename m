@@ -1,133 +1,134 @@
-From: Adrian Huang <adrian.huang@hp.com>
-Subject: [PATCH v2] cpufreq: intel_pstate: skip the driver if ACPI has power
- mgmt option
-Date: Mon, 28 Oct 2013 17:22:10 +0800
-Message-ID: <1382952130.4419.10.camel@adrian-F6S>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: [BUG 3.12.rc4] Oops: unable to handle kernel paging request during
+ shutdown
+Date: Mon, 28 Oct 2013 16:02:03 +0100
+Message-ID: <526E7C6B.6070603@t-online.de>
+References: <525BD08C.2080101@t-online.de>	<CA+55aFwN++wO=rTFaH7m6YYQX+Fv3qDt6Hxs7UnPUJpFsrwSkA@mail.gmail.com>	<CA+55aFy7TpvkVuPEOJ7Qqirwap1gXoD1_MrYLhgPAYuVpN8u=w@mail.gmail.com> <CA+55aFyPffR=kt4njmB7oG012kayrKJPsP-u5JR+s7rERjofCg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CA+55aFyPffR=kt4njmB7oG012kayrKJPsP-u5JR+s7rERjofCg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linda.knippers@hp.com, adrian.huang@hp.com
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org
 
-This patch minimizes indentation levels and re-defines some local variables.
+On 25.10.2013 11:02, Linus Torvalds wrote:
+> Adding more people, so quoting the whole email for them.
+>
+> We definitely have some module unload issues. Guys, try the following
+> a few times to unload modules:
+>
+>      lsmod | grep ' 0 '| cut -d' ' -f1 | xargs sudo rmmod
+>
+> (a few times because unloading one module will then potentially make
 
-Signed-off-by: Adrian Huang <adrian.huang@hp.com>
----
-Changes since v1:
- * Minimize indentation levels (Commented by Rafael)
- * Re-define some local variables (Commented by Rafael)
- * Return -ENODEV if platform FW has power management modes (Commented by Dirk)
+I do use a quite monolithic kernel with only a few modules, and one of the machines is
+pretty stripped down:
 
- drivers/cpufreq/intel_pstate.c | 70 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 70 insertions(+)
+I was unable to trigger any unusual kernel reaction within 10000 rmmod / modprobe cycles.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index eb3fdc7..8770d67 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -26,6 +26,8 @@
- #include <linux/fs.h>
- #include <linux/debugfs.h>
- #include <trace/events/power.h>
-+#include <linux/acpi.h>
-+#include <acpi/processor.h>
- 
- #include <asm/div64.h>
- #include <asm/msr.h>
-@@ -129,6 +131,18 @@ static struct perf_limits limits = {
- 	.max_sysfs_pct = 100,
- };
- 
-+struct hw_vendor_info {
-+	u16  valid;
-+	char oem_id[ACPI_OEM_ID_SIZE];
-+	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
-+};
-+
-+/* Hardware vendor-specific info that has its own power management modes */
-+static struct hw_vendor_info vendor_info[] = {
-+	{1, "HP    ", "ProLiant"},
-+	{0, "", ""},
-+};
-+
- static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
- 			int deadband, int integral) {
- 	pid->setpoint = setpoint;
-@@ -698,6 +712,55 @@ static int intel_pstate_msrs_not_valid(void)
- 
- 	return 0;
- }
-+
-+static bool intel_pstate_no_acpi_pss(void)
-+{
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		acpi_status status = AE_OK;
-+		struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+		struct acpi_processor *pr = per_cpu(processors, i);
-+		union acpi_object *pss = NULL;
-+
-+		if (!pr)
-+			continue;
-+
-+		status = acpi_evaluate_object(pr->handle, "_PSS",
-+					      NULL, &buffer);
-+		if (ACPI_FAILURE(status))
-+			continue;
-+
-+		pss = buffer.pointer;
-+		if (pss && (pss->type == ACPI_TYPE_PACKAGE)) {
-+			kfree(buffer.pointer);
-+			return false;
-+		}
-+
-+		kfree(buffer.pointer);
-+	}
-+
-+	return true;
-+}
-+
-+static bool intel_pstate_platform_pwr_mgmt_exists(void)
-+{
-+	struct acpi_table_header hdr;
-+	struct hw_vendor_info *v_info;
-+
-+	if (ACPI_FAILURE(acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr)))
-+		return false;
-+
-+	for (v_info = vendor_info; v_info->valid; v_info++) {
-+		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE)
-+		    && !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE)
-+		    && intel_pstate_no_acpi_pss())
-+			return true;
-+	}
-+
-+	return false;
-+}
-+
- static int __init intel_pstate_init(void)
- {
- 	int cpu, rc = 0;
-@@ -706,6 +769,13 @@ static int __init intel_pstate_init(void)
- 	if (no_load)
- 		return -ENODEV;
- 
-+	/*
-+	 * The Intel pstate driver will be ignored if the platform
-+	 * firmware has its own power management modes.
-+	 */
-+	if (!acpi_disabled && intel_pstate_platform_pwr_mgmt_exists())
-+		return -ENODEV;
-+
- 	id = x86_match_cpu(intel_pstate_cpu_ids);
- 	if (!id)
- 		return -ENODEV;
--- 
-1.8.1.2
+
+lsmod
+=====
+
+Module                  Size  Used by
+ip6t_REJECT            12489  3
+nf_conntrack_ipv6      13453  3
+nf_defrag_ipv6         49936  1 nf_conntrack_ipv6
+ip6table_raw           12565  1
+ipt_REJECT             12485  3
+xt_tcpudp              12531  6
+xt_pkttype             12456  3
+xt_LOG                 17205  12
+xt_limit               12570  12
+iptable_raw            12561  1
+xt_CT                  12820  4
+iptable_filter         12666  1
+ip6table_mangle        12579  0
+nf_conntrack_netbios_ns    12585  0
+nf_conntrack_broadcast    12541  1 nf_conntrack_netbios_ns
+nf_conntrack_ipv4      13655  3
+nf_defrag_ipv4         12649  1 nf_conntrack_ipv4
+ip_tables              17713  2 iptable_raw,iptable_filter
+xt_conntrack           12664  6
+nf_conntrack           67920  6 nf_conntrack_ipv6,xt_CT,nf_conntrack_netbios_ns,nf_conntrack_broadcast,nf_conntrack_ipv4,xt_conntrack
+ip6table_filter        12670  1
+ip6_tables             17740  3 ip6table_raw,ip6table_mangle,ip6table_filter
+x_tables               21937  15 ip6t_REJECT,ip6table_raw,ipt_REJECT,xt_tcpudp,xt_pkttype,xt_LOG,xt_limit,iptable_raw,xt_CT,iptable_filter,ip6table_mangle,ip_tables,xt_conntrack,ip6table_filter,ip6_tables
+snd_rme96              24387  0
+snd_hda_intel          34073  0
+snd_hda_codec_realtek    41826  1
+snd_hda_codec         129150  2 snd_hda_intel,snd_hda_codec_realtek
+snd_pcm                73096  3 snd_rme96,snd_hda_intel,snd_hda_codec
+snd_timer              24441  1 snd_pcm
+snd_page_alloc         14230  2 snd_hda_intel,snd_pcm
+snd                    58328  6 snd_rme96,snd_hda_intel,snd_hda_codec_realtek,snd_hda_codec,snd_pcm,snd_timer
+soundcore              14599  1 snd
+binfmt_misc            13111  1
+ipv6                  272895  24 ip6t_REJECT,nf_conntrack_ipv6,nf_defrag_ipv6,ip6table_mangle
 
 
 
+
+
+
+> other modules unloadable).
+>
+> On my machine, I can trigger this, for example:
+>
+>    ------------[ cut here ]------------
+>    WARNING: CPU: 0 PID: 3217 at fs/sysfs/file.c:498 sysfs_attr_ns+0x91/0xa0()
+>    sysfs: kobject (null) without dirent
+>    Modules linked in: fuse nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT xt_$
+>    CPU: 0 PID: 3217 Comm: rmmod Not tainted 3.12.0-rc6-00284-ge6036c0b8896 #19
+>    Hardware name: Sony Corporation SVP11213CXB/VAIO, BIOS R0270V7 05/17/2013
+>     0000000000000009 ffff8800aca35df8 ffffffff8160aab5 ffff8800aca35e40
+>     ffff8800aca35e30 ffffffff810514b8 ffffffffa013f080 ffff8801194a6040
+>     0000000000000800 0000000000000000 0000000000c5b3e0 ffff8800aca35e90
+>    Call Trace:
+>     [<ffffffff8160aab5>] dump_stack+0x45/0x56
+>     [<ffffffff810514b8>] warn_slowpath_common+0x78/0xa0
+>     [<ffffffff81051527>] warn_slowpath_fmt+0x47/0x50
+>     [<ffffffff810b5960>] ? module_refcount+0xb0/0xb0
+>     [<ffffffff811e5c61>] sysfs_attr_ns+0x91/0xa0
+>     [<ffffffff811e5d2a>] sysfs_remove_file+0x1a/0x50
+>     [<ffffffff814c88a3>] cpufreq_sysfs_remove_file+0x13/0x30
+>     [<ffffffffa013d350>] acpi_cpufreq_exit+0x2e/0xcde [acpi_cpufreq]
+>     [<ffffffff810b7d1d>] SyS_delete_module+0x15d/0x2c0
+>     [<ffffffff81002929>] ? do_notify_resume+0x59/0x90
+>     [<ffffffff81618f62>] system_call_fastpath+0x16/0x1b
+>    ---[ end trace f887112caaa5c4ab ]---
+>
+> so at least we have a cpufreq/sysfs interaction bug. There may be others.
+>
+> This particular cpufreq issue may be triggered by the fact that
+> acpi-cpufreq isn't actually in use (pstate is). Or it might be some
+> generic cpufreq/sysfs bug. Rafael, Greg, ideas?
+>
+> I don't see that this particular one would be the one that causes the
+> timer issues, but it's an example of the fact that module unload tends
+> to be special and not necessarily well tested.
+>
+>                     Linus
+>
+> On Fri, Oct 25, 2013 at 9:38 AM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+>> Hmm.. I just got a run_timer_softirq oops on my own laptop, slightly
+>> different. That was not during shutdown, although there was a "yum
+>> upgrade" finishing when that happened, so it's quite likely that there
+>> was a service shutdown (and then restart).
+>>
+>> I think it's related. But my oops has almost no information: the IP
+>> that was jumped to was bogus, and the callchain is just CPU idle
+>> followed by the softirq -> run_timers_softirq handling, so there's no
+>> real way to see *what* triggered it.
+>>
+>> The bad rip was ffffffffa051e250, which is not a valid code address.
+>> It *might* be a module address, though. So this might be triggered by
+>> rmmod on some module that doesn't remove all its timers...
+>>
+>> Ideas?
+>>
+>>                   Linus
