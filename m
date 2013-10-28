@@ -1,39 +1,57 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: Questions about Runtime PM
-Date: Mon, 28 Oct 2013 16:19:39 -0400
-Message-ID: <526EC6DB.2060303@verisign.com>
-References: <Pine.LNX.4.44L0.1310281512460.1246-100000@iolanthe.rowland.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [GIT PULL]: CPUFreq: ARM Updates for 3.13
+Date: Tue, 29 Oct 2013 03:19:28 +0530
+Message-ID: <CAKohpombdzugLe0Q2NUttrapJuSqMDz41ECdxcHfh5dtPgiV0Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1310281512460.1246-100000@iolanthe.rowland.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Luis Alfonso Maeda-Nunez <lm15g10@ecs.soton.ac.uk>, cpufreq@vger.kernel.org, rjw@sisk.pl
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 
-On 10/28/13 15:16, Alan Stern wrote:
-> On Mon, 28 Oct 2013, Luis Alfonso Maeda-Nunez wrote:
-...
-> Reading through the documentation of Runtime PM it 
-> sends the processor (or any device) to sleep after a period of idleness. 
-> In my system, however, as I am running a benchmark (fft from MiBench) in 
-> a loop, suddenly the processor is sent to a low power mode (without 
-> being idle). I looked at the traces (attached to this email) and it just 
-> goes to C1 (I believe it's for ACPI).
-> I don't understand how a CPU can go into a low-power mode like C1 
-> without being idle.  By definition, when the CPU isn't in C0, it isn't 
-> doing any work.
-Depends on how you define "CPU" and "idle".
+Hi Rafael,
 
-A busy CPU will have a number of cores idle at least for short periods of time while others are busy.
+I have pushed ARM cpufreq patches for v3.13, you can pull them from my
+repo. Sorry if I am late...
 
-And a busy core typically spend time in C1 while it waits for I/O (unless it is 100% compute-bound for the long haul and there is zero I/O going on, which is kind of unusual).
+The following changes since commit 959f58544b7f20c92d5eb43d1232c96c15c01bfb:
 
-I expect fft to be pretty compute-bound, but it's hard to keep all cores 100% busy 100% of the time for long.  Or there may just be a bad idle config.  Is this with intel-idle or acpi-idle?
+  Linux 3.12-rc7 (2013-10-27 16:12:03 -0700)
 
-Also, normally a core hops between C0 and C1 extremely rapidly.  It is more meaningful to talk about what percentage of time it spends in each, it is almost impossible to stay in either one continuously.
+are available in the git repository at:
 
-DCN
+  git://git.linaro.org/people/vireshk/linux.git cpufreq-next-for-3.13
 
+for you to fetch changes up to 2332c7a7a8c1979de68429dcdcb125037ef35f4b:
+
+  cpufreq: arm_big_little: reconfigure switcher behavior at run time
+(2013-10-29 03:18:41 +0530)
+
+----------------------------------------------------------------
+Nicolas Pitre (1):
+      cpufreq: arm_big_little: reconfigure switcher behavior at run time
+
+Sudeep KarkadaNagesha (5):
+      cpufreq: arm-big-little: use clk_get instead of clk_get_sys
+      ARM: vexpress/TC2: add support for CPU DVFS
+      ARM: vexpress/TC2: add cpu clock support
+      cpufreq: arm_big_little: add vexpress SPC interface driver
+      ARM: vexpress/TC2: register vexpress-spc cpufreq device
+
+Viresh Kumar (1):
+      cpufreq: arm_big_little: add in-kernel switching (IKS) support
+
+ arch/arm/mach-vexpress/Kconfig         |  12 +
+ arch/arm/mach-vexpress/Makefile        |   3 +-
+ arch/arm/mach-vexpress/spc.c           | 366 +++++++++++++++++++++++++++-
+ arch/arm/mach-vexpress/spc.h           |   2 +-
+ arch/arm/mach-vexpress/tc2_pm.c        |   7 +-
+ drivers/cpufreq/Kconfig.arm            |   8 +
+ drivers/cpufreq/Makefile               |   1 +
+ drivers/cpufreq/arm_big_little.c       | 420 ++++++++++++++++++++++++++++++---
+ drivers/cpufreq/arm_big_little.h       |   5 -
+ drivers/cpufreq/vexpress-spc-cpufreq.c |  69 ++++++
+ 10 files changed, 853 insertions(+), 40 deletions(-)
+ create mode 100644 drivers/cpufreq/vexpress-spc-cpufreq.c
