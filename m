@@ -1,106 +1,122 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: powersave governor runs programs faster and uses more power than
- performance governor
-Date: Tue, 29 Oct 2013 10:03:33 -0700
-Message-ID: <526FEA65.2030301@gmail.com>
-References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>	<CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>	<CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>	<526A82CC.1040709@gmail.com>	<CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com>	<526A9092.5000800@gmail.com>	<CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>	<526AB813.1080708@verisign.com>	<CAMeUXYtOURtQ4_iH4meuua2CWDiAFrKNYE9Zz2irYhAnt9AP8A@mail.gmail.com> <CAMeUXYvOTA4FXOo_mZKqeGnC_EhjBNMAsks41p0kx8YHXt9Cew@mail.gmail.com>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
+Date: Tue, 29 Oct 2013 10:46:55 -0700
+Message-ID: <CAPtuhTgQ1M7Z3PCFCPVTKT-uY+JE6cGSdbEfJrLMmbRr+C9MZA@mail.gmail.com>
+References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
+ <5264425E.4040301@samsung.com> <20131021121605.11944.74007@quantum>
+ <1823897.8rOixkM4PW@amdc1227> <526FD849.9050000@samsung.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=7dHeiLEZDwLp2EkHb7Fk93JLqYfpNJoWaNE56jhi/w0=;
-        b=SBukG0H3Tg6d8llU1p3hschrba704shsfBE+uGb9wbPkaA8iYEt4TyGW37KCvu+Bcr
-         MvuQPvajsnJ9ZG2fq8xS09/gjIQ4tEY1FW6oaZM/iCSq8l5D6e7S1SiGvNtUuY2uZxTr
-         VPfDMmaBRq0LWeIfLYnoecmsnBAp15deedDDvGdvYYqJmFuXKyYsR339dVpXDUDMisgJ
-         F+8Zb4xyLoyQ/QcPDa/5ItSdQhzPy+WDbwHpetZ//53YDkTSgMqk9GjfPi8Vk/4GSk85
-         xM3Nk2sbg/4mgclnApOlyR5MVu5VCEWoUUY7iF8KD/SwsqCZHEMyldMR3HsdMWMmrhpi
-         Ukiw==
-In-Reply-To: <CAMeUXYvOTA4FXOo_mZKqeGnC_EhjBNMAsks41p0kx8YHXt9Cew@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Melanie Kambadur <melanie@cs.columbia.edu>, David C Niemi <dniemi@verisign.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <526FD849.9050000@samsung.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-doc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mateusz Krawczuk <m.krawczuk@partner.samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, cpufreq@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, b.zolnierkie@samsung.com, t.stanislaws@samsung.com, devicetree <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Ben Dooks <ben-linux@fluff.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead>
 
-On 10/29/2013 09:27 AM, Melanie Kambadur wrote:
-> Apologies, I accidentally sent my last mail before finishing...
->
-> The available governors I have now are:
-> conservative ondemand userspace powersave performance.
->
-
-Only ondemand will have any active control of the P state requested.
-
-performance == highest P state (reported by ACPI) is requested
-powersave   == lowest P state (reported by ACPI) is requested
-userspace   == Allows the user select a single P state.
-
-With intel_pstate enabled
-performance == highest P state (enumerated form CPU) is requested.
-powersave   == Active control of the P state similar to ondemand.
-
-To get userspace governor behavior set
-/sys/devices/system/cpu/intel_pstate/{min, max}_perf_pct to the same
-values.
-
-/sys/devices/system/cpu/intel_pstate/no_turbo allows you to configure
-whether P states in the turbo range for your CPU will be selected.
-
-
-> Thankfully, I did not have to modify my kernel at all to get these.
-> Once I get the chance to run some tests, I will keep you posted as to
-> whether the governors behave as documented with this new
-> configuration.
->
-> Thanks again for the pointers and suggestions that got me this far!
->
-> Melanie
->
-> On Tue, Oct 29, 2013 at 12:25 PM, Melanie Kambadur
-> <melanie@cs.columbia.edu> wrote:
->> After getting the chance to modify the BIOS, it finally looks like I
->> have the options that I want in terms of drivers/governors.
+On Tue, Oct 29, 2013 at 8:46 AM, Kukjin Kim <kgene.kim@samsung.com> wrote:
+> On 10/29/13 04:42, Tomasz Figa wrote:
 >>
->> FYI, rmmod intel-pstate did not work (before or after modifying the
->> bios),
-
-intel_pstate is built-in only and not a module :-)
-
->> and as I mentioned earlier, before updating the bios, setting
->> intel_pstate=disable erased most of my driver/governor options.
-
-The cpufreq core creates the sysfs files as governors are registered
-with the core.  With intel_pstate=disable the driver will not register
-with the core so if no other drivers/governors register with the core
-the sysfs files will be missing.
-
->> What
->> did work was to update the BIOS to OS control as suggested, and THEN
->> setting intel_pstate=disable gave me the acpi-cpufreq driver, along
->> with the following governors:
+>> Hi Kukjin, Mike,
 >>
->> On Fri, Oct 25, 2013 at 2:27 PM, David C Niemi <dniemi@verisign.com> wrote:
+>> On Monday 21 of October 2013 05:16:05 Mike Turquette wrote:
 >>>
->>> I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
->>>
->>> speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
->>>
->>> It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
->>>
->>> Meanwhile, can you rmmod intel-pstate?
->>>
->>> DCN
->>>
->>> On 10/25/13 12:35, Melanie Kambadur wrote:
->>>> If I disable intel_pstate on my kernel command line, I end up with
->>>> access only to the speedstep and p4-clockmod drivers, and no
->>>> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
->>>> driver? I've tried a couple of things without success.
+>>> Quoting Kukjin Kim (2013-10-20 13:51:42)
 >>>>
->>>> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
->>>> sysadmin).
->>>> -Melanie
+>>>> On 10/20/13 01:03, Tomasz Figa wrote:
+>>>>>
+>>>>> Hi Mike, Kukjin, Rafael,
+>>>>>
+>>>>> On Tuesday 24 of September 2013 14:50:06 Mateusz Krawczuk wrote:
+>>>>>>
+>>>>>> This patch series is the new s5pv210 clock implementation
+>>>>>> (using common clk framework).
+>>>>>>
+>>>>>> This implementation is compatible with device tree definition and
+>>>>>> board
+>>>>>> files.
+>>>>>>
+>>>>>> This patch series is based on linux-next and has been tested on goni
+>>>>>> and
+>>>>>> aquila
+>>>>>> boards using board file.
+>>>>>>
+>>>>>> Since v4:
+>>>>>> Corrected mux flags for finpll.
+>>>>>>
+>>>>>> Since v3:
+>>>>>>
+>>>>>> Replace s5pv210_clk_register_finpll, by creating mux finpll
+>>>>>> with xusbxti and xxti as parrents.
+>>>>>>
+>>>>>>
+>>>>>> Mateusz Krawczuk (3):
+>>>>>>     clk: samsung: Add clock driver for s5pc110/s5pv210
+>>>>>>     Cpufreq: s5pv210 cpufreq fixes for CCF
+>>>>>>     ARM: s5pv210: Migrate clock handling to Common Clock Framework
+>>>>>>
+>>>>>>    .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
+>>>>>>    arch/arm/mach-s5pv210/Kconfig                      |   9 +
+>>>>>>    arch/arm/mach-s5pv210/Makefile                     |   4 +-
+>>>>>>    arch/arm/mach-s5pv210/common.c                     |  17 +
+>>>>>>    arch/arm/mach-s5pv210/common.h                     |  10 +
+>>>>>>    arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
+>>>>>>    arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
+>>>>>>    arch/arm/plat-samsung/Kconfig                      |   2 +-
+>>>>>>    drivers/clk/samsung/Makefile                       |   3 +
+>>>>>>    drivers/clk/samsung/clk-s5pv210.c                  | 673
+>>>>>> +++++++++++++++++++++ drivers/cpufreq/s5pv210-cpufreq.c
+>>>>>>    |   6 +-
+>>>>>>    include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
+>>>>>>    12 files changed, 1019 insertions(+), 8 deletions(-)
+>>>>>>    create mode 100644
+>>>>>> Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+>>>>>> create mode 100644 drivers/clk/samsung/clk-s5pv210.c
+>>>>>>    create mode 100644
+>>>>>> include/dt-bindings/clock/samsung,s5pv210-clock.h
+>>>>>
+>>>>>
+>>>>> I believe this series is reasonable to be applied. Could we agree on
+>>>>> the tree it would go through and get all tne required acks?
+>>>>>
+>>>>> Best regards,
+>>>>> Tomasz
+>>>>
+>>>>
+>>>> I agree.
+>>>>
+>>>> Mike, how do you think the common clk stuff for s5pv210?
+>>>
+>>>
+>>> Clock code looks good to me. Which tree do you want to take it through?
+>>
+>>
+>> Seems like we just missed another kernel release. It's a bit sad that it's
+>> happening so often for Samsung patches...
+>>
+>
+> Tomasz, sorry about that, I couldn't end up the stuff before attending ARM
+> Kernel Summit, but in my opinion, this series would be merged for upcoming
+> merge window via clk tree if Mike is fine because there is no conflicts with
+> Samsung tree.
+>
+> Mike, how do you think? If you're OK, please pick this into your tree with
+> my ack.
 
+I'll pull this in later today with your Ack.
+
+Regards,
+Mike
+
+>
+> Thanks,
+> Kukjin
