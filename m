@@ -1,57 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [GIT PULL]: CPUFreq: ARM Updates for 3.13
-Date: Tue, 29 Oct 2013 03:19:28 +0530
-Message-ID: <CAKohpombdzugLe0Q2NUttrapJuSqMDz41ECdxcHfh5dtPgiV0Q@mail.gmail.com>
-Mime-Version: 1.0
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [PATCH 2/2] Cpufreq/gov: use tick_nohz_check() to check idle micro accouting support
+Date: Tue, 29 Oct 2013 16:48:57 +0800
+Message-ID: <1383036537-30362-2-git-send-email-tianyu.lan@intel.com>
+References: <1383036537-30362-1-git-send-email-tianyu.lan@intel.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1383036537-30362-1-git-send-email-tianyu.lan@intel.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Rafael,
+Current, od_init() uses get_cpu_idle_time_us() to check whether
+idle micro accouting is supported. The get_cpu_idle_time_us()
+returns -1 only when tick nohz is disabled. This patch is to use
+tick_nohz_check() directly to check nohz enable status instead of
+get_cpu_idle_time_us(). This can avoid unnecessary getting and
+putting cpu.
 
-I have pushed ARM cpufreq patches for v3.13, you can pull them from my
-repo. Sorry if I am late...
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ drivers/cpufreq/cpufreq_ondemand.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-The following changes since commit 959f58544b7f20c92d5eb43d1232c96c15c01bfb:
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 32f26f6..79986a9 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -485,10 +485,7 @@ static int od_init(struct dbs_data *dbs_data)
+ 		return -ENOMEM;
+ 	}
+ 
+-	cpu = get_cpu();
+-	idle_time = get_cpu_idle_time_us(cpu, NULL);
+-	put_cpu();
+-	if (idle_time != -1ULL) {
++	if (tick_nohz_check()) {
+ 		/* Idle micro accounting is supported. Use finer thresholds */
+ 		tuners->up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
+ 		/*
+-- 
+1.8.4.rc0.1.g8f6a3e5.dirty
 
-  Linux 3.12-rc7 (2013-10-27 16:12:03 -0700)
-
-are available in the git repository at:
-
-  git://git.linaro.org/people/vireshk/linux.git cpufreq-next-for-3.13
-
-for you to fetch changes up to 2332c7a7a8c1979de68429dcdcb125037ef35f4b:
-
-  cpufreq: arm_big_little: reconfigure switcher behavior at run time
-(2013-10-29 03:18:41 +0530)
-
-----------------------------------------------------------------
-Nicolas Pitre (1):
-      cpufreq: arm_big_little: reconfigure switcher behavior at run time
-
-Sudeep KarkadaNagesha (5):
-      cpufreq: arm-big-little: use clk_get instead of clk_get_sys
-      ARM: vexpress/TC2: add support for CPU DVFS
-      ARM: vexpress/TC2: add cpu clock support
-      cpufreq: arm_big_little: add vexpress SPC interface driver
-      ARM: vexpress/TC2: register vexpress-spc cpufreq device
-
-Viresh Kumar (1):
-      cpufreq: arm_big_little: add in-kernel switching (IKS) support
-
- arch/arm/mach-vexpress/Kconfig         |  12 +
- arch/arm/mach-vexpress/Makefile        |   3 +-
- arch/arm/mach-vexpress/spc.c           | 366 +++++++++++++++++++++++++++-
- arch/arm/mach-vexpress/spc.h           |   2 +-
- arch/arm/mach-vexpress/tc2_pm.c        |   7 +-
- drivers/cpufreq/Kconfig.arm            |   8 +
- drivers/cpufreq/Makefile               |   1 +
- drivers/cpufreq/arm_big_little.c       | 420 ++++++++++++++++++++++++++++++---
- drivers/cpufreq/arm_big_little.h       |   5 -
- drivers/cpufreq/vexpress-spc-cpufreq.c |  69 ++++++
- 10 files changed, 853 insertions(+), 40 deletions(-)
- create mode 100644 drivers/cpufreq/vexpress-spc-cpufreq.c
