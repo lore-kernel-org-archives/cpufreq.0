@@ -1,8 +1,8 @@
 From: Melanie Kambadur <melanie@cs.columbia.edu>
 Subject: Re: powersave governor runs programs faster and uses more power than
  performance governor
-Date: Tue, 29 Oct 2013 12:25:32 -0400
-Message-ID: <CAMeUXYtOURtQ4_iH4meuua2CWDiAFrKNYE9Zz2irYhAnt9AP8A@mail.gmail.com>
+Date: Tue, 29 Oct 2013 12:27:19 -0400
+Message-ID: <CAMeUXYvOTA4FXOo_mZKqeGnC_EhjBNMAsks41p0kx8YHXt9Cew@mail.gmail.com>
 References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
 	<CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>
 	<CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>
@@ -11,55 +11,72 @@ References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
 	<526A9092.5000800@gmail.com>
 	<CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
 	<526AB813.1080708@verisign.com>
+	<CAMeUXYtOURtQ4_iH4meuua2CWDiAFrKNYE9Zz2irYhAnt9AP8A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:sender:in-reply-to:references:date:message-id:subject
          :from:to:cc:content-type:content-transfer-encoding;
-        bh=BbxmfUVTvbRCMEV1KxDEddCIuBMVy9Q9pOqfyRw/T0w=;
-        b=sGgbMK/ENR0D4l1B886akwlEZikvUwli7tVlHv/xAONtXFtlCtTo4zjsvVhiOkJ8Kq
-         wf9PzQ83DwtnmairPuBlLSG+FORqxiWpYsPXptUBepsM8WkXON+HRH+HS2PYKEvjTqM4
-         daLO4GwcNgWph8LlXd6SLOXkbfFQNtp0p51IBVfMYBUTNXyFgjExO1BxA5Xl4gfimtDT
-         08zX1AEeiP+IO4tljhCubUlrK2+Je5uk+xWPFnWU1jmo0EJDq8bVBsR9+SmZ5OopgmlC
-         Qjyt6fRvsnwHD0oK09aj/dOHCheJjio2SbM/qoC0uf/dR+iWb2IcfWofA9OkVHZiEURc
-         db4w==
-In-Reply-To: <526AB813.1080708@verisign.com>
-Sender: cpufreq-owner@vger.kernel.org
+        bh=/+1rUD/qWbFebyny3v9BbZ2IWt5B2P6s/TKNRykciPk=;
+        b=BxF7sFwRdOGI6XnDnZ9H0mh8ZdGtsWVTjea5TaxZQTvBkv2f1yPCEh9wGS9Zha8uL2
+         G6lszay8xeOjUeC6su4bKeCcjYwjkX0qbU6DXi3ydZOaWUUAJ56xmX91rIisqN+MbVly
+         fEOJhf35GUCLjs3urphPkCHf4aXfG4XJxBuPUCZc/Com4RZt+Zg7zypI0Gy8WlyVn+XS
+         zEq9E0O4EUCJgCQ/6uC14W39aGzu2Hc2lzmKcqMkR41v63gWnYvnbbvbJsZR980gH5Qw
+         1qeauJ9iOSiI7PNEy6sUCmygVFaX7nacN8sseaRhFbJC0F6zBeHuNcAa5oEQSkMETn2K
+         M6iw==
+In-Reply-To: <CAMeUXYtOURtQ4_iH4meuua2CWDiAFrKNYE9Zz2irYhAnt9AP8A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: David C Niemi <dniemi@verisign.com>
 Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-After getting the chance to modify the BIOS, it finally looks like I
-have the options that I want in terms of drivers/governors.
+Apologies, I accidentally sent my last mail before finishing...
 
-FYI, rmmod intel-pstate did not work (before or after modifying the
-bios), and as I mentioned earlier, before updating the bios, setting
-intel_pstate=disable erased most of my driver/governor options.  What
-did work was to update the BIOS to OS control as suggested, and THEN
-setting intel_pstate=disable gave me the acpi-cpufreq driver, along
-with the following governors:
+The available governors I have now are:
+conservative ondemand userspace powersave performance.
 
-On Fri, Oct 25, 2013 at 2:27 PM, David C Niemi <dniemi@verisign.com> wrote:
+Thankfully, I did not have to modify my kernel at all to get these.
+Once I get the chance to run some tests, I will keep you posted as to
+whether the governors behave as documented with this new
+configuration.
+
+Thanks again for the pointers and suggestions that got me this far!
+
+Melanie
+
+On Tue, Oct 29, 2013 at 12:25 PM, Melanie Kambadur
+<melanie@cs.columbia.edu> wrote:
+> After getting the chance to modify the BIOS, it finally looks like I
+> have the options that I want in terms of drivers/governors.
 >
-> I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
+> FYI, rmmod intel-pstate did not work (before or after modifying the
+> bios), and as I mentioned earlier, before updating the bios, setting
+> intel_pstate=disable erased most of my driver/governor options.  What
+> did work was to update the BIOS to OS control as suggested, and THEN
+> setting intel_pstate=disable gave me the acpi-cpufreq driver, along
+> with the following governors:
 >
-> speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
->
-> It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
->
-> Meanwhile, can you rmmod intel-pstate?
->
-> DCN
->
-> On 10/25/13 12:35, Melanie Kambadur wrote:
->> If I disable intel_pstate on my kernel command line, I end up with
->> access only to the speedstep and p4-clockmod drivers, and no
->> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
->> driver? I've tried a couple of things without success.
+> On Fri, Oct 25, 2013 at 2:27 PM, David C Niemi <dniemi@verisign.com> wrote:
 >>
->> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
->> sysadmin).
->> -Melanie
+>> I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
+>>
+>> speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
+>>
+>> It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
+>>
+>> Meanwhile, can you rmmod intel-pstate?
+>>
+>> DCN
+>>
+>> On 10/25/13 12:35, Melanie Kambadur wrote:
+>>> If I disable intel_pstate on my kernel command line, I end up with
+>>> access only to the speedstep and p4-clockmod drivers, and no
+>>> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
+>>> driver? I've tried a couple of things without success.
+>>>
+>>> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
+>>> sysadmin).
+>>> -Melanie
