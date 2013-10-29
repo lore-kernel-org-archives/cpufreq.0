@@ -1,104 +1,65 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
-Date: Tue, 29 Oct 2013 08:46:17 -0700
-Message-ID: <526FD849.9050000@samsung.com>
-References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com> <5264425E.4040301@samsung.com> <20131021121605.11944.74007@quantum> <1823897.8rOixkM4PW@amdc1227>
+From: Melanie Kambadur <melanie@cs.columbia.edu>
+Subject: Re: powersave governor runs programs faster and uses more power than
+ performance governor
+Date: Tue, 29 Oct 2013 12:25:32 -0400
+Message-ID: <CAMeUXYtOURtQ4_iH4meuua2CWDiAFrKNYE9Zz2irYhAnt9AP8A@mail.gmail.com>
+References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
+	<CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>
+	<CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>
+	<526A82CC.1040709@gmail.com>
+	<CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com>
+	<526A9092.5000800@gmail.com>
+	<CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
+	<526AB813.1080708@verisign.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Transfer-Encoding: 7BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=mh1JNdBcPs5Qh/GGvz3HB/9rFhB/nXU0tVEYYFYDv1Y=;
-        b=R0ZHULTRzzPih7LGyLY+Riqno/8vNtehwN3iU5j1g9NnvJM8Zok+O3x3N+IiCBfAOi
-         Sj6BWyPmMw9VIil0ogIqJpeooLlHwZVkrGqtqVjALzn0aMVfC5kQdAB6bc/Yorm7GLWa
-         pnP0LPR+/VdZCKmpOmLhcUyn94hdLOtFC7ZrZTgd3wEUuDbDJmdrOZia8gwaQD7rlWNp
-         4o+IIzp27GVFY8OvYu7oINTfCFcJ3biz4AsQYusD2Jj2NmJeSX3727701S9StXdHQcRI
-         adZB1ad62rYNLyJY1KmpwzeLhZjUtaASjSHG6JPU7slKTxqQDEeGb/W1wlbhc28mHWvQ
-         9Vtg==
-In-Reply-To: <1823897.8rOixkM4PW@amdc1227>
-Sender: linux-pm-owner@vger.kernel.org
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        bh=BbxmfUVTvbRCMEV1KxDEddCIuBMVy9Q9pOqfyRw/T0w=;
+        b=sGgbMK/ENR0D4l1B886akwlEZikvUwli7tVlHv/xAONtXFtlCtTo4zjsvVhiOkJ8Kq
+         wf9PzQ83DwtnmairPuBlLSG+FORqxiWpYsPXptUBepsM8WkXON+HRH+HS2PYKEvjTqM4
+         daLO4GwcNgWph8LlXd6SLOXkbfFQNtp0p51IBVfMYBUTNXyFgjExO1BxA5Xl4gfimtDT
+         08zX1AEeiP+IO4tljhCubUlrK2+Je5uk+xWPFnWU1jmo0EJDq8bVBsR9+SmZ5OopgmlC
+         Qjyt6fRvsnwHD0oK09aj/dOHCheJjio2SbM/qoC0uf/dR+iWb2IcfWofA9OkVHZiEURc
+         db4w==
+In-Reply-To: <526AB813.1080708@verisign.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, mark.rutland@arm.com, swarren@wwwdotorg.org, linux-doc@vger.kernel.org, viresh.kumar@linaro.org, Tomasz Figa <tomasz.figa@gmail.com>, s.nawrocki@samsung.com, m.szyprowski@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, Mateusz Krawczuk <m.krawczuk@partner.samsung.com>, linux-pm@vger.kernel.org, kyungmin.park@samsung.com, cpufreq@vger.kernel.org, thomas.abraham@linaro.org, t.stanislaws@samsung.com, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, rob.herring@calxeda.com, rjw@sisk.pl, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, rob@landley.net
+Content-Type: text/plain; charset="us-ascii"
+To: David C Niemi <dniemi@verisign.com>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 10/29/13 04:42, Tomasz Figa wrote:
-> Hi Kukjin, Mike,
+After getting the chance to modify the BIOS, it finally looks like I
+have the options that I want in terms of drivers/governors.
+
+FYI, rmmod intel-pstate did not work (before or after modifying the
+bios), and as I mentioned earlier, before updating the bios, setting
+intel_pstate=disable erased most of my driver/governor options.  What
+did work was to update the BIOS to OS control as suggested, and THEN
+setting intel_pstate=disable gave me the acpi-cpufreq driver, along
+with the following governors:
+
+On Fri, Oct 25, 2013 at 2:27 PM, David C Niemi <dniemi@verisign.com> wrote:
 >
-> On Monday 21 of October 2013 05:16:05 Mike Turquette wrote:
->> Quoting Kukjin Kim (2013-10-20 13:51:42)
->>> On 10/20/13 01:03, Tomasz Figa wrote:
->>>> Hi Mike, Kukjin, Rafael,
->>>>
->>>> On Tuesday 24 of September 2013 14:50:06 Mateusz Krawczuk wrote:
->>>>> This patch series is the new s5pv210 clock implementation
->>>>> (using common clk framework).
->>>>>
->>>>> This implementation is compatible with device tree definition and board
->>>>> files.
->>>>>
->>>>> This patch series is based on linux-next and has been tested on goni and
->>>>> aquila
->>>>> boards using board file.
->>>>>
->>>>> Since v4:
->>>>> Corrected mux flags for finpll.
->>>>>
->>>>> Since v3:
->>>>>
->>>>> Replace s5pv210_clk_register_finpll, by creating mux finpll
->>>>> with xusbxti and xxti as parrents.
->>>>>
->>>>>
->>>>> Mateusz Krawczuk (3):
->>>>>     clk: samsung: Add clock driver for s5pc110/s5pv210
->>>>>     Cpufreq: s5pv210 cpufreq fixes for CCF
->>>>>     ARM: s5pv210: Migrate clock handling to Common Clock Framework
->>>>>
->>>>>    .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
->>>>>    arch/arm/mach-s5pv210/Kconfig                      |   9 +
->>>>>    arch/arm/mach-s5pv210/Makefile                     |   4 +-
->>>>>    arch/arm/mach-s5pv210/common.c                     |  17 +
->>>>>    arch/arm/mach-s5pv210/common.h                     |  10 +
->>>>>    arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
->>>>>    arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
->>>>>    arch/arm/plat-samsung/Kconfig                      |   2 +-
->>>>>    drivers/clk/samsung/Makefile                       |   3 +
->>>>>    drivers/clk/samsung/clk-s5pv210.c                  | 673
->>>>> +++++++++++++++++++++ drivers/cpufreq/s5pv210-cpufreq.c
->>>>>    |   6 +-
->>>>>    include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
->>>>>    12 files changed, 1019 insertions(+), 8 deletions(-)
->>>>>    create mode 100644
->>>>> Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
->>>>> create mode 100644 drivers/clk/samsung/clk-s5pv210.c
->>>>>    create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
->>>>
->>>> I believe this series is reasonable to be applied. Could we agree on
->>>> the tree it would go through and get all tne required acks?
->>>>
->>>> Best regards,
->>>> Tomasz
->>>
->>> I agree.
->>>
->>> Mike, how do you think the common clk stuff for s5pv210?
+> I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
+>
+> speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
+>
+> It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
+>
+> Meanwhile, can you rmmod intel-pstate?
+>
+> DCN
+>
+> On 10/25/13 12:35, Melanie Kambadur wrote:
+>> If I disable intel_pstate on my kernel command line, I end up with
+>> access only to the speedstep and p4-clockmod drivers, and no
+>> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
+>> driver? I've tried a couple of things without success.
 >>
->> Clock code looks good to me. Which tree do you want to take it through?
->
-> Seems like we just missed another kernel release. It's a bit sad that it's
-> happening so often for Samsung patches...
->
-
-Tomasz, sorry about that, I couldn't end up the stuff before attending 
-ARM Kernel Summit, but in my opinion, this series would be merged for 
-upcoming merge window via clk tree if Mike is fine because there is no 
-conflicts with Samsung tree.
-
-Mike, how do you think? If you're OK, please pick this into your tree 
-with my ack.
-
-Thanks,
-Kukjin
+>> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
+>> sysadmin).
+>> -Melanie
