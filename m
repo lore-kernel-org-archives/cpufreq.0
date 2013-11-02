@@ -1,49 +1,75 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH] cpufreq: ondemand: Remove redundant return statement
-Date: Fri, 01 Nov 2013 20:13:26 +0200
-Message-ID: <5273EF46.7060703@semaphore.gr>
-References: <5272A118.1090908@semaphore.gr> <CAKohponQ+oRYpdYrpKV3=GMh6ACQr+E+WygLHk0mdC+ivjeP_Q@mail.gmail.com> <7457887.jzoQrnelyS@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 64251] New: Intel Pstate driver minimum percent does not change
+ with turbo off
+Date: Sat, 02 Nov 2013 21:42:47 +0000
+Message-ID: <bug-64251-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <7457887.jzoQrnelyS@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Henrik Nilsson <Karl.Henrik.Nilsson@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-On 11/01/2013 02:18 AM, Rafael J. Wysocki wrote:
-> On Friday, November 01, 2013 12:09:16 AM Viresh Kumar wrote:
->> On 31 October 2013 23:57, Stratos Karafotis <stratosk@semaphore.gr> wrote:
->>> After commit dfa5bb622555d9da0df21b50f46ebdeef390041b
->>> "cpufreq: ondemand: Change the calculation of target frequency",
->>> this return statement is no longer needed.
->>>
->>> Reported-by: Henrik Nilsson <Karl.Henrik.Nilsson@gmail.com>
->>> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
->>> ---
->>>   drivers/cpufreq/cpufreq_ondemand.c | 1 -
->>>   1 file changed, 1 deletion(-)
->>>
->>> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
->>> index 32f26f6..18d4091 100644
->>> --- a/drivers/cpufreq/cpufreq_ondemand.c
->>> +++ b/drivers/cpufreq/cpufreq_ondemand.c
->>> @@ -168,7 +168,6 @@ static void od_check_cpu(int cpu, unsigned int load)
->>>                          dbs_info->rate_mult =
->>>                                  od_tuners->sampling_down_factor;
->>>                  dbs_freq_increase(policy, policy->max);
->>> -               return;
->>>          } else {
->>>                  /* Calculate the next frequency proportional to load */
->>>                  unsigned int freq_next;
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->
-> Queued up for 3.13, thanks!
->
+https://bugzilla.kernel.org/show_bug.cgi?id=64251
 
-Thank you both for your immediate response!
+            Bug ID: 64251
+           Summary: Intel Pstate driver minimum percent does not change
+                    with turbo off
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.12rc7
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: dsmythies@telus.net
+        Regression: No
 
-Stratos
+Created attachment 113141
+  --> https://bugzilla.kernel.org/attachment.cgi?id=113141&action=edit
+Frequency Vs. Requested Frequency
+
+When turbo is turned off the maximum frequency percent does not change. O.K.
+So the minimum frequency percent should change, but it doesn't.
+
+Using my computer as an example: The turbo on maximum frequency is 3.8 GHz; The
+turbo off maximum frequency is 3.4 GHz; The minimum frequency is 1.6 GHz.
+
+Therefore we would expect: For turbo on, max percent = 100, min percent = 42;
+For turbo off, max percent = 100, min percent = 47.
+
+starting from a fresh boot:
+
+doug@s15:~$ uname -a
+Linux s15 3.12.0-rc7+ #48 SMP Fri Nov 1 21:09:51 PDT 2013 x86_64 x86_64 x86_64
+GNU/Linux
+doug@s15:~$ cat /sys/devices/system/cpu/intel_pstate/*
+100
+42
+0
+doug@s15:~$ cd temp
+doug@s15:~/temp$ sudo ./set_cpu_turbo_off
+[sudo] password for doug:
+doug@s15:~/temp$ cat /sys/devices/system/cpu/intel_pstate/*
+100
+42
+1
+doug@s15:~/temp$ cat set_cpu_turbo_off
+#! /bin/bash
+echo "1" > /sys/devices/system/cpu/intel_pstate/no_turbo
+
+The attached png file demonstrates. (the rounding part will be a separate bug
+report)
+
+Note: This bug is extracted from bug 59481 which mentioned several issues, the
+main issue was solved and the bug closed. Now I am following up on the other
+issues.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
