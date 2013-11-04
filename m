@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 64261] Intel Pstate driver truncates to pstate instead of
  rounding to nearest pstate
-Date: Mon, 04 Nov 2013 07:17:18 +0000
-Message-ID: <bug-64261-12968-E4V0g2W292@https.bugzilla.kernel.org/>
+Date: Mon, 04 Nov 2013 16:14:42 +0000
+Message-ID: <bug-64261-12968-lB2usnoTx3@https.bugzilla.kernel.org/>
 References: <bug-64261-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,13 +15,15 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=64261
 
---- Comment #1 from Doug Smythies <dsmythies@telus.net> ---
-Created attachment 113231
-  --> https://bugzilla.kernel.org/attachment.cgi?id=113231&action=edit
-Shows rounded pstate and current actual frequency Vs. requested - Turbo on
+Dirk Brandewie <dirk.brandewie@gmail.com> changed:
 
-Just adding a turbo on version of the same attachment provided in the original
-posting, which was with turbo off.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |dirk.brandewie@gmail.com
+
+--- Comment #2 from Dirk Brandewie <dirk.brandewie@gmail.com> ---
+Can you attach the script you are using for this test?  Is the requested P
+state in response to a load?
 
 -- 
 You are receiving this mail because:
