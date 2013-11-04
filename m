@@ -1,29 +1,25 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 64251] Intel Pstate driver minimum percent does not change with
- turbo off
-Date: Mon, 04 Nov 2013 16:35:24 +0000
-Message-ID: <bug-64251-12968-vIb0zOnn8U@https.bugzilla.kernel.org/>
-References: <bug-64251-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 64271] Intel Pstate driver - "kick" code is not needed
+Date: Mon, 04 Nov 2013 16:42:26 +0000
+Message-ID: <bug-64271-12968-bYZN77pbVB@https.bugzilla.kernel.org/>
+References: <bug-64271-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-64251-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-64271-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=64251
+https://bugzilla.kernel.org/show_bug.cgi?id=64271
 
-Dirk Brandewie <dirk.brandewie@gmail.com> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |dirk.brandewie@gmail.com
-
---- Comment #1 from Dirk Brandewie <dirk.brandewie@gmail.com> ---
-min_pct_perf is a user configurable floor value (not to go below) so it is
-still valid in both cases.
+--- Comment #3 from Doug Smythies <dsmythies@telus.net> ---
+Dirk: I do not know how to submit a patch. Which doesn't mean I shouldn't learn
+how, but I have also been cheating when I make my "no kick" test code by just
+deleting the 3 lines that decide to and do the kick. The real solution would be
+a bit more. I'll do it of you want (it would be a good way to get rid of me for
+awhile (just joking)).
 
 -- 
 You are receiving this mail because:
