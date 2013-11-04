@@ -1,26 +1,27 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 64291] ignore_nice_load for Intel's P-state driver?
-Date: Mon, 04 Nov 2013 03:16:06 +0000
-Message-ID: <bug-64291-12968-SCGHnSSsum@https.bugzilla.kernel.org/>
-References: <bug-64291-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 64261] Intel Pstate driver truncates to pstate instead of
+ rounding to nearest pstate
+Date: Mon, 04 Nov 2013 07:17:18 +0000
+Message-ID: <bug-64261-12968-E4V0g2W292@https.bugzilla.kernel.org/>
+References: <bug-64261-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-64291-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-64261-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=64291
+https://bugzilla.kernel.org/show_bug.cgi?id=64261
 
-Aaron Lu <aaron.lu@intel.com> changed:
+--- Comment #1 from Doug Smythies <dsmythies@telus.net> ---
+Created attachment 113231
+  --> https://bugzilla.kernel.org/attachment.cgi?id=113231&action=edit
+Shows rounded pstate and current actual frequency Vs. requested - Turbo on
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-           Assignee|cpufreq@vger.kernel.org     |dirk.brandewie@gmail.com
-             Status|NEW                         |ASSIGNED
-                 CC|                            |aaron.lu@intel.com
+Just adding a turbo on version of the same attachment provided in the original
+posting, which was with turbo off.
 
 -- 
 You are receiving this mail because:
