@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 64261] Intel Pstate driver truncates to pstate instead of
  rounding to nearest pstate
-Date: Mon, 04 Nov 2013 18:39:41 +0000
-Message-ID: <bug-64261-12968-Q00B9fqyCz@https.bugzilla.kernel.org/>
+Date: Mon, 04 Nov 2013 22:19:52 +0000
+Message-ID: <bug-64261-12968-hCjbfm6uaM@https.bugzilla.kernel.org/>
 References: <bug-64261-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,32 +15,35 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=64261
 
---- Comment #4 from Dirk Brandewie <dirk.brandewie@gmail.com> ---
-So you are trying to emulate the userspace governor here, not really to goal of
-intel_pstate but OK :-)
+--- Comment #5 from Doug Smythies <dsmythies@telus.net> ---
+Hi Dirk,
 
-The ability to select a single P state was the intended usage of
-{min,max}_pct_perf but allow users to select a floor and ceiling for the range
-of available P states.  The absolute meaning percent available performance
-changes based on the SKU of the part (p states available).
+There are cases, i.e. when investigating error in load averages where one wants
+to lock the CPU at whatever frequency. I realize it was not the goal of
+intel_pstate, but still needs to be allowed for. Regardless, I am merely using
+this as a way to easily demonstrate the issue.
 
-The driver can only select integer values 16->38 in your turbo-on test case.
+".53 * 34 = 18.03 (so we are off by 3 percent of a pstate due to truncation)"
+No, I am arguing that it is off by 103 percent of a pstate due to truncation.
 
-The p states are 2.6315789 percent wide in terms of turbo frequency and
-2.9411765 percent wide in terms of the non-turbo max on your CPU
+I am also arguing that if rounding is used there will never be more than a half
+of a pstate discrepancy between desired and actual instead of 1 pstate. I am
+also arguing that it will help at the 100% end, where right now it might
+struggle to get to 100% on some processors.
 
-.42 * 38 = 15.96
-.43 * 38 = 16.34
-.44 * 38 = 16.72
-.45 * 38 = 17.1
+For your examples, I am saying it should be:
 
-45% is where your test goes from 16->17.
+Turbo:
+int(.42 * 38 + 0.5) = 16
+int(.43 * 38 + 0.5) = 16
+int(.44 * 38 + 0.5) = 17
+int(.45 * 38 + 0.5) = 17
 
-For the 3 percent shelves in the turbo-off case. 
-.50 * 34 = 17
-.51 * 34 = 17.34
-.52 * 34 = 17.68
-.53 * 34 = 18.03 (so we are off by 3 percent of a pstate due to truncation)
+Turbo off:
+int(.50 * 34 + 0.5) = 17
+int(.51 * 34 + 0.5) = 17
+int(.52 * 34 + 0.5) = 18
+int(.53 * 34 + 0.5) = 18
 
 -- 
 You are receiving this mail because:
