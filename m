@@ -1,27 +1,29 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 64261] Intel Pstate driver truncates to pstate instead of
- rounding to nearest pstate
-Date: Wed, 06 Nov 2013 06:04:54 +0000
-Message-ID: <bug-64261-12968-ivJp7Xof8a@https.bugzilla.kernel.org/>
-References: <bug-64261-12968@https.bugzilla.kernel.org/>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: does niced processes scales frequency too at the ondemand governor
+ ?
+Date: Wed, 06 Nov 2013 19:29:18 +0100
+Message-ID: <527A8A7E.1050906@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-64261-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-1"
 To: cpufreq@vger.kernel.org
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=64261
+Running a Gentoo Linux at a 4-core CPU (i5) I realize, that compiling
+packages using -j4 usually needs twice as long, if I run 4 BOINC
+processes in the back ground (nice -n 19) too. Even considering effects
+of invalidation of cache data this seems a too big impact in my eyes.
 
---- Comment #15 from Doug Smythies <dsmythies@telus.net> ---
-Created attachment 113621
-  --> https://bugzilla.kernel.org/attachment.cgi?id=113621&action=edit
-The rounding code.
+It looks for me like that the BOINC processes scales down the frequency=
+,
+when they are running. This behaviour however would be wrong IMO. The
+frequency should be scaled just by the non-niced foreground processes,
+right ?
 
-The changes to the code. Probably some incorrect format.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
