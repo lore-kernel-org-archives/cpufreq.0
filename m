@@ -1,29 +1,31 @@
-From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
-Subject: does niced processes scales frequency too at the ondemand governor
- ?
-Date: Wed, 06 Nov 2013 19:29:18 +0100
-Message-ID: <527A8A7E.1050906@gmx.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 64261] Intel Pstate driver truncates to pstate instead of
+ rounding to nearest pstate
+Date: Wed, 06 Nov 2013 18:58:01 +0000
+Message-ID: <bug-64261-12968-cinT3DFFBq@https.bugzilla.kernel.org/>
+References: <bug-64261-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-64261-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@vger.kernel.org
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>
 
-Running a Gentoo Linux at a 4-core CPU (i5) I realize, that compiling
-packages using -j4 usually needs twice as long, if I run 4 BOINC
-processes in the back ground (nice -n 19) too. Even considering effects
-of invalidation of cache data this seems a too big impact in my eyes.
+https://bugzilla.kernel.org/show_bug.cgi?id=64261
 
-It looks for me like that the BOINC processes scales down the frequency=
-,
-when they are running. This behaviour however would be wrong IMO. The
-frequency should be scaled just by the non-niced foreground processes,
-right ?
+--- Comment #16 from Dirk Brandewie <dirk.brandewie@gmail.com> ---
+(In reply to Doug Smythies from comment #12)
+> Created attachment 113591 [details]
+> CPU 7 frequency vs load. Turbo off. With and without rounding.
+> 
+> The load on cpu 7 varies from 0.005 to 0.995 in steps of 0.005 at 10 seconds
+> per step. The frequency is monitored at 10 Hertz.
 
---=20
-MfG/Sincerely
-Toralf F=C3=B6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+Are you still setting {min/max}_perf_pct or are we changing horses and talking
+about using the driver in "normal' mode?
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
