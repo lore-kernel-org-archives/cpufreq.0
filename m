@@ -1,60 +1,75 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 64261] Intel Pstate driver truncates to pstate instead of
- rounding to nearest pstate
-Date: Wed, 06 Nov 2013 19:44:45 +0000
-Message-ID: <bug-64261-12968-GrQycORtQt@https.bugzilla.kernel.org/>
-References: <bug-64261-12968@https.bugzilla.kernel.org/>
+From: Rongjun Ying <Rongjun.Ying@csr.com>
+Subject: RE: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage instead
+ of voltage-tolerance
+Date: Thu, 7 Nov 2013 01:55:21 +0000
+Message-ID: <86130EF012BDF348AA0D464A4F44947801295427BD@SHAASIEXM01.ASIA.ROOT.PRI>
+References: <1383621014-11202-1-git-send-email-rongjun.ying@csr.com>
+ <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
+ <20131105115307.GN19770@S2101-09.ap.freescale.net>
+ <86130EF012BDF348AA0D464A4F44947801295423DF@SHAASIEXM01.ASIA.ROOT.PRI>
+ <20131106032742.GP19770@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-64261-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20131106032742.GP19770@S2101-09.ap.freescale.net>
+Content-Language: zh-CN
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjying <rjying@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Barry Song <Barry.Song@csr.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=64261
 
---- Comment #17 from Doug Smythies <dsmythies@telus.net> ---
-(In reply to Dirk Brandewie from comment #16)
-> (In reply to Doug Smythies from comment #12)
-> > Created attachment 113591 [details]
-> > CPU 7 frequency vs load. Turbo off. With and without rounding.
-> > 
-> > The load on cpu 7 varies from 0.005 to 0.995 in steps of 0.005 at 10 seconds
-> > per step. The frequency is monitored at 10 Hertz.
+
+> -----Original Message-----
+> From: Shawn Guo [mailto:shawn.guo@linaro.org]
+> Sent: Wednesday, November 06, 2013 11:28 AM
+> To: Rongjun Ying
+> Cc: Viresh Kumar; rjying; Rafael J. Wysocki; cpufreq@vger.kernel.org;
+> linux-pm@vger.kernel.org; Linux Kernel Mailing List;
+> rongjun.ying@gcsr.com
+> Subject: Re: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage
+> instead of voltage-tolerance
 > 
-> Are you still setting {min/max}_perf_pct or are we changing horses and
-> talking about using the driver in "normal' mode?
+> On Wed, Nov 06, 2013 at 02:15:07AM +0000, Rongjun Ying wrote:
+> > If omit voltage-tolerance, sometimes also can't get appropriate
+> voltages.
+> > For example:
+> > If the regulator IC only can supply min voltage is 1.000V and max
+> voltage is 1.200V, and cpu work max voltage is 1.200V.
+> > But the cpu just need 1.100V when cpu run under a freq.
+> > So regulator_set_voltage_tol will return failed.
+> > Because the regulator_set_voltage will invoke with min-uV is 1100000
+> and max-uV is 1100000 parameters.
+> > Regulator can't supply it.
+> > As this case, the regulator just need supply 1.200V.
+> 
+> For given board, what voltages could be provided is known.  So you can
+> just define OPP table in <board>.dts and specify the voltage as the
+> value that the regulator IC can supply, e.g. 1.200V in above example.
+> 
+> This is not nice, as OPP table is CPU/SoC specific and should be
+> ideally defined in <soc>.dtsi.  But still it's a way out for you to use
+> cpufreq-cpu0 driver as it is.
+> 
+> In any case, you can not just change voltage-tolerance to voltage-max
+> with no care about the existing users.
+> 
+> Shawn
+> 
+I don't think so. The voltage/freq pairs are attribute of the CPU.
+Any boards can choose regulator IC base the cost and other reasons.
+If the opp table defined in <board>.dts, we can set exact voltage/freq pairs,
+and not need use the voltage-tolerance to set tolerance.
 
-No, I am not setting min=max=whatever.
-Yes, I was "changing horses" here. The settings are all default from boot up,
-except with respect to turbo on or off. I was wanting to try to demonstrate
-improvement using rounding in a real operational sense and as it got closer to
-100% frequency. Test 1, turbo on, did show improvement and much less jitter.
-However Test 2, turbo on, did not. I still need to go back and investigate why
-those two tests, which should have been the same, weren't.
-Sorry, I should have been clearer in my description.
+Thanks
+-RongJun Ying
+> 
+> 
+>  To report this email as spam click
+> https://www.mailcontrol.com/sr/MZbqvYs5QwJvpeaetUwhCQ==
+> ch0RRg48Kxe8iwle4qrOOz8w5o+DwGNVtWag1M3YVHc55g== .
 
-I have two methods for loading CPUs to various levels and working/sleeping
-frequencies:
 
-One uses a program called "consume", originally from Peter Zijlstra of the
-kernel.org sched maintainers. It will apply the desired load at the desired
-work/sleep frequency, regardless of the CPU frequency. I.E. it does not respond
-to the CPU frequency going up, but rather modifies its work load accordingly to
-hold to what was asked for, not like a real system.
-
-The other is a program called "waiter" (the name is from the text book I
-started it from). It will spin out the desired number of processes at the
-desired load at the desired work/sleep frequency, but what it actually does
-depends on the CPU frequency and number of running processes. I.E. it responds
-to the CPU frequency going up by getting its work done faster, just like a real
-system. The user interface for waiter is NOT good, and I tend to use another
-program to create scripts to provide operational parameters.
-
-I used "consume" for these graphs.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
+More information can be found at www.csr.com. Follow CSR on Twitter at http://twitter.com/CSR_PLC and read our blog at www.csr.com/blog
