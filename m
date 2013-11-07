@@ -1,36 +1,56 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 64251] Intel Pstate driver minimum percent does not change with
- turbo off
-Date: Thu, 07 Nov 2013 05:36:45 +0000
-Message-ID: <bug-64251-12968-SaBHnqRaSt@https.bugzilla.kernel.org/>
-References: <bug-64251-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: conservative: fix requested_freq reduction issue
+Date: Thu, 07 Nov 2013 19:57:41 +0100
+Message-ID: <4433736.xh14GOaN7a@vostro.rjw.lan>
+References: <1383791330-8289-1-git-send-email-chenxg@marvell.com> <CAKohpo=2xjR=nr5hyMg9bve5_uVbV79R2FTxks0bLmL7kNV9Mg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-64251-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=2xjR=nr5hyMg9bve5_uVbV79R2FTxks0bLmL7kNV9Mg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Xiaoguang Chen <chenxg@marvell.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Xiaoguang Chen <chenxg.marvell@gmail.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=64251
+On Thursday, November 07, 2013 10:39:38 AM Viresh Kumar wrote:
+> On 7 November 2013 07:58, Xiaoguang Chen <chenxg@marvell.com> wrote:
+> > When decreasing frequency, requested_freq may be less than
+> > freq_target, So requested_freq minus freq_target may be negative,
+> > But reqested_freq's unit is unsigned int, then the negative result
+> > will be one larger interger which may be even higher than
+> > requested_freq.
+> >
+> > This patch is to fix such issue. when result becomes negative,
+> > set requested_freq as the min value of policy.
+> >
+> > Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+> > ---
+> >  drivers/cpufreq/cpufreq_conservative.c | 7 ++++++-
+> >  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> Good Catch.
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
---- Comment #5 from Doug Smythies <dsmythies@telus.net> ---
-Created attachment 113721
-  --> https://bugzilla.kernel.org/attachment.cgi?id=113721&action=edit
-BIOS disabled Turbo mode CPU freq Vs. Requested.
+Applied, thanks!
 
-This graph is in support of the previous comments.
+> We need another patch for fixing the other part of code where we
+> increase freq..
+> We need to replace:
+> 
+> if (dbs_info->requested_freq == policy->max)
+>     return;
+> 
+> with
+> 
+> if (dbs_info->requested_freq >= policy->max)
+>     return;
+> 
+> So, that we don't run unnecessary code :)
 
-The "rnd" and "nokick" in the legend are related to other bug reports, and can
-be ignored in the context of this bug report. They are both with driver turbo
-on, but BIOS turbo disabled.
-
-"Toff" means driver turbo disabled, and multiple tests were done, each one with
-a different frequency on CPU 7 at the time of driver transition from turbo
-enabled to disabled, to demonstrate that the CPU frequency will lock and be
-thereafter unchangeable.
+Care to prepare a patch?
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
