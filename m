@@ -1,47 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: conservative: fix requested_freq reduction issue
-Date: Thu, 7 Nov 2013 10:39:38 +0530
-Message-ID: <CAKohpo=2xjR=nr5hyMg9bve5_uVbV79R2FTxks0bLmL7kNV9Mg@mail.gmail.com>
-References: <1383791330-8289-1-git-send-email-chenxg@marvell.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 64251] Intel Pstate driver minimum percent does not change with
+ turbo off
+Date: Thu, 07 Nov 2013 05:28:49 +0000
+Message-ID: <bug-64251-12968-kaFKm6JJf7@https.bugzilla.kernel.org/>
+References: <bug-64251-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1383791330-8289-1-git-send-email-chenxg@marvell.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-64251-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Xiaoguang Chen <chenxg@marvell.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Xiaoguang Chen <chenxg.marvell@gmail.com>
+To: cpufreq@vger.kernel.org
 
-On 7 November 2013 07:58, Xiaoguang Chen <chenxg@marvell.com> wrote:
-> When decreasing frequency, requested_freq may be less than
-> freq_target, So requested_freq minus freq_target may be negative,
-> But reqested_freq's unit is unsigned int, then the negative result
-> will be one larger interger which may be even higher than
-> requested_freq.
->
-> This patch is to fix such issue. when result becomes negative,
-> set requested_freq as the min value of policy.
->
-> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+https://bugzilla.kernel.org/show_bug.cgi?id=64251
 
-Good Catch.
+--- Comment #4 from Doug Smythies <dsmythies@telus.net> ---
+(In reply to Dirk Brandewie from comment #3)
+> I was trying to provide some useful information by setting min_perf_pct to a
+> value.
+Which I totally agree with, and do find the information very useful.
+I am just suggesting that it would be equally useful to provide that same
+information for the other cases.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I see 4 scenarios, maybe there are more (using my computer as the example):
 
-We need another patch for fixing the other part of code where we
-increase freq..
-We need to replace:
+1.) BIOS allows Turbo mode and Turbo on enabled in driver:
+min = 42 percent, which represents 1.6 GHz and is accurate
+max = 100 percent, which represents 3.8 GHz and is accurate
 
-if (dbs_info->requested_freq == policy->max)
-    return;
+2.) BIOS allows Turbo mode and Turbo is disabled in driver:
+min = 42 percent, which doesn't represent anything.
+max = 100 percent, which represents 3.4 GHz and is accurate.
 
-with
+3.) BIOS disabled Turbo mode and Turbo on enabled in driver:
+min = 42 percent, which represents 1.6 GHz and is accurate.
+max = 100 percent, which represents 3.8 GHz, but can not be achieved.
+(a supporting graph will be attached in a minute)
 
-if (dbs_info->requested_freq >= policy->max)
-    return;
+4.) BIOS disabled Turbo mode and Turbo is disabled in driver:
+This does not work at all on my computer. The CPU frequency just locks at
+whatever it was when the driver Turbo disable transition command is issued.
+(a supporting graph will be attached in a minute)
 
-So, that we don't run unnecessary code :)
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
