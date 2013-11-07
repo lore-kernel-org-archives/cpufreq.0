@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 64251] Intel Pstate driver minimum percent does not change with
  turbo off
-Date: Thu, 07 Nov 2013 05:28:49 +0000
-Message-ID: <bug-64251-12968-kaFKm6JJf7@https.bugzilla.kernel.org/>
+Date: Thu, 07 Nov 2013 05:36:45 +0000
+Message-ID: <bug-64251-12968-SaBHnqRaSt@https.bugzilla.kernel.org/>
 References: <bug-64251-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,33 +15,21 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=64251
 
---- Comment #4 from Doug Smythies <dsmythies@telus.net> ---
-(In reply to Dirk Brandewie from comment #3)
-> I was trying to provide some useful information by setting min_perf_pct to a
-> value.
-Which I totally agree with, and do find the information very useful.
-I am just suggesting that it would be equally useful to provide that same
-information for the other cases.
+--- Comment #5 from Doug Smythies <dsmythies@telus.net> ---
+Created attachment 113721
+  --> https://bugzilla.kernel.org/attachment.cgi?id=113721&action=edit
+BIOS disabled Turbo mode CPU freq Vs. Requested.
 
-I see 4 scenarios, maybe there are more (using my computer as the example):
+This graph is in support of the previous comments.
 
-1.) BIOS allows Turbo mode and Turbo on enabled in driver:
-min = 42 percent, which represents 1.6 GHz and is accurate
-max = 100 percent, which represents 3.8 GHz and is accurate
+The "rnd" and "nokick" in the legend are related to other bug reports, and can
+be ignored in the context of this bug report. They are both with driver turbo
+on, but BIOS turbo disabled.
 
-2.) BIOS allows Turbo mode and Turbo is disabled in driver:
-min = 42 percent, which doesn't represent anything.
-max = 100 percent, which represents 3.4 GHz and is accurate.
-
-3.) BIOS disabled Turbo mode and Turbo on enabled in driver:
-min = 42 percent, which represents 1.6 GHz and is accurate.
-max = 100 percent, which represents 3.8 GHz, but can not be achieved.
-(a supporting graph will be attached in a minute)
-
-4.) BIOS disabled Turbo mode and Turbo is disabled in driver:
-This does not work at all on my computer. The CPU frequency just locks at
-whatever it was when the driver Turbo disable transition command is issued.
-(a supporting graph will be attached in a minute)
+"Toff" means driver turbo disabled, and multiple tests were done, each one with
+a different frequency on CPU 7 at the time of driver transition from turbo
+enabled to disabled, to demonstrate that the CPU frequency will lock and be
+thereafter unchangeable.
 
 -- 
 You are receiving this mail because:
