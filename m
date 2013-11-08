@@ -1,42 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: conservative: set requested_freq to policy
- max when it is over policy max
-Date: Fri, 8 Nov 2013 10:57:37 +0530
-Message-ID: <CAKohponWfm5etQPwBGUFhobkuE-MJdLauab7XM1mG+gEmnx0dA@mail.gmail.com>
-References: <1383888232-27049-1-git-send-email-chenxg@marvell.com>
-	<1383888232-27049-2-git-send-email-chenxg@marvell.com>
+From: Stratos Karafotis <skarafotis@gmail.com>
+Subject: Re: [PATCH] cpufreq: conservative: fix requested_freq reduction issue
+Date: Fri, 8 Nov 2013 19:43:28 +0200
+Message-ID: <CADmjqpP4dxWoU_3dLzC5+JffvwnZaLV=uxFTghpMRoSL_85TrA@mail.gmail.com>
+References: <1383791330-8289-1-git-send-email-chenxg@marvell.com>
+	<CAKohpo=2xjR=nr5hyMg9bve5_uVbV79R2FTxks0bLmL7kNV9Mg@mail.gmail.com>
+	<CADmjqpNWYVxrXuo106rBuZeZ2BrkGFkmbMJ8jxi39c8kLiQ+iw@mail.gmail.com>
+	<CAKohpon6DhiWMuszuznK4ZNCBTpy0_r3gGvTXCDMcktXpN3HEw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1383888232-27049-2-git-send-email-chenxg@marvell.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        bh=vElY1djm9VMLHrJjI418gu/jsYHmAs4coSHSiSZtPNY=;
+        b=cICn1mymLJ1MD6CQdmAjm4ni+0KH1v4dIBEjlRXXTyyF7ufOWeMpN0b5VB1sHbxh+o
+         GI/yi75BrafRIkfsj6JjBBkQvo2fnGGxnu/avJge0s38bXPJ2m9wQpLo1PgufRw4gxqr
+         H+91L896pk+5BfWczGx7pB1CkZxMifrr1m5CM4rCUbZEe291U0tLZw6+Hfnxsb7wX0dk
+         +exYevLdJVjPqTtHwFiq+AIiaDxjVQX26I5nGm8Zmrd5OYVbuTICc3G6R9uqqocWYbAM
+         57vLt0VgKuunsy7S9P1Z/LMrg91S4BfAmGCMQvNn69PMeDc18DDRp/rVsF/WjTJwpYrH
+         XrEQ==
+In-Reply-To: <CAKohpon6DhiWMuszuznK4ZNCBTpy0_r3gGvTXCDMcktXpN3HEw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Xiaoguang Chen <chenxg@marvell.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Xiaoguang Chen <chenxg.marvell@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Xiaoguang Chen <chenxg@marvell.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Xiaoguang Chen <chenxg.marvell@gmail.com>
 
-On 8 November 2013 10:53, Xiaoguang Chen <chenxg@marvell.com> wrote:
-> When requested_freq is over policy->max, set it to policy->max.
-> This can help to speed up decreasing frequency.
+On Fri, Nov 8, 2013 at 6:55 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 8 November 2013 00:36, Stratos Karafotis <skarafotis@gmail.com> wrote:
+>> I think the existing code already checks if the requested_freq is greater
+>> than policy->max in __cpufreq_driver_target.
 >
-> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c | 3 +++
->  1 file changed, 3 insertions(+)
+> Yes it does. But the problem is:
+> - cs_check_cpu() sets requested_freq above policy->max
+> - We execute following code because (requested_freq != policy->max)
 >
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 218460f..25a70d0 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -68,6 +68,9 @@ static void cs_check_cpu(int cpu, unsigned int load)
+>     dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
+>     __cpufreq_driver_target(policy, dbs_info->requested_freq,
+> CPUFREQ_RELATION_H);
+> - In __cpufreq_driver_target(), we don't do anything and return early..
+> - Above will keep on repeating all the time..
 >
->                 dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
+> If we change the code as I have suggested it to be:
+> - After first loop where requested_freq went over policy->max, we will
+> return early from cs_check_cpu(), but we have already set freq to max..
 >
-> +               if (dbs_info->requested_freq > policy->max)
-> +                       dbs_info->requested_freq = policy->max;
-> +
->                 __cpufreq_driver_target(policy, dbs_info->requested_freq,
->                         CPUFREQ_RELATION_H);
->                 return;
+>> If we put this check earlier, cpufreq will never reach policy->max.
+>
+> Can you please explain why do you see that happening?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Please let me rephrase my previous post. In some circumstances (depending
+on freq_step and freq_table values) CPU frequency will never reach to
+policy->max.
+
+For example suppose that (for simplicity values in MHz):
+policy->max = 1000
+policy->cur = 800
+requested_freq = 800
+freq_target = 300
+
+In 'first' iteration, if we return early with this code (because
+requested_freq will be
+1100):
+if (dbs_info->requested_freq >= policy->max)
+     return;
+
+CPU freq will never go over 800MHz.
+
+I think the current code works correctly.
+- The requested freq will go to 1100 in first iteration.
+- __cpufreq_driver_target will change CPU freq to 1000
+- dbs_cpufreq_notifier will adjust the requested_freq to 1000
+
+In next iteration the code:
+if (dbs_info->requested_freq == policy->max)
+        return;
+
+will keep the freq to max and break out early.
+
+So, I think there is no need for an extra check because of
+dbs_cpufreq_notifier code.
+
+
+Thanks,
+Stratos Karafotis
