@@ -1,103 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
- regulators suspended
-Date: Wed, 13 Nov 2013 11:19:27 +0530
-Message-ID: <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com>
-References: <1382638087-32054-1-git-send-email-nm@ti.com>
-	<CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com>
-	<52824522.7020401@ti.com>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52824522.7020401@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
+Subject: [PATCH] cpufreq: OMAP: Fix compilation error 'r & ret undeclared'
+Date: Wed, 13 Nov 2013 15:39:23 +0530
+Message-ID: <c5d802f9efd94a2fafea738d370feff85272bf9a.1384337302.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 12 November 2013 20:41, Nishanth Menon <nm@ti.com> wrote:
-> On 11/12/2013 12:03 AM, Viresh Kumar wrote:
+With a recent change "d4019f0 cpufreq: move freq change notifications to cpufreq
+core" few variables (r & ret) are removed by mistake and hence these warnings:
 
->> Yes the problem looks real but there are issues with this patch.
->> - It doesn't solve your problem completely, because you returned -EBUSY,
->> your suspend operation failed and we resumed immediately.
->
-> Seems like there was an error handling miss somewhere - for some
-> reason, it did suspend properly.
+drivers/cpufreq/omap-cpufreq.c: In function omap_target:
+drivers/cpufreq/omap-cpufreq.c:64:2: error: ret undeclared (first use in this function)
+drivers/cpufreq/omap-cpufreq.c:64:2: note: each undeclared identifier is reported only once for each function it appears in
+drivers/cpufreq/omap-cpufreq.c:94:3: error: r undeclared (first use in this function)
+drivers/cpufreq/omap-cpufreq.c:116:1: warning: control reaches end of non-void function [-Wreturn-type]
 
-Yeah, its missing in cpufreq_cpu_callback()..
+Lets fix them by declaring those variables again.
 
->> But I think the problem can/should be solved some other way.. Looking closely,
->> we got to the problem because we called
->>
->> __cpufreq_governor(policy, CPUFREQ_GOV_START)
->>
->> at the first place. This happened because the policy structure had more than
->> one cpu to take care of and after stopping goveronr for CPU1 it has to start it
->> again for CPU0... But this is really not required as anyway we are going to
->> suspend.
->>
->> Can you try attached patch? I will then repost it formally...
->
-> I tried a equivalent of this for v3.12 tag:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 04548f7..9ec243c 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1186,7 +1186,7 @@ static int __cpufreq_remove_dev_prepare(struct
-> device *dev,
->                 return -EINVAL;
->         }
->
-> -       if (cpufreq_driver->target) {
-> +       if (cpufreq_driver->target && (!frozen ||
-> policy->governor_enabled)) {
->                 ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
->                 if (ret) {
->                         pr_err("%s: Failed to stop governor\n", __func__);
-> @@ -1252,7 +1252,7 @@ static int __cpufreq_remove_dev_finish(struct
-> device *dev,
->
->         /* If cpu is last user of policy, free policy */
->         if (cpus == 1) {
-> -               if (cpufreq_driver->target) {
-> +               if (cpufreq_driver->target && !frozen) {
->                         ret = __cpufreq_governor(policy,
->                                         CPUFREQ_GOV_POLICY_EXIT);
+Reported-by: Sebastian Capella <sebastian.capella@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/omap-cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-This is not an equivalent of my patch :)
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+index be6d143..a0acd0b 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
+@@ -53,6 +53,7 @@ static unsigned int omap_getspeed(unsigned int cpu)
+ 
+ static int omap_target(struct cpufreq_policy *policy, unsigned int index)
+ {
++	int r, ret;
+ 	struct dev_pm_opp *opp;
+ 	unsigned long freq, volt = 0, volt_old = 0, tol = 0;
+ 	unsigned int old_freq, new_freq;
+-- 
+1.7.12.rc2.18.g61b472e
 
-@@ -1282,7 +1282,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
-                if (!frozen)
-                        cpufreq_policy_free(policy);
-        } else {
--               if (has_target()) {
-+               if (has_target() && !frozen) {
-                        if ((ret = __cpufreq_governor(policy,
-CPUFREQ_GOV_START)) ||
-                                        (ret =
-__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
-
-
-> And I see http://pastebin.mozilla.org/3528478
->
-> with a WARN patch for generating call stack.
-
-that's why you got it.. I was really surprised to see it just didn't
-worked for you
-and believe me it took me a lot of time understanding how isn't it
-working for u.
-Because I simply believed on your equivalent version and didn't looked at it
-closely :)
-
-> Finally squelched warnings with a net diff (v3.12) of
-> http://pastebin.mozilla.org/3546062
-
-we don't need that stuff in cpufreq_add_policy_cpu()
-
-> However, ondemand is no longer functioning on resume (governor needs a
-> start after being unfrozen.. and obviously by avoiding that entirely
-> in frozen case.. not sure if I missed any other)..
-
-It would be, try the right code once. :)
