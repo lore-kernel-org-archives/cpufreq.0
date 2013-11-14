@@ -1,185 +1,63 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv5 05/20] cpufreq: cpufreq-cpu0: add dt node parsing for
- cooling device properties
-Date: Thu, 14 Nov 2013 09:17:21 -0400
-Message-ID: <5284CD61.3000302@ti.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
+ regulators suspended
+Date: Thu, 14 Nov 2013 08:27:05 -0600
+Message-ID: <5284DDB9.7040502@ti.com>
+References: <1382638087-32054-1-git-send-email-nm@ti.com> <CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com> <52824522.7020401@ti.com> <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com> <20131113151645.GA17828@kahuna> <52842671.40703@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="5b8N1TKPpElctraVGCk8rBFL5nSOMVFJo"
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52842671.40703@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Eduardo Valentin <eduardo.valentin@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+To: viresh kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 
---5b8N1TKPpElctraVGCk8rBFL5nSOMVFJo
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 12-11-2013 15:46, Eduardo Valentin wrote:
-> This patch changes the cpufreq-cpu0 driver to consider if
-> a cpu needs cooling (with cpufreq). In case the cooling is needed,
-> the cpu0 device tree node needs to be properly configured
-> with cooling device properties.
->=20
-> In case these properties are present,, the driver will
-> load a cpufreq cooling device in the system. The cpufreq-cpu0
-> driver is not interested in determining how the system should
-> be using the cooling device. The driver is responsible
-> only of loading the cooling device.
->=20
-> Describing how the cooling device will be used can be
-> accomplished by setting up a thermal zone that references
-> and is composed by the cpufreq cooling device.
->=20
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-
-Rafael, Can I still assume you are OK with this patch and add your
-acked-by [1]?
-http://www.spinics.net/lists/lm-sensors/msg39136.html
-
-It has changed a few bits from V1 to here. The idea is still same though.=
-
-
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: devicetree-discuss@lists.ozlabs.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt         |  7 +++++++
->  drivers/cpufreq/Kconfig                                  |  2 +-
->  drivers/cpufreq/cpufreq-cpu0.c                           | 16 ++++++++=
-++++++++
->  3 files changed, 24 insertions(+), 1 deletion(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt=
- b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> index 051f764..f055515 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> @@ -15,6 +15,10 @@ Optional properties:
->  - clock-latency: Specify the possible maximum transition latency for c=
-lock,
->    in unit of nanoseconds.
->  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
-> +- #cooling-cells:
-> +- cooling-min-level:
-> +- cooling-max-level:
-> +     Please refer to Documentation/devicetree/bindings/thermal/thermal=
-=2Etxt.
-> =20
->  Examples:
-> =20
-> @@ -33,6 +37,9 @@ cpus {
->  			198000  850000
->  		>;
->  		clock-latency =3D <61036>; /* two CLK32 periods */
-> +		#cooling-cells =3D <2>;
-> +		cooling-min-level =3D <0>;
-> +		cooling-max-level =3D <2>;
->  	};
-> =20
->  	cpu@1 {
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 534fcb8..fc1e9a5 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -186,7 +186,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
-> =20
->  config GENERIC_CPUFREQ_CPU0
->  	tristate "Generic CPU0 cpufreq driver"
-> -	depends on HAVE_CLK && REGULATOR && PM_OPP && OF
-> +	depends on HAVE_CLK && REGULATOR && PM_OPP && OF && THERMAL && CPU_TH=
-ERMAL
->  	select CPU_FREQ_TABLE
->  	help
->  	  This adds a generic cpufreq driver for CPU0 frequency management.
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-c=
-pu0.c
-> index c522a95..568aaf3 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -13,7 +13,9 @@
-> =20
->  #include <linux/clk.h>
->  #include <linux/cpu.h>
-> +#include <linux/cpu_cooling.h>
->  #include <linux/cpufreq.h>
-> +#include <linux/cpumask.h>
->  #include <linux/err.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
-> @@ -21,6 +23,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/regulator/consumer.h>
->  #include <linux/slab.h>
-> +#include <linux/thermal.h>
-> =20
->  static unsigned int transition_latency;
->  static unsigned int voltage_tolerance; /* in percentage */
-> @@ -29,6 +32,7 @@ static struct device *cpu_dev;
->  static struct clk *cpu_clk;
->  static struct regulator *cpu_reg;
->  static struct cpufreq_frequency_table *freq_table;
-> +static struct thermal_cooling_device *cdev;
-> =20
->  static int cpu0_verify_speed(struct cpufreq_policy *policy)
->  {
-> @@ -260,6 +264,17 @@ static int cpu0_cpufreq_probe(struct platform_devi=
-ce *pdev)
->  		goto out_free_table;
->  	}
-> =20
-> +	/*
-> +	 * For now, just loading the cooling device;
-> +	 * thermal DT code takes care of matching them.
-> +	 */
-> +	if (of_find_property(np, "#cooling-cells", NULL)) {
-> +		cdev =3D of_cpufreq_cooling_register(np, cpu_present_mask);
-> +		if (IS_ERR(cdev))
-> +			pr_err("running cpufreq without cooling device: %ld\n",
-> +			       PTR_ERR(cdev));
-> +	}
+On 11/13/2013 07:25 PM, viresh kumar wrote:
+> On Wednesday 13 November 2013 08:46 PM, Nishanth Menon wrote:
+>> arrgh, my bad.. Apologies for the bad one.. I missed it :( Does the following
+>> look equivalent?
+> 
+> yes.
+> 
+>> With this, I now see:
+> 
+>> [   43.212714] cpufreq: cpufreq_add_policy_cpu: Failed to stop governor
+>> ^^^ ??
+> 
+> Ahh, I missed this part. I thought it will fail at some other place where there
+> is no error checking :), but that's not true.
+> 
+> Following should fix it for you and looks to be the right way as well.
+> 
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index dc67fa0..30b09d3 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1530,6 +1530,14 @@ static void cpufreq_bp_resume(void)
+>                 }
+>         }
+> 
+> +       if (has_target()) {
+> +               if ((ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
+> +                       (ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
+> +                       pr_err("%s: Failed to start governor\n", __func__);
+> +                       goto fail;
+> +               }
+> +       }
 > +
->  	of_node_put(np);
->  	return 0;
-> =20
-> @@ -272,6 +287,7 @@ out_put_node:
-> =20
->  static int cpu0_cpufreq_remove(struct platform_device *pdev)
->  {
-> +	cpufreq_cooling_unregister(cdev);
->  	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
->  	opp_free_cpufreq_table(cpu_dev, &freq_table);
-> =20
->=20
+>         schedule_work(&policy->update);
+> 
+>  fail:
+> 
+I am guessing this is a little too early for restarting policy here
+considering syscore_ops->resume is pretty early..
 
+http://pastebin.mozilla.org/3602746 is the equivalent patch for v3.12
+http://pastebin.mozilla.org/3602747 is the result.
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---5b8N1TKPpElctraVGCk8rBFL5nSOMVFJo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlKEzWIACgkQCXcVR3XQvP2LfwD/ZWtVvDNgk3ULqR8dyDmUBU5r
-ITYDt5+hxVkRX0KX15kA+gKKmrs9en3Evh4z3D6cfhX+gqPFuy0UqjboXss2hW+3
-=o+YS
------END PGP SIGNATURE-----
-
---5b8N1TKPpElctraVGCk8rBFL5nSOMVFJo--
+-- 
+Regards,
+Nishanth Menon
