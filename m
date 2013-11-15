@@ -1,39 +1,31 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: [PATCH] Cpufreq: Remove fossil comment in the cpufreq_governor_dbs()
-Date: Fri, 15 Nov 2013 13:54:01 +0800
-Message-ID: <1384494841-28581-1-git-send-email-tianyu.lan@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 63081] ignore_nice_load changes from one to zero after
+ suspend2ram
+Date: Fri, 15 Nov 2013 06:14:17 +0000
+Message-ID: <bug-63081-12968-6wJRS6QoaE@https.bugzilla.kernel.org/>
+References: <bug-63081-12968@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-63081-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-The related code has been changed and the comment is out of data.
-So remove it.
+https://bugzilla.kernel.org/show_bug.cgi?id=63081
 
-Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
----
- drivers/cpufreq/cpufreq_governor.c | 4 ----
- 1 file changed, 4 deletions(-)
+Lan Tianyu <tianyu.lan@intel.com> changed:
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 0806c31..e6be635 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -328,10 +328,6 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 					     dbs_data->cdata->gov_dbs_timer);
- 		}
- 
--		/*
--		 * conservative does not implement micro like ondemand
--		 * governor, thus we are bound to jiffes/HZ
--		 */
- 		if (dbs_data->cdata->governor == GOV_CONSERVATIVE) {
- 			cs_dbs_info->down_skip = 0;
- 			cs_dbs_info->enable = 1;
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+           Assignee|cpufreq@vger.kernel.org     |tianyu.lan@intel.com
+
+--- Comment #12 from Lan Tianyu <tianyu.lan@intel.com> ---
+Hi, please try this patch.
+
+http://www.spinics.net/lists/kernel/msg1636080.html
+
 -- 
-1.8.4.rc0.1.g8f6a3e5.dirty
-
+You are receiving this mail because:
+You are the assignee for the bug.
