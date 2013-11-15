@@ -1,64 +1,34 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
- regulators suspended
-Date: Fri, 15 Nov 2013 15:57:36 +0530
-Message-ID: <CAKohpokz6YEqz8ZNmQ77y8K3qvKYu3ffgVmiEcDyh2M9FsDGPg@mail.gmail.com>
-References: <1382638087-32054-1-git-send-email-nm@ti.com>
-	<CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com>
-	<52824522.7020401@ti.com>
-	<CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com>
-	<20131113151645.GA17828@kahuna>
-	<52842671.40703@linaro.org>
-	<5284DDB9.7040502@ti.com>
-	<5284FE48.8040802@linaro.org>
-	<528502AC.4010604@ti.com>
+Subject: Re: [PATCH V2 1/2] Tick: Introduce tick_nohz_check() to check nohz
+ enable status
+Date: Fri, 15 Nov 2013 16:05:58 +0530
+Message-ID: <CAKohpomwb4iAaBkHd=N_UqWJUemCZ_QnYTy=sUDsJ0nerjz9rw@mail.gmail.com>
+References: <1383036537-30362-1-git-send-email-tianyu.lan@intel.com>
+	<1384504535-29987-1-git-send-email-tianyu.lan@intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <528502AC.4010604@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1384504535-29987-1-git-send-email-tianyu.lan@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: dipankar@in.ibm.com, Paul McKenney <paulmck@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steven Rostedt <rostedt@goodmis.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 14 November 2013 22:34, Nishanth Menon <nm@ti.com> wrote:
-> I think it is still too early to do so :(
-
-:)
-
-> equivalent patch: http://pastebin.mozilla.org/3603467 (with minor
-> changes for build)
+On 15 November 2013 14:05, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> In some cases, nohz enable status needs to be checked. E.G, in RCU and cpufreq
+> ondemand governor. So add tick_nohz_check() to return tick_nohz_enabled value
+> And use tick_nohz_check() instead of referencing tick_nohz_enabled in the rcutree_plugin.h.
 >
-> Basic tests: http://pastebin.mozilla.org/3603456 (governor is
-> functional, but governor kicks in early before i2c is resumed)
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> ---
 >
-> With call stack: http://pastebin.mozilla.org/3603455 to highlight call
-> sequences
+> Change since V2:
+>         Add ACCESS_ONCE to tick_nohz_check().
 >
-> Seems like we might want to pause governor as early in the suspend
-> sequence as possible to allow SoC and regulator stuff to suspend
-> themselves without cpufreq interfering.. just my 2 cents..
+>  include/linux/tick.h     | 2 ++
+>  kernel/rcutree_plugin.h  | 4 +---
+>  kernel/time/tick-sched.c | 8 +++++++-
+>  3 files changed, 10 insertions(+), 4 deletions(-)
 
-You made me spend a day on this :)
-It wasn't a day's job really but I got into a really hard to crack bug with my
-patch, I was calling __cpufreq_governor() from under write_lock_irqsave
-for cpufreq_driver_lock. And __cpufreq_governor() had:
-
- read_lock_irqsave(&cpufreq_driver_lock, flags);
-
-I wasn't able to suspend my system: ARM, X86.. It simply stopped
-printing anything and I didn't had a clue of what's going on.. Hacked
-everything possible, even kernel/power/suspend.c to return early
-(yeah I used freezer > pm_test as well, but I wanted to return before
-freezing userspace)...
-
-Then somehow I got to know that this is the wrong piece of code :)
-
-But probably I have a solution now to which you can't say:
-
-"I think it is still too early to do so :("
-
-:)
-
-Give it a try and give a Tested-by please :)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
