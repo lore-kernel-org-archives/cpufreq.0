@@ -1,168 +1,92 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Sat, 16 Nov 2013 01:24:50 +0100
-Message-ID: <5020664.HldDXMO8cr@vostro.rjw.lan>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH] cpufreq: stats: Do not populate stats when policy->cur has no exact match
+Date: Fri, 15 Nov 2013 18:20:43 -0600
+Message-ID: <1384561243-30391-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, nm@ti.com, jinchoi@broadcom.com, sebastian.capella@linaro.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ceh@ti.com, Nishanth Menon <nm@ti.com>, Tobias Diedrich <ranma+xen@tdiedrich.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Dave Jones <davej@redhat.com>
 
-On Friday, November 15, 2013 03:42:29 PM Viresh Kumar wrote:
-> This patch adds PM notifiers for handling suspend/resume of cpufreq governors.
-> This is required for early suspend and late resume of governors.
-> 
-> There are multiple reasons that support this patch:
-> - Firstly it looks very much logical to stop governors when we know we are going
->   into suspend. But the question is when? Is PM notifiers the right place?
->   Following reasons are the supporting hands for this decision.
-> - Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
->   wasn't working well with suspend/resume as calls for removing non-boot CPUs
->   was turning out into a call to drivers ->target() which then tries to play
->   with regulators. But regulators and their I2C bus were already suspended and
->   this resulted in a failure. This is why we need a PM notifier here.
-> - Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
->   tunables configuration for clusters/sockets with non-boot CPUs was getting
->   lost after suspend/resume, as we were notifying governors with
->   CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
->   deallocating memory for tunables.
-> 
-> All above problems get fixed with having a PM notifier in place which will stop
-> any operation on governor. Hence no need to do any special handling of variables
-> like (frozen) in suspend/resume paths.
+commit 46a310b ([CPUFREQ] Don't set stat->last_index to -1 if the
+pol->cur has incorrect value.) tries to handle case where policy->cur
+does not match any entry in freq_table.
 
-Will cpufreq work during system-wide power transitions (suspend/resume etc.)
-after this?  In particular, what about hibernation?
+As indicated in the above commit, the exact match search of
+freq_table_get index will return a -1 which is stored in
+stat->last_index. However, as a result of the above commit,
+cpufreq_stat_notifier_trans which updates the statistics, fails
+to update any *further* valid transitions that take place as
+stat->last_index is -1 as the condition occurs at boot and never
+solved.
 
-> Reported-by: Lan Tianyu <tianyu.lan@intel.com>
-> Reported-by: Nishanth Menon <nm@ti.com>
-> Reported-by: Jinhyuk Choi <jinchoi@broadcom.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> 
-> Hi Guys,
-> 
-> Can you please verify if this fixes issues reported by you? I have tested this
-> for multiple suspend-resumes on my thinkpad. It doesn't crash :)
-> 
->  drivers/cpufreq/cpufreq.c | 63 +++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 63 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 02d534d..c87ced9 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -26,6 +26,7 @@
->  #include <linux/module.h>
->  #include <linux/mutex.h>
->  #include <linux/slab.h>
-> +#include <linux/suspend.h>
->  #include <linux/syscore_ops.h>
->  #include <linux/tick.h>
->  #include <trace/events/power.h>
-> @@ -47,6 +48,9 @@ static LIST_HEAD(cpufreq_policy_list);
->  static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
->  #endif
->  
-> +/* Flag to suspend/resume CPUFreq governors */
-> +static bool cpufreq_suspended;
-> +
->  static inline bool has_target(void)
->  {
->  	return cpufreq_driver->target_index || cpufreq_driver->target;
-> @@ -1462,6 +1466,54 @@ static struct subsys_interface cpufreq_interface = {
->  	.remove_dev	= cpufreq_remove_dev,
->  };
->  
-> +/*
-> + * PM Notifier for suspending governors as some platforms can't change frequency
-> + * after this point in suspend cycle. Because some of the devices (like: i2c,
-> + * regulators, etc) they use for changing frequency are suspended quickly after
-> + * this point.
-> + */
-> +static int cpufreq_pm_notify(struct notifier_block *nb, unsigned long action,
-> +		void *data)
-> +{
-> +	struct cpufreq_policy *policy;
-> +	unsigned long flags;
-> +
-> +	if (!has_target())
-> +		return NOTIFY_OK;
-> +
-> +	if (action == PM_SUSPEND_PREPARE) {
-> +		pr_debug("%s: Suspending Governors\n", __func__);
-> +
-> +		list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-> +			if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
-> +				pr_err("%s: Failed to stop governor for policy: %p\n",
-> +						__func__, policy);
-> +
-> +		write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +		cpufreq_suspended = true;
-> +		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +	} else if (action == PM_POST_SUSPEND) {
-> +		pr_debug("%s: Resuming Governors\n", __func__);
-> +
-> +		write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +		cpufreq_suspended = false;
-> +		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +
-> +		list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-> +			if (__cpufreq_governor(policy, CPUFREQ_GOV_START) ||
-> +					__cpufreq_governor(policy,
-> +						CPUFREQ_GOV_LIMITS))
-> +				pr_err("%s: Failed to start governor for policy: %p\n",
-> +						__func__, policy);
-> +	}
-> +
-> +	return NOTIFY_OK;
-> +}
-> +
-> +static struct notifier_block cpufreq_pm_notifier = {
-> +	.notifier_call = cpufreq_pm_notify,
-> +};
-> +
->  /**
->   * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
->   *
-> @@ -1752,6 +1804,8 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
->  static int __cpufreq_governor(struct cpufreq_policy *policy,
->  					unsigned int event)
->  {
-> +	unsigned long flags;
-> +	bool is_suspended;
->  	int ret;
->  
->  	/* Only must be defined when default governor is known to have latency
-> @@ -1764,6 +1818,14 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
->  	struct cpufreq_governor *gov = NULL;
->  #endif
->  
-> +	/* Don't start any governor operations if we are entering suspend */
-> +	read_lock_irqsave(&cpufreq_driver_lock, flags);
-> +	is_suspended = cpufreq_suspended;
-> +	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +
-> +	if (is_suspended)
-> +		return 0;
-> +
->  	if (policy->governor->max_transition_latency &&
->  	    policy->cpuinfo.transition_latency >
->  	    policy->governor->max_transition_latency) {
-> @@ -2222,6 +2284,7 @@ static int __init cpufreq_core_init(void)
->  	cpufreq_global_kobject = kobject_create();
->  	BUG_ON(!cpufreq_global_kobject);
->  	register_syscore_ops(&cpufreq_syscore_ops);
-> +	register_pm_notifier(&cpufreq_pm_notifier);
->  
->  	return 0;
->  }
-> 
+So, instead of having a statistics information that never ever
+reflects valid data in the mentioned case and scratching our heads, we
+instead, refuse to populate any of the statistics entries and note in
+kernel log the error condition for developers to fix. The only useable
+information are the available frequencies which is already available
+in other cpufreq sysfs entries.
+
+Cc: Tobias Diedrich <ranma+xen@tdiedrich.de>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: Dave Jones <davej@redhat.com>
+Reported-by: Carlos Hernandez <ceh@ti.com>
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+
+Patch based on v3.12 tag
+
+Reported by Carlos on TI vendor kernel (v3.12tag based):
+
+OMAP5uEVM: http://pastebin.mozilla.org/3612196
+AM335x-evm: http://pastebin.mozilla.org/3612220
+
+As can be seen, the translation table are present, however none of the
+transition information is ever updated.
+With the current patch, this becomes: http://pastebin.mozilla.org/3612256
+
+Original commit thread seems to be:
+https://lkml.org/lkml/2011/6/16/760 but I dont see much information if
+this was discussed further.
+
+An alternate approach possible is to try and recover from this case by
+using an 'atmost' match to find a closest match and then giveup when
+we cant find one, but that does not really indicate a proper statistic
+(if freq1 < cur_freq < freq2, was the intent to be at freq1 or freq2?
+stats should not make that policy decision)
+	http://pastebin.mozilla.org/3612179 (alternate approach 1)
+
+Yet another option might be to update last_index using the first
+transition into a valid index, but then, we wont have statistics
+information 100% correct as we did not store the very first frequency
+stat.
+	 http://pastebin.mozilla.org/3612241 (alternate approach 2)
+
+ drivers/cpufreq/cpufreq_stats.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 4cf0d28..4c8a501 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -251,6 +251,14 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 	stat->last_time = get_jiffies_64();
+ 	stat->last_index = freq_table_get_index(stat, policy->cur);
+ 	spin_unlock(&cpufreq_stats_lock);
++
++	if (stat->last_index == -1) {
++		pr_err("%s: No match for current freq %u in table. Disabled!\n",
++		       __func__, policy->cur);
++		ret = -EINVAL;
++		goto error_out;
++	}
++
+ 	cpufreq_cpu_put(current_policy);
+ 	return 0;
+ error_out:
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.9.5
+
