@@ -1,31 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Mon, 18 Nov 2013 16:31:58 +0530
-Message-ID: <CAKohpo=UjSqzE+Jg0s3taykHu4VinNUvLLhRm6pUXiyUc5F-3w@mail.gmail.com>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
-	<5974906.WAPp3f3eVY@vostro.rjw.lan>
-	<CAKohpo=PoAaYgLNEVkkTC6tzAH=5hKw4VWTsrjt2jQnr7+6Q_w@mail.gmail.com>
-	<5229929.5JRiWnF6CT@vostro.rjw.lan>
-	<5289A80B.7080808@linaro.org>
-	<5289F29B.8050806@intel.com>
-Mime-Version: 1.0
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/1] cpufreq: exynos: Remove unwanted EXPORT_SYMBOL
+Date: Mon, 18 Nov 2013 17:21:26 +0530
+Message-ID: <1384775486-31660-1-git-send-email-sachin.kamat@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5289F29B.8050806@intel.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+To: linux-pm@vger.kernel.org
+Cc: cpufreq@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, sachin.kamat@linaro.org
 
-On 18 November 2013 16:27, Lan Tianyu <tianyu.lan@intel.com> wrote:
-> How about introducing a resume/suspend callback pointer or list(if there
-> are several places that need to deal with cpu resume/suspend) in the
-> struct cpu and populate it in the cpufreq_add_dev()?
->
-> The suspend/resume() of cpu_subsys needs to check the callback pointer
-> and run it if available.
+The init functions are linked statically (no support for
+dynamic loading) and have no other users. Hence remove
+EXPORT_SYMBOL for these functions.
 
-That's almost a new infrastructure then and looks more hackish :)
-Apart from that even cpufreq would be a bit hacky as we don't really need
-per-cpu callbacks..
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/cpufreq/exynos4210-cpufreq.c |    1 -
+ drivers/cpufreq/exynos4x12-cpufreq.c |    1 -
+ drivers/cpufreq/exynos5250-cpufreq.c |    1 -
+ 3 files changed, 3 deletions(-)
+
+diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
+index f2c75065ce19..dfd1643b0b2f 100644
+--- a/drivers/cpufreq/exynos4210-cpufreq.c
++++ b/drivers/cpufreq/exynos4210-cpufreq.c
+@@ -157,4 +157,3 @@ err_moutcore:
+ 	pr_debug("%s: failed initialization\n", __func__);
+ 	return -EINVAL;
+ }
+-EXPORT_SYMBOL(exynos4210_cpufreq_init);
+diff --git a/drivers/cpufreq/exynos4x12-cpufreq.c b/drivers/cpufreq/exynos4x12-cpufreq.c
+index 8683304ce62c..efad5e657f6f 100644
+--- a/drivers/cpufreq/exynos4x12-cpufreq.c
++++ b/drivers/cpufreq/exynos4x12-cpufreq.c
+@@ -211,4 +211,3 @@ err_moutcore:
+ 	pr_debug("%s: failed initialization\n", __func__);
+ 	return -EINVAL;
+ }
+-EXPORT_SYMBOL(exynos4x12_cpufreq_init);
+diff --git a/drivers/cpufreq/exynos5250-cpufreq.c b/drivers/cpufreq/exynos5250-cpufreq.c
+index 9fae466d7746..8feda86fe42c 100644
+--- a/drivers/cpufreq/exynos5250-cpufreq.c
++++ b/drivers/cpufreq/exynos5250-cpufreq.c
+@@ -236,4 +236,3 @@ err_moutcore:
+ 	pr_err("%s: failed initialization\n", __func__);
+ 	return -EINVAL;
+ }
+-EXPORT_SYMBOL(exynos5250_cpufreq_init);
+-- 
+1.7.9.5
+
