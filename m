@@ -1,77 +1,197 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
- booting with a mismatched bootloader configuration
-Date: Tue, 19 Nov 2013 09:48:28 -0600
-Message-ID: <528B884C.7070908@ti.com>
-References: <1384568535-26611-1-git-send-email-nm@ti.com>	<20131116134445.GI11014@S2101-09.ap.freescale.net>	<CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>	<528A27F8.3070402@ti.com>	<20131118155753.GU11014@S2101-09.ap.freescale.net>	<528A4340.3020508@ti.com>	<20131119022133.GB18434@S2101-09.ap.freescale.net>	<CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>	<528B72C1.5060006@ti.com>	<CAKohpo=hzCSuQBGreRStzkOuH6aFiZKTtK9SF+_eGEajkwSXEA@mail.gmail.com>	<528B7CE5.5040502@ti.com> <CAKohponO7M6rYoPt=ePNTZh=y+iU=BEbFWBqxr1JQPbVptvgXA@mail.gmail.com>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: Re: [PATCH] cpufreq, highbank: enable ECME thermal notifications
+Date: Tue, 19 Nov 2013 10:31:01 -0600
+Message-ID: <528B9245.70409@calxeda.com>
+References: <1382226889-11062-1-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohponO7M6rYoPt=ePNTZh=y+iU=BEbFWBqxr1JQPbVptvgXA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1382226889-11062-1-git-send-email-mark.langsdorf@calxeda.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-On 11/19/2013 09:32 AM, Viresh Kumar wrote:
-> On 19 November 2013 20:29, Nishanth Menon <nm@ti.com> wrote:
->> Not completely true - reaching probe after boot in a few seconds may
->> not mean that system will remain stable at that frequency for longer
->> duration. From a silicon vendor perspective, I do know that we
->> gaurentee the discrete frequencies in the data manual (and that gets
->> populated in devicetree and hence in freq_table), but we will not
->> guarentee any other frequency to be functional for any length of time.
->> in short, if a actual product is manufactured and operational at a
->> frequency we do not "officially support", there is a risk associated
->> with that. just a boot on a few development systems do not ever
->> guarentee productization capability.
-> 
-> Maybe for a long duration system isn't stable enough but should be
-> stable for few seconds Atleast?
-yes.
+Would it be possible to get some kind of ACK or NAK for this patch?
+Thank you.
 
-> 
-> As soon as ->init() of driver is called we will get a call to:
-> cpufreq_set_policy() from cpufreq_init_policy(). And we will execute
-> this for sure:
-> 
-> ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> 
-> On this call if the current freq is lesser or greater than policy limits,
-> then we will fix it straight away.. Otherwise whichever the governor
-> is, we will change the freq to any from freq-table very soon..
-is that true for userspace governor
-(CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE)?
-/sys/devices/system/cpu/cpu0/cpufreq $ cat scaling_available_frequencies
-500000 1000000 1500000
-
-/sys/devices/system/cpu/cpu0/cpufreq $ cat scaling_cur_freq
-1100000
+--Mark Langsdorf
+Calxeda, Inc.
 
 
+On 10/19/2013 06:54 PM, Mark Langsdorf wrote:
+> The ECME sends thermal messages with a maximum and minimum allowed
+> frequency when the SoC status reaches certain trip points known to the
+> ECME. Use a notifier function to capture those messages and pass them
+> to a work-queued function that can trigger a policy re-evaluation by
+> cpufreq, capping the allowable frequencies.
 > 
-> So, we need a real example of unstable system which really
-> requires your patch. Otherwise I feel that we will not face any problems
-> at all..
-OMAP5-UEVM will remain at this frequency for a long period of time
-with AVS voltage(Adaptive Voltage Scaling technique used in OMAP to
-optimize operational voltage) that was meant for 1GHz! that is
-definitely not stable if there is no further transition to a valid
-frequency.
-
+> The core of the policy adjusting code was taken from
+> drivers/thermal/cpu_cooling.c.
 > 
->> So, to summarize: what is our overall strategy here? to move to a
->> frequency matched in freq_table OR just giveup? I can try and respin
->> accordingly.
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> ---
+>  drivers/cpufreq/highbank-cpufreq.c | 117 +++++++++++++++++++++++++++++++++++++
+>  1 file changed, 117 insertions(+)
 > 
-> I want cpufreq-stats to be fixed with something else, might be something
-> similar to the patch I have sent..
+> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
+> index b61b5a3..f0521d3 100644
+> --- a/drivers/cpufreq/highbank-cpufreq.c
+> +++ b/drivers/cpufreq/highbank-cpufreq.c
+> @@ -17,15 +17,32 @@
+>  #include <linux/module.h>
+>  #include <linux/clk.h>
+>  #include <linux/cpu.h>
+> +#include <linux/cpufreq.h>
+>  #include <linux/err.h>
+>  #include <linux/of.h>
+>  #include <linux/mailbox.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/cpumask.h>
+> +#include <linux/workqueue.h>
+>  
+>  #define HB_CPUFREQ_CHANGE_NOTE	0x80000001
+> +#define HB_CPUFREQ_HEALTH_NOTE  0x00001001
+> +#define HB_CPUFREQ_TPS_REPORT	1
+>  #define HB_CPUFREQ_IPC_LEN	7
+>  #define HB_CPUFREQ_VOLT_RETRIES	15
+>  
+> +#define NOTIFY_INVALID NULL
+> +
+> +struct hb_notify_device {
+> +	unsigned long max_freq;
+> +	unsigned long min_freq;
+> +	unsigned long thermal_state;
+> +	struct cpumask *allowed_cpus;
+> +};
+> +
+> +static struct hb_notify_device hb_records, *notify_device = NOTIFY_INVALID;
+> +static struct work_struct hb_thermal_wq;
+> +
+>  static int hb_voltage_change(unsigned int freq)
+>  {
+>  	u32 msg[HB_CPUFREQ_IPC_LEN] = {HB_CPUFREQ_CHANGE_NOTE, freq / 1000000};
+> @@ -33,6 +50,89 @@ static int hb_voltage_change(unsigned int freq)
+>  	return pl320_ipc_transmit(msg);
+>  }
+>  
+> +static int hb_thermal_cpufreq_notify(struct notifier_block *nb,
+> +				    unsigned long event, void *data)
+> +{
+> +	struct cpufreq_policy *policy = data;
+> +	unsigned long max_freq = 0, min_freq = 0;
+> +
+> +	if (event != CPUFREQ_ADJUST || notify_device == NOTIFY_INVALID)
+> +		return 0;
+> +
+> +	if (cpumask_test_cpu(policy->cpu, notify_device->allowed_cpus)) {
+> +		max_freq = notify_device->max_freq;
+> +		min_freq = notify_device->min_freq;
+> +	}
+> +
+> +	/* Never exceed user_policy.max */
+> +	if (max_freq > policy->user_policy.max)
+> +		max_freq = policy->user_policy.max;
+> +	if (min_freq < policy->user_policy.min)
+> +		min_freq = policy->user_policy.min;
+> +
+> +	if ((policy->max != max_freq) || (policy->min != min_freq))
+> +		cpufreq_verify_within_limits(policy, min_freq, max_freq);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct notifier_block hb_thermal_cpufreq_nb = {
+> +	.notifier_call = hb_thermal_cpufreq_notify,
+> +};
+> +
+> +/*
+> + * We can't call cpufreq_adjust_policy from inside a notifier, so
+> + * do it from inside a workqueue
+> + */
+> +static void hb_thermal_wq_task(struct work_struct *work)
+> +{
+> +	unsigned int cpuid;
+> +	struct cpumask *mask = hb_records.allowed_cpus;
+> +
+> +	notify_device = &hb_records;
+> +
+> +	for_each_cpu(cpuid, mask) {
+> +		struct cpufreq_policy policy;
+> +		if (cpufreq_get_policy(&policy, cpuid) == 0) {
+> +			cpufreq_update_policy(cpuid);
+> +			break;
+> +		}
+> +	}
+> +	notify_device = NOTIFY_INVALID;
+> +}
+> +
+> +static int hb_thermal_tps_notify(struct notifier_block *nb,
+> +				unsigned long action, void *mailbox)
+> +{
+> +	unsigned long *data = (unsigned long *) mailbox;
+> +
+> +	if ((action != HB_CPUFREQ_HEALTH_NOTE) &&
+> +			(data[0] != HB_CPUFREQ_TPS_REPORT))
+> +		return 0;
+> +
+> +	/*
+> +	 * If we're already at this thermal state, or if ECME isn't
+> +	 * sending frequency data, there's nothing to do
+> +	 */
+> +	if ((hb_records.thermal_state == data[1]) || !data[2] || !data[3])
+> +		return NOTIFY_DONE;
+> +
+> +	hb_records.thermal_state = data[1];
+> +	hb_records.min_freq = data[2];
+> +	hb_records.max_freq = data[3];
+> +	notify_device = &hb_records;
+> +
+> +	schedule_work(&hb_thermal_wq);
+> +
+> +	pr_warn("ECME TPS event: frequencies limited to %lu-%lu MHz\n",
+> +	       hb_records.min_freq, hb_records.max_freq);
+> +	return NOTIFY_DONE;
+> +}
+> +
+> +static struct notifier_block hb_thermal_tps_nb = {
+> +	.notifier_call = hb_thermal_tps_notify,
+> +};
+> +
+>  static int hb_cpufreq_clk_notify(struct notifier_block *nb,
+>  				unsigned long action, void *hclk)
+>  {
+> @@ -100,6 +200,23 @@ static int hb_cpufreq_driver_init(void)
+>  		goto out_put_node;
+>  	}
+>  
+> +	/*
+> +	 * Set up thermal state notifications from ECME, but continue
+> +	 * running even if they don't work.
+> +	 */
+> +	ret = pl320_ipc_register_notifier(&hb_thermal_tps_nb);
+> +	if (!ret) {
+> +		ret = cpufreq_register_notifier(&hb_thermal_cpufreq_nb,
+> +				CPUFREQ_POLICY_NOTIFIER);
+> +		if (ret)
+> +			pl320_ipc_unregister_notifier(&hb_thermal_tps_nb);
+> +		else {
+> +			hb_records.allowed_cpus = (struct cpumask *)
+> +						cpu_possible_mask;
+> +			INIT_WORK(&hb_thermal_wq, hb_thermal_wq_task);
+> +		}
+> +	}
+> +
+>  	/* Instantiate cpufreq-cpu0 */
+>  	platform_device_register_full(&devinfo);
+>  
 > 
-> But this stuff can be left as is..
-An alternative might be to ensure CPUFREQ_GOV_LIMITS takes care of that?
-
-
--- 
-Regards,
-Nishanth Menon
