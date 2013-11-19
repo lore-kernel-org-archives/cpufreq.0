@@ -1,26 +1,160 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: exynos: Fix line over 80 characters warning
-Date: Tue, 19 Nov 2013 10:41:22 +0530
-Message-ID: <CAKohpo=4MUZf++Pg09UJQ0JrdaLci8CCdHAx6M_ixPQTuspNVQ@mail.gmail.com>
-References: <1384837639-9252-1-git-send-email-sachin.kamat@linaro.org>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1384837639-9252-1-git-send-email-sachin.kamat@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Subject: [PATCH] cpufreq/stats: Add "unknown" frequency field in stats tables
+Date: Tue, 19 Nov 2013 11:10:26 +0530
+Message-ID: <b0a2e5d26be45d1d2853940d318d50415db48f6f.1384839287.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jonghwan Choi <jhbird.choi@samsung.com>
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, shawn.guo@linaro.org, ceh@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 19 November 2013 10:37, Sachin Kamat <sachin.kamat@linaro.org> wrote:
-> Silences the checkpatch warning introduced by
-> commit 94aa44090eda ("cpufreq: exynos: Add missing static").
->
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Jonghwan Choi <jhbird.choi@samsung.com>
-> ---
->  drivers/cpufreq/exynos5250-cpufreq.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+commit 46a310b ([CPUFREQ] Don't set stat->last_index to -1 if the pol->cur has
+incorrect value.) tries to handle case where policy->cur does not match any
+entry in freq_table.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+As indicated in the above commit, the exact match search of freq_table_get index
+will return a -1 which is stored in stat->last_index. However, as a result of
+the above commit, cpufreq_stat_notifier_trans which updates the statistics,
+fails to update any *further* valid transitions that take place as
+stat->last_index is -1 as the condition occurs at boot and never solved.
+
+To fix this issue, lets create another entry for time_in_state and trans_table
+that will tell the user that CPU was running on unknown frequency for some time.
+
+This is how the output looks like on my thinkpad (Removed some entries to keep
+it simple):
+
+	$ cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state 
+	2800000 46
+	2600000 138
+	1200000 65
+	1000000 152
+	800000 34803
+	unknown 0
+
+	$ cat /sys/devices/system/cpu/cpu0/cpufreq/stats/trans_table 
+	   From  :    To
+	         :   2801000   2800000   2600000   2400000   2200000   2000000   unknown 
+	  2801000:         0        15        20         9        13        17         0 
+	  2800000:        13         0         4         1         0         1         0 
+	  2600000:        26         1         0         5         1         1         0 
+	  2400000:        11         0         6         0         1         1         0 
+	  2200000:         8         1         5         3         0         0         0 
+	  2000000:        11         1         2         1         2         0         0 
+	  unknown:         0         0         0         0         0         0         0 
+
+Reported-by: Carlos Hernandez <ceh@ti.com>
+Reported-and-tested-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq_stats.c | 45 ++++++++++++++++++++++++++++-------------
+ 1 file changed, 31 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 4cf0d28..ebb21cd 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -72,9 +72,13 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
+ 		return 0;
+ 	cpufreq_stats_update(stat->cpu);
+ 	for (i = 0; i < stat->state_num; i++) {
+-		len += sprintf(buf + len, "%u %llu\n", stat->freq_table[i],
+-			(unsigned long long)
+-			jiffies_64_to_clock_t(stat->time_in_state[i]));
++		if (stat->freq_table[i] == -1)
++			return sprintf(buf + len, "unknown");
++		else
++			return sprintf(buf + len, "%u", stat->freq_table[i]);
++
++		len += sprintf(buf + len, " %llu\n", (unsigned long long)
++				jiffies_64_to_clock_t(stat->time_in_state[i]));
+ 	}
+ 	return len;
+ }
+@@ -94,8 +98,12 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ 	for (i = 0; i < stat->state_num; i++) {
+ 		if (len >= PAGE_SIZE)
+ 			break;
+-		len += snprintf(buf + len, PAGE_SIZE - len, "%9u ",
+-				stat->freq_table[i]);
++		if (stat->freq_table[i] == -1)
++			len += snprintf(buf + len, PAGE_SIZE - len, "%9s ",
++					"unknown");
++		else
++			len += snprintf(buf + len, PAGE_SIZE - len, "%9u ",
++					stat->freq_table[i]);
+ 	}
+ 	if (len >= PAGE_SIZE)
+ 		return PAGE_SIZE;
+@@ -106,8 +114,12 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ 		if (len >= PAGE_SIZE)
+ 			break;
+ 
+-		len += snprintf(buf + len, PAGE_SIZE - len, "%9u: ",
+-				stat->freq_table[i]);
++		if (stat->freq_table[i] == -1)
++			len += snprintf(buf + len, PAGE_SIZE - len, "%9s: ",
++					"unknown");
++		else
++			len += snprintf(buf + len, PAGE_SIZE - len, "%9u: ",
++					stat->freq_table[i]);
+ 
+ 		for (j = 0; j < stat->state_num; j++) {
+ 			if (len >= PAGE_SIZE)
+@@ -145,10 +157,12 @@ static struct attribute_group stats_attr_group = {
+ static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
+ {
+ 	int index;
+-	for (index = 0; index < stat->max_state; index++)
++	for (index = 0; index < stat->max_state - 1; index++)
+ 		if (stat->freq_table[index] == freq)
+ 			return index;
+-	return -1;
++
++	/* Last state is INVALID, to mark out of table frequency */
++	return stat->max_state - 1;
+ }
+ 
+ /* should be called late in the CPU removal sequence so that the stats
+@@ -222,6 +236,9 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 		count++;
+ 	}
+ 
++	/* An extra entry for Invalid frequencies */
++	count++;
++
+ 	alloc_size = count * sizeof(int) + count * sizeof(u64);
+ 
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+@@ -243,9 +260,13 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 		unsigned int freq = table[i].frequency;
+ 		if (freq == CPUFREQ_ENTRY_INVALID)
+ 			continue;
+-		if (freq_table_get_index(stat, freq) == -1)
++		if (freq_table_get_index(stat, freq) == stat->max_state - 1)
+ 			stat->freq_table[j++] = freq;
+ 	}
++
++	/* Mark Invalid freq as max value to indicate Invalid freq */
++	stat->freq_table[j++] = -1;
++
+ 	stat->state_num = j;
+ 	spin_lock(&cpufreq_stats_lock);
+ 	stat->last_time = get_jiffies_64();
+@@ -315,10 +336,6 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
+ 	old_index = stat->last_index;
+ 	new_index = freq_table_get_index(stat, freq->new);
+ 
+-	/* We can't do stat->time_in_state[-1]= .. */
+-	if (old_index == -1 || new_index == -1)
+-		return 0;
+-
+ 	cpufreq_stats_update(freq->cpu);
+ 
+ 	if (old_index == new_index)
+-- 
+1.7.12.rc2.18.g61b472e
+
