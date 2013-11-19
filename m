@@ -1,171 +1,59 @@
-From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Subject: Re: [PATCH] cpufreq/stats: Add "unknown" frequency field in stats
- tables
-Date: Tue, 19 Nov 2013 08:42:20 +0000
-Message-ID: <1384850540.3381.6.camel@linaro1.home>
-References: <b0a2e5d26be45d1d2853940d318d50415db48f6f.1384839287.git.viresh.kumar@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
+ booting with a mismatched bootloader configuration
+Date: Tue, 19 Nov 2013 08:16:33 -0600
+Message-ID: <528B72C1.5060006@ti.com>
+References: <1384568535-26611-1-git-send-email-nm@ti.com>	<20131116134445.GI11014@S2101-09.ap.freescale.net>	<CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>	<528A27F8.3070402@ti.com>	<20131118155753.GU11014@S2101-09.ap.freescale.net>	<528A4340.3020508@ti.com>	<20131119022133.GB18434@S2101-09.ap.freescale.net> <CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b0a2e5d26be45d1d2853940d318d50415db48f6f.1384839287.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, ceh@ti.com
+To: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
 
-On Tue, 2013-11-19 at 11:10 +0530, Viresh Kumar wrote:
-> commit 46a310b ([CPUFREQ] Don't set stat->last_index to -1 if the pol->cur has
-> incorrect value.) tries to handle case where policy->cur does not match any
-> entry in freq_table.
+On 11/18/2013 09:46 PM, Viresh Kumar wrote:
+> On 19 November 2013 07:51, Shawn Guo <shawn.guo@linaro.org> wrote:
+>> No, I did not say that.  IMO, when cpufreq-cpu0 sees a mismatch, it has
+>> no way to know or assume which one is correct and which is incorrect.
+>> The best thing it can do is to fail out without changing anything about
+>> running frequency and voltage.
 > 
-> As indicated in the above commit, the exact match search of freq_table_get index
-> will return a -1 which is stored in stat->last_index. However, as a result of
-> the above commit, cpufreq_stat_notifier_trans which updates the statistics,
-> fails to update any *further* valid transitions that take place as
-> stat->last_index is -1 as the condition occurs at boot and never solved.
+> Not specifically on this patch, but this is what I feel about this issue:
 > 
-> To fix this issue, lets create another entry for time_in_state and trans_table
-> that will tell the user that CPU was running on unknown frequency for some time.
-> 
-> This is how the output looks like on my thinkpad (Removed some entries to keep
-> it simple):
-> 
-> 	$ cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state 
-> 	2800000 46
-> 	2600000 138
-> 	1200000 65
-> 	1000000 152
-> 	800000 34803
-> 	unknown 0
+> - As we are discussing on the other thread, there is scope of adding
+> "unknown" field in tables so that people would know that they were
+> running out of table freq at some point..
 
-I'm wondering if this would break any user-side code parsing this output
-and does that matter? (E.g. powertop will end up doing strtoull on
-"unknown" and get zero as the frequency.)  Would omitting 'unknown' if
-the time is zero be safer in this repect? Possibly not, inconsistency is
-probably worse than change.
+Consider something like userspace governor selection -> the device at
+boot will probably remain in an unknown/"invalid" configuration till
+the very first transition attempt. I am less worried about the stats
+than not following what the hardware description is (as stated by
+device tree/other forms).
+
+I staunchly disagree that at a point of mismatch detection, we just
+refuse to load up cpufreq governor -even though we know from device
+tree/other alternative entries what the hardware behavior is supposed
+to be. To refuse to loadup to a known configuration is considering the
+"valid configuration" data provided to the driver is wrong - an
+equivalent(considering the i2c example) is that if i2c driver sees bus
+configured for 3.4MHz and was asked to use 100KHz, it just refuses to
+load up!
+
+> - This is a common problem for all drivers/platforms and not only
+> cpufreq-cpu0, so the solution has to be generic and not driver
+> specific.. So, atleast I don't want to get this patch in at any cost,
+> unless there is a generic solution present..
+> - There are non-dt drivers as well, and so freq table is present
+> with the kernel and we can't support all frequencies that bootloader
+> may end up with..
+The above two are fair comments -> but that implies that policy->cur
+population should no longer be the responsibility of cpufreq drivers
+and be the responsibility of cpufreq core. are we stating we want to
+move that to cpufreq core?
 
 -- 
-Tixy
-
-> 	$ cat /sys/devices/system/cpu/cpu0/cpufreq/stats/trans_table 
-> 	   From  :    To
-> 	         :   2801000   2800000   2600000   2400000   2200000   2000000   unknown 
-> 	  2801000:         0        15        20         9        13        17         0 
-> 	  2800000:        13         0         4         1         0         1         0 
-> 	  2600000:        26         1         0         5         1         1         0 
-> 	  2400000:        11         0         6         0         1         1         0 
-> 	  2200000:         8         1         5         3         0         0         0 
-> 	  2000000:        11         1         2         1         2         0         0 
-> 	  unknown:         0         0         0         0         0         0         0 
-> 
-> Reported-by: Carlos Hernandez <ceh@ti.com>
-> Reported-and-tested-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_stats.c | 45 ++++++++++++++++++++++++++++-------------
->  1 file changed, 31 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index 4cf0d28..ebb21cd 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -72,9 +72,13 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
->  		return 0;
->  	cpufreq_stats_update(stat->cpu);
->  	for (i = 0; i < stat->state_num; i++) {
-> -		len += sprintf(buf + len, "%u %llu\n", stat->freq_table[i],
-> -			(unsigned long long)
-> -			jiffies_64_to_clock_t(stat->time_in_state[i]));
-> +		if (stat->freq_table[i] == -1)
-> +			return sprintf(buf + len, "unknown");
-> +		else
-> +			return sprintf(buf + len, "%u", stat->freq_table[i]);
-> +
-> +		len += sprintf(buf + len, " %llu\n", (unsigned long long)
-> +				jiffies_64_to_clock_t(stat->time_in_state[i]));
->  	}
->  	return len;
->  }
-> @@ -94,8 +98,12 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
->  	for (i = 0; i < stat->state_num; i++) {
->  		if (len >= PAGE_SIZE)
->  			break;
-> -		len += snprintf(buf + len, PAGE_SIZE - len, "%9u ",
-> -				stat->freq_table[i]);
-> +		if (stat->freq_table[i] == -1)
-> +			len += snprintf(buf + len, PAGE_SIZE - len, "%9s ",
-> +					"unknown");
-> +		else
-> +			len += snprintf(buf + len, PAGE_SIZE - len, "%9u ",
-> +					stat->freq_table[i]);
->  	}
->  	if (len >= PAGE_SIZE)
->  		return PAGE_SIZE;
-> @@ -106,8 +114,12 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
->  		if (len >= PAGE_SIZE)
->  			break;
->  
-> -		len += snprintf(buf + len, PAGE_SIZE - len, "%9u: ",
-> -				stat->freq_table[i]);
-> +		if (stat->freq_table[i] == -1)
-> +			len += snprintf(buf + len, PAGE_SIZE - len, "%9s: ",
-> +					"unknown");
-> +		else
-> +			len += snprintf(buf + len, PAGE_SIZE - len, "%9u: ",
-> +					stat->freq_table[i]);
->  
->  		for (j = 0; j < stat->state_num; j++) {
->  			if (len >= PAGE_SIZE)
-> @@ -145,10 +157,12 @@ static struct attribute_group stats_attr_group = {
->  static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
->  {
->  	int index;
-> -	for (index = 0; index < stat->max_state; index++)
-> +	for (index = 0; index < stat->max_state - 1; index++)
->  		if (stat->freq_table[index] == freq)
->  			return index;
-> -	return -1;
-> +
-> +	/* Last state is INVALID, to mark out of table frequency */
-> +	return stat->max_state - 1;
->  }
->  
->  /* should be called late in the CPU removal sequence so that the stats
-> @@ -222,6 +236,9 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
->  		count++;
->  	}
->  
-> +	/* An extra entry for Invalid frequencies */
-> +	count++;
-> +
->  	alloc_size = count * sizeof(int) + count * sizeof(u64);
->  
->  #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
-> @@ -243,9 +260,13 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
->  		unsigned int freq = table[i].frequency;
->  		if (freq == CPUFREQ_ENTRY_INVALID)
->  			continue;
-> -		if (freq_table_get_index(stat, freq) == -1)
-> +		if (freq_table_get_index(stat, freq) == stat->max_state - 1)
->  			stat->freq_table[j++] = freq;
->  	}
-> +
-> +	/* Mark Invalid freq as max value to indicate Invalid freq */
-> +	stat->freq_table[j++] = -1;
-> +
->  	stat->state_num = j;
->  	spin_lock(&cpufreq_stats_lock);
->  	stat->last_time = get_jiffies_64();
-> @@ -315,10 +336,6 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
->  	old_index = stat->last_index;
->  	new_index = freq_table_get_index(stat, freq->new);
->  
-> -	/* We can't do stat->time_in_state[-1]= .. */
-> -	if (old_index == -1 || new_index == -1)
-> -		return 0;
-> -
->  	cpufreq_stats_update(freq->cpu);
->  
->  	if (old_index == new_index)
-
+Regards,
+Nishanth Menon
