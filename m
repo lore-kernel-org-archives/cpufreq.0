@@ -1,37 +1,64 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Thu, 21 Nov 2013 21:27:51 +0530
-Message-ID: <CAKohpo=fZ8Fr=CMDzCy3daBU+mZBJ+9fOks6L7WLOZzE7WaAaQ@mail.gmail.com>
-References: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
-	<3577662.BKCLJdcf18@vostro.rjw.lan>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Thu, 21 Nov 2013 21:47:20 +0530
+Message-ID: <CAKohpo=e+0cpq5XfWpM6Jm0VrnzzAu-xybpucEG6sRL0ydBmLQ@mail.gmail.com>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
+	<5289A80B.7080808@linaro.org>
+	<CAKohpon5L21yXg=GAuSLSgkr_66iRSn_uUWKZ1FhwD3zuQNb_A@mail.gmail.com>
+	<1531674.UoqyyWSbOg@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3577662.BKCLJdcf18@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1531674.UoqyyWSbOg@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Sripa Bagadia <ceh@ti.com>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On 21 November 2013 18:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, November 21, 2013 12:39:02 PM Viresh Kumar wrote:
+On 21 November 2013 20:08, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, November 20, 2013 11:04:28 AM Viresh Kumar wrote:
+>> On 18 November 2013 11:09, viresh kumar <viresh.kumar@linaro.org> wrote:
 
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> @@ -1038,6 +1038,32 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
-
->> +     if (has_target()) {
->> +             ret = __cpufreq_driver_target(policy, policy->cur,
->> +                             CPUFREQ_RELATION_L);
->> +             if (ret)
->> +                     pr_err("%s: Unable to set frequency from table: %d\n",
->> +                                     __func__, ret);
+>> > Because in our usecase, we just want to know when suspend has started or
+>> > resume has finished. And so we really don't need a per cpu callback.
 >
-> Should we continue in that case?
+> But it won't hurt I suppose?
 
-I wasn't sure. I thought maybe there are platforms which might not be
-ready for transitions so early and so an error message would be fine,
-as we will fail soon anyway in case there is a bug.
+Hmm.. getting a single call to cpufreq core would be faster for sure. Otherwise
+we need to mark all the calls leaving the first one as no-ops..
 
---
-viresh
+> That actually isn't correct.  On systems with ACPI the processor driver binds to
+> those devices.  So the processor driver could use PM callbacks on those systems
+> in principle.
+
+> Introduce proper drivers for processors?  All of the cpuidle and cpufreq stuff
+> currently works by using its own homegrown device registration methods etc, but
+> surely that doesn't have to be the case?
+
+Hmm.. So you are asking for a new cpu-driver which can be used by cpufreq and
+cpuidle to get callback? If yes, where such driver will exist? And will the ACPI
+processor-drivers exist parallely? Or something else?
+
+>> > And I really feel even if we would be able to use cpu callbacks for
+>> > suspend/resume, that would be a real *Hack*, because our framework doesn't want
+>> > to get a callback for each of its devices (i.e. cpu) but a single callback at
+>> > certain instances..
+>
+> Oh really?  So CPUs are not individual devices any more or what?
+
+I am not calling cpu callbacks as hack but using them for cpufreq looked like
+one to me.
+
+Replying here to the other mail as well:
+
+On 21 November 2013 20:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, November 18, 2013 09:37:39 PM Lan Tianyu wrote:
+>> Another point, I just see cpuidle_resume() and cpuidle_pause() are
+>> called in the dpm_resume_noirq and dpm_suspend_noirq(). Not sure whether
+>> this can be applied to cpufreq.
+>
+> I don't see why not.
+
+Interesting. So you would be happy if I add such calls after freezing userspace
+and before restoring it back for cpufreq?
