@@ -1,42 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] Cpufreq: Make governor data on nonboot cpus across system suspend/resume
-Date: Thu, 21 Nov 2013 22:43:45 +0100
-Message-ID: <1599716.5y7kNnD1dc@vostro.rjw.lan>
-References: <9847309.KdKOG5y1Zx@vostro.rjw.lan> <2383693.rhJDd9X40m@vostro.rjw.lan> <CAKohponphVhZ3T1HD2AfhPBUn9SfQyrqdbvW3bEJFzRdKF2i0Q@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Thu, 21 Nov 2013 23:14:39 +0100
+Message-ID: <2642790.BqNcqy9aCb@vostro.rjw.lan>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <1531674.UoqyyWSbOg@vostro.rjw.lan> <CAKohpo=e+0cpq5XfWpM6Jm0VrnzzAu-xybpucEG6sRL0ydBmLQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohponphVhZ3T1HD2AfhPBUn9SfQyrqdbvW3bEJFzRdKF2i0Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=e+0cpq5XfWpM6Jm0VrnzzAu-xybpucEG6sRL0ydBmLQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lan Tianyu <tianyu.lan@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On Thursday, November 21, 2013 09:24:02 PM Viresh Kumar wrote:
-> On 21 November 2013 20:13, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> -     if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
-> >
-> > The inner parens are not necessary.
-> >
-> >> -                     ((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
-> >> +     if ((event == CPUFREQ_GOV_POLICY_INIT) && ret) {
-> >
-> > Same here.
-> >
-> >> +             module_put(policy->governor->owner);
-> >> +             if (ret == -EALREADY)
-> >> +                     return 0;
-> >> +     } else if ((event == CPUFREQ_GOV_POLICY_EXIT) && !ret) {
-> >
-> > Same here.
+On Thursday, November 21, 2013 09:47:20 PM Viresh Kumar wrote:
+> On 21 November 2013 20:08, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, November 20, 2013 11:04:28 AM Viresh Kumar wrote:
+> >> On 18 November 2013 11:09, viresh kumar <viresh.kumar@linaro.org> wrote:
+
+[...]
+
+> Replying here to the other mail as well:
 > 
-> Logically, yes you are correct. But probably its better for readability to
-> get these even if you know precedence is going to take care of our
-> expression..
+> On 21 November 2013 20:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Monday, November 18, 2013 09:37:39 PM Lan Tianyu wrote:
+> >> Another point, I just see cpuidle_resume() and cpuidle_pause() are
+> >> called in the dpm_resume_noirq and dpm_suspend_noirq(). Not sure whether
+> >> this can be applied to cpufreq.
+> >
+> > I don't see why not.
+> 
+> Interesting. So you would be happy if I add such calls after freezing userspace
+> and before restoring it back for cpufreq?
 
-Are you serious?
+Short-term.  To be precise, governors may be stopped at the beginning of
+dpm_suspend_noirq() (that is, where cpuidle_pause() is called).  Analogously,
+they may be started again in dpm_resume_noirq(), where cpuidle_resume() is
+called.  That at least would be consistent with what cpuidle already does.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+That said in my opinion the appropriate long-term approach would be to split
+CPU offline and online each into two parts, the "core" part and the "extras"
+part, such that the "core" parts would only do the offline/online of the
+cores themselves.  The rest, such as cpufreq/cpuidle "offline/online" would
+be done in the "extras" part.
+
+Then, system suspend/resume will only use the "core" parts of CPU offline/online
+and the handling of the things belonging to "extras" would be carried out
+through CPU device suspend/resume callbacks.  In turn, the "runtime" CPU offline
+and online would carry out both the "extras" and "core" parts as it does today.
+
+Makes sense?
+
+Rafael
+
