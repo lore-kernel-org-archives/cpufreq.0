@@ -1,54 +1,94 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 65301] New: Cores stuck at max frequency after resume from
- suspend (Haswell)
-Date: Thu, 21 Nov 2013 09:34:03 +0000
-Message-ID: <bug-65301-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Thu, 21 Nov 2013 14:11:57 +0100
+Message-ID: <3577662.BKCLJdcf18@vostro.rjw.lan>
+References: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: nm@ti.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shawn.guo@linaro.org, ceh@ti.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=65301
+On Thursday, November 21, 2013 12:39:02 PM Viresh Kumar wrote:
+> Sometimes boot loaders set CPU frequency to a value outside of frequency table
+> present with cpufreq core. In such cases CPU might be unstable if it has to run
+> on that frequency for long duration of time and so its better to set it to a
+> frequency which is specified in freq-table. This also makes cpufreq stats
+> inconsistent as cpufreq-stats would fail to register because current frequency
+> of CPU isn't found in freq-table.
+> 
+> Because we don't want this change to effect boot process badly, we go for the
+> next freq which is >= policy->cur ('cur' must be set by now, otherwise we will
+> end up setting freq to lowest of the table as 'cur' is initialized to zero).
+> 
+> In case where CPU is already running on one of the frequencies present in
+> freq-table, this would turn into a dummy call as __cpufreq_driver_target() would
+> return early.
+> 
+> Reported-by: Carlos Hernandez <ceh@ti.com>
+> Reported-by: Nishanth Menon <nm@ti.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> After lots of discussion with Nishanth and others, I feel something like this..
+> 
+> @Nishanth: Please see if this works for you and I hope we don't need any of
+> these patches anymore:
+> 
+> - https://lkml.org/lkml/2013/11/15/569 : cpufreq: cpufreq-cpu0: Use a sane boot
+> frequency when booting with a mismatched bootloader configuration
+> - https://lkml.org/lkml/2013/11/15/503 : cpufreq: stats: Do not populate stats
+>   when policy->cur has no exact match
+> - https://lkml.org/lkml/2013/11/19/16 : cpufreq/stats: Add "unknown" frequency
+>   field in stats tables
+> 
+>  drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 02d534d..d55c843 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1038,6 +1038,32 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+>  		}
+>  	}
+>  
+> +	/*
+> +	 * Sometimes boot loaders set CPU frequency to a value outside of
+> +	 * frequency table present with cpufreq core. In such cases CPU might be
+> +	 * unstable if it has to run on that frequency for long duration of time
+> +	 * and so its better to set it to a frequency which is specified in
+> +	 * freq-table. This also makes cpufreq stats inconsistent as
+> +	 * cpufreq-stats would fail to register because current frequency of CPU
+> +	 * isn't found in freq-table.
+> +	 *
+> +	 * Because we don't want this change to effect boot process badly, we go
+> +	 * for the next freq which is >= policy->cur ('cur' must be set by now,
+> +	 * otherwise we will end up setting freq to lowest of the table as 'cur'
+> +	 * is initialized to zero).
+> +	 *
+> +	 * In case where CPU is already running on one of the frequencies
+> +	 * present in freq-table, this would turn into a dummy call as
+> +	 * __cpufreq_driver_target() would return early.
+> +	 */
+> +	if (has_target()) {
+> +		ret = __cpufreq_driver_target(policy, policy->cur,
+> +				CPUFREQ_RELATION_L);
+> +		if (ret)
+> +			pr_err("%s: Unable to set frequency from table: %d\n",
+> +					__func__, ret);
 
-            Bug ID: 65301
-           Summary: Cores stuck at max frequency after resume from suspend
-                    (Haswell)
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: v3.12
-          Hardware: x86-64
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: cpufreq@vger.kernel.org
-          Reporter: zoku88@gmail.com
-        Regression: No
+Should we continue in that case?
 
-Created attachment 115381
-  --> https://bugzilla.kernel.org/attachment.cgi?id=115381&action=edit
-ver_linux, cpuinfo and lspci outputs
-
-The problem is that even though CPU usage is at ~0%, the cores are always stuck
-at their max frequency after resume.
-
-I thought this was related to https://bugzilla.kernel.org/show_bug.cgi?id=58971
-
-However, I cloned the kernel git repo and checked out the commit that fixed
-that bug (7dcd2677ea912573d9ed4bcd629b0023b2d11505), and the fix had no effect
-(maybe SNB only?). So, this seems like it might have a different cause.
-
-I have attached my system information.
-
-As I've only had this laptop since around the time linux 3.11 came out, I'm not
-really sure when the last time this didn't happen, though that commit seems to
-have been made on top of one of the linux 3.10 rc's.
-
+> +	}
+> +
+>  	/* related cpus should atleast have policy->cpus */
+>  	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+>  
+> 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
