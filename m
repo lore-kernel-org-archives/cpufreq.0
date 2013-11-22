@@ -1,86 +1,204 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/2] cpufreq: Change freq before suspending governors
-Date: Fri, 22 Nov 2013 16:59:49 +0530
-Message-ID: <df162ba4cbdf1379ccfa5dd4ca34153626ae9c71.1385118256.git.viresh.kumar@linaro.org>
-References: <cover.1385118255.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 1/2] cpufreq: suspend governors on system suspend/hibernate
+Date: Fri, 22 Nov 2013 13:33:10 +0100
+Message-ID: <230872262.gyF1HmIKoj@vostro.rjw.lan>
+References: <cover.1385118255.git.viresh.kumar@linaro.org> <e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <cover.1385118255.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1385118255.git.viresh.kumar@linaro.org>
-References: <cover.1385118255.git.viresh.kumar@linaro.org>
+In-Reply-To: <e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, nm@ti.com, jinchoi@broadcom.com, sebastian.capella@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, nm@ti.com, jinchoi@broadcom.com, sebastian.capella@linaro.org
 
-Some platforms might want to change frequency before suspending governors. Like:
-- Some platform which want to set freq to max to speed up suspend/hibernation
-  process.
-- Some platform (like: Tegra or exynos), set this to min or bootloader's
-  frequency.
+On Friday, November 22, 2013 04:59:48 PM Viresh Kumar wrote:
+> This patch adds cpufreq callbacks to dpm_{suspend|resume}_noirq() for handling
+> suspend/resume of cpufreq governors. This is required for early suspend and late
+> resume of governors.
+> 
+> There are multiple problems that are fixed by this patch:
+> - Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
+>   wasn't working well with suspend/resume as calls for removing non-boot CPUs
+>   was turning out into a call to drivers ->target() which then tries to play
+>   with regulators. But regulators and their I2C bus were already suspended and
+>   this resulted in a failure. This is why we need a PM notifier here.
+> - Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
+>   tunables configuration for clusters/sockets with non-boot CPUs was getting
+>   lost after suspend/resume, as we were notifying governors with
+>   CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
+>   deallocating memory for tunables.
+> 
+> Reported-by: Lan Tianyu <tianyu.lan@intel.com>
+> Reported-by: Nishanth Menon <nm@ti.com>
+> Reported-by: Jinhyuk Choi <jinchoi@broadcom.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/base/power/main.c |  3 +++
+>  drivers/cpufreq/cpufreq.c | 62 +++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/cpufreq.h   |  3 +++
+>  3 files changed, 68 insertions(+)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index c12e9b9..0fbe792 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/async.h>
+>  #include <linux/suspend.h>
+>  #include <trace/events/power.h>
+> +#include <linux/cpufreq.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/timer.h>
+>  
+> @@ -540,6 +541,7 @@ static void dpm_resume_noirq(pm_message_t state)
+>  	dpm_show_time(starttime, state, "noirq");
+>  	resume_device_irqs();
+>  	cpuidle_resume();
+> +	cpufreq_resume();
+>  }
+>  
+>  /**
+> @@ -955,6 +957,7 @@ static int dpm_suspend_noirq(pm_message_t state)
+>  	ktime_t starttime = ktime_get();
+>  	int error = 0;
+>  
+> +	cpufreq_suspend();
+>  	cpuidle_pause();
+>  	suspend_device_irqs();
+>  	mutex_lock(&dpm_list_mtx);
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 02d534d..540bd87 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+>  #include <linux/slab.h>
+> +#include <linux/suspend.h>
+>  #include <linux/syscore_ops.h>
+>  #include <linux/tick.h>
+>  #include <trace/events/power.h>
+> @@ -47,6 +48,9 @@ static LIST_HEAD(cpufreq_policy_list);
+>  static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+>  #endif
+>  
+> +/* Flag to suspend/resume CPUFreq governors */
+> +static bool cpufreq_suspended;
+> +
+>  static inline bool has_target(void)
+>  {
+>  	return cpufreq_driver->target_index || cpufreq_driver->target;
+> @@ -1462,6 +1466,54 @@ static struct subsys_interface cpufreq_interface = {
+>  	.remove_dev	= cpufreq_remove_dev,
+>  };
+>  
+> +/*
+> + * Callbacks for suspending/resuming governors as some platforms can't change
+> + * frequency after this point in suspend cycle. Because some of the devices
+> + * (like: i2c, regulators, etc) they use for changing frequency are suspended
+> + * quickly after this point.
+> + */
+> +void cpufreq_suspend(void)
+> +{
+> +	struct cpufreq_policy *policy;
+> +	unsigned long flags;
+> +
+> +	if (!has_target())
+> +		return;
+> +
+> +	pr_debug("%s: Suspending Governors\n", __func__);
+> +
+> +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
+> +		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
+> +			pr_err("%s: Failed to stop governor for policy: %p\n",
+> +					__func__, policy);
+> +
+> +	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +	cpufreq_suspended = true;
+> +	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 
-This patch adds an option for those, so that they can specify this at call to
-->init(), so that cpufreq core can take care of this before suspending system.
+The locking here is pointless.  It doesn't prevent any race conditions
+from happening.
 
-If this variable is not updated by ->init() then its value would be zero and so
-core wouldn't do anything.
+> +}
+> +
+> +void cpufreq_resume(void)
+> +{
+> +	struct cpufreq_policy *policy;
+> +	unsigned long flags;
+> +
+> +	if (!has_target())
+> +		return;
+> +
+> +	pr_debug("%s: Resuming Governors\n", __func__);
+> +
+> +	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +	cpufreq_suspended = false;
+> +	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 17 +++++++++++++++++
- include/linux/cpufreq.h   |  2 ++
- 2 files changed, 19 insertions(+)
+Same here.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 540bd87..e609102 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1476,6 +1476,7 @@ void cpufreq_suspend(void)
- {
- 	struct cpufreq_policy *policy;
- 	unsigned long flags;
-+	int ret;
- 
- 	if (!has_target())
- 		return;
-@@ -1487,6 +1488,22 @@ void cpufreq_suspend(void)
- 			pr_err("%s: Failed to stop governor for policy: %p\n",
- 					__func__, policy);
- 
-+	/*
-+	 * In case platform wants some specific frequency to be configured
-+	 * during suspend
-+	 */
-+	if (policy->suspend_freq) {
-+		pr_debug("%s: Suspending Governors: Setting suspend-freq: %u\n",
-+				__func__, policy->suspend_freq);
-+
-+		ret = __cpufreq_driver_target(policy, policy->suspend_freq,
-+				CPUFREQ_RELATION_H);
-+		/* We can still suspend even if this failed */
-+		if (ret)
-+			pr_err("%s: Unable to set suspend-freq: %u. Err: %d\n",
-+					__func__, policy->suspend_freq, ret);
-+	}
-+
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	cpufreq_suspended = true;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 6d93f91..867fdd4 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -72,6 +72,8 @@ struct cpufreq_policy {
- 	unsigned int		max;    /* in kHz */
- 	unsigned int		cur;    /* in kHz, only needed if cpufreq
- 					 * governors are used */
-+	unsigned int		suspend_freq; /* freq to set during suspend */
-+
- 	unsigned int		policy; /* see above */
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
+> +
+> +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
+> +		if (__cpufreq_governor(policy, CPUFREQ_GOV_START) ||
+> +				__cpufreq_governor(policy,
+> +					CPUFREQ_GOV_LIMITS))
+> +			pr_err("%s: Failed to start governor for policy: %p\n",
+> +					__func__, policy);
+> +}
+> +
+>  /**
+>   * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
+>   *
+> @@ -1752,6 +1804,8 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
+>  static int __cpufreq_governor(struct cpufreq_policy *policy,
+>  					unsigned int event)
+>  {
+> +	unsigned long flags;
+> +	bool is_suspended;
+>  	int ret;
+>  
+>  	/* Only must be defined when default governor is known to have latency
+> @@ -1764,6 +1818,14 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>  	struct cpufreq_governor *gov = NULL;
+>  #endif
+>  
+> +	/* Don't start any governor operations if we are entering suspend */
+> +	read_lock_irqsave(&cpufreq_driver_lock, flags);
+> +	is_suspended = cpufreq_suspended;
+> +	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+
+And same here.
+
+> +
+> +	if (is_suspended)
+
+And you can check cpufreq_suspended directly here.
+
+> +		return 0;
+> +
+>  	if (policy->governor->max_transition_latency &&
+>  	    policy->cpuinfo.transition_latency >
+>  	    policy->governor->max_transition_latency) {
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index dc196bb..6d93f91 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -255,6 +255,9 @@ struct cpufreq_driver {
+>  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+>  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+>  
+> +void cpufreq_suspend(void);
+> +void cpufreq_resume(void);
+> +
+>  const char *cpufreq_get_current_driver(void);
+>  
+>  static inline void cpufreq_verify_within_limits(struct cpufreq_policy *policy,
+
+Thanks!
+
 -- 
-1.7.12.rc2.18.g61b472e
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
