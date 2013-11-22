@@ -1,42 +1,52 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 65501] New: Blind angle of 1% between up_threshold and
- down_threshold
-Date: Fri, 22 Nov 2013 14:53:19 +0000
-Message-ID: <bug-65501-12968@https.bugzilla.kernel.org/>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V2 2/2] cpufreq: Change freq before suspending governors
+Date: Fri, 22 Nov 2013 12:39:24 -0700
+Message-ID: <528FB2EC.2020202@wwwdotorg.org>
+References: <cover.1385118255.git.viresh.kumar@linaro.org>	<df162ba4cbdf1379ccfa5dd4ca34153626ae9c71.1385118256.git.viresh.kumar@linaro.org>	<2783049.JzUB2QcsZz@vostro.rjw.lan> <CAKohpo=RWi1nRUJq4qx8K+Y7swMDaqwEOH24-KfBCMgdbW=hMQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=RWi1nRUJq4qx8K+Y7swMDaqwEOH24-KfBCMgdbW=hMQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@nvidia.com>, Kukjin Kim <kgene@kernel.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=65501
+On 11/22/2013 05:52 AM, Viresh Kumar wrote:
+> On 22 November 2013 18:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Friday, November 22, 2013 04:59:49 PM Viresh Kumar wrote:
+>>> Some platforms might want to change frequency before suspending governors. Like:
+>>> - Some platform which want to set freq to max to speed up suspend/hibernation
+>>>   process.
+>>> - Some platform (like: Tegra or exynos), set this to min or bootloader's
+>>>   frequency.
+>>>
+>>> This patch adds an option for those, so that they can specify this at call to
+>>> ->init(), so that cpufreq core can take care of this before suspending system.
+>>>
+>>> If this variable is not updated by ->init() then its value would be zero and so
+>>> core wouldn't do anything.
+>>>
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>
+>> I don't think this is generally necessary, because the suspend/resume routines
+>> added by patch [1/2] will be executed very late during suspend or very early
+>> during resume and it shouldn't really matter what performance levels the CPUs
+>> are at then.
+> 
+> There are few things here:
+> - I feel that the current place from where we have suspended stuff is not gonna
+> fly. We are doing that in noirq and probably devices which might be required
+> during frequency transitions might already be down.. So we *may* need to
+> move that in dpm_suspend()..
+> - Secondly I want to understand why Tegra/Exynos has such code which I
+> mentioned above..
+> 
+> @Stephen, Kukjin and other samsung folks: Please provide some input here,
+> before your systems break in mainline :)
 
-            Bug ID: 65501
-           Summary: Blind angle of 1% between up_threshold and
-                    down_threshold
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: Ubuntu 3.12.0-3.9-generic 3.12.1
-          Hardware: All
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: cpufreq@vger.kernel.org
-          Reporter: sworddragon2@aol.com
-        Regression: No
-
-The lowest value that /sys/devices/system/cpu/cpufreq/ondemand/up_threshold can
-contain is 11 while the implicit configuration down_threshold will be
-statically set to 10. But I'm thinking that it would be correct if up_threshold
-could be set to 10 too as this wouldn't cause any collision. up_threshold would
-scale if the cpu core reaches 10% or more of cpu usage (>=) and down_threshold
-would scale if the cpu core reaches less than 10% of cpu usage (<).
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+I believe we set the clock to a low value because fast clocks consume
+more power. Tegra architecturally supports a number of different suspend
+levels. Only some of those actually power off or gate the clock source
+itself.
