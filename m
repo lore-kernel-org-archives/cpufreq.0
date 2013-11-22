@@ -1,24 +1,78 @@
-From: viresh kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] cpufreq: tegra: don't error target() when suspended
-Date: Fri, 22 Nov 2013 10:29:31 +0530
-Message-ID: <528EE4B3.2050102@linaro.org>
-References: <1384981582-30697-1-git-send-email-swarren@wwwdotorg.org> <CAKohpomJiGbxk9BTJWcGRiid3TwV7d4i5BkSwSd8JxphSRZwUA@mail.gmail.com> <528E53C5.9040105@wwwdotorg.org>
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Fri, 22 Nov 2013 12:33:32 +0530
+Message-ID: <528F01C4.1050608@linaro.org>
+References: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <528E53C5.9040105-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="windows-1252"
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+To: nm@ti.com
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shawn.guo@linaro.org, ceh@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Friday 22 November 2013 12:11 AM, Stephen Warren wrote:
-> OK, sounds like I should ignore this issue then?
+On Thursday 21 November 2013 12:39 PM, Viresh Kumar wrote:
+> Sometimes boot loaders set CPU frequency to a value outside of frequency table
+> present with cpufreq core. In such cases CPU might be unstable if it has to run
+> on that frequency for long duration of time and so its better to set it to a
+> frequency which is specified in freq-table. This also makes cpufreq stats
+> inconsistent as cpufreq-stats would fail to register because current frequency
+> of CPU isn't found in freq-table.
+> 
+> Because we don't want this change to effect boot process badly, we go for the
+> next freq which is >= policy->cur ('cur' must be set by now, otherwise we will
+> end up setting freq to lowest of the table as 'cur' is initialized to zero).
+> 
+> In case where CPU is already running on one of the frequencies present in
+> freq-table, this would turn into a dummy call as __cpufreq_driver_target() would
+> return early.
+> 
+> Reported-by: Carlos Hernandez <ceh@ti.com>
+> Reported-by: Nishanth Menon <nm@ti.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Yeah. And actually we are looking for a more generic solution instead o=
-f these
-per-driver PM notifiers. So, these should be removed soon..
+Copying another mail from Nishant here to get my cc'list back..
 
+On Friday 22 November 2013 05:12 AM, Nishanth Menon wrote:
+> I gave this a quick run on my 3.12 kernel:
+> http://pastebin.mozilla.org/3649730 is what I applied and output
+> http://pastebin.mozilla.org/3649729
+>
+> I need to see what I might have mucked up.. or see if I can test this
+> on 3.13 master on a different board (since OMAP5 wont boot in master
+> without clock dts nodes :()..
 
-https://lkml.org/lkml/2013/11/15/107=E2=80=8E
+This happened because of common sense, which was missing in my patch :)
+
+Try this over existing patch:
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 6e8b226..e403388 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1126,13 +1126,19 @@ static int __cpufreq_add_dev(struct device *dev, struct
+subsys_interface *sif,
+         * In case where CPU is already running on one of the frequencies
+         * present in freq-table, this would turn into a dummy call as
+         * __cpufreq_driver_target() would return early.
++        *
++        * We are passing target-freq as "policy->cur - 1" otherwise
++        * __cpufreq_driver_target() would simply fail, as policy->cur will be
++        * equal to target-freq.
+         */
+        if (has_target()) {
+-               ret = __cpufreq_driver_target(policy, policy->cur,
++               ret = __cpufreq_driver_target(policy, policy->cur - 1,
+                                CPUFREQ_RELATION_L);
+-               if (ret)
++               if (ret) {
+                        pr_err("%s: Unable to set frequency from table: %d\n",
+                                        __func__, ret);
++                       goto err_out_unregister;
++               }
+        }
+
+        /* related cpus should atleast have policy->cpus */
+
