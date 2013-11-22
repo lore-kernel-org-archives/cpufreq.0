@@ -1,109 +1,45 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: [PATCH V3] Cpufreq: Make governor data on nonboot cpus across system suspend/resume
-Date: Fri, 22 Nov 2013 15:38:51 +0800
-Message-ID: <1385105931-14910-1-git-send-email-tianyu.lan@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] Cpufreq: Make governor data on nonboot cpus across
+ system suspend/resume
+Date: Fri, 22 Nov 2013 13:19:50 +0530
+Message-ID: <528F0C9E.8020409@linaro.org>
+References: <9847309.KdKOG5y1Zx@vostro.rjw.lan> <1384616184-6197-1-git-send-email-tianyu.lan@intel.com> <5288425A.6000501@linaro.org>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5288425A.6000501@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>
 
-Currently, governor of nonboot cpus will be put to EXIT when system suspend.
-Since all these cpus will be unplugged and the governor usage_count decreases
-to zero. The governor data and its sysfs interfaces will be freed or released.
-This makes user config of these governors loss during suspend and resume.
+On Sunday 17 November 2013 09:43 AM, viresh kumar wrote:
+> On 16 November 2013 21:06, Lan Tianyu <tianyu.lan@intel.com> wrote:
 
-This doesn't happen on the governor covering boot cpu because it isn't
-unplugged during system suspend.
+> But I don't really like the solution here. You are handling frozen for EXIT in
+> cpufreq-core and for INIT in governor. That doesn't look like the right
+> approach. There are out of tree governors too (I know we don't care about them
+> :)), and those also need to adapt with some policy made at cpufreq-core level.
+> 
+> I told you that I had another solution for this problem, pretty similar to
+> yours. It looked like this:
 
-To fix this issue, skipping governor exit during system suspend and check
-policy governor data to determine whether the governor is really needed
-to be initialized when do init. If not, return EALREADY to indicate the
-governor has been initialized and should do nothing. __cpufreq_governor()
-convert EALREADY to 0 as return value for INIT event since governor is
-still under INIT state and can do START operation.
+Hi Lan,
 
-Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
----
-Change since v1 and v2:
-	Change some coding style.
+There is some confusion going on here :)
 
- drivers/cpufreq/cpufreq.c          | 14 ++++++++------
- drivers/cpufreq/cpufreq_governor.c | 13 ++++++++++++-
- 2 files changed, 20 insertions(+), 7 deletions(-)
+There were few problems in the approach in your patch, which I have mentioned
+above, and Rafael agreed to them..
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 02d534d..0b5a1a2 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1239,7 +1239,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
- 
- 	/* If cpu is last user of policy, free policy */
- 	if (cpus == 1) {
--		if (has_target()) {
-+		if (has_target() && !frozen) {
- 			ret = __cpufreq_governor(policy,
- 					CPUFREQ_GOV_POLICY_EXIT);
- 			if (ret) {
-@@ -1806,8 +1806,10 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 	if (!ret) {
- 		if (event == CPUFREQ_GOV_POLICY_INIT)
- 			policy->governor->initialized++;
--		else if (event == CPUFREQ_GOV_POLICY_EXIT)
-+		else if (event == CPUFREQ_GOV_POLICY_EXIT) {
- 			policy->governor->initialized--;
-+			module_put(policy->governor->owner);
-+		}
- 	} else {
- 		/* Restore original values */
- 		mutex_lock(&cpufreq_governor_lock);
-@@ -1815,13 +1817,13 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 			policy->governor_enabled = true;
- 		else if (event == CPUFREQ_GOV_START)
- 			policy->governor_enabled = false;
-+		else if (event == CPUFREQ_GOV_POLICY_INIT && ret == -EALREADY) {
-+			module_put(policy->governor->owner);
-+			ret = 0;
-+		}
- 		mutex_unlock(&cpufreq_governor_lock);
- 	}
- 
--	if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
--			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
--		module_put(policy->governor->owner);
--
- 	return ret;
- }
- 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 0806c31..ddb93af 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -204,9 +204,20 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 
- 	switch (event) {
- 	case CPUFREQ_GOV_POLICY_INIT:
-+		/*
-+		 * In order to keep governor data across suspend/resume,
-+		 * Governor doesn't exit when suspend and will be
-+		 * reinitialized when resume. Here check policy governor
-+		 * data to determine whether the governor has been exited.
-+		 * If not, return EALREADY.
-+		 */
- 		if (have_governor_per_policy()) {
--			WARN_ON(dbs_data);
-+			if (dbs_data)
-+				return -EALREADY;
- 		} else if (dbs_data) {
-+			if (policy->governor_data == dbs_data)
-+				return -EALREADY;
-+
- 			dbs_data->usage_count++;
- 			policy->governor_data = dbs_data;
- 			return 0;
--- 
-1.8.2.1
+> But after the PM notifiers patch I even don't want this to go.. I will make sure
+> that that patch goes in, in one form or another :)
 
+And I was still trying to get a better solution in place of these changes. And
+was going on the suggestions you gave about calling cpufreq callbacks from
+dpm_{suspend|resume}_noirq() calls.. And I am on my way to get things fixed that
+way. And so we don't actually need this patch anymore (I just saw that you have
+sent another version of it, probably because Rafael asked? Don't know what
+happened there :))..
+
+So, I will try to get something working soon for you and Nishanth..
