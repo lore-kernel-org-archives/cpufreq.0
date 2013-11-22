@@ -1,23 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 2/2] cpufreq: Change freq before suspending governors
-Date: Fri, 22 Nov 2013 18:44:42 +0530
-Message-ID: <CAKohponYN21_48bQ0zzu5WubRp3zybJyRjeyGOt=vLRAqL_DFw@mail.gmail.com>
-References: <cover.1385118255.git.viresh.kumar@linaro.org>
-	<2783049.JzUB2QcsZz@vostro.rjw.lan>
-	<CAKohpo=RWi1nRUJq4qx8K+Y7swMDaqwEOH24-KfBCMgdbW=hMQ@mail.gmail.com>
-	<4592811.7DNNYfo4cW@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 65501] New: Blind angle of 1% between up_threshold and
+ down_threshold
+Date: Fri, 22 Nov 2013 14:53:19 +0000
+Message-ID: <bug-65501-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <4592811.7DNNYfo4cW@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Stephen Warren <swarren@nvidia.com>, Kukjin Kim <kgene@kernel.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>
+To: cpufreq@vger.kernel.org
 
-On 22 November 2013 18:55, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> That would be a much more intrusive change.  Definitely not 3.13 material
-> at this point.
+https://bugzilla.kernel.org/show_bug.cgi?id=65501
 
-Agreed..
+            Bug ID: 65501
+           Summary: Blind angle of 1% between up_threshold and
+                    down_threshold
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: Ubuntu 3.12.0-3.9-generic 3.12.1
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: sworddragon2@aol.com
+        Regression: No
+
+The lowest value that /sys/devices/system/cpu/cpufreq/ondemand/up_threshold can
+contain is 11 while the implicit configuration down_threshold will be
+statically set to 10. But I'm thinking that it would be correct if up_threshold
+could be set to 10 too as this wouldn't cause any collision. up_threshold would
+scale if the cpu core reaches 10% or more of cpu usage (>=) and down_threshold
+would scale if the cpu core reaches less than 10% of cpu usage (<).
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
