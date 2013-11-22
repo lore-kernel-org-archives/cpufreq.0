@@ -1,158 +1,51 @@
-From: viresh kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Fri, 22 Nov 2013 14:41:37 +0530
-Message-ID: <528F1FC9.4070306@linaro.org>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <1531674.UoqyyWSbOg@vostro.rjw.lan> <CAKohpo=e+0cpq5XfWpM6Jm0VrnzzAu-xybpucEG6sRL0ydBmLQ@mail.gmail.com> <2642790.BqNcqy9aCb@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2642790.BqNcqy9aCb@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 0/2] cpufreq: suspend governors during s2r/hibernation
+Date: Fri, 22 Nov 2013 16:59:47 +0530
+Message-ID: <cover.1385118255.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, nm@ti.com, jinchoi@broadcom.com, sebastian.capella@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Friday 22 November 2013 03:44 AM, Rafael J. Wysocki wrote:
-> Short-term.  To be precise, governors may be stopped at the beginning of
-> dpm_suspend_noirq() (that is, where cpuidle_pause() is called).  Analogously,
-> they may be started again in dpm_resume_noirq(), where cpuidle_resume() is
-> called.  That at least would be consistent with what cpuidle already does.
+This patchset adds cpufreq callbacks to dpm_{suspend|resume}_noirq() for
+handling suspend/resume of cpufreq governors. This is required for early suspend
+and late resume of governors.
 
-Ahh, I mentioned the location to be after "freeze" as I thought CPUs are removed
-before calling dpm_suspend_noirq(). And yes I was *wrong*..
+There are multiple problems that are fixed by this patch:
+- Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
+  wasn't working well with suspend/resume as calls for removing non-boot CPUs
+  was turning out into a call to drivers ->target() which then tries to play
+  with regulators. But regulators and their I2C bus were already suspended and
+  this resulted in a failure. This is why we need a PM notifier here.
+- Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
+  tunables configuration for clusters/sockets with non-boot CPUs was getting
+  lost after suspend/resume, as we were notifying governors with
+  CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
+  deallocating memory for tunables.
 
-So, dpm_suspend_noirq() and resume_noirq() looks to be the right place to get
-that stuff in.. And that will fit cleanly in the existing code as well.. Not
-many changes would be required in the $subject patch..
+This was earlier sent here:
+https://lkml.org/lkml/2013/11/15/107
 
-> That said in my opinion the appropriate long-term approach would be to split
-> CPU offline and online each into two parts, the "core" part and the "extras"
-> part, such that the "core" parts would only do the offline/online of the
-> cores themselves.  The rest, such as cpufreq/cpuidle "offline/online" would
-> be done in the "extras" part.
-> 
-> Then, system suspend/resume will only use the "core" parts of CPU offline/online
-> and the handling of the things belonging to "extras" would be carried out
-> through CPU device suspend/resume callbacks.  In turn, the "runtime" CPU offline
-> and online would carry out both the "extras" and "core" parts as it does today.
-> 
-> Makes sense?
+V1->V2:
+- Used direct callbacks from dpm_{suspend|resume}_noirq() for
+  suspending/resuming govenors instead of doing that with help of PM notifiers.
+- Patch 2/2: Switching to the desirable frequency before suspending the
+  governors.
 
-Yes it does. Very much.
 
-So, I will probably float a initial patch with the dpm_{suspend|resume}_noirq()
-approach to get things fixed for now. And then will do what you suggested. And
-yes logically this makes sense, a lot of sense. cpuidle/freq are about managing
-CPUs and so we better have a CPU driver here, to take care of suspend/resume paths.
+Viresh Kumar (2):
+  cpufreq: suspend governors on system suspend/hibernate
+  cpufreq: Change freq before suspending governors
 
-I have few questions regarding the long term solution. There can be only one
-driver for any device, this is how device-driver model is. But there can be many
-users of cpu driver. Like ACPI (which we already have:
-drivers/acpi/processor_driver.c), CPUFreq, CPUIdle and maybe more..
+ drivers/base/power/main.c |  3 ++
+ drivers/cpufreq/cpufreq.c | 79 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/cpufreq.h   |  5 +++
+ 3 files changed, 87 insertions(+)
 
-To get all these serviced together we probably need to write another layer on
-top of these to which these will register their callbacks.
+-- 
+1.7.12.rc2.18.g61b472e
 
-Then I started looking into kernel code to understand different frameworks we
-are using and came across: subsys_interface. This is the comment over it:
-
- * Simple interfaces attached to a subsystem. Multiple interfaces can
- * attach to a subsystem and its devices. Unlike drivers, they do not
- * exclusively claim or control devices. Interfaces usually represent
- * a specific functionality of a subsystem/class of devices.
-
-And it exactly fits our purpose. We don't really need a CPU driver as there are
-multiple frameworks that need it for the same device. And probably we just need
-a interface which would call user specific callbacks (user being: cpufreq,
-cpuidle, maybe more)..
-
-So, what about something like this ?
-
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index f48370d..523c0bc 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -120,6 +120,45 @@ static DEVICE_ATTR(release, S_IWUSR, NULL, cpu_release_store);
- #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
- #endif /* CONFIG_HOTPLUG_CPU */
-
-+int cpu_subsys_suspend_noirq(struct device *dev)
-+{
-+       struct bus_type *bus = dev->bus;
-+       struct subsys_interface *sif;
-+       int ret = 0;
-+
-+       list_for_each_entry(sif, &bus->p->interfaces, node) {
-+               if (sif->pm && sif->pm->suspend_noirq) {
-+                       ret = sif->suspend_noirq(dev);
-+                       if (ret)
-+                               break;
-+               }
-+       }
-+
-+       return ret;
-+}
-+
-+int cpu_subsys_resume_noirq(struct device *dev)
-+{
-+       struct bus_type *bus = dev->bus;
-+       struct subsys_interface *sif;
-+       int ret = 0;
-+
-+       list_for_each_entry(sif, &bus->p->interfaces, node) {
-+               if (sif->pm && sif->pm->resume_noirq) {
-+                       ret = sif->resume_noirq(dev);
-+                       if (ret)
-+                               break;
-+               }
-+       }
-+
-+       return ret;
-+}
-+
-+static const struct dev_pm_ops cpu_subsys_pm_ops = {
-+       .suspend_noirq = cpu_subsys_suspend_noirq,
-+       .resume_noirq = cpu_subsys_resume_noirq,
-+};
-+
- struct bus_type cpu_subsys = {
-        .name = "cpu",
-        .dev_name = "cpu",
-@@ -128,6 +167,7 @@ struct bus_type cpu_subsys = {
-        .online = cpu_subsys_online,
-        .offline = cpu_subsys_offline,
- #endif
-+       .pm = &cpu_subsys_pm_ops,
- };
- EXPORT_SYMBOL_GPL(cpu_subsys);
-
-diff --git a/include/linux/device.h b/include/linux/device.h
-index b025925..fa01273 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -298,11 +298,16 @@ struct device *driver_find_device(struct device_driver *drv,
-  * @node:       the list of functions registered at the subsystem
-  * @add_dev:    device hookup to device function handler
-  * @remove_dev: device hookup to device function handler
-+ * @pm: Power management operations of this interface.
-  *
-  * Simple interfaces attached to a subsystem. Multiple interfaces can
-  * attach to a subsystem and its devices. Unlike drivers, they do not
-  * exclusively claim or control devices. Interfaces usually represent
-  * a specific functionality of a subsystem/class of devices.
-+ *
-+ * PM callbacks are called from individual subsystems instead of PM core. And
-+ * hence might not be available for all subsystems. Currently present for:
-+ * cpu_subsys.
-  */
- struct subsys_interface {
-        const char *name;
-@@ -310,6 +315,7 @@ struct subsys_interface {
-        struct list_head node;
-        int (*add_dev)(struct device *dev, struct subsys_interface *sif);
-        int (*remove_dev)(struct device *dev, struct subsys_interface *sif);
-+       const struct dev_pm_ops *pm;
- };
-
- int subsys_interface_register(struct subsys_interface *sif);
