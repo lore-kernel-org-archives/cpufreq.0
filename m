@@ -1,79 +1,27 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Mon, 25 Nov 2013 09:43:59 -0800
-Message-ID: <52938C5F.7000307@gmail.com>
-References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org>	<52937D0C.1020501@gmail.com> <CAKohpok0QJ2xP5uoSaAsX76KwD5yi9Z54pgNyQ7CW3c4Fkbq2A@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V3 0/6] cpufreq: suspend early/resume late
+Date: Mon, 25 Nov 2013 12:29:20 -0700
+Message-ID: <5293A510.9090307@wwwdotorg.org>
+References: <cover.1385374819.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=D6K8cAdvzmFMksjQh7LMdn5JHSrvVH70TRsL25bj1eo=;
-        b=FFpz/rp2AtW/FLgVSes0QVrFt87FH2wZnmbfSxIRqIiOZ2/Q3QsSSA8ZWyFiV7UDSU
-         CAInpETTWDZP0wjSDZSrLZd7+G8wCS4hEvocGieq/TNCmHptFHsJgSY4Wzh+O/X2xjJf
-         WMZMU/8oNuWZg3Zo2ykuTAbQA+CKwmDkPk5dI/R3NHATDn+IlJxOfABscdx02Y/rBywF
-         i69HNpyvl/pcXgvtgr0Rxvra/d87J+G3+f7jVxekC3T+2LO9V4EXuO1Nf2CiisG/c3oN
-         pihG9yVaz2veDrM3uGKqfzmqS57AOd9NSz+5VKtcTSqNqQn/c6fLvgmTcL06denTbJLY
-         u/DA==
-In-Reply-To: <CAKohpok0QJ2xP5uoSaAsX76KwD5yi9Z54pgNyQ7CW3c4Fkbq2A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <cover.1385374819.git.viresh.kumar@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com
 
-On 11/25/2013 09:01 AM, Viresh Kumar wrote:
-> On 25 November 2013 22:08, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
->> IMHO this issue should be fixed in the scaling driver for the platform.
->>
->> The scaling driver sets policy->cur and fills in the frequency table and has
->
-> Not anymore, policy->cur is set in the core for most of the drivers now.
-> Drivers just provide ->get() callbacks.
->
->> the ability to adjust the frequency of the CPU.
->
-> I believe this kind of decisions should stay with the core, drivers should
-> just provide the backend instead of intelligence..
->
+On 11/25/2013 07:11 AM, Viresh Kumar wrote:
+> This patchset adds cpufreq callbacks to dpm_{suspend|resume}() for handling
+> suspend/resume of cpufreq governors and core. This is required for early suspend
+> and late resume of governors and cpufreq core.
 
+Patches 1-3,6,
+Tested-by: Stephen Warren <swarren@nvidia.com>
 
-This is a platform specific bug fix AFAICT and belongs in a platform
-specific piece of code
+Patch 6,
+Acked-by: Stephen Warren <swarren@nvidia.com>
 
-
->> Letting this leak up into the core
->> is wrong IMHO and just widens the window where the CPU will be running at
->> the wrong frequency set by the bootloader.
->
-> It doesn't stay there for long enough.. we get to this point in
-> cpufreq core just
-> after calling ->init(), and if the CPU is working without issues until
-> now, it will
-> stay stable for few more milliseconds.
->
-
-And this is where the scaling driver should detect and fix the issue in ->init()
-on platforms we know about today, What happens if platforms in the future are
-more sensitive to the issue?
-
->> Shouldn't there be a check to see if the problem exists at all?  Otherwise
->> the core is setting a policy for ALL platform even those where the issue
->> does
->> not exist.
->
-> That is taken care of by __cpufreq_driver_target(). It checks if we are
-> already running at requested frequency or not (after getting the next
-> higher frequency)... If current freq is present in table,
-> cpufreq_frequency_table_target() will return current frequency only for
-> policy->cur -1. And so we will not end up configuring hardware
-> unnecessarily.
->
-
-The core should not be working around bootloader bugs IMHO.  Silently
-fixing it is evil IMHO at a minimum the core should complain LOUDLY
-about this happening otherwise the bootloaders will have no incentive to
-get their act together.
-
+Thanks.
