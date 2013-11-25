@@ -1,55 +1,27 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: [PATCH] Cpufreq: Change sysfs interface cpuinfo_cur_freq access privilege
-Date: Mon, 25 Nov 2013 10:53:38 +0800
-Message-ID: <1385348018-30525-1-git-send-email-tianyu.lan@intel.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 65301] Cores stuck at max frequency after resume from suspend
+ (Haswell)
+Date: Mon, 25 Nov 2013 03:09:26 +0000
+Message-ID: <bug-65301-12968-Mpl83WYEgx@https.bugzilla.kernel.org/>
+References: <bug-65301-12968@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-65301-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, hg197@gmx.de
-Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-Currently, cpuinfo_cur_freq is only accessible for root user while
-other cpufreq sysfs interfaces(E,G scaling_cur_freq) are available
-to ordinary user. This seems make no sense. This patch is to change
-it.
+https://bugzilla.kernel.org/show_bug.cgi?id=65301
 
-Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
----
- drivers/cpufreq/cpufreq.c | 2 +-
- include/linux/cpufreq.h   | 4 ----
- 2 files changed, 1 insertion(+), 5 deletions(-)
+--- Comment #3 from Mykal Valentine <zoku88@gmail.com> ---
+I'm not really sure. I know it definitely didn't work normally in 3.11 or that
+version of 3.10rc that I pulled that had the i915 bug fix either.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 02d534d..1926465 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -605,7 +605,7 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
- 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
- }
- 
--cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
-+cpufreq_freq_attr_ro(cpuinfo_cur_freq);
- cpufreq_freq_attr_ro(cpuinfo_min_freq);
- cpufreq_freq_attr_ro(cpuinfo_max_freq);
- cpufreq_freq_attr_ro(cpuinfo_transition_latency);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 5bd6ab9..b4bb677 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -166,10 +166,6 @@ struct freq_attr {
- static struct freq_attr _name =			\
- __ATTR(_name, 0444, show_##_name, NULL)
- 
--#define cpufreq_freq_attr_ro_perm(_name, _perm)	\
--static struct freq_attr _name =			\
--__ATTR(_name, _perm, show_##_name, NULL)
--
- #define cpufreq_freq_attr_rw(_name)		\
- static struct freq_attr _name =			\
- __ATTR(_name, 0644, show_##_name, store_##_name)
+I think versions before that commit would run into the i915 bug, though. which
+I think also causes the frequency for the cores to stay high after resume.
+
 -- 
-1.8.4.rc0.1.g8f6a3e5.dirty
-
+You are receiving this mail because:
+You are the assignee for the bug.
