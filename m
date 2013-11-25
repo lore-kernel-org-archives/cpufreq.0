@@ -1,40 +1,84 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 65301] Cores stuck at max frequency after resume from suspend
- (Haswell)
-Date: Mon, 25 Nov 2013 20:22:19 +0000
-Message-ID: <bug-65301-12968-2RZ3XCQmib@https.bugzilla.kernel.org/>
-References: <bug-65301-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Mon, 25 Nov 2013 22:13:51 +0100
+Message-ID: <2997050.eogEtPXZyL@vostro.rjw.lan>
+References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org> <CAKohpok0QJ2xP5uoSaAsX76KwD5yi9Z54pgNyQ7CW3c4Fkbq2A@mail.gmail.com> <52938C5F.7000307@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-65301-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <52938C5F.7000307@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=65301
+On Monday, November 25, 2013 09:43:59 AM Dirk Brandewie wrote:
+> On 11/25/2013 09:01 AM, Viresh Kumar wrote:
+> > On 25 November 2013 22:08, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> >> IMHO this issue should be fixed in the scaling driver for the platform.
+> >>
+> >> The scaling driver sets policy->cur and fills in the frequency table and has
+> >
+> > Not anymore, policy->cur is set in the core for most of the drivers now.
+> > Drivers just provide ->get() callbacks.
+> >
+> >> the ability to adjust the frequency of the CPU.
+> >
+> > I believe this kind of decisions should stay with the core, drivers should
+> > just provide the backend instead of intelligence..
+> >
+> 
+> 
+> This is a platform specific bug fix AFAICT and belongs in a platform
+> specific piece of code
+> 
+> 
+> >> Letting this leak up into the core
+> >> is wrong IMHO and just widens the window where the CPU will be running at
+> >> the wrong frequency set by the bootloader.
+> >
+> > It doesn't stay there for long enough.. we get to this point in
+> > cpufreq core just
+> > after calling ->init(), and if the CPU is working without issues until
+> > now, it will
+> > stay stable for few more milliseconds.
+> >
+> 
+> And this is where the scaling driver should detect and fix the issue in ->init()
+> on platforms we know about today, What happens if platforms in the future are
+> more sensitive to the issue?
 
---- Comment #6 from tomasi <tomas.ivanek@gmail.com> ---
-Hi, 
-Whole CPU frequency managment is broken somehow.
-i5-4200U CPU @ 1.60GHz CPU should support 800 Mhz, But i see it's running at
-least on 1.6 Ghz. (After suspend/resume It's running in Turbo mode)
+So what should the core do if the driver is careless and lets the bug slip
+through?  Should it blindly trust the driver and let go?
 
-bio@dell-xps:/sys/devices/system/cpu/intel_pstate$ cpufreq-info
-cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-Report errors and bugs to cpufreq@vger.kernel.org, please.
-analyzing CPU 0:
-  driver: intel_pstate
-  CPUs which run at the same hardware frequency: 0
-  CPUs which need to have their frequency coordinated by software: 0
-  maximum transition latency: 0.97 ms.
-  hardware limits: 800 MHz - 2.60 GHz
-  available cpufreq governors: performance, powersave
-  current policy: frequency should be within 800 MHz and 2.60 GHz.
-                  The governor "powersave" may decide which speed to use
-                  within this range.
+Honestly, I don't think so.
+
+> >> Shouldn't there be a check to see if the problem exists at all?  Otherwise
+> >> the core is setting a policy for ALL platform even those where the issue
+> >> does
+> >> not exist.
+> >
+> > That is taken care of by __cpufreq_driver_target(). It checks if we are
+> > already running at requested frequency or not (after getting the next
+> > higher frequency)... If current freq is present in table,
+> > cpufreq_frequency_table_target() will return current frequency only for
+> > policy->cur -1. And so we will not end up configuring hardware
+> > unnecessarily.
+> >
+> 
+> The core should not be working around bootloader bugs IMHO.  Silently
+> fixing it is evil IMHO at a minimum the core should complain LOUDLY
+> about this happening otherwise the bootloaders will have no incentive to
+> get their act together.
+
+Yes, we can add a WARN_ON() there.  Still, though, the core's responsibility
+is to ensure that (a) either we can continue safely or (b) we can't, in which
+case it should just fail the initialization.  Whether or not it should panic()
+I'm not sure.
+
+Thanks!
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
