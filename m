@@ -1,44 +1,27 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: Re: [PATCH] Cpufreq: Change sysfs interface cpuinfo_cur_freq access
- privilege
-Date: Mon, 25 Nov 2013 13:33:39 +0800
-Message-ID: <5292E133.1040800@intel.com>
-References: <1385348018-30525-1-git-send-email-tianyu.lan@intel.com> <CAKohponvz8CjDpMbx=BXpBv5q8d4x94No90sJWjVsTRS_Uj1jw@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 65301] Cores stuck at max frequency after resume from suspend
+ (Haswell)
+Date: Mon, 25 Nov 2013 09:08:34 +0000
+Message-ID: <bug-65301-12968-ZyktzxCp9L@https.bugzilla.kernel.org/>
+References: <bug-65301-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponvz8CjDpMbx=BXpBv5q8d4x94No90sJWjVsTRS_Uj1jw@mail.gmail.com>
+In-Reply-To: <bug-65301-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, hg197@gmx.de, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-On 2013=E5=B9=B411=E6=9C=8825=E6=97=A5 12:30, Viresh Kumar wrote:
-> On 25 November 2013 08:23, Lan Tianyu <tianyu.lan@intel.com> wrote:
->> Currently, cpuinfo_cur_freq is only accessible for root user while
->> other cpufreq sysfs interfaces(E,G scaling_cur_freq) are available
->> to ordinary user. This seems make no sense. This patch is to change
->> it.
->=20
-> There is nothing wrong with the code and so this is more of a design
-> change..
->=20
-> Probably Rafael can help us here as cpufreq_cur_freq will read stuff
-> directly from hardware instead of using cached value in software.
+https://bugzilla.kernel.org/show_bug.cgi?id=65301
 
-I think so, too. I also tried to checking the reason of the privilege b=
-y
-git log but the code was there before linux kernel being migrated to gi=
-t
-repository.
+--- Comment #5 from Mykal Valentine <zoku88@gmail.com> ---
+Just tried, it doesn't seem like I'm able to boot with 3.8 or 3.9 rc kernels...
+Not really sure why?  The screen turns black at some point during boot
+sequence, some point after fsck.
 
->=20
-> --
-> viresh
->=20
+Maybe those kernels miss some commits needed for haswell IGPs or something...
 
-
---=20
-Best regards
-Tianyu Lan
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
