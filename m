@@ -1,58 +1,61 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] Cpufreq: Change sysfs interface cpuinfo_cur_freq access privilege
-Date: Mon, 25 Nov 2013 13:14:54 +0100
-Message-ID: <1521595.q8BSAikk1K@vostro.rjw.lan>
-References: <1385348018-30525-1-git-send-email-tianyu.lan@intel.com> <5074010.ha99UACE9S@vostro.rjw.lan> <52933AB5.9060409@intel.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <52933AB5.9060409@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 0/6] cpufreq: suspend early/resume late
+Date: Mon, 25 Nov 2013 19:41:40 +0530
+Message-ID: <cover.1385374819.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, hg197@gmx.de, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Monday, November 25, 2013 07:55:33 PM Lan Tianyu wrote:
-> On 11/25/2013 07:26 PM, Rafael J. Wysocki wrote:
-> > On Monday, November 25, 2013 01:33:39 PM Lan Tianyu wrote:
-> >> On 2013=E5=B9=B411=E6=9C=8825=E6=97=A5 12:30, Viresh Kumar wrote:
-> >>> On 25 November 2013 08:23, Lan Tianyu <tianyu.lan@intel.com> wrot=
-e:
-> >>>> Currently, cpuinfo_cur_freq is only accessible for root user whi=
-le
-> >>>> other cpufreq sysfs interfaces(E,G scaling_cur_freq) are availab=
-le
-> >>>> to ordinary user. This seems make no sense. This patch is to cha=
-nge
-> >>>> it.
-> >>>
-> >>> There is nothing wrong with the code and so this is more of a des=
-ign
-> >>> change..
-> >>>
-> >>> Probably Rafael can help us here as cpufreq_cur_freq will read st=
-uff
-> >>> directly from hardware instead of using cached value in software.
-> >>
-> >> I think so, too. I also tried to checking the reason of the privil=
-ege by
-> >> git log but the code was there before linux kernel being migrated =
-to git
-> >> repository.
-> >
-> > And it has always behaved in the same way?  Then I wouldn't change =
-it.
-> >
->=20
-> It has been there since 2.6.12-rc2 or more early. But the=20
-> cpuinfo_cur_freq is read-only and seems no harmful.
+This patchset adds cpufreq callbacks to dpm_{suspend|resume}() for handling
+suspend/resume of cpufreq governors and core. This is required for early suspend
+and late resume of governors and cpufreq core.
 
-If it reads things directly from hardware, it may not be totally neutra=
-l.
+There are multiple problems that are fixed by this patch:
+- Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
+  wasn't working well with suspend/resume as calls for removing non-boot CPUs
+  was turning out into a call to drivers ->target() which then tries to play
+  with regulators. But regulators and their I2C bus were already suspended and
+  this resulted in a failure. Many platforms have such problems, samsung, tegra,
+  etc.. They solved it with driver specific PM notifiers where they used to
+  disable their driver's ->target() routine. Most of these are updated in this
+  patchset to use new infrastructure.
 
-Thanks!
+- Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
+  tunables configuration for clusters/sockets with non-boot CPUs was getting
+  lost after suspend/resume, as we were notifying governors with
+  CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
+  deallocating memory for tunables. This is also fixed with this patch as don't
+  allow any operation on Governors during suspend/resume now.
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+
+So to solve these issues we introduce early suspend and late resume callbacks
+which would remove need of cpufreq drivers to implement PM notifiers to disable
+transition after suspend and before resume.
+
+@Nishanth: Can you please test V2 as well and confirm that suspend_noirq()
+doesn't work for you. I am sure it will not, but would be better if you confirm
+that.
+
+Viresh Kumar (6):
+  cpufreq: suspend governors on system suspend/hibernate
+  cpufreq: call driver's suspend/resume for each policy
+  cpufreq: Implement cpufreq_generic_suspend()
+  cpufreq: exynos: Use cpufreq_generic_suspend()
+  cpufreq: s5pv210: Use cpufreq_generic_suspend()
+  cpufreq: Tegra: Use cpufreq_generic_suspend()
+
+ drivers/base/power/main.c         |   5 ++
+ drivers/cpufreq/cpufreq.c         | 133 +++++++++++++++++++++-----------------
+ drivers/cpufreq/exynos-cpufreq.c  |  97 ++-------------------------
+ drivers/cpufreq/s5pv210-cpufreq.c |  49 +-------------
+ drivers/cpufreq/tegra-cpufreq.c   |  54 ++--------------
+ include/linux/cpufreq.h           |   6 ++
+ 6 files changed, 99 insertions(+), 245 deletions(-)
+
+-- 
+1.7.12.rc2.18.g61b472e
