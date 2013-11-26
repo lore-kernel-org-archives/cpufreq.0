@@ -1,35 +1,46 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 65301] Cores stuck at max frequency after resume from suspend
- (Haswell)
-Date: Tue, 26 Nov 2013 01:20:00 +0000
-Message-ID: <bug-65301-12968-m9cyL6xZXH@https.bugzilla.kernel.org/>
-References: <bug-65301-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Tue, 26 Nov 2013 07:31:50 +0530
+Message-ID: <CAKohpon22PxGdTFcaOqzpLpVZd75OPP470Wyy95GjBhG2gViyQ@mail.gmail.com>
+References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org>
+	<CAKohpok0QJ2xP5uoSaAsX76KwD5yi9Z54pgNyQ7CW3c4Fkbq2A@mail.gmail.com>
+	<52938C5F.7000307@gmail.com>
+	<2997050.eogEtPXZyL@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-65301-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <2997050.eogEtPXZyL@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=65301
+On 26 November 2013 02:43, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, November 25, 2013 09:43:59 AM Dirk Brandewie wrote:
+>> This is a platform specific bug fix AFAICT and belongs in a platform
+>> specific piece of code
 
---- Comment #8 from Mykal Valentine <zoku88@gmail.com> ---
-Marcin: I'm not sure if that's the exact same problem, given that resuming from
-suspend to RAM was what I was filing the bug on, which seems to function as a
-workaround for another issue that you're seeing.
+In case we end up doing that, we will do lots of code redundancy in
+cpufreq drivers. And as Rafael said, some platforms might never
+know they have booted with an out of table frequency and so taking
+care of this at a single place is better, where we are sure that it
+will get fixed.
 
-Unfortunately, I wasn't very clear with the original bug report to state that. 
-Incidentally, I haven't tested resume from hibernate.
+>> The core should not be working around bootloader bugs IMHO.  Silently
+>> fixing it is evil IMHO at a minimum the core should complain LOUDLY
+>> about this happening otherwise the bootloaders will have no incentive to
+>> get their act together.
 
-Also, since there was a bug in i915 for SNB, you should make sure that you're
-not hitting that bug.  I wasn't sure what version that bug fix got in (either
-3.11 or 3.12), but I would recommend trying 3.12 on your system to see if the
-problem persists, just in case 3.11 didn't have the fix.  Or checking
-out/compiling commit 7dcd2677ea912573d9ed4bcd629b0023b2d11505 to see if that
-fixes your problem.
+That looks correct..
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+> Yes, we can add a WARN_ON() there.  Still, though, the core's responsibility
+> is to ensure that (a) either we can continue safely or (b) we can't, in which
+> case it should just fail the initialization.  Whether or not it should panic()
+> I'm not sure.
+
+But is this that big crime, that we do a WARN on it? CPU was running on
+a workable frequency, it wasn't mentioned in the table, that's it.
+
+Probably just throw an print message that CPU found to be running on
+out of table frequency, and that got fixed..
