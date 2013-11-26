@@ -1,63 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 4/6] cpufreq: exynos: Use cpufreq_generic_suspend()
-Date: Tue, 26 Nov 2013 20:06:22 +0530
-Message-ID: <CAKohpoka9VCi+Siygf6wWF4v=9pZawtO-ZZ5EoFDuJpAyv7VBA@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH V2 1/2] cpufreq: suspend governors on system
+ suspend/hibernate
+Date: Tue, 26 Nov 2013 20:39:02 +0100
+Message-ID: <20131126193902.GA2481@amd.pavel.ucw.cz>
+References: <cover.1385118255.git.viresh.kumar@linaro.org>
+ <e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, nm@ti.com, jinchoi@broadcom.com, sebastian.capella@linaro.org
 
-On 25 November 2013 19:41, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Currently we have implemented PM notifiers to disable/enable ->target() routines
-> functionality during suspend/resume.
->
-> Now we have support present in cpufreq core, lets use it.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/exynos-cpufreq.c | 97 +++-------------------------------------
->  1 file changed, 6 insertions(+), 91 deletions(-)
+Hi!
 
-Jonghwan Choi reported an issue with this patch. He asked me
-to look at: 6e45eb
+> This patch adds cpufreq callbacks to dpm_{suspend|resume}_noirq() for handling
+> suspend/resume of cpufreq governors. This is required for early suspend and late
+> resume of governors.
+> 
+> There are multiple problems that are fixed by this patch:
+> - Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
+>   wasn't working well with suspend/resume as calls for removing non-boot CPUs
+>   was turning out into a call to drivers ->target() which then tries to play
+>   with regulators. But regulators and their I2C bus were already suspended and
+>   this resulted in a failure. This is why we need a PM notifier here.
+> - Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
+>   tunables configuration for clusters/sockets with non-boot CPUs was getting
+>   lost after suspend/resume, as we were notifying governors with
+>   CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
+>   deallocating memory for tunables.
+> 
+> +/*
+> + * Callbacks for suspending/resuming governors as some platforms can't change
+> + * frequency after this point in suspend cycle. Because some of the devices
+> + * (like: i2c, regulators, etc) they use for changing frequency are suspended
+> + * quickly after this point.
+> + */
+> +void cpufreq_suspend(void)
+> +{
+> +	struct cpufreq_policy *policy;
+> +	unsigned long flags;
+> +
+> +	if (!has_target())
+> +		return;
+> +
+> +	pr_debug("%s: Suspending Governors\n", __func__);
+> +
+> +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
+> +		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
+> +			pr_err("%s: Failed to stop governor for policy: %p\n",
+> +					__func__, policy);
 
-And so following diff is updated for this patch in my repo.. Will get
-that fixed in V4:
+So... we freeze frequencies in whatever state they are, yes?
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 4b6e6a6..3f216da 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -22,8 +22,8 @@
- #include "exynos-cpufreq.h"
+Should we go to some specific frequency?
 
- static struct exynos_dvfs_info *exynos_info;
--
- static struct regulator *arm_regulator;
-+static unsigned int locking_frequency;
-
- static int exynos_cpufreq_get_index(unsigned int freq)
- {
-@@ -134,7 +134,7 @@ static int exynos_target(struct cpufreq_policy
-*policy, unsigned int index)
- static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
-        policy->clk = exynos_info->cpu_clk;
--       policy->suspend_freq = clk_get_rate(exynos_info->cpu_clk) / 1000;
-+       policy->suspend_freq = locking_frequency;
-        return cpufreq_generic_init(policy, exynos_info->freq_table, 100000);
- }
-
-@@ -182,6 +182,9 @@ static int __init exynos_cpufreq_init(void)
-                goto err_vdd_arm;
-        }
-
-+       /* Done here as we want to capture boot frequency */
-+       locking_frequency = clk_get_rate(exynos_info->cpu_clk) / 1000;
-+
-        if (!cpufreq_register_driver(&exynos_driver))
-                return 0;
+For example, early athlon64 notebooks were unable to run on battery
+power on max frequency... these days there are various "Turbo"
+modes, but IIRC staying at high frequency there is only safe as long
+as CPU stays cool enough...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
