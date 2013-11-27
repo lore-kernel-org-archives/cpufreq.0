@@ -1,55 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: clk_round_rate() can return a zero upon error
-Date: Wed, 27 Nov 2013 02:28:06 +0100
-Message-ID: <37456401.ZmxAx3C9Zb@vostro.rjw.lan>
-References: <alpine.DEB.2.02.1311251559460.23090@tamien> <52942B87.1040203@linaro.org> <529533AD.2050406@nvidia.com>
+Subject: Re: [PATCH V3 1/6] cpufreq: suspend governors on system suspend/hibernate
+Date: Wed, 27 Nov 2013 02:42:27 +0100
+Message-ID: <4787675.sJF8mqYyxv@vostro.rjw.lan>
+References: <cover.1385374819.git.viresh.kumar@linaro.org> <CAKohpok0E=m=63KXM22usiW7Rsu59cD7Q=+k3tRcW=8269tZnQ@mail.gmail.com> <4253729.doK7ubnxKx@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <529533AD.2050406@nvidia.com>
+In-Reply-To: <4253729.doK7ubnxKx@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Paul Walmsley <pwalmsley@nvidia.com>
-Cc: viresh kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 
-On Tuesday, November 26, 2013 03:50:05 PM Paul Walmsley wrote:
-> On 11/25/2013 09:03 PM, viresh kumar wrote:
-> > On Tuesday 26 November 2013 07:31 AM, Paul Walmsley wrote:
-> >> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> >> index d4585ce2346c..0faf756f6197 100644
-> >> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> >> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> >> @@ -44,7 +44,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
-> >> unsigned int index)
-> >>       int ret;
-> >>
-> >>       freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
-> >> -    if (freq_Hz < 0)
-> >> +    if (freq_Hz <= 0)
-> >>           freq_Hz = freq_table[index].frequency * 1000;
-> >>
-> >>       freq_exact = freq_Hz;
-> > So, we will see another patch where you will do: s/<=/== ??
+On Tuesday, November 26, 2013 09:23:15 PM Rafael J. Wysocki wrote:
+> On Tuesday, November 26, 2013 07:56:19 AM Viresh Kumar wrote:
+> > On 26 November 2013 04:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > >> @@ -1259,6 +1262,8 @@ int dpm_suspend(pm_message_t state)
+> > >>
+> > >>       might_sleep();
+> > >>
+> > >> +     cpufreq_suspend();
+> > >> +
+> > >>
+> > >>       mutex_lock(&dpm_list_mtx);
+> > >>       pm_transition = state;
+> > >>       async_error = 0;
+> > >
+> > > Shouldn't it do cpufreq_resume() on errors?
+> > 
+> > Yes and this is already done I believe. In case dpm_suspend() fails,
+> > dpm_resume() gets called. Isn't it?
 > 
-> Probably so for this driver - along with converting the type of freq_Hz 
-> to be u64 or unsigned long.  Not sure yet about all of the other 
-> drivers, since many of them are unlikely to see rates above (2^31)-1 Hz.
+> OK
 > 
-> > I am wondering if there is any other way we can get this solved, i.e. in a
-> > single patchset.
+> > >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > >> +void cpufreq_suspend(void)
+> > >> +{
+> > >> +     struct cpufreq_policy *policy;
+> > >> +
+> > >> +     if (!has_target())
+> > >> +             return;
+> > >> +
+> > >> +     pr_debug("%s: Suspending Governors\n", __func__);
+> > >> +
+> > >> +     list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
+> > >> +             if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
+> > >> +                     pr_err("%s: Failed to stop governor for policy: %p\n",
+> > >> +                                     __func__, policy);
+> > >
+> > > This appears to be racy.  Is it really racy, or just seemingly?
+> > 
+> > Why does it look racy to you? Userspace should be frozen by now,
+> > policy_list should be stable as well as nobody would touch it.
 > 
-> I'm trying to avoid sending up a large series that touches drivers all 
-> over the tree :-(
-> 
-> > Otherwise, for both SPEAr and cpu0 patches:
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Thanks!  But I was instead hoping you might queue them up for merging 
-> for v3.14?  That should greatly reduce the risk of merge conflicts.
+> You're stopping governors while they may be in use in principle.  Do we have
+> suitable synchronization in place for that?
 
-I have a plan to queue them up for 3.14. :-)
+Anyway, if you did what I asked you to do and put the cpufreq suspend/resume
+into dpm_suspend/resume_noirq(), I'd probably take this for 3.13.  However,
+since you've decided to put those things somewhere else thus making the
+change much more intrusive, I can only queue it up for 3.14.
+
+This means I'm going to take the Tianyu's patch as a stop gap for 3.13.
 
 Thanks!
 
