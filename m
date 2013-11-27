@@ -1,106 +1,39 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 1/6] cpufreq: suspend governors on system suspend/hibernate
-Date: Wed, 27 Nov 2013 13:09:30 +0530
-Message-ID: <CAKohpomV3xByHbcRtcrF3F6k_Nw=f3G0vX7gU6RqWZ4z+j=a_Q@mail.gmail.com>
-References: <cover.1385374819.git.viresh.kumar@linaro.org>
-	<CAKohpok0E=m=63KXM22usiW7Rsu59cD7Q=+k3tRcW=8269tZnQ@mail.gmail.com>
-	<4253729.doK7ubnxKx@vostro.rjw.lan>
-	<4787675.sJF8mqYyxv@vostro.rjw.lan>
-	<CAKohpo=iSJSh_x3Xj3h-GRE6S25ptsdHf34MftMuD6JVSZw=rg@mail.gmail.com>
-	<52959A74.70007@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Wed, 27 Nov 2013 15:22:01 +0100
+Message-ID: <4759452.7dXrrSTGCc@vostro.rjw.lan>
+References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org> <2309056.KUZA1Fnj0Y@vostro.rjw.lan> <CAKohpokjAuUA-o4cJi=N7mO93kTwrmfVqtL-zOHAs6awKoXn1A@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52959A74.70007@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokjAuUA-o4cJi=N7mO93kTwrmfVqtL-zOHAs6awKoXn1A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 
-On 27 November 2013 12:38, Lan Tianyu <tianyu.lan@intel.com> wrote:
-> Hi Viresh:
+On Wednesday, November 27, 2013 08:31:02 AM Viresh Kumar wrote:
+> On 27 November 2013 01:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > I was talking about the case when your
+> >
+> > __cpufreq_driver_target(policy, policy->cur - 1, CPUFREQ_RELATION_L);
+> >
+> > fails.  The other case is not really interesting.
+> 
+> Okay.. I actually thought the context of this chat is about "not fixing the
+> frequency silently". That's what Dirk pointed out, if I am not wrong.
 
-Hey Lan,
+In that case you can simply print a message bashing the boot loader. :-)
 
->         First, I agree the new solution you are working on. :)
+> And hence I also support the new pr_warn I have added in those cases.
 
-Thanks :)
+Sure.
 
-> But actually I don't totally agree my origin patch have design issue.
-> Because I think governor should have the ability to check whether it has
-> been EXIT when doing INIT and it should return error code at that point.
-> The design is to make governor code stronger to deal with the case that
-> governor is reinitialized before EXIT. Just from my view.
+> But yes a WARN_ON() can be printed out in case
+> __cpufreq_driver_target() fails.
 
-> Sorry for noise.
+And here my question was: Is it safe to continue at all in that case?
 
-Ahh, these are useful discussions. Everyone have their own thoughts and
-its upto all of us to get meaningful stuff out of it..
+Rafael
 
-I agree to whatever you wrote above but this isn't exactly what's being
-done in your patch. I was more concerned about this stuff:
-
-On 22 November 2013 13:08, Lan Tianyu <tianyu.lan@intel.com> wrote:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-
-> +               if (has_target() && !frozen) {
->                         ret = __cpufreq_governor(policy,
->                                         CPUFREQ_GOV_POLICY_EXIT);
-
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> @@ -204,9 +204,20 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->
->         switch (event) {
->         case CPUFREQ_GOV_POLICY_INIT:
-> +               /*
-> +                * In order to keep governor data across suspend/resume,
-> +                * Governor doesn't exit when suspend and will be
-> +                * reinitialized when resume. Here check policy governor
-> +                * data to determine whether the governor has been exited.
-> +                * If not, return EALREADY.
-> +                */
->                 if (have_governor_per_policy()) {
-> -                       WARN_ON(dbs_data);
-> +                       if (dbs_data)
-> +                               return -EALREADY;
->                 } else if (dbs_data) {
-> +                       if (policy->governor_data == dbs_data)
-> +                               return -EALREADY;
-> +
->                         dbs_data->usage_count++;
->                         policy->governor_data = dbs_data;
->                         return 0;
-
-Here the cpufreq core has skipped the call to governor's EXIT,
-and so it shouldn't pass on the following INIT call to them..
-
-That's a bit wrong. These two calls work in pairs and are exactly
-opposite to each other. And so if some decision has to be taken
-then either that should be done completely at governor level
-or core level. Doing stuff partly in governor and partly in core
-is like giving invitation to new bugs/problems :)
-
-Nothing personal otherwise. Recently there were patches sent
-by people, you, Nishanth, etc, which I have just overridden with
-my versions.. It wasn't about getting my count higher :) but
-getting the solution at right places instead of solving them at
-wrong locations..
-
-I am already having tough time upstreaming patches for cpufreq
-consolidation, as the number of patches is huge. It takes time
-for people to absorb/test them. Though Rafael has taken almost all
-of them in v3.13 finally, but I understand its difficult for him as
-well and he did his job wonderfully :)
-
-And so I don't really want to get any new stuff in which will surely
-get consolidated later. Lets do it now, we had enough of it :)
-
-Even, related to your patch, I was already thinking of getting
-rid of "frozen" variable and parameter to functions, as we already
-know status from a global variable now, cpufreq_suspended. And
-so we don't actually need to pass any additional parameters
-to many routines, which have something like 'frozen' currently.
-
---
-viresh
