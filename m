@@ -1,38 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Wed, 27 Nov 2013 21:21:55 +0100
-Message-ID: <5408313.YdNvR1b3g5@vostro.rjw.lan>
-References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org> <4759452.7dXrrSTGCc@vostro.rjw.lan> <CAKohpomXk34aaG3bKX9AuOcn7ZEXcKrc858jCUhcB2bavcnarQ@mail.gmail.com>
+Date: Thu, 28 Nov 2013 08:50:20 +0530
+Message-ID: <CAKohponPOFP3pxZYngZcFneBMNozNkCyB1Yevj4801TqfAxHbw@mail.gmail.com>
+References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org>
+	<4759452.7dXrrSTGCc@vostro.rjw.lan>
+	<CAKohpomXk34aaG3bKX9AuOcn7ZEXcKrc858jCUhcB2bavcnarQ@mail.gmail.com>
+	<5408313.YdNvR1b3g5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomXk34aaG3bKX9AuOcn7ZEXcKrc858jCUhcB2bavcnarQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5408313.YdNvR1b3g5@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 
-On Wednesday, November 27, 2013 09:22:01 PM Viresh Kumar wrote:
-> On 27 November 2013 19:52, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > And here my question was: Is it safe to continue at all in that case?
-> 
-> Hmm.. Honestly speaking I haven't thought about it earlier. And from
-> the kind of inputs we got from Nishanth its not safe at all and so we
-> really need a BUG_ON in this case, instead of WARN_ON.
-> 
-> What do you say?
+On 28 November 2013 01:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> I have a concern that on some systems you can't really say what frequency
+> you're running at the moment, however.
 
-Yeah, BUG_ON() sounds like the right thing to do here.
+Which ones? I know ACPI tries to play smart by handling the frequency stuff
+itself by marking CPUs not-related to each other for the kernel where they
+might actually be sharing clock line... But probably in these cases as well,
+atleast the cpufreq core should believe that it is running on a valid frequency
+even if actual hardware is running at something different..
 
-I have a concern that on some systems you can't really say what frequency
-you're running at the moment, however.  So there should be a flag for
-drivers indicating whether or not frequencies (or operation points in
-general) are directly testable and the check should only be done for
-the drivers with the flag set.
+Any other platforms you are aware of that implement ->target/target_index
+and where we can't say what freq are they running at?
 
-Thanks!
+> So there should be a flag for
+> drivers indicating whether or not frequencies (or operation points in
+> general) are directly testable and the check should only be done for
+> the drivers with the flag set.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Probably a flag with properties exactly opposite to what you mentioned,
+so that we don't need to modify most of the drivers..
