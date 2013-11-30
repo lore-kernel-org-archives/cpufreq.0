@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/5] cpufreq: pcc: send new set of notification for transition failures
-Date: Sat, 30 Nov 2013 21:26:21 +0530
-Message-ID: <cd109686d6f54f51d0307cdb93af6d24fbad4366.1385826776.git.viresh.kumar@linaro.org>
+Subject: [PATCH 4/5] cpufreq: powernow-k8: send new set of notification for transition failures
+Date: Sat, 30 Nov 2013 21:26:22 +0530
+Message-ID: <baea84f1dd12cd09d1bc0bf07d6fa997e06dd101.1385826776.git.viresh.kumar@linaro.org>
 References: <0d635c6701654a75f6d25dd435705dc1ede3e19c.1385826776.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <0d635c6701654a75f6d25dd435705dc1ede3e19c.1385826776.git.viresh.kumar@linaro.org>
 In-Reply-To: <0d635c6701654a75f6d25dd435705dc1ede3e19c.1385826776.git.viresh.kumar@linaro.org>
 References: <0d635c6701654a75f6d25dd435705dc1ede3e19c.1385826776.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -38,58 +38,30 @@ users of these notifications might get unstable.
 This can be fixed by simply calling cpufreq_notify_post_transition() with error
 code and this routine will take care of sending notifications in correct order.
 
-Also it fills freqs.old before starting the first notification, this was missing
-since ever.
-
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pcc-cpufreq.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ drivers/cpufreq/powernow-k8.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index e2b4f40..1c0f106 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -213,6 +213,7 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
- 		cpu, target_freq,
- 		(pcch_virt_addr + pcc_cpu_data->input_offset));
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index 0023c7d..e10b646 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -964,14 +964,9 @@ static int transition_frequency_fidvid(struct powernow_k8_data *data,
+ 	cpufreq_cpu_put(policy);
  
-+	freqs.old = policy->cur;
- 	freqs.new = target_freq;
  	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
- 
-@@ -228,25 +229,20 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
- 	memset_io((pcch_virt_addr + pcc_cpu_data->input_offset), 0, BUF_SZ);
- 
- 	status = ioread16(&pcch_hdr->status);
-+	iowrite16(0, &pcch_hdr->status);
-+
-+	cpufreq_notify_post_transition(policy, &freqs, status != CMD_COMPLETE);
-+	spin_unlock(&pcc_lock);
-+
- 	if (status != CMD_COMPLETE) {
- 		pr_debug("target: FAILED for cpu %d, with status: 0x%x\n",
- 			cpu, status);
--		goto cmd_incomplete;
-+		return -EINVAL;
- 	}
--	iowrite16(0, &pcch_hdr->status);
- 
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- 	pr_debug("target: was SUCCESSFUL for cpu %d\n", cpu);
--	spin_unlock(&pcc_lock);
- 
- 	return 0;
 -
--cmd_incomplete:
--	freqs.new = freqs.old;
+ 	res = transition_fid_vid(data, fid, vid);
+-	if (res)
+-		freqs.new = freqs.old;
+-	else
+-		freqs.new = find_khz_freq_from_fid(data->currfid);
++	cpufreq_notify_post_transition(policy, &freqs, res);
+ 
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--	iowrite16(0, &pcch_hdr->status);
--	spin_unlock(&pcc_lock);
--	return -EINVAL;
+ 	return res;
  }
  
- static int pcc_get_offset(int cpu)
 -- 
 1.7.12.rc2.18.g61b472e
-
