@@ -1,80 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 1/5] cpufreq: Introduce cpufreq_notify_post_transition()
-Date: Sat, 30 Nov 2013 21:20:44 +0100
-Message-ID: <15590294.HtstlaFcjF@vostro.rjw.lan>
+Date: Sun, 1 Dec 2013 08:18:34 +0530
+Message-ID: <CAKohpokRkQn7zQhOVQQmuGZ+QygcwPH1b9z0XmZWgGCjpxk7RA@mail.gmail.com>
 References: <0d635c6701654a75f6d25dd435705dc1ede3e19c.1385826776.git.viresh.kumar@linaro.org>
+	<15590294.HtstlaFcjF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <0d635c6701654a75f6d25dd435705dc1ede3e19c.1385826776.git.viresh.kumar@linaro.org>
+In-Reply-To: <15590294.HtstlaFcjF@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Saturday, November 30, 2013 09:26:19 PM Viresh Kumar wrote:
-> This introduces another routine cpufreq_notify_post_transition() which can be
-> used to send POSTCHANGE notification for new freq with or without both
-> {PRE|POST}CHANGE notifications for last freq in case of failures. This is useful
-> at multiple places, specially for sending transition failure notifications.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> 
-> Hi Rafael,
-> 
-> Please see if you want to take it for 3.13 or 14, as this fixes bugs which are
-> partly introduced in 3.13..
+On 1 December 2013 01:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Saturday, November 30, 2013 09:26:19 PM Viresh Kumar wrote:
+>> This introduces another routine cpufreq_notify_post_transition() which can be
+>> used to send POSTCHANGE notification for new freq with or without both
+>> {PRE|POST}CHANGE notifications for last freq in case of failures. This is useful
+>> at multiple places, specially for sending transition failure notifications.
+>>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>
+>> Hi Rafael,
+>>
+>> Please see if you want to take it for 3.13 or 14, as this fixes bugs which are
+>> partly introduced in 3.13..
+>
+> Which ones?
 
-Which ones?
+Patch:
 
-Rafael
+commit d4019f0a92ab802f385cc9c8ad3ab7b5449712cb
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Wed Aug 14 19:38:24 2013 +0530
+
+    cpufreq: move freq change notifications to cpufreq core
+
+adds:
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
++               retval = cpufreq_driver->target_index(policy, index);
++               if (retval)
++                       pr_err("%s: Failed to change cpu frequency: %d\n",
++                                       __func__, retval);
++
++               if (notify) {
++                       /*
++                        * Notify with old freq in case we failed to change
++                        * frequency
++                        */
++                       if (retval)
++                               freqs.new = freqs.old;
++
++                       cpufreq_notify_transition(policy, &freqs,
++                                       CPUFREQ_POSTCHANGE);
++               }
 
 
->  drivers/cpufreq/cpufreq.c | 14 ++++++++++++++
->  include/linux/cpufreq.h   |  2 ++
->  2 files changed, 16 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 606224a..a862aa9 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -324,6 +324,20 @@ void cpufreq_notify_transition(struct cpufreq_policy *policy,
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
->  
-> +/* Do post notifications when there are chances that transition has failed */
-> +void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
-> +		struct cpufreq_freqs *freqs, int transition_failed)
-> +{
-> +	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
-> +	if (!transition_failed)
-> +		return;
-> +
-> +	swap(freqs->old, freqs->new);
-> +	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
-> +	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
-> +
->  
->  /*********************************************************************
->   *                          SYSFS INTERFACE                          *
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index ee5fe9d..57e48db 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -314,6 +314,8 @@ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list);
->  
->  void cpufreq_notify_transition(struct cpufreq_policy *policy,
->  		struct cpufreq_freqs *freqs, unsigned int state);
-> +void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
-> +		struct cpufreq_freqs *freqs, int transition_failed);
->  
->  #else /* CONFIG_CPU_FREQ */
->  static inline int cpufreq_register_notifier(struct notifier_block *nb,
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+And I thought it might go in 3.13, but surely it doesn't fix any
+obvious kernel crashes. It only fixes stuff when target_index() fails.
