@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/5] cpufreq: pcc: send new set of notification for transition failures
-Date: Mon,  2 Dec 2013 11:04:14 +0530
-Message-ID: <3d86feabdc6f223b68a4936c9529b4edec3e39ba.1385962178.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 5/5] cpufreq: unicore2: send new set of notification for transition failures
+Date: Mon,  2 Dec 2013 11:04:16 +0530
+Message-ID: <a9ade5e83fda4f4e41cf1da87bb477a9fff98ca0.1385962178.git.viresh.kumar@linaro.org>
 References: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
 In-Reply-To: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
 In-Reply-To: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
 References: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -38,58 +38,44 @@ users of these notifications might get unstable.
 This can be fixed by simply calling cpufreq_notify_post_transition() with error
 code and this routine will take care of sending notifications in correct order.
 
-Also it fills freqs.old before starting the first notification, this was missing
-since ever.
+Also it returns a proper error message in case frequency transition failed.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pcc-cpufreq.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ drivers/cpufreq/unicore2-cpufreq.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index e2b4f40..1c0f106 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -213,6 +213,7 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
- 		cpu, target_freq,
- 		(pcch_virt_addr + pcc_cpu_data->input_offset));
+diff --git a/drivers/cpufreq/unicore2-cpufreq.c b/drivers/cpufreq/unicore2-cpufreq.c
+index 951152f..99d280d6 100644
+--- a/drivers/cpufreq/unicore2-cpufreq.c
++++ b/drivers/cpufreq/unicore2-cpufreq.c
+@@ -38,19 +38,17 @@ static int ucv2_target(struct cpufreq_policy *policy,
+ 			 unsigned int target_freq,
+ 			 unsigned int relation)
+ {
+-	unsigned int cur = policy->cur;
+ 	struct cpufreq_freqs freqs;
++	int ret;
  
-+	freqs.old = policy->cur;
- 	freqs.new = target_freq;
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
- 
-@@ -228,25 +229,20 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
- 	memset_io((pcch_virt_addr + pcc_cpu_data->input_offset), 0, BUF_SZ);
- 
- 	status = ioread16(&pcch_hdr->status);
-+	iowrite16(0, &pcch_hdr->status);
-+
-+	cpufreq_notify_post_transition(policy, &freqs, status != CMD_COMPLETE);
-+	spin_unlock(&pcc_lock);
-+
- 	if (status != CMD_COMPLETE) {
- 		pr_debug("target: FAILED for cpu %d, with status: 0x%x\n",
- 			cpu, status);
--		goto cmd_incomplete;
-+		return -EINVAL;
- 	}
--	iowrite16(0, &pcch_hdr->status);
- 
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- 	pr_debug("target: was SUCCESSFUL for cpu %d\n", cpu);
--	spin_unlock(&pcc_lock);
- 
- 	return 0;
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
 -
--cmd_incomplete:
--	freqs.new = freqs.old;
+-	if (!clk_set_rate(policy->clk, target_freq * 1000)) {
+-		freqs.old = cur;
+-		freqs.new = target_freq;
+-	}
++	freqs.old = policy->cur;
++	freqs.new = target_freq;
+ 
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--	iowrite16(0, &pcch_hdr->status);
--	spin_unlock(&pcc_lock);
--	return -EINVAL;
++	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
++	ret = clk_set_rate(policy->clk, target_freq * 1000);
++	cpufreq_notify_post_transition(policy, &freqs, ret);
+ 
+-	return 0;
++	return ret;
  }
  
- static int pcc_get_offset(int cpu)
+ static int __init ucv2_cpu_init(struct cpufreq_policy *policy)
 -- 
 1.7.12.rc2.18.g61b472e
 
