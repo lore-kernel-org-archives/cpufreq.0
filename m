@@ -1,244 +1,182 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH RESEND v10 2/7] cpufreq:acpi:x86: Adjust the acpi-cpufreq.c
- code to work with common boost solution
-Date: Mon, 02 Dec 2013 13:19:16 +0100
-Message-ID: <1385986761-17934-3-git-send-email-l.majewski@samsung.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1385986761-17934-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1385986761-17934-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH v10 7/7] thermal:exynos:boost: Automatic enable/disable
+ of BOOST feature (at Exynos4412)
+Date: Mon, 2 Dec 2013 10:53:06 -0400
+Message-ID: <529C9ED2.2060106@ti.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-8-git-send-email-l.majewski@samsung.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="Kh5LiP33daJRIV2bov45pGrinPmqUkKBC"
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1383672411-26324-8-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-The Intel's hardware based boost solution driver has been changed to cooperate with
-common cpufreq boost framework.
+--Kh5LiP33daJRIV2bov45pGrinPmqUkKBC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The global sysfs boost attribute entry code (/sys/devices/system/cpu/cpufreq/boost)
-has been moved to a core cpufreq code. This attribute is now only visible,
-when cpufreq driver supports it.
+On 05-11-2013 13:26, Lukasz Majewski wrote:
+> This patch provides auto disable/enable operation for boost. It uses al=
+ready
+> present thermal infrastructure to provide boost hysteresis.
+> A special set of TMU data has been defined for Exynos4412, which is onl=
+y
+> considered when BOOST is enabled.
 
-The _store_boost() function has been redesigned to be used as set_boost
-callback.
+Can you please add more description why you need a different set of
+thermal data when boost is enabled? This is also important in case you
+(Exynos thermal folks) would like to migrate this driver to have thermal
+data support in DT.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
----
-Changes for v10:
-- None
+>=20
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+>=20
+> ---
+> Changes for v10:
+>     - Remove boost related code from thermal_core.c
+>     - Use already present thermal infrastructure to provide thermal hys=
+teresis
+>     - Introduce special set of TMU data for BOOST
+>=20
+> Changes for v9:
+>     - None
+>=20
+> Changes for v8:
+>     - Move cpufreq_boost_* stub functions definition (needed when cpufr=
+eq
+>       is not compiled in) to cpufreq.h at cpufreq core support commit
+>=20
+> Changes for v7:
+>     - None
+>=20
+> Changes for v6:
+>     - Disable boost only when supported and enabled
+>     - Protect boost related thermal_zone_device struct fields with mute=
+x
+>     - Evaluate temperature trend during boost enable decision
+>     - Create separate methods to handle boost enable/disable
+>       (thermal_boost_{enable|disable}) operations
+>     - Boost is disabled at any trip point passage (not only the non cri=
+tical one)
+>     - Add stub definitions for cpufreq boost functions used when
+>       CONFIG_CPU_FREQ is NOT defined.
+>=20
+> Changes for v5:
+>     - Move boost disable code from cpu_cooling.c to thermal_core.c
+>       (to handle_non_critical_trips)
+>     - Extent struct thermal_zone_device by adding overheated bool flag
+>     - Implement auto enable of boost after device cools down
+>     - Introduce boost_polling flag, which indicates if thermal uses it'=
+s predefined
+>       pool delay or has woken up thermal workqueue only to wait until d=
+evice
+>       cools down.
+>=20
+> Changes for v4:
+>     - New patch
 
-Changes for v9:
-- None
 
-Changes for v8:
-- None
+Might be interesting to see the changelog for this patch only.
 
-Changes for v7:
-- Remove superfluous acpi_cpufreq_driver.boost_supported = false at
-  acpi_cpufreq_boost_init()
+>=20
+>  drivers/thermal/samsung/exynos_tmu_data.c |   47 +++++++++++++++++++++=
+++++++++
+>  1 file changed, 47 insertions(+)
+>=20
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
+l/samsung/exynos_tmu_data.c
+> index 073c292..9346926 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+> @@ -167,13 +167,60 @@ static const struct exynos_tmu_registers exynos44=
+12_tmu_registers =3D {
+>  	.features =3D (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
+>  			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+>  			TMU_SUPPORT_EMUL_TIME)
+> +
+> +#define EXYNOS4412_TMU_DATA_BOOST \
+> +	.threshold_falling =3D 10, \
+> +	.trigger_levels[0] =3D 70, \
+> +	.trigger_levels[1] =3D 85, \
+> +	.trigger_levels[2] =3D 103, \
+> +	.trigger_levels[3] =3D 110, \
+> +	.trigger_enable[0] =3D true, \
+> +	.trigger_enable[1] =3D true, \
+> +	.trigger_enable[2] =3D true, \
+> +	.trigger_enable[3] =3D true, \
+> +	.trigger_type[0] =3D THROTTLE_ACTIVE, \
+> +	.trigger_type[1] =3D THROTTLE_ACTIVE, \
+> +	.trigger_type[2] =3D THROTTLE_ACTIVE, \
+> +	.trigger_type[3] =3D SW_TRIP, \
+> +	.max_trigger_level =3D 4, \
+> +	.gain =3D 8, \
+> +	.reference_voltage =3D 16, \
+> +	.noise_cancel_mode =3D 4, \
+> +	.cal_type =3D TYPE_ONE_POINT_TRIMMING, \
+> +	.efuse_value =3D 55, \
+> +	.min_efuse_value =3D 40, \
+> +	.max_efuse_value =3D 100, \
+> +	.first_point_trim =3D 25, \
+> +	.second_point_trim =3D 85, \
+> +	.default_temp_offset =3D 50, \
+> +	.freq_tab[0] =3D { \
+> +		.freq_clip_max =3D 1400 * 1000, \
+> +		.temp_level =3D 70, \
+> +	}, \
+> +	.freq_tab[1] =3D { \
+> +		.freq_clip_max =3D 800 * 1000, \
+> +		.temp_level =3D 85, \
+> +	}, \
+> +	.freq_tab[2] =3D { \
+> +		.freq_clip_max =3D 200 * 1000, \
+> +		.temp_level =3D 103, \
+> +	}, \
+> +	.freq_tab_count =3D 3, \
+> +	.registers =3D &exynos4412_tmu_registers, \
+> +	.features =3D (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
+> +			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+> +			TMU_SUPPORT_EMUL_TIME)
+>  #endif
+> =20
+>  #if defined(CONFIG_SOC_EXYNOS4412)
+>  struct exynos_tmu_init_data const exynos4412_default_tmu_data =3D {
+>  	.tmu_data =3D {
+>  		{
+> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> +			EXYNOS4412_TMU_DATA_BOOST,
+> +#else
+>  			EXYNOS4412_TMU_DATA,
+> +#endif
+>  			.type =3D SOC_ARCH_EXYNOS4412,
+>  			.test_mux =3D EXYNOS4412_MUX_ADDR_VALUE,
+>  		},
+>=20
 
-Changes for v6:
-- Perform acpi_cpufreq_boost_init initialization before cpufreq_driver
-  registration
-- Compile store_boost() only when CONFIG_X86_ACPI_CPUFREQ_CPB defined
-- Use boost_enabled flag defined at acpi_cpufreq_driver to store information
-  about boost state
-- Instead of using cpufreq_set_boost_enabled(), modify the boost_enable in
-  the acpi driver code
 
-Changes for v5:
-- Remove acpi-cpufreq's boost_enabled global flag and reuse one defined at
-  cpufreq core
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-Changes for v4:
-- add _store_boost to acpi_cpufreq_driver structure
+Eduardo Valentin
 
-Changes for v3:
-- Bring back boost_enabled as a global flag
-- Move boost_supported to cpufreq_driver structure
 
-Changes for v2:
-- Replace boost_enabled and boost_supported global flags with proper entries
-  at struct cpufreq_driver.
-- Removal of struct cpufreq_boost
+--Kh5LiP33daJRIV2bov45pGrinPmqUkKBC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
- drivers/cpufreq/acpi-cpufreq.c |   86 ++++++++++++++--------------------------
- 1 file changed, 29 insertions(+), 57 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index caf41eb..79e5608 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -80,7 +80,6 @@ static struct acpi_processor_performance __percpu *acpi_perf_data;
- static struct cpufreq_driver acpi_cpufreq_driver;
- 
- static unsigned int acpi_pstate_strict;
--static bool boost_enabled, boost_supported;
- static struct msr __percpu *msrs;
- 
- static bool boost_state(unsigned int cpu)
-@@ -133,49 +132,16 @@ static void boost_set_msrs(bool enable, const struct cpumask *cpumask)
- 	wrmsr_on_cpus(cpumask, msr_addr, msrs);
- }
- 
--static ssize_t _store_boost(const char *buf, size_t count)
-+static int _store_boost(int val)
- {
--	int ret;
--	unsigned long val = 0;
--
--	if (!boost_supported)
--		return -EINVAL;
--
--	ret = kstrtoul(buf, 10, &val);
--	if (ret || (val > 1))
--		return -EINVAL;
--
--	if ((val && boost_enabled) || (!val && !boost_enabled))
--		return count;
--
- 	get_online_cpus();
--
- 	boost_set_msrs(val, cpu_online_mask);
--
- 	put_online_cpus();
--
--	boost_enabled = val;
- 	pr_debug("Core Boosting %sabled.\n", val ? "en" : "dis");
- 
--	return count;
--}
--
--static ssize_t store_global_boost(struct kobject *kobj, struct attribute *attr,
--				  const char *buf, size_t count)
--{
--	return _store_boost(buf, count);
--}
--
--static ssize_t show_global_boost(struct kobject *kobj,
--				 struct attribute *attr, char *buf)
--{
--	return sprintf(buf, "%u\n", boost_enabled);
-+	return 0;
- }
- 
--static struct global_attr global_boost = __ATTR(boost, 0644,
--						show_global_boost,
--						store_global_boost);
--
- static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
- {
- 	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-@@ -186,15 +152,32 @@ static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
- cpufreq_freq_attr_ro(freqdomain_cpus);
- 
- #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
-+static ssize_t store_boost(const char *buf, size_t count)
-+{
-+	int ret;
-+	unsigned long val = 0;
-+
-+	if (!acpi_cpufreq_driver.boost_supported)
-+		return -EINVAL;
-+
-+	ret = kstrtoul(buf, 10, &val);
-+	if (ret || (val > 1))
-+		return -EINVAL;
-+
-+	_store_boost((int) val);
-+
-+	return count;
-+}
-+
- static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
- 			 size_t count)
- {
--	return _store_boost(buf, count);
-+	return store_boost(buf, count);
- }
- 
- static ssize_t show_cpb(struct cpufreq_policy *policy, char *buf)
- {
--	return sprintf(buf, "%u\n", boost_enabled);
-+	return sprintf(buf, "%u\n", acpi_cpufreq_driver.boost_enabled);
- }
- 
- cpufreq_freq_attr_rw(cpb);
-@@ -554,7 +537,7 @@ static int boost_notify(struct notifier_block *nb, unsigned long action,
- 	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
--		boost_set_msrs(boost_enabled, cpumask);
-+		boost_set_msrs(acpi_cpufreq_driver.boost_enabled, cpumask);
- 		break;
- 
- 	case CPU_DOWN_PREPARE:
-@@ -911,6 +894,7 @@ static struct cpufreq_driver acpi_cpufreq_driver = {
- 	.resume		= acpi_cpufreq_resume,
- 	.name		= "acpi-cpufreq",
- 	.attr		= acpi_cpufreq_attr,
-+	.set_boost      = _store_boost,
- };
- 
- static void __init acpi_cpufreq_boost_init(void)
-@@ -921,33 +905,22 @@ static void __init acpi_cpufreq_boost_init(void)
- 		if (!msrs)
- 			return;
- 
--		boost_supported = true;
--		boost_enabled = boost_state(0);
--
-+		acpi_cpufreq_driver.boost_supported = true;
-+		acpi_cpufreq_driver.boost_enabled = boost_state(0);
- 		get_online_cpus();
- 
- 		/* Force all MSRs to the same value */
--		boost_set_msrs(boost_enabled, cpu_online_mask);
-+		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
-+			       cpu_online_mask);
- 
- 		register_cpu_notifier(&boost_nb);
- 
- 		put_online_cpus();
--	} else
--		global_boost.attr.mode = 0444;
--
--	/* We create the boost file in any case, though for systems without
--	 * hardware support it will be read-only and hardwired to return 0.
--	 */
--	if (cpufreq_sysfs_create_file(&(global_boost.attr)))
--		pr_warn(PFX "could not register global boost sysfs file\n");
--	else
--		pr_debug("registered global boost sysfs file\n");
-+	}
- }
- 
- static void __exit acpi_cpufreq_boost_exit(void)
- {
--	cpufreq_sysfs_remove_file(&(global_boost.attr));
--
- 	if (msrs) {
- 		unregister_cpu_notifier(&boost_nb);
- 
-@@ -993,12 +966,11 @@ static int __init acpi_cpufreq_init(void)
- 			*iter = &cpb;
- 	}
- #endif
-+	acpi_cpufreq_boost_init();
- 
- 	ret = cpufreq_register_driver(&acpi_cpufreq_driver);
- 	if (ret)
- 		free_acpi_perf_data();
--	else
--		acpi_cpufreq_boost_init();
- 
- 	return ret;
- }
--- 
-1.7.10.4
+iF4EAREIAAYFAlKcntUACgkQCXcVR3XQvP1pnwEA7u+J4Yhhud74uSTMdinJ7Hqv
+fcy6XiqJMCXUCQ/nltoBAMDsV/mrwGFWzXHkBb8mxs4xzNtYaTDEllkhN7WLhXXt
+=4vOk
+-----END PGP SIGNATURE-----
+
+--Kh5LiP33daJRIV2bov45pGrinPmqUkKBC--
