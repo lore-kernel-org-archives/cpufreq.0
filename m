@@ -1,33 +1,65 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 65671] hibernation - IO errors writing to swap, crashing apps,
- 3,11.8 worked
-Date: Tue, 03 Dec 2013 00:57:48 +0000
-Message-ID: <bug-65671-12968-mCUUo3pqJs@https.bugzilla.kernel.org/>
-References: <bug-65671-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 1/2] cpufreq: Mark x86 drivers with CPUFREQ_SKIP_INITIAL_FREQ_CHECK
+ flag
+Date: Tue, 3 Dec 2013 11:18:01 +0530
+Message-ID: <CAKohpo=mqqCjjOpEAMHo385h=DVcw3Hn9GX9yGXFP_YHcyNBtw@mail.gmail.com>
+References: <0875dc1b263f39081232c560fc72c15cd42dfc6f.1385734305.git.viresh.kumar@linaro.org>
+	<529CA5D5.9010008@gmail.com>
+	<2171422.pY15ZQme4E@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-65671-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <2171422.pY15ZQme4E@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=65671
+On 3 December 2013 04:03, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, December 02, 2013 07:23:01 AM Dirk Brandewie wrote:
+>> Sorry for late response to these threads.  Holiday weekend in the US.
 
-Len Brown <lenb@kernel.org> changed:
+No issues.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |lenb@kernel.org
-            Summary|Problems with hibernation,  |hibernation - IO errors
-                   |with bisect                 |writing to swap, crashing
-                   |                            |apps, 3,11.8 worked
+>> NAK for intel_pstate.  The code that will use this flag also uses has_target()
+>> which is false for intel_pstate.
+>
+> Is your point that intel_pstate doesn't need to have this flag set?
 
---- Comment #7 from Len Brown <lenb@kernel.org> ---
-can you disable CONFIG_CPU_FREQ in your build of the latest kernel
-to see if that helps?
+Probably yes as intel_pstate would never share freq-table. Will fix this.
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+>> I still believe that this bug should be dealt with in platform specific code
+>> since this is working around a bootloader bug.  Are there platforms in the wild
+>> that even need this code or is this to support early platform bringup?
+>
+> All it takes to introduce it is to use a buggy bootloader, so I guess
+> there's a number of potentially affected platforms out there.
+
+Yeah. This was first reported for OMAP SoC's though.
+
+> This really isn't about which individual platforms have the problem, but about
+> which platforms have the property that the clock *can* be set to a wrong
+> frequency initially.  These are the ones we need to worry about regardless,
+> because we can't control boot loaders and duplicating the same code in
+> a number of drivers doesn't sound like a good approach.
+>
+> So the only reasonable way forward I can see is to flag either the platforms
+> that we need to worry about, or the platforms that we don't need to worry
+> about and use that to decide whether or not to do the check.
+
+To be honest Rafael suggested exactly this initially, i.e. set flag for all the
+drivers which want this to be done and I thought the number of drivers that
+don't want it would be lesser and so it would be easier to set this flag there.
+
+But looking at the logic Dirk gave, it makes sense to do this for drivers which
+want this feature to be enabled. Moreover we really can't say for how long
+these drivers will continue keeping this flag as I don't really think its a bug.
+Kernel can't expect bootloaders to set core to a frequency which should be
+exactly same as what cpufreq table has. And so this flag may stay until
+cpufreq is around :)
+
+I will send updated patches soon..
+
+--
+viresh
