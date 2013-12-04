@@ -1,82 +1,96 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
-Date: Wed, 4 Dec 2013 20:11:01 +0530
-Message-ID: <CAKohpomBeJSMc3=BSPbo97nkGbc5MRRvTtJn1z062FN01B51Qw@mail.gmail.com>
-References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
-	<529F04B2.7050303@linaro.org>
-	<87fvq8lsxt.fsf@nemi.mork.no>
+From: =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
+Subject: [RFC] PM / hibernate: Call platform_leave in suspend path too
+Date: Wed,  4 Dec 2013 16:06:58 +0100
+Message-ID: <1386169618-6417-1-git-send-email-bjorn@mork.no>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <87fvq8lsxt.fsf@nemi.mork.no>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset="utf-8"
+To: linux-pm@vger.kernel.org
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq@vger.kernel.org, =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
 
-On 4 December 2013 17:38, Bj=F8rn Mork <bjorn@mork.no> wrote:
-> Yes, that patch looks like it fix the problem, and I cannot spot any
-> obvious missing cleanups.
+The system can continue running after the image is created, for
+example because userspace cancelled the hibernation or only
+saved the image for a dual mode disk + ram suspend. We must
+restore the platform to the pre_snapshot state in this case.
 
-Great!!
+This fixes a long standing bug in the acpi_cpufreq driver
+which would fail after a cancelled hibernate because the
+system then was running with the EC blocked:
 
-> But I must say that the whole kobj + free thing makes me feel a bit
-> uneasy.  I assume there are good reasons why "cpufreq" isn't just a
-> device with a release method?
+ cpufreq: adding CPU 1
+ acpi_cpufreq_cpu_init
+ cpufreq: FREQ: 1401000 - CPU: 0
+ ACPI Exception: AE_BAD_PARAMETER, Returned by Handler for [EmbeddedCon=
+trol] (20130725/evregion-287)
+ ACPI Error: Method parse/execution failed [\_SB_.PCI0.LPC_.EC__.LPMD] =
+(Node ffff88023249ab28), AE_BAD_PARAMETER (20130725/psparse-536)
+ ACPI Error: Method parse/execution failed [\_PR_.CPU0._PPC] (Node ffff=
+88023270e3f8), AE_BAD_PARAMETER (20130725/psparse-536)
+ ACPI Error: Method parse/execution failed [\_PR_.CPU1._PPC] (Node ffff=
+88023270e290), AE_BAD_PARAMETER (20130725/psparse-536)
+ ACPI Exception: AE_BAD_PARAMETER, Evaluating _PPC (20130725/processor_=
+perflib-140)
+ cpufreq: initialization failed
+ CPU1 is up
 
-I didn't get it completely.. How exactly you wanted it to be..
+Signed-off-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+---
+This is posted as RFC because I am unsure whether this is the correct
+way to fix the problem.  We definitely need to undo some of the
+pre_snapshot work to have a fully functional system when create_image
+returns, but I guess there can be unwanted side effects of unconditiona=
+lly
+calling platform_leave() like this.
 
-> And I do hope there is something gained by the special suspend handli=
-ng,
-> because keeping this partial device looks really messy. If it's all j=
-ust
-> for some file permissions, then there must be better ways?
+=46WIW, this works for me.
 
-We didn't found many and so Srivatsa went with this way.. If you have a
-better way then we are all for it :)
+Testing and verifying the original acpi_cpufreq problem should be easy =
+on
+any system using that driver and having an EC, which should include mos=
+t
+laptops:
+  - Start a userspace hibernation and cancel it, for example by using
+    s2disk from uswsusp and pressing backspace.
 
-> Isn't consistent file permissions on device creation really a userspa=
-ce issue?
+The cpufreq device will disappear from all non-boot cores, and the abov=
+e
+ACPI exceptions will be logged.
 
-Yes, normally it is.. But suspend/resume or hibernation isn't a userspa=
-ce
-problem at all. We had a discussion earlier on it and realized that ker=
-nel
-is screwing it up and so it should get it back. Userspace doesn't have =
-to
-know how cpufreq removed these directories/files and added them back
-on resume.
+Comments and/or alternative solutions are appreciated.
 
-> Anyway, the patch works so you can add
->
-> Tested-by: Bj=F8rn Mork <bjorn@mork.no>
+Note that the final solution to this problem should be backported to al=
+l
+maintained stable kernels.  I've verified that the problem exists and t=
+hat
+this proposed patch applies to 3.2, 3.4, 3.10 and 3.12
 
-Great. Rafael can take this with a revert of your patch now..
 
-> BTW, a simple way to test these things is cancelling a userspace
-> hibernate on an ACPI system.  It will always make the acpi_cpufreq
-> driver fail because it attemps to call _PPC inbetween
-> acpi_ec_block_transactions and acpi_ec_unblock_transactions.  There i=
-s
-> no acpi_ec_unblock_transactions_early call in this case.
+Bj=C3=B8rn
 
-I did test it on my thinkpad with following hack:
+ kernel/power/hibernate.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 57c80a7..ebaec3d 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1046,6 +1046,10 @@ static int __cpufreq_add_dev(struct device
-*dev, struct subsys_interface *sif,
-        /* call driver. From then on the cpufreq must be able
-         * to accept all calls to ->verify and ->setpolicy for this CPU
-         */
-+       if (frozen) {
-+               ret =3D -EBUSY;
-+               goto err_set_policy_cpu;
-+       }
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 0121dab83f43..59fb7e82f818 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -293,10 +293,10 @@ static int create_image(int platform_mode)
+ 			error);
+ 	/* Restore control flow magically appears here */
+ 	restore_processor_state();
+-	if (!in_suspend) {
++	if (!in_suspend)
+ 		events_check_enabled =3D false;
+-		platform_leave(platform_mode);
+-	}
 +
-        ret =3D cpufreq_driver->init(policy);
-        if (ret) {
-                pr_debug("initialization failed\n");
++	platform_leave(platform_mode);
+=20
+  Power_up:
+ 	syscore_resume();
+--=20
+1.7.10.4
+
