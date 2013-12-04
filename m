@@ -1,86 +1,118 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
-Date: Wed, 04 Dec 2013 16:41:45 +0100
-Message-ID: <87li00y66e.fsf@nemi.mork.no>
-References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
-	<529F04B2.7050303@linaro.org> <87fvq8lsxt.fsf@nemi.mork.no>
-	<CAKohpomBeJSMc3=BSPbo97nkGbc5MRRvTtJn1z062FN01B51Qw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC] PM / hibernate: Call platform_leave in suspend path too
+Date: Wed, 04 Dec 2013 22:01:27 +0100
+Message-ID: <12071995.7VlP7yczan@vostro.rjw.lan>
+References: <1386169618-6417-1-git-send-email-bjorn@mork.no>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomBeJSMc3=BSPbo97nkGbc5MRRvTtJn1z062FN01B51Qw@mail.gmail.com>
-	(Viresh Kumar's message of "Wed, 4 Dec 2013 20:11:01 +0530")
+In-Reply-To: <1386169618-6417-1-git-send-email-bjorn@mork.no>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="utf-8"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
+Cc: linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, cpufreq@vger.kernel.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
-> On 4 December 2013 17:38, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
->> Yes, that patch looks like it fix the problem, and I cannot spot any
->> obvious missing cleanups.
->
-> Great!!
->
->> But I must say that the whole kobj + free thing makes me feel a bit
->> uneasy.  I assume there are good reasons why "cpufreq" isn't just a
->> device with a release method?
->
-> I didn't get it completely.. How exactly you wanted it to be..
+On Wednesday, December 04, 2013 04:06:58 PM Bj=C3=B8rn Mork wrote:
+> The system can continue running after the image is created, for
+> example because userspace cancelled the hibernation or only
+> saved the image for a dual mode disk + ram suspend. We must
+> restore the platform to the pre_snapshot state in this case.
 
-Like a normal "struct device".  All that manual fiddling with sysfs
-files and kobj removal etc looks so complicated and error prone to me.
-But this is likely because I don't understand the code at all.
+No, this is not what is happening. :-)
 
-Take my comments for what they are worth.  I'm not claiming any
-understanding at all here....
+The problem is that the enable_nonboot_cpus() is run with EC transactio=
+ns
+blocked if in_suspend is 1 and that causes the failure below to happen.
 
->> And I do hope there is something gained by the special suspend handl=
-ing,
->> because keeping this partial device looks really messy. If it's all =
-just
->> for some file permissions, then there must be better ways?
->
-> We didn't found many and so Srivatsa went with this way.. If you have=
- a
-> better way then we are all for it :)
->
->> Isn't consistent file permissions on device creation really a usersp=
-ace issue?
->
-> Yes, normally it is.. But suspend/resume or hibernation isn't a users=
-pace
-> problem at all.
+So the changelog needs to be rewritten.
 
-It is a userspace problem for other devices which are unplugged and
-plugged on suspend/resume. CPUs are obviously exceptional for some
-reason. This is what I don't understand.  I assume the file permissions
-are set up by userspace when the device is first created? Why doesn't
-the same apply to device creation after a resume hotplug?
+That said, looking at what acpi_hibernation_leave() does I think we can
+do the change that you're proposing without any significant side effect=
+s.
 
-You have made the very wise decision to handle suspend/resume of non
-boot CPUs as hotplugging events.  But then you totally destroy this nic=
-e
-and simple model by adding lots of code implementing some very device
-specific suspend/resume handling.  That confuses me.  And it's not like
-you save anything valuable over the suspend/resume.  You want to save
-file permissions of sysfs attributes? Who cares?  They should be set by
-udev rules anyway.
+I'll queue up this change as a fix for 3.13 or 3.14, but I'll write a b=
+etter
+changelog for it.
 
-> We had a discussion earlier on it and realized that kernel
-> is screwing it up and so it should get it back. Userspace doesn't hav=
-e to
-> know how cpufreq removed these directories/files and added them back
-> on resume.
+Thanks!
 
-Userspace should see this as CPUs going away and then being added back,
-right? If userspace set the file permissions the first time the CPU was
-added, why can't it do so the next time as well?
-
-This wouldn't have been such a big deal if the workaorund was a simple
-line or two.  But it is not.
-
-
-
-Bj=C3=B8rn
+> This fixes a long standing bug in the acpi_cpufreq driver
+> which would fail after a cancelled hibernate because the
+> system then was running with the EC blocked:
+>=20
+>  cpufreq: adding CPU 1
+>  acpi_cpufreq_cpu_init
+>  cpufreq: FREQ: 1401000 - CPU: 0
+>  ACPI Exception: AE_BAD_PARAMETER, Returned by Handler for [EmbeddedC=
+ontrol] (20130725/evregion-287)
+>  ACPI Error: Method parse/execution failed [\_SB_.PCI0.LPC_.EC__.LPMD=
+] (Node ffff88023249ab28), AE_BAD_PARAMETER (20130725/psparse-536)
+>  ACPI Error: Method parse/execution failed [\_PR_.CPU0._PPC] (Node ff=
+ff88023270e3f8), AE_BAD_PARAMETER (20130725/psparse-536)
+>  ACPI Error: Method parse/execution failed [\_PR_.CPU1._PPC] (Node ff=
+ff88023270e290), AE_BAD_PARAMETER (20130725/psparse-536)
+>  ACPI Exception: AE_BAD_PARAMETER, Evaluating _PPC (20130725/processo=
+r_perflib-140)
+>  cpufreq: initialization failed
+>  CPU1 is up
+>=20
+> Signed-off-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+> ---
+> This is posted as RFC because I am unsure whether this is the correct
+> way to fix the problem.  We definitely need to undo some of the
+> pre_snapshot work to have a fully functional system when create_image
+> returns, but I guess there can be unwanted side effects of unconditio=
+nally
+> calling platform_leave() like this.
+>=20
+> FWIW, this works for me.
+>=20
+> Testing and verifying the original acpi_cpufreq problem should be eas=
+y on
+> any system using that driver and having an EC, which should include m=
+ost
+> laptops:
+>   - Start a userspace hibernation and cancel it, for example by using
+>     s2disk from uswsusp and pressing backspace.
+>=20
+> The cpufreq device will disappear from all non-boot cores, and the ab=
+ove
+> ACPI exceptions will be logged.
+>=20
+> Comments and/or alternative solutions are appreciated.
+>=20
+> Note that the final solution to this problem should be backported to =
+all
+> maintained stable kernels.  I've verified that the problem exists and=
+ that
+> this proposed patch applies to 3.2, 3.4, 3.10 and 3.12
+>=20
+>=20
+> Bj=C3=B8rn
+>=20
+>  kernel/power/hibernate.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 0121dab83f43..59fb7e82f818 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -293,10 +293,10 @@ static int create_image(int platform_mode)
+>  			error);
+>  	/* Restore control flow magically appears here */
+>  	restore_processor_state();
+> -	if (!in_suspend) {
+> +	if (!in_suspend)
+>  		events_check_enabled =3D false;
+> -		platform_leave(platform_mode);
+> -	}
+> +
+> +	platform_leave(platform_mode);
+> =20
+>   Power_up:
+>  	syscore_resume();
+>=20
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
