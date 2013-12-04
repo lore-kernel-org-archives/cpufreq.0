@@ -1,242 +1,328 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
-Date: Wed, 04 Dec 2013 13:08:30 +0100
-Message-ID: <87fvq8lsxt.fsf@nemi.mork.no>
-References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
-	<529F04B2.7050303@linaro.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH v10 7/7] thermal:exynos:boost: Automatic enable/disable
+ of BOOST feature (at Exynos4412)
+Date: Wed, 4 Dec 2013 10:10:50 -0400
+Message-ID: <529F37EA.9040503@ti.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-8-git-send-email-l.majewski@samsung.com> <529C9ED2.2060106@ti.com> <20131203083159.35895456@amdc2363> <529DD05E.1050402@ti.com> <20131203164214.3d4730f1@amdc2363>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="HuKVE6fG062jc87J1eocaSbdR626hDUNs"
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <529F04B2.7050303@linaro.org> (viresh kumar's message of "Wed, 04
-	Dec 2013 16:02:18 +0530")
+In-Reply-To: <20131203164214.3d4730f1@amdc2363>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: viresh kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-viresh kumar <viresh.kumar@linaro.org> writes:
+--HuKVE6fG062jc87J1eocaSbdR626hDUNs
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> On Tuesday 03 December 2013 04:44 PM, Bj=C3=B8rn Mork wrote:
->> This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Perfo=
-rm
->> light-weight init/teardown during suspend/resume"), which enabled
->> suspend/resume optimizations leaving the sysfs files in place.
->>=20
->> Errors during suspend/resume are not handled properly, leaving
->> dead sysfs attributes in case of failures.  There are are number of
->> functions with special code for the "frozen" case, and all these
->> need to also have special error handling.
->
-> Can you try this please if it fixes things for you (with your patch r=
-everted):
+Hey Lukasz!,
 
-Yes, that patch looks like it fix the problem, and I cannot spot any
-obvious missing cleanups.
+On 03-12-2013 11:42, Lukasz Majewski wrote:
+> Hi Eduardo,
+>=20
+>> On 03-12-2013 03:31, Lukasz Majewski wrote:
+>>> Hi Eduardo,
+>>>
+>>>> On 05-11-2013 13:26, Lukasz Majewski wrote:
+>>>>> This patch provides auto disable/enable operation for boost. It
+>>>>> uses already present thermal infrastructure to provide boost
+>>>>> hysteresis. A special set of TMU data has been defined for
+>>>>> Exynos4412, which is only considered when BOOST is enabled.
+>>>>
+>>>> Can you please add more description why you need a different set of
+>>>> thermal data when boost is enabled?=20
+>>>
+>>> It turned out that the Thermal subsystem (after rework done for
+>>> v3.12) is capable of providing hysteresis for BOOST.
+>>>
+>>
+>> So, the difference is only the hysteresis?
+>>
+>>> For version of the patch up to v8 I had to modify the thermal core
+>>> to provide such functionality. Changes in core weren't accepted by
+>>> Zhang Rui.
+>>
+>> Ok... But still I didn't get what you needed to modify and why..
+>> Sorry I jumped in the middle of ongoing discussion.
+>>
+>>>
+>>> Then I've looked again to the code and it turned out that proper
+>>> setting of Exynos4x12 data (like trigger levels and freq_clip_max)
+>>> can solve the problem in a much better way by using Exynos thermal
+>>> interrupts.
+>>> Another advantage is that those changes are done per device.
+>>>
+>>>> This is also important in case you
+>>>> (Exynos thermal folks) would like to migrate this driver to have
+>>>> thermal data support in DT.
+>>>
+>>> Some work on this driver is ongoing (mainly done by Bartek
+>>> Zolnierkiewicz). This BOOST change doesn't break anything and only
+>>> extend the current thermal code. Thereof it will not break anything.
+>>
+>> Well, good that it does not break anything, right?
+>>
+>> But, My point, Lukasz, is that I am failing to understand, based on
+>> your patch and description why we need a different data definition,
+>> one for boost, other for without boost. Can you help me to get your
+>> intention with this patch properly?
+>=20
+> I reduce the trigger_level[0] and set new .freq_table[0] entry.
+> It works as follow (for BOOST):
+>=20
+> 1. Non-boost freq is 1.4 GHz on Exynos4412. BOOST is 1.5GHz. The BOOST
+> itself is enabled by CONFIG_CPU_FREQ_BOOST_SW.=20
+>=20
+> 2. Exynos TMU driver reaches the lower TMU level (70 deg). Then the
+> core thermal looks for proper frequency table (.freq_tab[0]). If the
+> .temp_level matches the trigger_levels[0], then the frequency is reduce=
+d
+> to .freq_clip_max =3D 1400 * 1000.=20
+>=20
+> When the device cools down to 60 deg (trigger_levels[0] -
+> threshold_falling), then the max freq is restored to 1.5 GHz. This is
+> done automatically by thermal core.
+>=20
+> For BOOST disabled we only can run with 1.4 GHz freq. For this reason
+> the freq_tab[X] entries must be modified. Also the Exynos part of
+> thermal requires that trigger_levels[0] is the lowest temperature trip,=
 
-But I must say that the whole kobj + free thing makes me feel a bit
-uneasy.  I assume there are good reasons why "cpufreq" isn't just a
-device with a release method?
+> so I cannot add the "BOOST disable" temp level in the end of
+> TMU_DATA_BOOST.
 
-And I do hope there is something gained by the special suspend handling=
-,
-because keeping this partial device looks really messy. If it's all jus=
-t
-for some file permissions, then there must be better ways?  Isn't
-consistent file permissions on device creation really a userspace issue=
-?
+OK. The entire thing is to allow dynamic control on your speedbin
+frequencies, I see. What bugs me, is that this themal driver keeps
+another table of frequencies. Ideally, it should not care about it, but
+about the thermal behavior changes, meaning, say, how fast your
+temperature rises, when you jump from lowest opp to 1.4GHz or 1.5GHz, on
+host process or cold process samples.
 
-Anyway, the patch works so you can add
+>=20
+>>
+>> Side question is what happens in runtime if user echo 0 > boost?
+>=20
+> As we had agreed with Rafael and Viresh, we are here mimic the HW CPUs
+> behaviour (like Intel CPU).
 
-Tested-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+Which is fine and expected.
+
+> When user writes 'echo 0 > boost' then at cpufreq core we switch to max=
+
+> freq to 1.4 GHz.
+
+OK.
+
+>=20
+> Thermal here is only for safety reasons. =20
+>=20
+>> Should we switch the data within the driver?=20
+>=20
+> No. When one decides to enable CONFIG_CPU_FREQ_BOOST_SW, then
+> corresponding Exynos data are persistent.=20
+>=20
+>> Would we be penalizing
+>> performance with strict hysteresis while we could be allowing longer
+>> periods of high frequency usage?=20
+>=20
+> But the hysteresis shows up only for emergency - when we go out from
+> allowed power envelope.
+>=20
+> The BOOST is a component of LAB governor, which takes into account the
+> number of running cores. The "normal" BOOST use case is a situation
+> when at most two cores are running and other are down.
+> In this situation we can use BOOST to finish work faster.
+>=20
+>> See what I am missing? Maybe we
+>> actually need something else a part from defining one data structure
+>> for boost other for non-boost systems.
+>=20
+> I'm open for suggestions.
+>=20
+> The current proposal aims to change TMU data only for target SoC -
+> Exynos4412 in this case. I deliberately don't touch the thermal core
+> code.
 
 
-BTW, a simple way to test these things is cancelling a userspace
-hibernate on an ACPI system.  It will always make the acpi_cpufreq
-driver fail because it attemps to call _PPC inbetween
-acpi_ec_block_transactions and acpi_ec_unblock_transactions.  There is
-no acpi_ec_unblock_transactions_early call in this case.
+In fact, I see.
+
+I am just wondering if it makes sense to simply use the data that
+represents BOOST always. Wouldn't be same as in the situation where user
+echo 0 > boost?
+
+>=20
+>>
+>>>
+>>>>
+>>>>
+>>>>>
+>>>>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+>>>>> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+>>>>>
+>>>>> ---
+>>>>> Changes for v10:
+>>>>>     - Remove boost related code from thermal_core.c
+>>>>>     - Use already present thermal infrastructure to provide
+>>>>> thermal hysteresis
+>>>>>     - Introduce special set of TMU data for BOOST
+>>>>>
+>>>>> Changes for v9:
+>>>>>     - None
+>>>>>
+>>>>> Changes for v8:
+>>>>>     - Move cpufreq_boost_* stub functions definition (needed when
+>>>>> cpufreq is not compiled in) to cpufreq.h at cpufreq core support
+>>>>> commit
+>>>>>
+>>>>> Changes for v7:
+>>>>>     - None
+>>>>>
+>>>>> Changes for v6:
+>>>>>     - Disable boost only when supported and enabled
+>>>>>     - Protect boost related thermal_zone_device struct fields with
+>>>>> mutex
+>>>>>     - Evaluate temperature trend during boost enable decision
+>>>>>     - Create separate methods to handle boost enable/disable
+>>>>>       (thermal_boost_{enable|disable}) operations
+>>>>>     - Boost is disabled at any trip point passage (not only the
+>>>>> non critical one)
+>>>>>     - Add stub definitions for cpufreq boost functions used when
+>>>>>       CONFIG_CPU_FREQ is NOT defined.
+>>>>>
+>>>>> Changes for v5:
+>>>>>     - Move boost disable code from cpu_cooling.c to thermal_core.c
+>>>>>       (to handle_non_critical_trips)
+>>>>>     - Extent struct thermal_zone_device by adding overheated bool
+>>>>> flag
+>>>>>     - Implement auto enable of boost after device cools down
+>>>>>     - Introduce boost_polling flag, which indicates if thermal
+>>>>> uses it's predefined pool delay or has woken up thermal workqueue
+>>>>> only to wait until device cools down.
+>>>>>
+>>>>> Changes for v4:
+>>>>>     - New patch
+>>>>
+>>>>
+>>>> Might be interesting to see the changelog for this patch only.
+>>>
+>>> The above list presents the development state of this particular
+>>> patch (thermal).=20
+>>> Up to v8 I had modified the thermal core. For v10 I've decided to
+>>> use proper Exynos data setting.
+>>>
+>>> If in any doubt, please ask.=20
+>>>
+>>> This last thermal patch of the series hinders this code to be
+>>> applied to cpufreq subsystem (Viresh had acked it some time ago and
+>>> I hope that he hasn't changed his mind :-) ).
+>>>
+>>>
+>>>>
+>>>>>
+>>>>>  drivers/thermal/samsung/exynos_tmu_data.c |   47
+>>>>> +++++++++++++++++++++++++++++ 1 file changed, 47 insertions(+)
+>>>>>
+>>>>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
+>>>>> b/drivers/thermal/samsung/exynos_tmu_data.c index 073c292..9346926
+>>>>> 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.c
+>>>>> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+>>>>> @@ -167,13 +167,60 @@ static const struct exynos_tmu_registers
+>>>>> exynos4412_tmu_registers =3D { .features =3D (TMU_SUPPORT_EMULATION=
+ |
+>>>>> TMU_SUPPORT_TRIM_RELOAD | \ TMU_SUPPORT_FALLING_TRIP |
+>>>>> TMU_SUPPORT_READY_STATUS | \ TMU_SUPPORT_EMUL_TIME)
+>>>>> +
+>>>>> +#define EXYNOS4412_TMU_DATA_BOOST \
+>>>>> +	.threshold_falling =3D 10, \
+>>>>> +	.trigger_levels[0] =3D 70, \
+>>>>> +	.trigger_levels[1] =3D 85, \
+>>>>> +	.trigger_levels[2] =3D 103, \
+>>>>> +	.trigger_levels[3] =3D 110, \
+>>>>> +	.trigger_enable[0] =3D true, \
+>>>>> +	.trigger_enable[1] =3D true, \
+>>>>> +	.trigger_enable[2] =3D true, \
+>>>>> +	.trigger_enable[3] =3D true, \
+>>>>> +	.trigger_type[0] =3D THROTTLE_ACTIVE, \
+>>>>> +	.trigger_type[1] =3D THROTTLE_ACTIVE, \
+>>>>> +	.trigger_type[2] =3D THROTTLE_ACTIVE, \
+>>>>> +	.trigger_type[3] =3D SW_TRIP, \
+>>>>> +	.max_trigger_level =3D 4, \
+>>>>> +	.gain =3D 8, \
+>>>>> +	.reference_voltage =3D 16, \
+>>>>> +	.noise_cancel_mode =3D 4, \
+>>>>> +	.cal_type =3D TYPE_ONE_POINT_TRIMMING, \
+>>>>> +	.efuse_value =3D 55, \
+>>>>> +	.min_efuse_value =3D 40, \
+>>>>> +	.max_efuse_value =3D 100, \
+>>>>> +	.first_point_trim =3D 25, \
+>>>>> +	.second_point_trim =3D 85, \
+>>>>> +	.default_temp_offset =3D 50, \
+>>>>> +	.freq_tab[0] =3D { \
+>>>>> +		.freq_clip_max =3D 1400 * 1000, \
+>>>>> +		.temp_level =3D 70, \
+>>>>> +	}, \
+>>>>> +	.freq_tab[1] =3D { \
+>>>>> +		.freq_clip_max =3D 800 * 1000, \
+>>>>> +		.temp_level =3D 85, \
+>>>>> +	}, \
+>>>>> +	.freq_tab[2] =3D { \
+>>>>> +		.freq_clip_max =3D 200 * 1000, \
+>>>>> +		.temp_level =3D 103, \
+>>>>> +	}, \
+>>>>> +	.freq_tab_count =3D 3, \
+>>>>> +	.registers =3D &exynos4412_tmu_registers, \
+>>>>> +	.features =3D (TMU_SUPPORT_EMULATION |
+>>>>> TMU_SUPPORT_TRIM_RELOAD | \
+>>>>> +			TMU_SUPPORT_FALLING_TRIP |
+>>>>> TMU_SUPPORT_READY_STATUS | \
+>>>>> +			TMU_SUPPORT_EMUL_TIME)
+>>>>>  #endif
+>>>>> =20
+>>>>>  #if defined(CONFIG_SOC_EXYNOS4412)
+>>>>>  struct exynos_tmu_init_data const exynos4412_default_tmu_data =3D =
+{
+>>>>>  	.tmu_data =3D {
+>>>>>  		{
+>>>>> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+>>>>> +			EXYNOS4412_TMU_DATA_BOOST,
+>>>>> +#else
+>>>>>  			EXYNOS4412_TMU_DATA,
+>>>>> +#endif
+>>>>>  			.type =3D SOC_ARCH_EXYNOS4412,
+>>>>>  			.test_mux =3D EXYNOS4412_MUX_ADDR_VALUE,
+>>>>>  		},
+>>>>>
+>>>>
+>>>>
+>>>
+>>
+>>
+>=20
+>=20
+>=20
 
 
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-Bj=C3=B8rn
+Eduardo Valentin
 
 
+--HuKVE6fG062jc87J1eocaSbdR626hDUNs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Wed, 4 Dec 2013 15:20:12 +0530
-> Subject: [PATCH] cpufreq: remove sysfs files for CPU which failed to =
-come
->  back after resume
->
-> There are cases where cpufreq_add_dev() may fail for some CPUs during=
- resume.
-> With the current code we will still have sysfs cpufreq files for such=
- CPUs, and
-> struct cpufreq_policy would be already freed for them. Hence any oper=
-ation on
-> those sysfs files would result in kernel warnings.
->
-> To fix this, lets remove those sysfs files or put the associated kobj=
-ect in case
-> of such errors. Also, to make it simple lets remove the sysfs links f=
-rom all the
-> CPUs (except policy->cpu) during suspend as that operation wouldn't r=
-esult with a
-> loss of sysfs file permissions. And so we will create those links dur=
-ing resume
-> as well.
->
-> Reported-by: Bj=C3=B8rn Mork <bjorn@mork.no>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 61 ++++++++++++++++++++++++-------------=
-----------
->  1 file changed, 31 insertions(+), 30 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 606224a..57c80a7 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -849,8 +849,7 @@ static void cpufreq_init_policy(struct cpufreq_po=
-licy *policy)
->
->  #ifdef CONFIG_HOTPLUG_CPU
->  static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
-> -				  unsigned int cpu, struct device *dev,
-> -				  bool frozen)
-> +				  unsigned int cpu, struct device *dev)
->  {
->  	int ret =3D 0;
->  	unsigned long flags;
-> @@ -881,9 +880,7 @@ static int cpufreq_add_policy_cpu(struct cpufreq_=
-policy *policy,
->  		}
->  	}
->
-> -	/* Don't touch sysfs links during light-weight init */
-> -	if (!frozen)
-> -		ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
-> +	ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
->
->  	return ret;
->  }
-> @@ -930,6 +927,27 @@ err_free_policy:
->  	return NULL;
->  }
->
-> +static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
-> +{
-> +	struct kobject *kobj;
-> +	struct completion *cmp;
-> +
-> +	down_read(&policy->rwsem);
-> +	kobj =3D &policy->kobj;
-> +	cmp =3D &policy->kobj_unregister;
-> +	up_read(&policy->rwsem);
-> +	kobject_put(kobj);
-> +
-> +	/*
-> +	 * We need to make sure that the underlying kobj is
-> +	 * actually not referenced anymore by anybody before we
-> +	 * proceed with unloading.
-> +	 */
-> +	pr_debug("waiting for dropping of refcount\n");
-> +	wait_for_completion(cmp);
-> +	pr_debug("wait complete\n");
-> +}
-> +
->  static void cpufreq_policy_free(struct cpufreq_policy *policy)
->  {
->  	free_cpumask_var(policy->related_cpus);
-> @@ -990,7 +1008,7 @@ static int __cpufreq_add_dev(struct device *dev,=
- struct subsys_interface *sif,
->  	list_for_each_entry(tpolicy, &cpufreq_policy_list, policy_list) {
->  		if (cpumask_test_cpu(cpu, tpolicy->related_cpus)) {
->  			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> -			ret =3D cpufreq_add_policy_cpu(tpolicy, cpu, dev, frozen);
-> +			ret =3D cpufreq_add_policy_cpu(tpolicy, cpu, dev);
->  			up_read(&cpufreq_rwsem);
->  			return ret;
->  		}
-> @@ -1100,7 +1118,10 @@ err_get_freq:
->  	if (cpufreq_driver->exit)
->  		cpufreq_driver->exit(policy);
->  err_set_policy_cpu:
-> +	if (frozen)
-> +		cpufreq_policy_put_kobj(policy);
->  	cpufreq_policy_free(policy);
-> +
->  nomem_out:
->  	up_read(&cpufreq_rwsem);
->
-> @@ -1122,7 +1143,7 @@ static int cpufreq_add_dev(struct device *dev, =
-struct subsys_interface *sif)
->  }
->
->  static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *po=
-licy,
-> -					   unsigned int old_cpu, bool frozen)
-> +					   unsigned int old_cpu)
->  {
->  	struct device *cpu_dev;
->  	int ret;
-> @@ -1130,10 +1151,6 @@ static int cpufreq_nominate_new_policy_cpu(str=
-uct cpufreq_policy *policy,
->  	/* first sibling now owns the new sysfs dir */
->  	cpu_dev =3D get_cpu_device(cpumask_any_but(policy->cpus, old_cpu));
->
-> -	/* Don't touch sysfs files during light-weight tear-down */
-> -	if (frozen)
-> -		return cpu_dev->id;
-> -
->  	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
->  	ret =3D kobject_move(&policy->kobj, &cpu_dev->kobj);
->  	if (ret) {
-> @@ -1200,7 +1217,7 @@ static int __cpufreq_remove_dev_prepare(struct =
-device *dev,
->  		if (!frozen)
->  			sysfs_remove_link(&dev->kobj, "cpufreq");
->  	} else if (cpus > 1) {
-> -		new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
-> +		new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cpu);
->  		if (new_cpu >=3D 0) {
->  			update_policy_cpu(policy, new_cpu);
->
-> @@ -1222,8 +1239,6 @@ static int __cpufreq_remove_dev_finish(struct d=
-evice *dev,
->  	int ret;
->  	unsigned long flags;
->  	struct cpufreq_policy *policy;
-> -	struct kobject *kobj;
-> -	struct completion *cmp;
->
->  	read_lock_irqsave(&cpufreq_driver_lock, flags);
->  	policy =3D per_cpu(cpufreq_cpu_data, cpu);
-> @@ -1253,22 +1268,8 @@ static int __cpufreq_remove_dev_finish(struct =
-device *dev,
->  			}
->  		}
->
-> -		if (!frozen) {
-> -			down_read(&policy->rwsem);
-> -			kobj =3D &policy->kobj;
-> -			cmp =3D &policy->kobj_unregister;
-> -			up_read(&policy->rwsem);
-> -			kobject_put(kobj);
-> -
-> -			/*
-> -			 * We need to make sure that the underlying kobj is
-> -			 * actually not referenced anymore by anybody before we
-> -			 * proceed with unloading.
-> -			 */
-> -			pr_debug("waiting for dropping of refcount\n");
-> -			wait_for_completion(cmp);
-> -			pr_debug("wait complete\n");
-> -		}
-> +		if (!frozen)
-> +			cpufreq_policy_put_kobj(policy);
->
->  		/*
->  		 * Perform the ->exit() even during light-weight tear-down,
+iF4EAREIAAYFAlKfN+0ACgkQCXcVR3XQvP3VrQD8C0wrPIG+SSNnnfOBRi78SBbI
+jvuCroqf3Z9Lpg2Yr5UA/Az4pkX+e4jMQP/PxmOhllRixr+opk+PMDTvMS4F02GF
+=Q5Aq
+-----END PGP SIGNATURE-----
+
+--HuKVE6fG062jc87J1eocaSbdR626hDUNs--
