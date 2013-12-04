@@ -1,143 +1,82 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH RESEND v10 0/7] cpufreq:boost: CPU Boost mode support
-Date: Wed, 4 Dec 2013 10:12:26 -0400
-Message-ID: <529F384A.8040409@ti.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1385986761-17934-1-git-send-email-l.majewski@samsung.com> <20131204075921.3b9e86fa@amdc2363>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Wed, 4 Dec 2013 20:11:01 +0530
+Message-ID: <CAKohpomBeJSMc3=BSPbo97nkGbc5MRRvTtJn1z062FN01B51Qw@mail.gmail.com>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+	<529F04B2.7050303@linaro.org>
+	<87fvq8lsxt.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="a8FjB1E02ahqIw3gP9kPoIoXEuA9UErAw"
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20131204075921.3b9e86fa@amdc2363>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <87fvq8lsxt.fsf@nemi.mork.no>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
---a8FjB1E02ahqIw3gP9kPoIoXEuA9UErAw
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 4 December 2013 17:38, Bj=F8rn Mork <bjorn@mork.no> wrote:
+> Yes, that patch looks like it fix the problem, and I cannot spot any
+> obvious missing cleanups.
 
-On 04-12-2013 02:59, Lukasz Majewski wrote:
-> Hi Rafael,
->=20
->> This patch series introduces support for CPU overclocking technique
->> called Boost.
->>
->> It is a follow up of a LAB governor proposal. Boost is a LAB
->> component:
->> http://thread.gmane.org/gmane.linux.kernel/1484746/match=3Dcpufreq
->>
->> Boost unifies hardware based solution (e.g. Intel Nehalem) with
->> software oriented one (like the one done at Exynos).
->> For this reason cpufreq/freq_table code has been reorganized to
->> include common code.
->>
->> Important design decisions:
->> - Boost related code is compiled-in unconditionally to cpufreq core
->> and disabled by default. The cpufreq_driver is responsibile for
->> setting boost_supported flag and providing set_boost callback(if HW
->> support is needed). For software managed boost, special Kconfig flag -=
+Great!!
 
->>   CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
->>   when a target platform has thermal framework properly configured.
->>
->> - struct cpufreq_driver has been extended with boost related fields:
->>         -- boost_supported - when driver supports boosting
->>         -- boost_enabled - boost state
->>         -- set_boost - callback to function, which is necessary to
->>            enable/disable boost
->>
->> - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
->> visible _only_ when cpufreq driver supports Boost.
->>
->> - No special spin_lock for Boost was created. The one from cpufreq
->> core was reused.
->>
->> - The Boost code doesn't rely on any policy. When boost state is
->> changed, then the policy list is iterated and proper adjustements are
->> done.
->>
->> - To improve safety level, the thermal framework is also extended to
->> disable software boosting, when thermal trip point is reached. After
->> cooling down the boost can be enabled again. This emulates behaviour
->> similar to HW managed boost (like x86)
->>
->> Tested at HW:
->>        Exynos 4412 3.13-rc2 Linux
->>        Intel Core i7-3770 3.13-rc2 Linux
->>
->> Above patches were posted on top of kernel_pm/bleeding-edge
->> (SHA1: 9483a9f69d5c8f83f1723361bf8340ddfb6475b4)
->>
->=20
-> Rafael, could you pull patches from 1 to 6 of this series? Those are
-> related to cpufreq core and has already been accepted by Viresh at a
-> late August this year.
-> This would facilitate my further cpufreq work.
->=20
-> And about the last patch - related to thermal. It seems that more
-> discussion NOT related to cpufreq will be ongoing.=20
->=20
-> I would prefer to add it as a separate patch to thermal subtree.
+> But I must say that the whole kobj + free thing makes me feel a bit
+> uneasy.  I assume there are good reasons why "cpufreq" isn't just a
+> device with a release method?
 
-I agree with Lukasz here. The part that touches the thermal driver is
-minimal and the discussion is a simple matter of concept and
-optimization of data structures.
+I didn't get it completely.. How exactly you wanted it to be..
 
->=20
->=20
->=20
->>
->> Lukasz Majewski (7):
->>   cpufreq: Add boost frequency support in core
->>   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common=
+> And I do hope there is something gained by the special suspend handli=
+ng,
+> because keeping this partial device looks really messy. If it's all j=
+ust
+> for some file permissions, then there must be better ways?
 
->>     boost solution
->>   cpufreq:boost:Kconfig: Provide support for software managed BOOST
->>   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
->>     framework
->>   Documentation:cpufreq:boost: Update BOOST documentation
->>   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
->>   thermal:exynos:boost: Automatic enable/disable of BOOST feature (at
->>     Exynos4412)
->>
->>  Documentation/cpu-freq/boost.txt          |   26 +++----
->>  drivers/cpufreq/Kconfig                   |    4 +
->>  drivers/cpufreq/Kconfig.arm               |   15 ++++
->>  drivers/cpufreq/acpi-cpufreq.c            |   86
->> +++++++-------------- drivers/cpufreq/cpufreq.c                 |
->> 118 ++++++++++++++++++++++++++++-
->> drivers/cpufreq/exynos-cpufreq.c          |    3 +
->> drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
->> drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
->> drivers/thermal/samsung/exynos_tmu_data.c |   47 ++++++++++++
->> include/linux/cpufreq.h                   |   24 ++++++ 10 files
->> changed, 302 insertions(+), 79 deletions(-)
->>
->=20
->=20
->=20
+We didn't found many and so Srivatsa went with this way.. If you have a
+better way then we are all for it :)
 
+> Isn't consistent file permissions on device creation really a userspa=
+ce issue?
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
+Yes, normally it is.. But suspend/resume or hibernation isn't a userspa=
+ce
+problem at all. We had a discussion earlier on it and realized that ker=
+nel
+is screwing it up and so it should get it back. Userspace doesn't have =
+to
+know how cpufreq removed these directories/files and added them back
+on resume.
 
-Eduardo Valentin
+> Anyway, the patch works so you can add
+>
+> Tested-by: Bj=F8rn Mork <bjorn@mork.no>
 
+Great. Rafael can take this with a revert of your patch now..
 
---a8FjB1E02ahqIw3gP9kPoIoXEuA9UErAw
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> BTW, a simple way to test these things is cancelling a userspace
+> hibernate on an ACPI system.  It will always make the acpi_cpufreq
+> driver fail because it attemps to call _PPC inbetween
+> acpi_ec_block_transactions and acpi_ec_unblock_transactions.  There i=
+s
+> no acpi_ec_unblock_transactions_early call in this case.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+I did test it on my thinkpad with following hack:
 
-iF4EAREIAAYFAlKfOEoACgkQCXcVR3XQvP3RMAEAuPIso2ItwVZOSfv0l7vRdgOG
-yI/GO8HMGPYMLMn/MdYA/iNzYmVu0+tPpJPk3RKpX6KktZ5EL9zR5zw+kiI4uANc
-=w/sJ
------END PGP SIGNATURE-----
-
---a8FjB1E02ahqIw3gP9kPoIoXEuA9UErAw--
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 57c80a7..ebaec3d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1046,6 +1046,10 @@ static int __cpufreq_add_dev(struct device
+*dev, struct subsys_interface *sif,
+        /* call driver. From then on the cpufreq must be able
+         * to accept all calls to ->verify and ->setpolicy for this CPU
+         */
++       if (frozen) {
++               ret =3D -EBUSY;
++               goto err_set_policy_cpu;
++       }
++
+        ret =3D cpufreq_driver->init(policy);
+        if (ret) {
+                pr_debug("initialization failed\n");
