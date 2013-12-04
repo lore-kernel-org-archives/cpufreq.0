@@ -1,7 +1,7 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
-Date: Tue, 03 Dec 2013 22:45:55 +0100
-Message-ID: <2436827.rgCar9cJQZ@vostro.rjw.lan>
+Date: Wed, 04 Dec 2013 11:53:34 +0530
+Message-ID: <529ECA66.2090607@linux.vnet.ibm.com>
 References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
@@ -10,10 +10,10 @@ In-Reply-To: <1386069272-9250-1-git-send-email-bjorn@mork.no>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="utf-8"
-To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>
 
-On Tuesday, December 03, 2013 12:14:32 PM Bj=C3=B8rn Mork wrote:
+On 12/03/2013 04:44 PM, Bj=C3=B8rn Mork wrote:
 > This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Perfor=
 m
 > light-weight init/teardown during suspend/resume"), which enabled
@@ -28,21 +28,32 @@ m
 > or cpufreq_driver->get() fail during resume.
 >=20
 > The code is too complex for a simple fix, with split code paths
-> in multiple blocks within a number of functions.  It is therefore
+> in multiple blocks within a number of functions.
+
+Yes, unfortunately. It was hard enough to get it into shape to make
+suspend/resume preserve sysfs files. I definitely don't expect it to
+be simple to fix error handling on top of that.=20
+
+>  It is therefore
 > best to revert the patch enabling this code until the error handling
 > is in place.
+
+I agree, that's a good decision. I'll take a look at it later to see
+if we can restructure the code to include proper error handling in all
+the failure paths. If that gets way out of control in terms of complexi=
+ty,
+then its probably best to drop this "feature" altogether. It has caused
+enough problems already, and the initial motivation behind doing that
+doesn't seem to be that strong now (CC'ing Robert and Durga).
+
+Thanks for the debugging and the fix!
+
+Regards,
+Srivatsa S. Bhat
+
 >=20
 > Examples of problems resulting from resume errors:
-
-Applied, but next time you add call traces to patch changelogs, please =
-remove
-timestamps from them unless those timestamps are relevant for the bug
-description.  They are pure noise otherwise.
-
-Thanks,
-Rafael
-
-
+>=20
 > Dec  2 09:54:38 nemi kernel: [  930.162476] ------------[ cut here ]-=
 -----------
 > Dec  2 09:54:38 nemi kernel: [  930.162489] WARNING: CPU: 0 PID: 6055=
@@ -130,7 +141,7 @@ ing suspend/resume")
 _block *nfb,
 >  	dev =3D get_cpu_device(cpu);
 >  	if (dev) {
-> =20
+>=20
 > -		if (action & CPU_TASKS_FROZEN)
 > -			frozen =3D true;
 > -
@@ -138,6 +149,4 @@ _block *nfb,
 >  		case CPU_ONLINE:
 >  			__cpufreq_add_dev(dev, NULL, frozen);
 >=20
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+
