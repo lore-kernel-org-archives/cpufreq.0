@@ -1,45 +1,70 @@
 From: Rob Herring <robherring2@gmail.com>
-Subject: [PATCH 0/2] Enable Calxeda cpufreq driver on arm64
-Date: Wed,  4 Dec 2013 18:23:12 -0600
-Message-ID: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Subject: [PATCH 2/2] cpufreq: highbank: rework the kconfig dependencies for arm64
+Date: Wed,  4 Dec 2013 18:23:14 -0600
+Message-ID: <1386202994-30784-3-git-send-email-robherring2@gmail.com>
+References: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=from:to:cc:subject:date:message-id;
-        bh=w3SRWKTCgUnplxJK9MsHPSwkayad9EiAobYVR/5TMyQ=;
-        b=o24jowi2jNr6jY36ntzTSgIs0b6tyYE95VWhhVckdJFtijVDEL2etK0/aL/wtrfSUK
-         qq4avYvgIpTEIlThvDMI1fCr0Rs4Sd0iqGUD0FSGaP0Ro8LVAiC0HWOvOWu+BmjWpS7I
-         dTb2DRgWi5utvn0K/mXy31ZqdKf1J6cCpg9/PAOnLs7sukghNdHLUfVEu0251gU8gffk
-         97zjMFvLjMGdZ6UPPTReegAsdcJfabg1gwGueG0HRLp9N8qzx2nUlxtDPd4pjgKfF1N3
-         6m7504dyq4E7uITQZDaBxrKcpuXMNDqueWTBjz5gIHaCuU4q8u42ZTnxjn1qRRu0JY+S
-         vMmw==
-Sender: cpufreq-owner@vger.kernel.org
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=DDAIAUMTTWNstfb3B9AJCNynTq+doJLFklgzyv2BQ2E=;
+        b=yUfoVoNe4NM8ofbnzGheCMkEEYDrqbxTEtxoLfLNMusXBZvLbtRERgjdYNRaxr0Yvw
+         LZhn0U75apxQOX6C6uIpnhGtIvdMmaCEO8E4Yp4r4FEqtT9fKK7ufBklGFETbbHLavGM
+         JSAL6s0U+DcKtAFhO93q4rkddtN1f5sPH567aAPoNAM3eKauGKvlZDk/a75yNUCnkSTw
+         TGXb8vhCBq0lTvkgsh35Lfcu/VsgeLMdcBeNtP64wsoiFQu7R8Cz5y1aLTxPN+1EBAQS
+         WE3vQaXaa8QGV2/FN4RSarSTWkWxW+vftIuUFT1KLipPV0jNJybtLfbaFUZ//CqVql0t
+         sMQQ==
+In-Reply-To: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Rob Herring <rob.herring@calxeda.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 
 From: Rob Herring <rob.herring@calxeda.com>
 
-This series enables cpufreq subsystem and the highbank-cpufreq driver
-for arm64. Nothing more really than sorting kconfig options to allow
-the driver to build. There's no reason for the driver to depend on
-ARCH_HIGHBANK and I'm trying to avoid adding that (or a new option)
-for arm64.
+Make ARM_HIGHBANK_CPUFREQ not depend on ARCH_HIGHBANK to enable on
+arm64 and also give better build converage. Change the selects to be
+same depends as the cpu0 driver. Otherwise, we can get kconfig select
+errors. Also, add missing depends for PL320_MBOX.
 
-Rob
-
-Rob Herring (2):
-  cpufreq: enable ARM drivers on arm64
-  cpufreq: highbank: rework the kconfig dependencies for arm64
-
- arch/arm64/Kconfig          |  8 ++++++++
- drivers/cpufreq/Kconfig     |  2 +-
+Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+---
  drivers/cpufreq/Kconfig.arm | 14 ++++++--------
- 3 files changed, 15 insertions(+), 9 deletions(-)
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index ce52ed9..0d7130d 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -65,16 +65,14 @@ config ARM_EXYNOS5440_CPUFREQ
+ 	  If in doubt, say N.
+ 
+ config ARM_HIGHBANK_CPUFREQ
+-	tristate "Calxeda Highbank-based"
+-	depends on ARCH_HIGHBANK
+-	select GENERIC_CPUFREQ_CPU0
++	tristate "Calxeda ECX based"
++	depends on HAVE_CLK && REGULATOR && OF
++	depends on PL320_MBOX
++	select ARCH_HAS_OPP
+ 	select PM_OPP
+-	select REGULATOR
+-
+-	default m
++	select GENERIC_CPUFREQ_CPU0
+ 	help
+-	  This adds the CPUFreq driver for Calxeda Highbank SoC
+-	  based boards.
++	  This adds the CPUFreq driver for Calxeda based SoCs.
+ 
+ 	  If in doubt, say N.
+ 
 -- 
 1.8.3.2
-
