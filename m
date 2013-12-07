@@ -1,51 +1,56 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: [PATCH V4] cpufreq: suspend governors on system suspend/hibernate
-Date: Sat, 07 Dec 2013 12:01:54 +0100
-Message-ID: <87vbz0j55p.fsf@nemi.mork.no>
-References: <28d493f20239a242a7b26dfe1efed40d83bf1e10.1385523340.git.viresh.kumar@linaro.org>
-	<3057132.zHNVNQZ8pP@vostro.rjw.lan>
-	<CAKohpondYbBeObUJJqNZLe04dmN9tLMZv9KrjzqLr2NDorRtLw@mail.gmail.com>
-	<1781198.iCUX9ZdW7W@vostro.rjw.lan>
-	<CAKohpomA9r5a4GkfA-Huh0ectc-hXjSxcdLkJhF6DZvL22yY4w@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 66751] New: Does not resume from suspend (bisected)
+Date: Sat, 07 Dec 2013 12:30:38 +0000
+Message-ID: <bug-66751-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomA9r5a4GkfA-Huh0ectc-hXjSxcdLkJhF6DZvL22yY4w@mail.gmail.com>
-	(Viresh Kumar's message of "Fri, 29 Nov 2013 08:56:08 +0530")
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="macroman"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+To: cpufreq@vger.kernel.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
+https://bugzilla.kernel.org/show_bug.cgi?id=3D66751
 
-> On 29 November 2013 01:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrot=
-e:
->> So I'm reading this as "the version of the patch in bleeding-edge is=
- OK".
->>
->> I hope that really is the case. :-)
->
-> Yeah, that's correct.
+            Bug ID: 66751
+           Summary: Does not resume from suspend (bisected)
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: v3.13-rc3
+          Hardware: x86-64
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: high
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: ziegler@uni-freiburg.de
+        Regression: No
 
-Sorry to be making noise here again, but I was eager to verify that the
-fixes in v3.13-rc3 were OK on my system.  Unfortunately it seems this
-patch completely broke suspend for me.  Hibernete ended up with a blank
-console and no visible activity, without ever writing any image to disk=
-=2E
+Created attachment 117791
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D117791&action=3De=
+dit
+config for 3.13-rc3
 
-There really weren't that many suspects between v3.13-rc2 and v3.13-rc3=
-,
-so I went directly to reverting 5a87182aa21d ("cpufreq: suspend
-governors on system suspend/hibernate") which fixed the problem. I
-didn't bother debugging it further from there. I don't think there is
-anything magic about my system which should make this problem specific
-to it.
+This is on a Thinkpad T510. If a try to wake up the machine from suspen=
+d,
+only the start button light changes from "blink" to "on". The screen re=
+mains
+black and the machine is unresponsive. All I can do is a hard reboot by=
+ holding
+down the start button.
 
-I am still using the acpi-cpufreq driver on an old x86_64 laptop if tha=
-t
-matters.
+I bisected between  v3.13-rc2 and v3.13-rc3 and got=20
 
+ commit 2167e2399dc5e69c62db56d933e9c8cbe107620a
+ Author: Bj=C3=B8rn Mork <bjorn@mork.no>
+ Date:   Tue Dec 3 12:14:32 2013 +0100
 
-Bj=C3=B8rn
+    cpufreq: fix garbage kobjects on errors during suspend/resume
+
+as the first bad commit
+
+--=20
+You are receiving this mail because:
+You are the assignee for the bug.
