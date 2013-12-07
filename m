@@ -1,30 +1,117 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 66581] intel_pstate/powersave - cpu frequency remains at high
- level (Turbo) after suspend/resume
-Date: Fri, 06 Dec 2013 21:02:18 +0000
-Message-ID: <bug-66581-12968-pWw7XpW3gH@https.bugzilla.kernel.org/>
-References: <bug-66581-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Sat, 07 Dec 2013 02:17:50 +0100
+Message-ID: <7074288.NJO5GpSg1d@vostro.rjw.lan>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no> <1505413.a13oF758Fd@vostro.rjw.lan> <52A15F44.1030807@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-66581-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <52A15F44.1030807@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=66581
+On Friday, December 06, 2013 10:53:16 AM Srivatsa S. Bhat wrote:
+> On 12/06/2013 03:59 AM, Rafael J. Wysocki wrote:
+> > On Thursday, December 05, 2013 06:11:19 PM Srivatsa S. Bhat wrote:
+> >> On 12/05/2013 12:27 PM, Bj=C3=B8rn Mork wrote:
+> >>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+> >>>
+> >>>> Sending from phone.. html.. so left list.
+> >>>>
+> >>>> Here is the old thread where we discussed this.. see if this hel=
+ps..
+> >>>>
+> >>>> http://marc.info/?t=3D136845016900003&r=3D1&w=3D2
+> >>>
+> >>> Thanks.  That helped a lot.
+> >>>
+> >>> Unless I miss something, it looks like the permission problem *st=
+arted*
+> >>> with fallout from special suspend code - surprising the user by n=
+ot
+> >>> creating any offline/online event on suspend/resume.  Quoting fro=
+m
+> >>> http://marc.info/?l=3Dlinux-pm&m=3D136847781510358 :
+> >>>
+> >>>   (And yes, even code-wise, we use a slightly different
+> >>>    path in the S3 code, to initiate hotplug. That's why the ueven=
+ts
+> >>>    are by-passed.)
+> >>>
+> >>
+> >> I hope you didn't miss the main idea I was trying to convey in tha=
+t
+> >> reply:=20
+> >> "IMHO, using CPU hotplug (offline/online of CPUs) in the S3 path i=
+s
+> >> supposed to be totally internal to the suspend/resume code. It is =
+not
+> >> intended for userspace to know that we are internally offlining/
+> >> onlining CPUs."
+> >=20
+> > By the way, in the meantime I discussed this with Viresh in the con=
+text of
+> > a different (although related) fix and I suggested a different appr=
+oach.
+> >=20
+> > Namely, to split the CPU offline/online code into "core" and "add-o=
+ns"
+> > parts, where the core part will do just whatever is needed to offli=
+ne/online
+> > CPU cores cleanly and the "add-ons" part will carry out the rest (e=
+=2Eg.
+> > removal/addition of sysfs attributes and so on).
+> >=20
+> > Then, the system suspend/resume code path will only run the "core" =
+part
+> > and whatever else CPU handling is needed during suspend/resume will=
+ be
+> > carried out by the device suspend/resume code (via driver callbacks=
+ or
+> > stuff similar to cpufreq_suspend() and cpufreq_resume() recently pr=
+oposed
+> > by Viresh).
+> >=20
+> > In turn, the "runtime" CPU offline/online will carry out both the c=
+ore
+> > and the add-ons parts as it does today.
+> >=20
+> > In my view this should address the problems we have with sysfs attr=
+ibutes,
+> > governors start/stop etc. during system suspend/resume.
+> >=20
+>=20
+> Hmm, yes that sounds like a good idea. Are you suggesting this "core"=
+ and
+> "add-on" split only for the cpufreq parts of CPU hotplug or for every=
+thing
+> involved in CPU hotplug code? IIUC you are suggesting the latter, whi=
+ch is
+> likely to be a significant undertaking, but very well worth it in the=
+ long
+> run, since it gives us an elegant solution for all these problems.
 
-tomasi <tomas.ivanek@gmail.com> changed:
+Yeah, and I'd like that to be done.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |tomas.ivanek@gmail.com
+> I guess the *_FROZEN CPU hotplug notifications were originally introd=
+uced
+> to provide us an infrastructure to do something like this, but obviou=
+sly
+> that hasn't worked out very well.
 
---- Comment #8 from tomasi <tomas.ivanek@gmail.com> ---
-Looks same like defect 65301.
-https://bugzilla.kernel.org/show_bug.cgi?id=65301
+That's been a workaround to be honest.
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+> So I agree that a fundamental restructuring is in order, to cure all =
+the
+> innumerable problems.
+
+Yes.
+
+Thanks!
+
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
