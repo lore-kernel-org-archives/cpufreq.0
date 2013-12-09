@@ -1,107 +1,273 @@
-From: Borislav Petkov <bp-Gina5bIWoIWzQB+pC5nmwQ@public.gmane.org>
-Subject: Re: [PATCH V4] cpufreq: suspend governors on system suspend/hibernate
-Date: Sun, 8 Dec 2013 13:41:08 +0100
-Message-ID: <20131208124108.GA4286@pd.tnic>
-References: <28d493f20239a242a7b26dfe1efed40d83bf1e10.1385523340.git.viresh.kumar@linaro.org>
- <87vbz0j55p.fsf@nemi.mork.no>
- <1386429849.9737.7.camel@x41.thuisdomein>
- <3466098.C5M665z3nb@vostro.rjw.lan>
+From: Lan Tianyu <lantianyu1986@gmail.com>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Mon, 9 Dec 2013 10:59:50 +0800
+Message-ID: <CAOLK0pxW_AjtGNwW2G8-1SpJbYs_GWQDLV=7XzPfDHRj6tCxQQ@mail.gmail.com>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+	<529F04B2.7050303@linaro.org>
+	<2628468.jr1aJZyvPu@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1386506471; bh=0qy9ppUbuR2wJ8Rwwrv8pOUOGsdDs/S9UU9ss+SuleQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:In-Reply-To; b=IdZnRzYXmWVU
-	LwyCeSmKuTu4CbbQeLX1EA4beXaZNxlx2ZU39gYduFUXiRYmerZPD+wwDNMrpDDFkEG
-	n4rc68suYH8sEe13SxWYQprSET+YhH2JUYeVlHfZh3b43x4VqXheQjAwi+ugsxFkSBj
-	sQVCZXZrp6aHnmRywVfQLu170=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1386506470; bh=0qy9ppUbuR2wJ8Rwwrv8pOUOGsdDs/S9UU9ss+SuleQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:In-Reply-To; b=hj9CZLQe/ZpQ
-	gP59PduRlEIOfYx1L2vSunsPSj7+MHbBuwqOK00NjmACQxk5lPQxqzR6BaWq3nqR5IE
-	QoFr5cmtmidFisF/MXWB9Uex2W9H5eM1KbSn3yH1cfNZZMzbGT31LFdy/ZH5fbIXNkv
-	kqytjtJiXQkSYZ7PQFe9P7JTM=
-Content-Disposition: inline
-In-Reply-To: <3466098.C5M665z3nb-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        bh=dp72bAfdpSNINj5wXIn6tklj56AbCq6/Op9BswYmDOQ=;
+        b=H/JHRaD3JLJWNdOD3V28NqXebvPnkNd76IBj0nCJCX3EooSD7Yh3szl/e/2bXu5ASa
+         avEPjEDu8hjk0E4A9FyrErXt2kt36pRdOaGeUtzusQla0k1Fb3twEnl1QctJLfdxL8GY
+         tIt/RLMA0IgrXZAWOoyUMgKkUfBFua4qL06F+ANGPuhFVNH/gmepGmu3nWfDv5eCLsyD
+         J6ot9yThI2vs0zTuoTrKp+rzjZebR2YMOoijqItTR8VXRuTbsVSrMIjBAuzLgqtjig+K
+         hYqvziJUcEN1Vl18kqFbffWFm8l4yTz6+NJHruaIChDgPcX8akfSBfBGTVEFepvBo+Ss
+         8KXQ==
+In-Reply-To: <2628468.jr1aJZyvPu@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="iso-8859-1"
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org>, =?utf-8?B?QmrDuHJu?= Mork <bjorn-yOkvZcmFvRU@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lists linaro-kernel <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Patch Tracking <patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Kgene Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jinchoi-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, Lan Tianyu <tianyu.lan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Capella <sebastian.capella-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jonghwan Choi <jhbird.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ziegler@uni-freiburg.de
+Cc: viresh kumar <viresh.kumar@linaro.org>, =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Sun, Dec 08, 2013 at 01:34:36AM +0100, Rafael J. Wysocki wrote:
-> On Saturday, December 07, 2013 04:24:09 PM Paul Bolle wrote:
-> > On Sat, 2013-12-07 at 12:01 +0100, Bj=C3=B8rn Mork wrote:
-> > > Sorry to be making noise here again, but I was eager to verify th=
-at the
-> > > fixes in v3.13-rc3 were OK on my system.  Unfortunately it seems =
-this
-> > > patch completely broke suspend for me.  Hibernete ended up with a=
- blank
-> > > console and no visible activity, without ever writing any image t=
-o disk.
-> > >=20
-> > > There really weren't that many suspects between v3.13-rc2 and v3.=
-13-rc3,
-> > > so I went directly to reverting 5a87182aa21d ("cpufreq: suspend
-> > > governors on system suspend/hibernate") which fixed the problem. =
-I
-> > > didn't bother debugging it further from there. I don't think ther=
-e is
-> > > anything magic about my system which should make this problem spe=
-cific
-> > > to it.
-> > >=20
-> > > I am still using the acpi-cpufreq driver on an old x86_64 laptop =
-if that
-> > > matters.
-> >=20
-> > On an x86 (32 bits) laptop hibernate also broke in v3.13-rc3. On th=
-at
-> > machine hibernation itself worked, or at least seemed to work, but =
-the
-> > machine would basically stop after thawing (directly after loading =
-the
-> > hibernation image).
-> >=20
-> > And reverting commit 5a87182aa21d ("cpufreq: suspend governors on s=
-ystem
-> > suspend/hibernate"), on top of v3.13-rc3, also lead to a successful
-> > hibernation/thaw cycle.
->=20
-> OK, reverted.
-
-+1.
-
-Grrr, I just wasted a whole morning bisecting the same issue as reporte=
-d
-above and can confirm the revert is the right thing to do.
-
-Well, almost: the box almost suspends until I hear the clicking sound o=
+2013/12/5 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> On Wednesday, December 04, 2013 04:02:18 PM viresh kumar wrote:
+>> On Tuesday 03 December 2013 04:44 PM, Bj=F8rn Mork wrote:
+>> > This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Per=
+form
+>> > light-weight init/teardown during suspend/resume"), which enabled
+>> > suspend/resume optimizations leaving the sysfs files in place.
+>> >
+>> > Errors during suspend/resume are not handled properly, leaving
+>> > dead sysfs attributes in case of failures.  There are are number o=
 f
-the mainboard trying to turn stuff off but then the fan remains on. Whe=
-n
-I hit a button on the keyboard, it then turns off completely. This is
-probably some nasty BIOS SMI crap which we don't have control over and
-I'd guess unrelated to the issue at hand.
+>> > functions with special code for the "frozen" case, and all these
+>> > need to also have special error handling.
+>>
+>> Can you try this please if it fixes things for you (with your patch =
+reverted):
+>>
+>> From: Viresh Kumar <viresh.kumar@linaro.org>
+>> Date: Wed, 4 Dec 2013 15:20:12 +0530
+>> Subject: [PATCH] cpufreq: remove sysfs files for CPU which failed to=
+ come
+>>  back after resume
+>>
+>> There are cases where cpufreq_add_dev() may fail for some CPUs durin=
+g resume.
+>> With the current code we will still have sysfs cpufreq files for suc=
+h CPUs, and
+>> struct cpufreq_policy would be already freed for them. Hence any ope=
+ration on
+>> those sysfs files would result in kernel warnings.
+>>
+>> To fix this, lets remove those sysfs files or put the associated kob=
+ject in case
+>> of such errors. Also, to make it simple lets remove the sysfs links =
+from all the
+>> CPUs (except policy->cpu) during suspend as that operation wouldn't =
+result with a
+>> loss of sysfs file permissions. And so we will create those links du=
+ring resume
+>> as well.
+>>
+>> Reported-by: Bj=F8rn Mork <bjorn@mork.no>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> There's no way this can go into 3.13, even though it fixes the proble=
+m for
+> Bjorn.
+>
+> I took the Bjorn's patch for 3.13 and this one I can queued up for 3.=
+14,
+> but for that I guess it should contain a revert of the change made by=
+ the
+> Bjorn's patch.
 
-Anyway, Rafael, I was wondering: I have a couple of boxes here and it
-would probably make a good sense to help out with testing this stuff
-more - I just can't have suspend breakages.
+This patch causes a s3 regression. Cc:Martin Ziegler
+https://bugzilla.kernel.org/show_bug.cgi?id=3D66751
 
-Maybe you'd like me to give a run of your tree now and then to check
-whether someone has sent you a quickly rushed brownpaper bag of
-questionable nature and we can fish it out before it hits Linus. :)
+>
+> Thanks!
+>
+>> ---
+>>  drivers/cpufreq/cpufreq.c | 61 ++++++++++++++++++++++++------------=
+-----------
+>>  1 file changed, 31 insertions(+), 30 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 606224a..57c80a7 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -849,8 +849,7 @@ static void cpufreq_init_policy(struct cpufreq_p=
+olicy *policy)
+>>
+>>  #ifdef CONFIG_HOTPLUG_CPU
+>>  static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+>> -                               unsigned int cpu, struct device *dev=
+,
+>> -                               bool frozen)
+>> +                               unsigned int cpu, struct device *dev=
+)
+>>  {
+>>       int ret =3D 0;
+>>       unsigned long flags;
+>> @@ -881,9 +880,7 @@ static int cpufreq_add_policy_cpu(struct cpufreq=
+_policy *policy,
+>>               }
+>>       }
+>>
+>> -     /* Don't touch sysfs links during light-weight init */
+>> -     if (!frozen)
+>> -             ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "=
+cpufreq");
+>> +     ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq"=
+);
+>>
+>>       return ret;
+>>  }
+>> @@ -930,6 +927,27 @@ err_free_policy:
+>>       return NULL;
+>>  }
+>>
+>> +static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
+>> +{
+>> +     struct kobject *kobj;
+>> +     struct completion *cmp;
+>> +
+>> +     down_read(&policy->rwsem);
+>> +     kobj =3D &policy->kobj;
+>> +     cmp =3D &policy->kobj_unregister;
+>> +     up_read(&policy->rwsem);
+>> +     kobject_put(kobj);
+>> +
+>> +     /*
+>> +      * We need to make sure that the underlying kobj is
+>> +      * actually not referenced anymore by anybody before we
+>> +      * proceed with unloading.
+>> +      */
+>> +     pr_debug("waiting for dropping of refcount\n");
+>> +     wait_for_completion(cmp);
+>> +     pr_debug("wait complete\n");
+>> +}
+>> +
+>>  static void cpufreq_policy_free(struct cpufreq_policy *policy)
+>>  {
+>>       free_cpumask_var(policy->related_cpus);
+>> @@ -990,7 +1008,7 @@ static int __cpufreq_add_dev(struct device *dev=
+, struct subsys_interface *sif,
+>>       list_for_each_entry(tpolicy, &cpufreq_policy_list, policy_list=
+) {
+>>               if (cpumask_test_cpu(cpu, tpolicy->related_cpus)) {
+>>                       read_unlock_irqrestore(&cpufreq_driver_lock, f=
+lags);
+>> -                     ret =3D cpufreq_add_policy_cpu(tpolicy, cpu, d=
+ev, frozen);
+>> +                     ret =3D cpufreq_add_policy_cpu(tpolicy, cpu, d=
+ev);
+>>                       up_read(&cpufreq_rwsem);
+>>                       return ret;
+>>               }
+>> @@ -1100,7 +1118,10 @@ err_get_freq:
+>>       if (cpufreq_driver->exit)
+>>               cpufreq_driver->exit(policy);
+>>  err_set_policy_cpu:
+>> +     if (frozen)
+>> +             cpufreq_policy_put_kobj(policy);
+>>       cpufreq_policy_free(policy);
+>> +
+>>  nomem_out:
+>>       up_read(&cpufreq_rwsem);
+>>
+>> @@ -1122,7 +1143,7 @@ static int cpufreq_add_dev(struct device *dev,=
+ struct subsys_interface *sif)
+>>  }
+>>
+>>  static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *p=
+olicy,
+>> -                                        unsigned int old_cpu, bool =
+frozen)
+>> +                                        unsigned int old_cpu)
+>>  {
+>>       struct device *cpu_dev;
+>>       int ret;
+>> @@ -1130,10 +1151,6 @@ static int cpufreq_nominate_new_policy_cpu(st=
+ruct cpufreq_policy *policy,
+>>       /* first sibling now owns the new sysfs dir */
+>>       cpu_dev =3D get_cpu_device(cpumask_any_but(policy->cpus, old_c=
+pu));
+>>
+>> -     /* Don't touch sysfs files during light-weight tear-down */
+>> -     if (frozen)
+>> -             return cpu_dev->id;
+>> -
+>>       sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+>>       ret =3D kobject_move(&policy->kobj, &cpu_dev->kobj);
+>>       if (ret) {
+>> @@ -1200,7 +1217,7 @@ static int __cpufreq_remove_dev_prepare(struct=
+ device *dev,
+>>               if (!frozen)
+>>                       sysfs_remove_link(&dev->kobj, "cpufreq");
+>>       } else if (cpus > 1) {
+>> -             new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cp=
+u, frozen);
+>> +             new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cp=
+u);
+>>               if (new_cpu >=3D 0) {
+>>                       update_policy_cpu(policy, new_cpu);
+>>
+>> @@ -1222,8 +1239,6 @@ static int __cpufreq_remove_dev_finish(struct =
+device *dev,
+>>       int ret;
+>>       unsigned long flags;
+>>       struct cpufreq_policy *policy;
+>> -     struct kobject *kobj;
+>> -     struct completion *cmp;
+>>
+>>       read_lock_irqsave(&cpufreq_driver_lock, flags);
+>>       policy =3D per_cpu(cpufreq_cpu_data, cpu);
+>> @@ -1253,22 +1268,8 @@ static int __cpufreq_remove_dev_finish(struct=
+ device *dev,
+>>                       }
+>>               }
+>>
+>> -             if (!frozen) {
+>> -                     down_read(&policy->rwsem);
+>> -                     kobj =3D &policy->kobj;
+>> -                     cmp =3D &policy->kobj_unregister;
+>> -                     up_read(&policy->rwsem);
+>> -                     kobject_put(kobj);
+>> -
+>> -                     /*
+>> -                      * We need to make sure that the underlying ko=
+bj is
+>> -                      * actually not referenced anymore by anybody =
+before we
+>> -                      * proceed with unloading.
+>> -                      */
+>> -                     pr_debug("waiting for dropping of refcount\n")=
+;
+>> -                     wait_for_completion(cmp);
+>> -                     pr_debug("wait complete\n");
+>> -             }
+>> +             if (!frozen)
+>> +                     cpufreq_policy_put_kobj(policy);
+>>
+>>               /*
+>>                * Perform the ->exit() even during light-weight tear-=
+down,
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" =
+in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-So let me know.
 
-Thanks.
 
 --=20
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+Best regards
+Tianyu Lan
