@@ -1,29 +1,57 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 66581] intel_pstate/powersave - cpu frequency remains at high
- level (Turbo) after suspend/resume
-Date: Mon, 09 Dec 2013 05:52:34 +0000
-Message-ID: <bug-66581-12968-Mx0BOWaNP0@https.bugzilla.kernel.org/>
-References: <bug-66581-12968@https.bugzilla.kernel.org/>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Mon, 09 Dec 2013 12:18:06 +0530
+Message-ID: <52A567A6.6000400@linux.vnet.ibm.com>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no> <529F04B2.7050303@linaro.org>	<2628468.jr1aJZyvPu@vostro.rjw.lan> <CAOLK0pxW_AjtGNwW2G8-1SpJbYs_GWQDLV=7XzPfDHRj6tCxQQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-66581-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <CAOLK0pxW_AjtGNwW2G8-1SpJbYs_GWQDLV=7XzPfDHRj6tCxQQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Lan Tianyu <lantianyu1986@gmail.com>, ziegler@uni-freiburg.de
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh kumar <viresh.kumar@linaro.org>, =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=66581
+On 12/09/2013 08:29 AM, Lan Tianyu wrote:
+> 2013/12/5 Rafael J. Wysocki <rjw@rjwysocki.net>:
+>> On Wednesday, December 04, 2013 04:02:18 PM viresh kumar wrote:
+>>> On Tuesday 03 December 2013 04:44 PM, Bj=F8rn Mork wrote:
+>>>> This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Per=
+form
+>>>> light-weight init/teardown during suspend/resume"), which enabled
+>>>> suspend/resume optimizations leaving the sysfs files in place.
+[...]
+>> I took the Bjorn's patch for 3.13 and this one I can queued up for 3=
+=2E14,
+>> but for that I guess it should contain a revert of the change made b=
+y the
+>> Bjorn's patch.
+>=20
+> This patch causes a s3 regression. Cc:Martin Ziegler
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D66751
+>=20
 
-Lan Tianyu <tianyu.lan@intel.com> changed:
+Hmm.. With Bjorn's patch applied, the cpufreq hotplug callback should b=
+ecome
+identical to what happens during regular CPU hotplug. So is regular CPU
+hotplug also failing for you, Martin?
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |zoku88@gmail.com
+You can do CPU hotplug by:
 
---- Comment #9 from Lan Tianyu <tianyu.lan@intel.com> ---
-*** Bug 65301 has been marked as a duplicate of this bug. ***
+CPU offline:
+echo 0 > /sys/devices/system/cpu/cpu<num>/online
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+CPU online:
+echo 1 > /sys/devices/system/cpu/cpu<num>/online
+
+
+Bjorn's patch looks pretty innocuous to me.. I couldn't catch any obvio=
+us
+bug looking at the code. So answer to the above question should help us=
+ dig
+deeper.
+
+Regards,
+Srivatsa S. Bhat
+
