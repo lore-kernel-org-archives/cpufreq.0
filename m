@@ -1,28 +1,30 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 66581] intel_pstate/powersave - cpu frequency remains at high
- level (Turbo) after suspend/resume
-Date: Tue, 10 Dec 2013 09:10:34 +0000
-Message-ID: <bug-66581-12968-r7XnAzFpqL@https.bugzilla.kernel.org/>
-References: <bug-66581-12968@https.bugzilla.kernel.org/>
+From: Martin Ziegler <ziegler@email.mathematik.uni-freiburg.de>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during
+ suspend/resume
+Date: Tue, 10 Dec 2013 17:02:33 +0100
+Message-ID: <alpine.DEB.2.10.1312101710260.2743@zertz.mathematik.uni-freiburg.de>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no> <529F04B2.7050303@linaro.org> <2628468.jr1aJZyvPu@vostro.rjw.lan> <CAOLK0pxW_AjtGNwW2G8-1SpJbYs_GWQDLV=7XzPfDHRj6tCxQQ@mail.gmail.com> <52A567A6.6000400@linux.vnet.ibm.com>
+Reply-To: Martin Ziegler <ziegler@uni-freiburg.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-66581-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <52A567A6.6000400@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Type: TEXT/PLAIN; format="flowed"; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Lan Tianyu <lantianyu1986@gmail.com>, ziegler@uni-freiburg.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh kumar <viresh.kumar@linaro.org>, =?ISO-8859-15?Q?Bj=F8rn_Mork?= <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, martin.ziegler@math.uni-freiburg.de
 
-https://bugzilla.kernel.org/show_bug.cgi?id=66581
+On my machine
 
-Lan Tianyu <tianyu.lan@intel.com> changed:
+CPU offline:
+echo 0 > /sys/devices/system/cpu/cpu<num>/online
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |ASSIGNED
-                 CC|                            |tianyu.lan@intel.com
-           Assignee|cpufreq@vger.kernel.org     |dirk.brandewie@gmail.com
+CPU online:
+echo 1 > /sys/devices/system/cpu/cpu<num>/online
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+works fine with 3.13-rc3.
+
+Regards
+
+Martin
