@@ -1,45 +1,32 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: Resume regression on MBA2,1 triggered by
- 2167e2399dc5e69c62db56d933e9c8cbe107620a
-Date: Tue, 10 Dec 2013 17:25:29 -0800
-Message-ID: <20131211012529.GA6354@kroah.com>
-References: <20131211010852.09ddf512@neptune.home>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 65501] Blind angle of 1% between up_threshold and
+ down_threshold
+Date: Wed, 11 Dec 2013 08:59:42 +0000
+Message-ID: <bug-65501-12968-CtLIpw7zLM@https.bugzilla.kernel.org/>
+References: <bug-65501-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20131211010852.09ddf512@neptune.home>
+In-Reply-To: <bug-65501-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: =?iso-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-On Wed, Dec 11, 2013 at 01:08:52AM +0100, Bruno Pr=E9mont wrote:
-> Hi Bj=F8rn, Rafael,
->=20
-> I have bisected failing resume from S3 on my MBA2,1 to be caused by
-> the following patch (introduced between 3.13-rc2 and 3.13-rc3 - rc2
-> resuming as expected, rc3 failing to resume).
->=20
-> Unfortunately I have no trace for the failing resume though CPU seems
-> to not be busy as fan does not start blowing (even when waiting more
-> than 10 minutes for the resume to eventually proceed which it does no=
-t).
->=20
-> Kernel config and dmesg are attached (gzip compressed).
->=20
->   commit 2167e2399dc5e69c62db56d933e9c8cbe107620a
->   Author: Bj=F8rn Mork <bjorn@mork.no>
->   Date:   Tue Dec 3 12:14:32 2013 +0100
->   Subject: cpufreq: fix garbage kobjects on errors during suspend/res=
-ume
+https://bugzilla.kernel.org/show_bug.cgi?id=65501
 
-This has already been reverted in Linus's tree, see commit
-d4faadd5d5b368a7051fef374ee933ec3606713b for the details.
+Lan Tianyu <tianyu.lan@intel.com> changed:
 
-Does Linus's tree still have the same problem for you?
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |ASSIGNED
+                 CC|                            |rjw@rjwysocki.net,
+                   |                            |tianyu.lan@intel.com,
+                   |                            |viresh.kumar@linaro.org
 
-thanks,
+--- Comment #1 from Lan Tianyu <tianyu.lan@intel.com> ---
+Cc: Rafael and Viresh.
 
-greg k-h
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
