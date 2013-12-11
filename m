@@ -1,33 +1,45 @@
-From: Joseph Salisbury <joseph.salisbury@canonical.com>
-Subject: [PATCH][3.11.y]  intel_pstate: fix no_turbo
-Date: Tue, 10 Dec 2013 14:37:28 -0500
-Message-ID: <52A76D78.4070507@canonical.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: Resume regression on MBA2,1 triggered by
+ 2167e2399dc5e69c62db56d933e9c8cbe107620a
+Date: Tue, 10 Dec 2013 17:25:29 -0800
+Message-ID: <20131211012529.GA6354@kroah.com>
+References: <20131211010852.09ddf512@neptune.home>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20131211010852.09ddf512@neptune.home>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Luis Henriques <luis.henriques@canonical.com>, Kamal Mostafa <kamal.mostafa@canonical.com>
-Cc: stable@vger.kernel.org, srinivas.pandruvada@linux.intel.com, dirk.j.brandewie@intel.com, rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kernel Team <kernel-team@lists.ubuntu.com>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: =?iso-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 
-Hello,
+On Wed, Dec 11, 2013 at 01:08:52AM +0100, Bruno Pr=E9mont wrote:
+> Hi Bj=F8rn, Rafael,
+>=20
+> I have bisected failing resume from S3 on my MBA2,1 to be caused by
+> the following patch (introduced between 3.13-rc2 and 3.13-rc3 - rc2
+> resuming as expected, rc3 failing to resume).
+>=20
+> Unfortunately I have no trace for the failing resume though CPU seems
+> to not be busy as fan does not start blowing (even when waiting more
+> than 10 minutes for the resume to eventually proceed which it does no=
+t).
+>=20
+> Kernel config and dmesg are attached (gzip compressed).
+>=20
+>   commit 2167e2399dc5e69c62db56d933e9c8cbe107620a
+>   Author: Bj=F8rn Mork <bjorn@mork.no>
+>   Date:   Tue Dec 3 12:14:32 2013 +0100
+>   Subject: cpufreq: fix garbage kobjects on errors during suspend/res=
+ume
 
-Please consider including mainline commit
-1ccf7a1cdafadd02e33e8f3d74370685a0600ec6 in the next v3.11.y release. 
+This has already been reverted in Linus's tree, see commit
+d4faadd5d5b368a7051fef374ee933ec3606713b for the details.
 
-It was included in the mainline tree as of v3.12-rc4.  It has been
-tested and confirmed
-to resolve http://bugs.launchpad.net/bugs/1254091 .
+Does Linus's tree still have the same problem for you?
 
-commit 1ccf7a1cdafadd02e33e8f3d74370685a0600ec6
-Author: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Date:   Tue Oct 1 10:28:41 2013 -0700
+thanks,
 
-    intel_pstate: fix no_turbo
-
-Other stable trees may also want to pick up this commit.
-
-Sincerely,
-Joseph Salisbury
-
+greg k-h
