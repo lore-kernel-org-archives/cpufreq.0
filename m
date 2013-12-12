@@ -1,82 +1,92 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: [PATCH] speedstep-smi: enable interrupts when waiting
-Date: Wed, 11 Dec 2013 19:55:40 -0500 (EST)
-Message-ID: <alpine.LRH.2.02.1312111954320.25512@file01.intranet.prod.int.rdu2.redhat.com>
-References: <alpine.LRH.2.02.1312111751180.9686@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1312111937570.23022@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1312111938370.23022@file01.intranet.prod.int.rdu2.redhat.com>
- <alpine.LRH.2.02.1312111938580.23022@file01.intranet.prod.int.rdu2.redhat.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V4] cpufreq: suspend governors on system suspend/hibernate
+Date: Thu, 12 Dec 2013 02:50:13 +0100
+Message-ID: <2173296.zTKqhC7Obn@vostro.rjw.lan>
+References: <28d493f20239a242a7b26dfe1efed40d83bf1e10.1385523340.git.viresh.kumar@linaro.org> <3466098.C5M665z3nb@vostro.rjw.lan> <20131208124108.GA4286@pd.tnic>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.02.1312111938580.23022@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <20131208124108.GA4286@pd.tnic>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Borislav Petkov <bp@alien8.de>
+Cc: Paul Bolle <pebolle@tiscali.nl>, =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 
-On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
-speedstep-smi driver sometimes loads and sometimes doesn't load with
-"change to state X failed" message.
+On Sunday, December 08, 2013 01:41:08 PM Borislav Petkov wrote:
+> On Sun, Dec 08, 2013 at 01:34:36AM +0100, Rafael J. Wysocki wrote:
+> > On Saturday, December 07, 2013 04:24:09 PM Paul Bolle wrote:
+> > > On Sat, 2013-12-07 at 12:01 +0100, Bj=C3=B8rn Mork wrote:
+> > > > Sorry to be making noise here again, but I was eager to verify =
+that the
+> > > > fixes in v3.13-rc3 were OK on my system.  Unfortunately it seem=
+s this
+> > > > patch completely broke suspend for me.  Hibernete ended up with=
+ a blank
+> > > > console and no visible activity, without ever writing any image=
+ to disk.
+> > > >=20
+> > > > There really weren't that many suspects between v3.13-rc2 and v=
+3.13-rc3,
+> > > > so I went directly to reverting 5a87182aa21d ("cpufreq: suspend
+> > > > governors on system suspend/hibernate") which fixed the problem=
+=2E I
+> > > > didn't bother debugging it further from there. I don't think th=
+ere is
+> > > > anything magic about my system which should make this problem s=
+pecific
+> > > > to it.
+> > > >=20
+> > > > I am still using the acpi-cpufreq driver on an old x86_64 lapto=
+p if that
+> > > > matters.
+> > >=20
+> > > On an x86 (32 bits) laptop hibernate also broke in v3.13-rc3. On =
+that
+> > > machine hibernation itself worked, or at least seemed to work, bu=
+t the
+> > > machine would basically stop after thawing (directly after loadin=
+g the
+> > > hibernation image).
+> > >=20
+> > > And reverting commit 5a87182aa21d ("cpufreq: suspend governors on=
+ system
+> > > suspend/hibernate"), on top of v3.13-rc3, also lead to a successf=
+ul
+> > > hibernation/thaw cycle.
+> >=20
+> > OK, reverted.
+>=20
+> +1.
+>=20
+> Grrr, I just wasted a whole morning bisecting the same issue as repor=
+ted
+> above and can confirm the revert is the right thing to do.
+>=20
+> Well, almost: the box almost suspends until I hear the clicking sound=
+ of
+> the mainboard trying to turn stuff off but then the fan remains on. W=
+hen
+> I hit a button on the keyboard, it then turns off completely. This is
+> probably some nasty BIOS SMI crap which we don't have control over an=
+d
+> I'd guess unrelated to the issue at hand.
+>=20
+> Anyway, Rafael, I was wondering: I have a couple of boxes here and it
+> would probably make a good sense to help out with testing this stuff
+> more - I just can't have suspend breakages.
+>=20
+> Maybe you'd like me to give a run of your tree now and then to check
+> whether someone has sent you a quickly rushed brownpaper bag of
+> questionable nature and we can fish it out before it hits Linus. :)
+>=20
+> So let me know.
 
-I found out that we need to enable interrupts while waiting. When we
-enable interrupts, the blockage that prevents frequency transition
-resolves and the transition is possible. With disabled interrupts, the
-blockage doesn't resolve (no matter how long do we wait).
+That would be great, thanks!
 
-This patch enables interrupts in the function speedstep_set_state that can
-be called with disabled interrupts. However, this function is called with
-disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
-any problem.
+My tree is not too interesting at the moment from the cpufreq testing
+perspective, but I'll let you know when there's more stuff in there.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
-Cc: stable@kernel.org
+Thanks,
+Rafael
 
----
- drivers/cpufreq/speedstep-lib.c |    1 +
- drivers/cpufreq/speedstep-smi.c |   13 +++++++++++++
- 2 files changed, 14 insertions(+)
-
-Index: linux-3.13-rc3/drivers/cpufreq/speedstep-smi.c
-===================================================================
---- linux-3.13-rc3.orig/drivers/cpufreq/speedstep-smi.c	2013-12-12 01:32:37.769060946 +0100
-+++ linux-3.13-rc3/drivers/cpufreq/speedstep-smi.c	2013-12-12 01:42:29.240216311 +0100
-@@ -200,7 +200,19 @@ static void speedstep_set_state(unsigned
- 		if (retry) {
- 			pr_debug("retry %u, previous result %u, waiting...\n",
- 					retry, result);
-+			/*
-+			 * We need to enable interrupts, otherwise the blockage
-+			 * won't resolve.
-+			 *
-+			 * We disable preemption so that other processes don't
-+			 * run. If other processes were running, they could
-+			 * submit more DMA requests, making the blockage worse.
-+			 */
-+			preempt_disable();
-+			local_irq_enable();
- 			mdelay(retry * 50);
-+			local_irq_disable();
-+			preempt_enable_no_resched();
- 		}
- 		retry++;
- 		__asm__ __volatile__(
-@@ -217,6 +229,7 @@ static void speedstep_set_state(unsigned
- 
- 	/* enable IRQs */
- 	local_irq_restore(flags);
-+	preempt_check_resched();
- 
- 	if (new_state == state)
- 		pr_debug("change to %u MHz succeeded after %u tries "
-Index: linux-3.13-rc3/drivers/cpufreq/speedstep-lib.c
-===================================================================
---- linux-3.13-rc3.orig/drivers/cpufreq/speedstep-lib.c	2013-10-18 20:24:16.000000000 +0200
-+++ linux-3.13-rc3/drivers/cpufreq/speedstep-lib.c	2013-12-12 01:42:41.435120321 +0100
-@@ -464,6 +464,7 @@ unsigned int speedstep_get_freqs(enum sp
- 
- out:
- 	local_irq_restore(flags);
-+	preempt_check_resched();
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(speedstep_get_freqs);
