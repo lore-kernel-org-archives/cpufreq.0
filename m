@@ -1,15 +1,15 @@
-From: Bill Huang <bilhuang@nvidia.com>
+From: Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 Subject: [PATCH v4 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
-Date: Thu, 12 Dec 2013 17:32:07 +0800
-Message-ID: <1386840727-28716-1-git-send-email-bilhuang@nvidia.com>
+Date: Thu, 12 Dec 2013 17:33:55 +0800
+Message-ID: <1386840835-28751-1-git-send-email-bilhuang@nvidia.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: swarren@wwwdotorg.org, rjw@rjwysocki.net, viresh.kumar@linario.org, thierry.reding@gmail.com
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, Bill Huang <bilhuang@nvidia.com>
+To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
 Re-model Tegra20 cpufreq driver as below.
 
@@ -21,7 +21,7 @@ Re-model Tegra20 cpufreq driver as below.
   "${root_compatible}-cpufreq" so SoC cpufreq driver can bind to it
   accordingly.
 
-Signed-off-by: Bill Huang <bilhuang@nvidia.com>
+Signed-off-by: Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
 
 This patch remodel Tegra cpufreq driver to make it more easy to add new
@@ -121,7 +121,7 @@ index 63f0059..a4be7c4 100644
 + * Copyright (c) 2013, NVIDIA Corporation. All rights reserved.
   *
 - * Author:
-- *	Colin Cross <ccross@google.com>
+- *	Colin Cross <ccross-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
 - *	Based on arch/arm/plat-omap/cpu-omap.c, (C) 2005 Nokia Corporation
 - *
 - * This software is licensed under the terms of the GNU General Public
@@ -337,7 +337,7 @@ index 63f0059..a4be7c4 100644
 -}
 -
 -
--MODULE_AUTHOR("Colin Cross <ccross@android.com>");
+-MODULE_AUTHOR("Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>");
 -MODULE_DESCRIPTION("cpufreq driver for Nvidia Tegra2");
 -MODULE_LICENSE("GPL");
 -module_init(tegra_cpufreq_init);
@@ -353,7 +353,7 @@ index 0000000..a430701
 + * Copyright (C) 2010 Google, Inc.
 + *
 + * Author:
-+ *	Colin Cross <ccross@google.com>
++ *	Colin Cross <ccross-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
 + *	Based on arch/arm/plat-omap/cpu-omap.c, (C) 2005 Nokia Corporation
 + *
 + * This software is licensed under the terms of the GNU General Public
@@ -538,7 +538,7 @@ index 0000000..a430701
 +};
 +module_platform_driver(tegra_cpufreq_platdrv);
 +
-+MODULE_AUTHOR("Colin Cross <ccross@android.com>");
++MODULE_AUTHOR("Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>");
 +MODULE_DESCRIPTION("cpufreq driver for Nvidia Tegra2");
 +MODULE_LICENSE("GPL");
 diff --git a/include/linux/tegra-cpufreq.h b/include/linux/tegra-cpufreq.h
@@ -573,4 +573,3 @@ index 0000000..d7643e0
 +#endif /* __LINUX_TEGRA_CPUFREQ_H_ */
 -- 
 1.7.9.5
-
