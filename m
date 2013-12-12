@@ -1,70 +1,28 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: [PATCH 2/2] cpufreq: Select PM_OPP rather than depending on it
-Date: Wed, 11 Dec 2013 22:12:27 +0000
-Message-ID: <1386799947-6041-2-git-send-email-broonie@kernel.org>
-References: <1386799947-6041-1-git-send-email-broonie@kernel.org>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: [PATCH 0/3] powernow-k6: fixes for the frequency driver
+Date: Wed, 11 Dec 2013 19:37:48 -0500 (EST)
+Message-ID: <alpine.LRH.2.02.1312111751180.9686@file01.intranet.prod.int.rdu2.redhat.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1386799947-6041-1-git-send-email-broonie@kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Mark Brown <broonie@linaro.org>
+Hi
 
-PM_OPP is a helper library used by several of the existing cpufreq drivers.
-Some of the drivers select this symbol while others depend on it and rely
-on the architecture to enable it. Make this behaviour more consistent and
-obvious by having all the drivers select the symbol. This will also allow
-better build coverage of the affected drivers.
+Here I'm sending three patches for k6 frequency governor.
 
-Signed-off-by: Mark Brown <broonie@linaro.org>
----
- drivers/cpufreq/Kconfig     | 3 ++-
- drivers/cpufreq/Kconfig.arm | 6 ++++--
- 2 files changed, 6 insertions(+), 3 deletions(-)
+1. the processor doesn't respond to cache snoops when changing the 
+frequency, so we need to disable cache while doing the change.
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index e26fdcd14165..6947fdfca57c 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -181,7 +181,8 @@ config CPU_FREQ_GOV_CONSERVATIVE
- 
- config GENERIC_CPUFREQ_CPU0
- 	tristate "Generic CPU0 cpufreq driver"
--	depends on HAVE_CLK && REGULATOR && PM_OPP && OF
-+	depends on HAVE_CLK && REGULATOR && OF
-+	select PM_OPP
- 	help
- 	  This adds a generic cpufreq driver for CPU0 frequency management.
- 	  It supports both uniprocessor (UP) and symmetric multiprocessor (SMP)
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 0a141109fd29..456ba5e1781c 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -4,7 +4,8 @@
- 
- config ARM_BIG_LITTLE_CPUFREQ
- 	tristate "Generic ARM big LITTLE CPUfreq driver"
--	depends on ARM && ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
-+	depends on ARM && ARM_CPU_TOPOLOGY && HAVE_CLK
-+	select PM_OPP
- 	help
- 	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
- 
-@@ -54,7 +55,8 @@ config ARM_EXYNOS5250_CPUFREQ
- config ARM_EXYNOS5440_CPUFREQ
- 	bool "SAMSUNG EXYNOS5440"
- 	depends on SOC_EXYNOS5440
--	depends on HAVE_CLK && PM_OPP && OF
-+	depends on HAVE_CLK && OF
-+	select PM_OPP
- 	default y
- 	help
- 	  This adds the CPUFreq driver for Samsung EXYNOS5440
--- 
-1.8.5.1
+2. it is impossible to read the default multiplier. After reset, the 
+register always reports zero regardless of the current multiplier. So we 
+set the multiplier based on current frequency and allow the user to 
+override it with module parameter.
 
+3. reorder frequencies from the highest to the lowest.
+
+Mikulas
