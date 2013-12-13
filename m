@@ -1,101 +1,120 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v11 5/7] Documentation:cpufreq:boost: Update BOOST documentation
-Date: Fri, 13 Dec 2013 17:38:35 +0100
-Message-ID: <1386952717-30947-6-git-send-email-l.majewski@samsung.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1386952717-30947-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1386952717-30947-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Subject: Re: [PATCH v4 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
+Date: Fri, 13 Dec 2013 16:21:35 -0700
+Message-ID: <52AB967F.9030900@wwwdotorg.org>
+References: <1386840835-28751-1-git-send-email-bilhuang@nvidia.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1386840835-28751-1-git-send-email-bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Since the support for software and hardware controlled boosting has been
-added, the corresponding Documentation entry had been updated.
+On 12/12/2013 02:33 AM, Bill Huang wrote:
+> Re-model Tegra20 cpufreq driver as below.
+> 
+> * Rename tegra-cpufreq.c to tegra20-cpufreq.c since this file supports
+>   only Tegra20.
+> * Add probe function so defer probe can be used when we're going to
+>   support DVFS.
+> * Create a fake cpufreq platform device with its name being
+>   "${root_compatible}-cpufreq" so SoC cpufreq driver can bind to it
+>   accordingly.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
 
----
-Changes for v11:
-- None
+> +config ARM_TEGRA20_CPUFREQ
+> +	bool "NVIDIA TEGRA20"
+> +	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
+> +	default y
+> +	help
+> +	  This enables Tegra20 cpufreq functionality, it adds
+> +	  Tegra20 CPU frequency ladder and the call back functions
+> +	  to set CPU rate. All the non-SoC dependant codes are
+> +	  controlled by the config ARM_TEGRA20_CPUFREQ.
 
-Changes for v10:
-- None
+I think that last sentence is no longer true in this patch version. Or,
+did you mean to write ARM_TEGRA_CPUFREQ rather than ARM_TEGRA20_CPUFREQ?
 
-Changes for v9:
-- None
+> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
 
-Changes for v8:
-- None
+> +static const char * const tegra_soc_compat[] = {
+> +	"nvidia,tegra124",
+> +	"nvidia,tegra114",
+> +	"nvidia,tegra30",
+> +	"nvidia,tegra20",
+> +	NULL
+>  };
 
-Changes for v7:
-- None
+That table will need editing for each chip. I wonder if you can do
+something like always use the very last entry in /compatible. That would
+assume a particular ordering of the compatible entries, but they should
+be in the order $board, $soc anyway...
 
-Changes for v6:
-- None
+> +int __init tegra_cpufreq_init(void)
+> +	int i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(tegra_soc_compat); i++) {
+> +		if (of_machine_is_compatible(tegra_soc_compat[i])) {
+> +			struct platform_device_info devinfo;
+> +			char buf[40];
+> +
+> +			memset(&devinfo, 0, sizeof(devinfo));
+> +			strcpy(buf, tegra_soc_compat[i]);
+> +			strcat(buf, "-cpufreq");
 
-Changes for v5:
-- New patch
+kasprintf() might be simpler, and would avoid the arbitrary 39-character
+string limit and possibility of overflow.
 
- Documentation/cpu-freq/boost.txt |   26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+> +			devinfo.name = buf;
+> +			platform_device_register_full(&devinfo);
 
-diff --git a/Documentation/cpu-freq/boost.txt b/Documentation/cpu-freq/boost.txt
-index 9b4edfc..dd62e13 100644
---- a/Documentation/cpu-freq/boost.txt
-+++ b/Documentation/cpu-freq/boost.txt
-@@ -17,8 +17,8 @@ Introduction
- Some CPUs support a functionality to raise the operating frequency of
- some cores in a multi-core package if certain conditions apply, mostly
- if the whole chip is not fully utilized and below it's intended thermal
--budget. This is done without operating system control by a combination
--of hardware and firmware.
-+budget. The decision about boost disable/enable is made either at hardware
-+(e.g. x86) or software (e.g ARM).
- On Intel CPUs this is called "Turbo Boost", AMD calls it "Turbo-Core",
- in technical documentation "Core performance boost". In Linux we use
- the term "boost" for convenience.
-@@ -48,24 +48,24 @@ be desirable:
- User controlled switch
- ----------------------
- 
--To allow the user to toggle the boosting functionality, the acpi-cpufreq
--driver exports a sysfs knob to disable it. There is a file:
-+To allow the user to toggle the boosting functionality, the cpufreq core
-+driver exports a sysfs knob to enable or disable it. There is a file:
- /sys/devices/system/cpu/cpufreq/boost
- which can either read "0" (boosting disabled) or "1" (boosting enabled).
--Reading the file is always supported, even if the processor does not
--support boosting. In this case the file will be read-only and always
--reads as "0". Explicitly changing the permissions and writing to that
--file anyway will return EINVAL.
-+The file is exported only when cpufreq driver supports boosting.
-+Explicitly changing the permissions and writing to that file anyway will
-+return EINVAL.
- 
- On supported CPUs one can write either a "0" or a "1" into this file.
- This will either disable the boost functionality on all cores in the
--whole system (0) or will allow the hardware to boost at will (1).
-+whole system (0) or will allow the software or hardware to boost at will
-+(1).
- 
- Writing a "1" does not explicitly boost the system, but just allows the
--CPU (and the firmware) to boost at their discretion. Some implementations
--take external factors like the chip's temperature into account, so
--boosting once does not necessarily mean that it will occur every time
--even using the exact same software setup.
-+CPU to boost at their discretion. Some implementations take external
-+factors like the chip's temperature into account, so boosting once does
-+not necessarily mean that it will occur every time even using the exact
-+same software setup.
- 
- 
- AMD legacy cpb switch
--- 
-1.7.10.4
+Does the devinfo struct need to stick around, i.e. does
+platform_device_register_full keep the pointer, or take a copy of the
+struct? If it keeps the pointer, it'd be best to make devinfo a static
+global variable.
+
+> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+
+Please pass the "-C" option to "git format-patch"; I assume that almost
+all the code in this file is simply cut/paste verbatim from
+tegra-cpufreq.c where it was deleted.
+
+> + * Copyright (C) 2010 Google, Inc.
+
+It's worth adding NV (c) here too.
+
+> +static int tegra20_cpufreq_remove(struct platform_device *pdev)
+> +{
+> +	cpufreq_unregister_driver(&tegra20_cpufreq_driver);
+> +	return 0;
+> +}
+
+That leaks all the clk_get_sys() calls. Does building this as a module
+work OK?
+
+> +MODULE_LICENSE("GPL");
+
+That should be "GPL v2".
+
+> diff --git a/include/linux/tegra-cpufreq.h b/include/linux/tegra-cpufreq.h
+
+> +#ifdef CONFIG_ARM_TEGRA_CPUFREQ
+> +int tegra_cpufreq_init(void);
+> +#else
+> +static inline int tegra_cpufreq_init(void)
+> +{ return; }
+> +#endif
+
+If you're going to wrap the { } onto one line, then I think it'd be best
+to wrap the whole thing (prototype and body) onto one line. Otherwise,
+write:
+
+{
+	return;
+}
+
+Oh, and you need "return 0" not just "return".
