@@ -1,65 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: highbank: rework the kconfig dependencies
- for arm64
-Date: Mon, 16 Dec 2013 14:24:07 +0530
-Message-ID: <CAKohpomzgsQVuBOm-hrs0HNAJoM4zxExFn-rz5aCGyZSyeEatQ@mail.gmail.com>
-References: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
-	<1386202994-30784-3-git-send-email-robherring2@gmail.com>
+Subject: Re: [PATCH v3] cpufreq: exynos: Convert exynos-cpufreq to platform driver
+Date: Mon, 16 Dec 2013 14:43:23 +0530
+Message-ID: <CAKohpongZr8CTjQr_MeWb14tMST4D+j_GxU2vF=0AiL6sTsQ0w@mail.gmail.com>
+References: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
+	<1385642562-9339-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1386202994-30784-3-git-send-email-robherring2@gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1385642562-9339-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robherring2@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Mark Brown <broonie@kernel.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, Jingoo Han <jg1.han@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-On 5 December 2013 05:53, Rob Herring <robherring2@gmail.com> wrote:
-> From: Rob Herring <rob.herring@calxeda.com>
+On 28 November 2013 18:12, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> To make the driver multiplatform-friendly, unconditional initialization
+> in an initcall is replaced with a platform driver probed only if
+> respective platform device is registered.
 >
-> Make ARM_HIGHBANK_CPUFREQ not depend on ARCH_HIGHBANK to enable on
-> arm64 and also give better build converage. Change the selects to be
-
-s/converage/coverage
-
-> same depends as the cpu0 driver. Otherwise, we can get kconfig select
-> errors. Also, add missing depends for PL320_MBOX.
+> Tested at: Exynos4210 (TRATS) and Exynos4412 (TRATS2)
 >
-> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>
 > ---
->  drivers/cpufreq/Kconfig.arm | 14 ++++++--------
->  1 file changed, 6 insertions(+), 8 deletions(-)
+> Changes for v3:
+> - Rename exynos_cpufreq_init() to exynos_cpufreq_probe()
 >
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index ce52ed9..0d7130d 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -65,16 +65,14 @@ config ARM_EXYNOS5440_CPUFREQ
->           If in doubt, say N.
+> Changes for v2:
+> - Proper definition of exynos_cpufreq_init() function to squash warnings
 >
->  config ARM_HIGHBANK_CPUFREQ
-> -       tristate "Calxeda Highbank-based"
-> -       depends on ARCH_HIGHBANK
-> -       select GENERIC_CPUFREQ_CPU0
-> +       tristate "Calxeda ECX based"
-> +       depends on HAVE_CLK && REGULATOR && OF
-> +       depends on PL320_MBOX
-> +       select ARCH_HAS_OPP
->         select PM_OPP
-> -       select REGULATOR
-> -
-> -       default m
-> +       select GENERIC_CPUFREQ_CPU0
->         help
-> -         This adds the CPUFreq driver for Calxeda Highbank SoC
-> -         based boards.
-> +         This adds the CPUFreq driver for Calxeda based SoCs.
->
->           If in doubt, say N.
+>  arch/arm/mach-exynos/common.c          |    5 +++++
+>  arch/arm/mach-exynos/common.h          |    1 +
+>  arch/arm/mach-exynos/mach-exynos4-dt.c |    1 +
+>  arch/arm/mach-exynos/mach-exynos5-dt.c |    1 +
+>  drivers/cpufreq/exynos-cpufreq.c       |   13 +++++++++++--
+>  5 files changed, 19 insertions(+), 2 deletions(-)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org> for both patches.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
