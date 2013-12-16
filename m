@@ -1,42 +1,35 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: exynos: Convert exynos-cpufreq to platform driver
-Date: Mon, 16 Dec 2013 14:43:23 +0530
-Message-ID: <CAKohpongZr8CTjQr_MeWb14tMST4D+j_GxU2vF=0AiL6sTsQ0w@mail.gmail.com>
-References: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
-	<1385642562-9339-1-git-send-email-l.majewski@samsung.com>
+Subject: Re: [PATCH] cpufreq: omap: clk_round_rate() can return a zero upon error
+Date: Mon, 16 Dec 2013 14:44:36 +0530
+Message-ID: <CAKohpo=8ejsO4ZSp6yPiV9P1VjFJQKT329SR3vqGM8AaYsbHLw@mail.gmail.com>
+References: <alpine.DEB.2.02.1312091812440.4127@tamien>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1385642562-9339-1-git-send-email-l.majewski@samsung.com>
+In-Reply-To: <alpine.DEB.2.02.1312091812440.4127@tamien>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, Jingoo Han <jg1.han@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: Paul Walmsley <pwalmsley@nvidia.com>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-omap@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 28 November 2013 18:12, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> To make the driver multiplatform-friendly, unconditional initialization
-> in an initcall is replaced with a platform driver probed only if
-> respective platform device is registered.
+On 10 December 2013 07:48, Paul Walmsley <pwalmsley@nvidia.com> wrote:
+> Treat both negative and zero return values from clk_round_rate() as errors.
+> This is needed since subsequent patches will convert clk_round_rate()'s
+> return value to be an unsigned type, rather than a signed type, since some
+> clock sources can generate rates higher than (2^31)-1 Hz.
 >
-> Tested at: Exynos4210 (TRATS) and Exynos4412 (TRATS2)
+> Eventually, when calling clk_round_rate(), only a return value of
+> zero will be considered a error.  All other values will be
+> considered valid rates.  The comparison against values less than
+> 0 is kept to preserve the correct behavior in the meantime.
 >
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> This patch also removes a bogus usage of IS_ERR_VALUE(), which is intended
+> to be used only on combination pointer/error code return values; a
+> side-benefit.
 >
-> ---
-> Changes for v3:
-> - Rename exynos_cpufreq_init() to exynos_cpufreq_probe()
->
-> Changes for v2:
-> - Proper definition of exynos_cpufreq_init() function to squash warnings
->
->  arch/arm/mach-exynos/common.c          |    5 +++++
->  arch/arm/mach-exynos/common.h          |    1 +
->  arch/arm/mach-exynos/mach-exynos4-dt.c |    1 +
->  arch/arm/mach-exynos/mach-exynos5-dt.c |    1 +
->  drivers/cpufreq/exynos-cpufreq.c       |   13 +++++++++++--
->  5 files changed, 19 insertions(+), 2 deletions(-)
+> Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
