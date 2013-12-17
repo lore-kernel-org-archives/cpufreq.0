@@ -1,53 +1,32 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: exynos: Add exynos5420 cpufreq driver
-Date: Tue, 17 Dec 2013 11:42:58 +0530
-Message-ID: <CAKohpo=vkZRSQ5Xk-Tsm9QVy8h2F5Ehpm4Y8JWi5xjx0OD72tw@mail.gmail.com>
-References: <1386323284-15646-1-git-send-email-arun.kk@samsung.com>
-	<1386323284-15646-4-git-send-email-arun.kk@samsung.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 0/2] Remodel Tegra cpufreq drivers to support Tegra
+ series SoC
+Date: Tue, 17 Dec 2013 11:56:29 +0530
+Message-ID: <CAKohponJAU20MQ92y4VaOXbsOOmxz6K=349KCq91c5=P=zQOQQ@mail.gmail.com>
+References: <1386229462-3474-1-git-send-email-bilhuang@nvidia.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1386323284-15646-4-git-send-email-arun.kk@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1386229462-3474-1-git-send-email-bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arun Kumar K <arun.kk@samsung.com>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kgene Kim <kgene.kim@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tomasz Figa <tomasz.figa@gmail.com>, arjun.kv@samsung.com, abrestic@chromium.org, arunkk.samsung@gmail.com, Lukasz Majewski <l.majewski@samsung.com>
+To: Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On 6 December 2013 15:18, Arun Kumar K <arun.kk@samsung.com> wrote:
-> From: "Arjun.K.V" <arjun.kv@samsung.com>
+On 5 December 2013 13:14, Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+> This patch series remodel Tegra cpufreq driver to make it more easy to
+> add new SoC support, in addition to that, adding probe function in the
+> driver to let probe defer can be used to control init sequence when we
+> are going to support DVFS.
 >
-> The patch adds cpufreq driver for exynos5420.
+> Changes since v2:
 >
-> Signed-off-by: Arjun.K.V <arjun.kv@samsung.com>
-> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
-> Signed-off-by: Arun Kumar K <arun.kk@samsung.com>
-> ---
->  drivers/cpufreq/Kconfig.arm          |   11 ++
->  drivers/cpufreq/Makefile             |    1 +
->  drivers/cpufreq/exynos-cpufreq.c     |    2 +
->  drivers/cpufreq/exynos-cpufreq.h     |    8 +
->  drivers/cpufreq/exynos5420-cpufreq.c |  346 ++++++++++++++++++++++++++++++++++
->  5 files changed, 368 insertions(+)
->  create mode 100644 drivers/cpufreq/exynos5420-cpufreq.c
+> - Fix Kconfig.
+> - Rebase on top of branch 'cpufreq-next' on git://git.linaro.org/people/vireshk/linux.git.
 
-Hmm.. That's the second big LITTLE SoC after TC2..
-And we already have a generic enough driver for all big LITTLE platforms:
-arm_big_little.c
+That's wrong base.. This branch is used only for Rafael to pull in
+stuff and so it doesn't
+get updated everyday..
 
-Please use that with a glue clk and regulator driver if required. We don't
-want to get any new driver for big LITTLE unless there is a real limitation.
-
-Also, the generic big LITTLE driver supports IKS (In Kernel Switcher)
-which may or maynot be used by Exynos.
-
-@Lukasz: We can't use cpu0 driver here as we have multiple clusters here
-A7 and A15, and so there are two clock domains instead of one. That's why
-we have written big LITTLE driver.
-
-@Arun: And you logs must be a bit enhanced as well.. I knew 5420 is big
-LITTLE but others may not.. And hence please provide a summary of your
-platform whenever you add new drivers..
-
---
-viresh
+You must rebase on Rafael's linux-next branch all the time.
