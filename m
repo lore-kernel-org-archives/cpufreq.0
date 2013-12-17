@@ -1,60 +1,49 @@
-From: Jassi Brar <jassisinghbrar@gmail.com>
-Subject: Re: [PATCH 3/3] cpufreq: exynos: Add exynos5420 cpufreq driver
-Date: Tue, 17 Dec 2013 12:37:04 +0530
-Message-ID: <CABb+yY0C50va5UAgv5QKGKK6qE1wiDwcUmn54CC7PVQ8vpoEmg@mail.gmail.com>
-References: <1386323284-15646-1-git-send-email-arun.kk@samsung.com>
-	<1386323284-15646-4-git-send-email-arun.kk@samsung.com>
-	<20131209092324.1f8b6502@amdc2363>
-	<CALt3h7-25_mW5SnnTbZWjoF0pOZxsU5Gg6FqOdoz1MgdH7gm5w@mail.gmail.com>
-	<20131210173208.5083aa1f@amdc2363>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 4/4] cpufreq: imx6q: correct VDDSOC/PU voltage scaling
+ when cpufreq is changed
+Date: Tue, 17 Dec 2013 15:45:52 +0800
+Message-ID: <20131217074548.GB7172@S2101-09.ap.freescale.net>
+References: <1387228450-641-1-git-send-email-b20788@freescale.com>
+ <1387228450-641-2-git-send-email-b20788@freescale.com>
+ <20131217025616.GC6691@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=o3ygdogJqmhXkzRYxmGWyiNr0wnThzlQJJcN/dAmbqY=;
-        b=V28Qjw+73zn5OhD0Mws5vvEqQe8lFCHicWNeuMzN6Inerl4hCS6JAweafI+AaGyvrS
-         Oe2PGzfV/9pxRP9R5TvtqWAGbiyCkoJHQmFQW8ktF3OLbo2eTn6C8mofz3B2b/4yvHQS
-         /jXx0nNm2ZS8VOq4kAWN50PhTkF4adMaF2xVy9gLaEYSdb91ODvIHRFdrd8aVROkOU7d
-         mA96/u4KoRnBaA3LnCJSW7aeAk7WBINGvt/9PHJ1BBS/FYZvweUb1O9LIuBzUGAxZuLg
-         1CcArDG/tXQszAfvPz6F8Fk53lPMf4RmriMRTiaZOz/CP7XutfPgoVm6Fc5g+e2OW5Ku
-         UnzQ==
-In-Reply-To: <20131210173208.5083aa1f@amdc2363>
+Content-Disposition: inline
+In-Reply-To: <20131217025616.GC6691@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Arun Kumar K <arunkk.samsung@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, abrestic@chromium.org, Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, Tomasz Figa <tomasz.figa@gmail.com>, cpufreq@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, arjun.kv@samsung.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Anson Huang <b20788@freescale.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Tue, Dec 10, 2013 at 10:02 PM, Lukasz Majewski
-<l.majewski@samsung.com> wrote:
->>
->> Actually these values are not for PLL, but for the dividers.
->> If you see below, the PLL rate setting is done through clk_set_rate()
->> going via CCF. But I found an issue if the divider values are set via
->> clk_set_rate API.
->> What I found is, the system goes into freeze if all the divider
->> values are not set in one shot. So we cannot call multiple
->> clk_set_rate()'s on each divider. Thats why I continued with non-CCF
->> way of setting the divider.
->
-> I see. I'm not an expert on common clock framework (CCF), but for me
-> conceptually clock dividers setting shall be handled by CCF.
->
-> However, I've poked a bit at CCF. There isn't any out of the box
-> solutions available.
->
-> A "virtual" clock can be defined and inside its implementation we can
-> atomically set dividers. Another solution would be to hack the current
-> CCF to provide atomic clock operations
->
-CCF isn't only for clocks that have single divider or gate control
-register. One could define a clock that manipulates more than one
-divider/gate in one CCF callback. It is already abstract enough. So
-implementing a virtual clock is the solution, imho.
- BTW, on my platform linux needs to send a 'non-atomic' IPC message to
-a master co-processor to scale up/down cpufreq. I just define a
-virtual clock and use the generic bL cpufreq driver
-drivers/cpufreq/arm_big_little.c
+On Tue, Dec 17, 2013 at 10:56:18AM +0800, Shawn Guo wrote:
+> > +	rcu_read_lock();
+> > +	val = prop->value;
+> 
+> What is this assignment used for?
+
+Sorry.  This is a brain-dead comment.  Ignore it.
+
+Shawn
+
+> 
+> > +
+> > +	min_volt = max_volt = 0;
+> > +	for (i = 0; i < nr / 2; i++) {
+> > +		unsigned long freq = be32_to_cpup(val++);
+> > +		unsigned long volt = be32_to_cpup(val++);
+> > +
+> > +		if (i == 0)
+> > +			min_volt = max_volt = volt;
+> > +		if (volt < min_volt)
+> > +			min_volt = volt;
+> > +		if (volt > max_volt)
+> > +			max_volt = volt;
+> > +		opp = dev_pm_opp_find_freq_exact(cpu_dev, freq * 1000, true);
+> > +		imx6_soc_opp[i].arm_freq = freq;
+> > +		imx6_soc_opp[i].soc_volt = volt;
+> > +		soc_opp_count++;
+> > +	}
+> > +	rcu_read_unlock();
+
