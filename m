@@ -1,24 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] powernow-k6: reorder frequencies
-Date: Tue, 17 Dec 2013 14:17:36 +0530
-Message-ID: <CAKohpok_+Dxk0G3hutAtejjhNOj5d2uK+58C6TBf-KuU+Xc7eA@mail.gmail.com>
-References: <alpine.LRH.2.02.1312111751180.9686@file01.intranet.prod.int.rdu2.redhat.com>
-	<alpine.LRH.2.02.1312111937570.23022@file01.intranet.prod.int.rdu2.redhat.com>
-	<alpine.LRH.2.02.1312111938370.23022@file01.intranet.prod.int.rdu2.redhat.com>
-	<alpine.LRH.2.02.1312111938580.23022@file01.intranet.prod.int.rdu2.redhat.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 3/3] cpufreq: exynos: Add exynos5420 cpufreq driver
+Date: Tue, 17 Dec 2013 10:09:56 +0100
+Message-ID: <20131217100956.6fa5b7e6@amdc2363>
+References: <1386323284-15646-1-git-send-email-arun.kk@samsung.com>
+ <1386323284-15646-4-git-send-email-arun.kk@samsung.com>
+ <CAKohpo=vkZRSQ5Xk-Tsm9QVy8h2F5Ehpm4Y8JWi5xjx0OD72tw@mail.gmail.com>
+ <20131217090005.1e04ff7b@amdc2363>
+ <CALt3h79iuOnmeCBxHjPN3qAoiuwHYBXAp_eSTDewxc96zqSOOg@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.02.1312111938580.23022@file01.intranet.prod.int.rdu2.redhat.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CALt3h79iuOnmeCBxHjPN3qAoiuwHYBXAp_eSTDewxc96zqSOOg@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Arun Kumar K <arunkk.samsung@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Kgene Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, abrestic@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tomasz Figa <tomasz.figa@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, arjun.kv@samsung.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 12 December 2013 06:09, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> This patch reorders reported frequencies from the highest to the lowest,
-> just like in other frequency drivers.
+Hi Arun,
 
-This isn't required I believe.. cpufreq core doesn't enforce any restrictions
-on order of freqs present in table.
+> Hi Lukasz,
+> 
+> On Tue, Dec 17, 2013 at 1:30 PM, Lukasz Majewski
+> <l.majewski@samsung.com> wrote:
+> > Hi Viresh,
+> >
+> >> On 6 December 2013 15:18, Arun Kumar K <arun.kk@samsung.com> wrote:
+> >> > From: "Arjun.K.V" <arjun.kv@samsung.com>
+> >> >
+> >> > The patch adds cpufreq driver for exynos5420.
+> >> >
+> >> > Signed-off-by: Arjun.K.V <arjun.kv@samsung.com>
+> >> > Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
+> >> > Signed-off-by: Arun Kumar K <arun.kk@samsung.com>
+> >> > ---
+> >> >  drivers/cpufreq/Kconfig.arm          |   11 ++
+> >> >  drivers/cpufreq/Makefile             |    1 +
+> >> >  drivers/cpufreq/exynos-cpufreq.c     |    2 +
+> >> >  drivers/cpufreq/exynos-cpufreq.h     |    8 +
+> >> >  drivers/cpufreq/exynos5420-cpufreq.c |  346
+> >> > ++++++++++++++++++++++++++++++++++ 5 files changed, 368
+> >> > insertions(+) create mode 100644
+> >> > drivers/cpufreq/exynos5420-cpufreq.c
+> >>
+> >> Hmm.. That's the second big LITTLE SoC after TC2..
+> >> And we already have a generic enough driver for all big LITTLE
+> >> platforms: arm_big_little.c
+> >>
+> >> Please use that with a glue clk and regulator driver if required.
+> >> We don't want to get any new driver for big LITTLE unless there is
+> >> a real limitation.
+> >>
+> >> Also, the generic big LITTLE driver supports IKS (In Kernel
+> >> Switcher) which may or maynot be used by Exynos.
+> >>
+> >> @Lukasz: We can't use cpu0 driver here as we have multiple clusters
+> >> here A7 and A15, and so there are two clock domains instead of one.
+> >> That's why we have written big LITTLE driver.
+> >
+> > When I first looked into the patch - it was almost identical to the
+> > exynos4210-cpufreq.c or exynos4x12-cpufreq.c files.
+> >
+> > Also I didn't spot the code characteristic to IKS. It seems like the
+> > code in this file is not aware if it runs on A7 or A15.
+> >
+> 
+> This initial version was only for A15s and I was planning for an
+> incremental patch for A7s along with common code for the  same. Now
+> that is not needed with the generic implementation in place.
+
+Ok. I see.
+
+> 
+> Regards
+> Arun
+
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
