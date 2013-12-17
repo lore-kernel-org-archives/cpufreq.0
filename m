@@ -1,85 +1,58 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 3/3] cpufreq: exynos: Add exynos5420 cpufreq driver
-Date: Tue, 17 Dec 2013 10:09:56 +0100
-Message-ID: <20131217100956.6fa5b7e6@amdc2363>
-References: <1386323284-15646-1-git-send-email-arun.kk@samsung.com>
- <1386323284-15646-4-git-send-email-arun.kk@samsung.com>
- <CAKohpo=vkZRSQ5Xk-Tsm9QVy8h2F5Ehpm4Y8JWi5xjx0OD72tw@mail.gmail.com>
- <20131217090005.1e04ff7b@amdc2363>
- <CALt3h79iuOnmeCBxHjPN3qAoiuwHYBXAp_eSTDewxc96zqSOOg@mail.gmail.com>
+From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
+Subject: Re: [PATCH 4/4] cpufreq: imx6q: correct VDDSOC/PU voltage scaling
+ when cpufreq is changed
+Date: Tue, 17 Dec 2013 10:53:47 +0100
+Message-ID: <20131217105347.75954ad3@ipc1.ka-ro>
+References: <1387228450-641-1-git-send-email-b20788@freescale.com>
+	<1387228450-641-2-git-send-email-b20788@freescale.com>
+	<20131217025616.GC6691@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CALt3h79iuOnmeCBxHjPN3qAoiuwHYBXAp_eSTDewxc96zqSOOg@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20131217025616.GC6691@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Arun Kumar K <arunkk.samsung@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Kgene Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, abrestic@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tomasz Figa <tomasz.figa@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, arjun.kv@samsung.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Anson Huang <b20788@freescale.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Arun,
+Hi,
 
-> Hi Lukasz,
-> 
-> On Tue, Dec 17, 2013 at 1:30 PM, Lukasz Majewski
-> <l.majewski@samsung.com> wrote:
-> > Hi Viresh,
-> >
-> >> On 6 December 2013 15:18, Arun Kumar K <arun.kk@samsung.com> wrote:
-> >> > From: "Arjun.K.V" <arjun.kv@samsung.com>
-> >> >
-> >> > The patch adds cpufreq driver for exynos5420.
-> >> >
-> >> > Signed-off-by: Arjun.K.V <arjun.kv@samsung.com>
-> >> > Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
-> >> > Signed-off-by: Arun Kumar K <arun.kk@samsung.com>
-> >> > ---
-> >> >  drivers/cpufreq/Kconfig.arm          |   11 ++
-> >> >  drivers/cpufreq/Makefile             |    1 +
-> >> >  drivers/cpufreq/exynos-cpufreq.c     |    2 +
-> >> >  drivers/cpufreq/exynos-cpufreq.h     |    8 +
-> >> >  drivers/cpufreq/exynos5420-cpufreq.c |  346
-> >> > ++++++++++++++++++++++++++++++++++ 5 files changed, 368
-> >> > insertions(+) create mode 100644
-> >> > drivers/cpufreq/exynos5420-cpufreq.c
-> >>
-> >> Hmm.. That's the second big LITTLE SoC after TC2..
-> >> And we already have a generic enough driver for all big LITTLE
-> >> platforms: arm_big_little.c
-> >>
-> >> Please use that with a glue clk and regulator driver if required.
-> >> We don't want to get any new driver for big LITTLE unless there is
-> >> a real limitation.
-> >>
-> >> Also, the generic big LITTLE driver supports IKS (In Kernel
-> >> Switcher) which may or maynot be used by Exynos.
-> >>
-> >> @Lukasz: We can't use cpu0 driver here as we have multiple clusters
-> >> here A7 and A15, and so there are two clock domains instead of one.
-> >> That's why we have written big LITTLE driver.
-> >
-> > When I first looked into the patch - it was almost identical to the
-> > exynos4210-cpufreq.c or exynos4x12-cpufreq.c files.
-> >
-> > Also I didn't spot the code characteristic to IKS. It seems like the
-> > code in this file is not aware if it runs on A7 or A15.
-> >
-> 
-> This initial version was only for A15s and I was planning for an
-> incremental patch for A7s along with common code for the  same. Now
-> that is not needed with the generic implementation in place.
-
-Ok. I see.
-
-> 
-> Regards
-> Arun
+Shawn Guo wrote:
+> On Mon, Dec 16, 2013 at 04:14:10PM -0500, Anson Huang wrote:
+> > on i.MX6Q, cpu freq change need to follow below flows:
+> >=20
+> > 1. each setpoint has different VDDARM, VDDSOC/PU voltage, get the s=
+etpoint
+> > table from dts;
+> > 2. when cpu freq is scaling up, need to increase VDDSOC/PU voltage =
+before
+> > VDDARM, if VDDPU is off, no need to change it;
+> > 3. when cpu freq is scaling down, need to decrease VDDARM voltage b=
+efore
+> > VDDSOC/PU, if VDDPU is off, no need to change it;
+> >=20
+> > Signed-off-by: Anson Huang <b20788@freescale.com>
+> > ---
+[...]
+> > +	if (soc_opp_index >=3D soc_opp_count) {
+>=20
+> Can soc_opp_index be possibly greater than soc_opp_count?  Otherwise,
+> the condition check below is good enough?
+>=20
+> 	if (soc_opp_index =3D=3D soc_opp_count)
+>
+it doen't harm to be on the safe side and use >=3D anyway!
 
 
+Lothar Wa=C3=9Fmann
+--=20
+___________________________________________________________
 
--- 
-Best regards,
+Ka-Ro electronics GmbH | Pascalstra=C3=9Fe 22 | D - 52076 Aachen
+Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
+Gesch=C3=A4ftsf=C3=BChrer: Matthias Kaussen
+Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+www.karo-electronics.de | info@karo-electronics.de
+___________________________________________________________
