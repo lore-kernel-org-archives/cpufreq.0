@@ -1,81 +1,27 @@
-From: Arun Kumar K <arunkk.samsung@gmail.com>
-Subject: Re: [PATCH 3/3] cpufreq: exynos: Add exynos5420 cpufreq driver
-Date: Tue, 17 Dec 2013 13:51:13 +0530
-Message-ID: <CALt3h78Zoabm+1kDNrEEyQ_Nshi2yOFd57NwOq6zTnVijfngJA@mail.gmail.com>
-References: <1386323284-15646-1-git-send-email-arun.kk@samsung.com>
-	<1386323284-15646-4-git-send-email-arun.kk@samsung.com>
-	<20131209092324.1f8b6502@amdc2363>
-	<CALt3h7-25_mW5SnnTbZWjoF0pOZxsU5Gg6FqOdoz1MgdH7gm5w@mail.gmail.com>
-	<20131210173208.5083aa1f@amdc2363>
-	<CABb+yY0C50va5UAgv5QKGKK6qE1wiDwcUmn54CC7PVQ8vpoEmg@mail.gmail.com>
-	<20131217091456.1af748c3@amdc2363>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] powernow-k6: disable cache when changing frequency
+Date: Tue, 17 Dec 2013 14:15:01 +0530
+Message-ID: <CAKohpo=_0i43EDSoOAm2ROwEmu9__p+MyoObcLPoZWxUB5XmDA@mail.gmail.com>
+References: <alpine.LRH.2.02.1312111751180.9686@file01.intranet.prod.int.rdu2.redhat.com>
+	<alpine.LRH.2.02.1312111937570.23022@file01.intranet.prod.int.rdu2.redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=PqoIOSvMZaFKFjlbPBcSyKUsQzvcUANqxxvcNvqUwrk=;
-        b=Sp2TBVcIIgODTvTUEQu47I+vMlnE1TZ6MsV9Xsj8GdNxxsTIaHfXnlSJj05S+jHJ7E
-         rL+wdP/Y2Shvi03+Oxe4E/eWJHgs3q9Y3wBK1X+grGA7X2YMpODXbWRLqCTh6olqHWRx
-         bQoMvA1usEnL42VythJnMK5Tdx0XQkoWVRyoNkkewZIZzYUheWGXGgEdMgnG8L8Re9uO
-         K1EXuNLO6tmOKiq63AmZYuOvdwhzZ5mwPvjFgeREnch0+wG0B7LYutgrq2UMGZ+GXzq3
-         F2z0sDUuMzkJbHdZ11B6C88c3xsKrf976BM75j1A8qFleGEGVIzQXPcc8dzF8/GDpyvg
-         zWSA==
-In-Reply-To: <20131217091456.1af748c3@amdc2363>
+In-Reply-To: <alpine.LRH.2.02.1312111937570.23022@file01.intranet.prod.int.rdu2.redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Jassi Brar <jassisinghbrar@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, abrestic@chromium.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tomasz Figa <tomasz.figa@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, arjun.kv@samsung.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Lukasz,
+On 12 December 2013 06:08, Mikulas Patocka <mpatocka@redhat.com> wrote:
+> During frequency transition the processor is in "EPM Stop Grant" state.
+> The documentation says that the processor doesn't respond to inquiry
+> requests in this state. Consequently, coherency of processor caches and
+> bus master devices is not maintained, causing the system instability.
+>
+> This patch flushes the cache during frequency transition. It fixes the
+> instability.
 
-On Tue, Dec 17, 2013 at 1:44 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Hi Jassi,
->
->> On Tue, Dec 10, 2013 at 10:02 PM, Lukasz Majewski
->> <l.majewski@samsung.com> wrote:
->> >>
->> >> Actually these values are not for PLL, but for the dividers.
->> >> If you see below, the PLL rate setting is done through
->> >> clk_set_rate() going via CCF. But I found an issue if the divider
->> >> values are set via clk_set_rate API.
->> >> What I found is, the system goes into freeze if all the divider
->> >> values are not set in one shot. So we cannot call multiple
->> >> clk_set_rate()'s on each divider. Thats why I continued with
->> >> non-CCF way of setting the divider.
->> >
->> > I see. I'm not an expert on common clock framework (CCF), but for me
->> > conceptually clock dividers setting shall be handled by CCF.
->> >
->> > However, I've poked a bit at CCF. There isn't any out of the box
->> > solutions available.
->> >
->> > A "virtual" clock can be defined and inside its implementation we
->> > can atomically set dividers. Another solution would be to hack the
->> > current CCF to provide atomic clock operations
->> >
->> CCF isn't only for clocks that have single divider or gate control
->> register. One could define a clock that manipulates more than one
->> divider/gate in one CCF callback. It is already abstract enough. So
->> implementing a virtual clock is the solution, imho.
->
-> Thanks for sharing your experience.
->
->>  BTW, on my platform linux needs to send a 'non-atomic' IPC message to
->> a master co-processor to scale up/down cpufreq. I just define a
->> virtual clock and use the generic bL cpufreq driver
->> drivers/cpufreq/arm_big_little.c
->
-> My use case is simpler - cpufreq-cpu0.c or arm_bit_little.c (for bL)
-> driver with maybe two virtual clocks to handle divider's update.
->
-
-Is it very simple where 5 different dividers with different divider ratios have
-to be set in one shot. Our clk_set_rate() API as such takes only one freq rate
-argument. How do you think to combine say 5 divider rates?
-
-Regards
-Arun
+I don't have much idea of these systems but wouldn't this affect performance
+badly?
