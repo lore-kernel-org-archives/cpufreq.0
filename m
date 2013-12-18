@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 65501] Blind angle of 1% between up_threshold and
  down_threshold
-Date: Wed, 18 Dec 2013 14:29:39 +0000
-Message-ID: <bug-65501-12968-iGlJZkj770@https.bugzilla.kernel.org/>
+Date: Wed, 18 Dec 2013 14:33:20 +0000
+Message-ID: <bug-65501-12968-vYLYpGlaBE@https.bugzilla.kernel.org/>
 References: <bug-65501-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,13 +15,10 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=65501
 
---- Comment #8 from Viresh Kumar <viresh.kumar@linaro.org> ---
-(In reply to sworddragon2 from comment #7)
-> Why is MIN_FREQUENCY_UP_THRESHOLD not 1?
-
-That would be foolish :)
-
-This will make CPU run on max frequency all the time.
+--- Comment #9 from sworddragon2@aol.com ---
+Are you sure? As much as I understand this wouldn't the cpu only scale up if it
+reaches 1% of cpu usage? Wouldn't the frequency then scale down as soon as the
+system is in idle with ~0%?
 
 -- 
 You are receiving this mail because:
