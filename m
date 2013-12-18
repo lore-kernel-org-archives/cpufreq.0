@@ -1,31 +1,33 @@
-From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
-Subject: Re: [PATCH V2 2/2] cpufreq: imx6q: correct VDDSOC/PU voltage
- scaling when cpufreq is changed
-Date: Tue, 17 Dec 2013 13:27:13 +0000
-Message-ID: <4E25F2ED-7CAE-495E-838D-1527184F2159@freescale.com>
-References: <1387318102-11070-1-git-send-email-b20788@freescale.com>
- <1387318102-11070-2-git-send-email-b20788@freescale.com>,<20131217132312.GB3185@sirena.org.uk>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 65501] Blind angle of 1% between up_threshold and
+ down_threshold
+Date: Wed, 18 Dec 2013 06:16:18 +0000
+Message-ID: <bug-65501-12968-YYF1QoxzbF@https.bugzilla.kernel.org/>
+References: <bug-65501-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20131217132312.GB3185@sirena.org.uk>
-Content-Language: zh-CN
+In-Reply-To: <bug-65501-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mark Brown <broonie@kernel.org>
-Cc: "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: cpufreq@vger.kernel.org
 
-DQoNClNlbnQgZnJvbSBBbnNvbidzIGlQaG9uZQ0KDQo+INTaIDIwMTPE6jEy1MIxN8jVo6wyMToy
-M6OsIk1hcmsgQnJvd24iIDxicm9vbmllQGtlcm5lbC5vcmc+INC0tcCjug0KPiANCj4+IE9uIFR1
-ZSwgRGVjIDE3LCAyMDEzIGF0IDA1OjA4OjIyUE0gLTA1MDAsIEFuc29uIEh1YW5nIHdyb3RlOg0K
-Pj4gDQo+PiAgICBpZiAobmV3X2ZyZXEgPiBvbGRfZnJlcSkgew0KPj4gKyAgICAgICAgaWYgKHJl
-Z3VsYXRvcl9pc19lbmFibGVkKHB1X3JlZykpIHsNCj4+ICsgICAgICAgICAgICByZXQgPSByZWd1
-bGF0b3Jfc2V0X3ZvbHRhZ2VfdG9sKHB1X3JlZywgaW14Nl9zb2Nfdm9sdFtpbmRleF0sIDApOw0K
-PiANCj4gQXMgSSBwb2ludGVkIG91dCB3aGlsZSByZXZpZXdpbmcgdGhlIHJlZ3VsYXRvciBkcml2
-ZXIgdGhpcyBpcyByYWN5LA0KPiBub3RoaW5nIHN0b3BzIHRoZSByZWd1bGF0b3Igc3RhdGUgYmVp
-bmcgY2hhbmdlZCBhZnRlciB5b3UgcmVhZCBpdCBhbmQgaWYNCj4geW91IHNraXAgc2V0dGluZyB0
-aGUgdm9sdGFnZSB0aGVuIHdoZW4gc29tZXRoaW5nIGNvbWVzIGFsb25nIGFuZCBlbmFibGVzDQo+
-IHRoZSByZWd1bGF0b3IgbGF0ZXIgaXQgd2lsbCBiZSBlbmFibGVkIHdpdGggYSBwb3NzaWJseSBp
-bmNvcnJlY3QNCj4gdm9sdGFnZS4NCg0KeWVzLCB5b3UgYXJlIGNvcnJlY3QsIEkgd2lsbCByZW1v
-dmUgdGhpcyBQVSBzdGF0dXMgY2hlY2sgaW4gVjMgcGF0Y2guDQoNCkFuc29u
+https://bugzilla.kernel.org/show_bug.cgi?id=65501
+
+--- Comment #2 from Viresh Kumar <viresh.kumar@linaro.org> ---
+(In reply to sworddragon2 from comment #0)
+> The lowest value that /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
+> can contain is 11 while the implicit configuration down_threshold will be
+> statically set to 10.
+
+I got a bit confused. You are talking about up_threshold and down_threshold for
+ondemand governor. Whereas down_threshold isn't there for ondemand governor.
+Its only there for conservative governor. And there are no such max/min limits
+available there.
+
+So more clarification required from your side on this issue.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
