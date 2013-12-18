@@ -1,40 +1,61 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 65501] Blind angle of 1% between up_threshold and
- down_threshold
-Date: Wed, 18 Dec 2013 15:29:00 +0000
-Message-ID: <bug-65501-12968-MU8xEDrAfi@https.bugzilla.kernel.org/>
-References: <bug-65501-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Jason Baron <jbaron@akamai.com>
+Subject: [PATCH] cpufreq: Apply default governor for setpolicy drivers
+Date: Wed, 18 Dec 2013 20:31:02 +0000 (GMT)
+Message-ID: <20131218203102.9F9692036@prod-mail-relay06.akamai.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-65501-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=65501
+When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
+'intel_pstate' driver, I found that the default is not honored. For example,
+configure 'CONFIG_CPU_FREQ_GOV_PERFORMANCE', and then do:
 
---- Comment #13 from sworddragon2@aol.com ---
-> There is no floating point division here :)
+# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+powersave
 
-Than lets repeat this text with MIN_FREQUENCY_UP_THRESHOLD as 2. But...
+However, I can do:
 
+echo "performance" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
-> And even if we do that, we don't really need to take care of loads lesser than > 1%, that's too small..
+and it takes properly.
 
-... we are moving now into the correct direction :)
-This is the point that disturbs me. We are setting a fixed minimum limit of 11
-while there is no logical reason to do this. Lets make the hypothetical
-assumption that MIN_FREQUENCY_UP_THRESHOLD could be set to 1:
+Fix by setting the default governor, if its either 'powersave' or 'performance'.
+Otherwise, fall back to what the driver originally set via its 'init' routine.
 
-- Current systems wouldn't be affected as they have already a value >= 11.
-- New systems with a default kernel would keep still the default value that is
->= 11.
+Signed-off-by: Jason Baron <jbaron@akamai.com>
+---
+ drivers/cpufreq/cpufreq.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-So there is no disadvantage for these systems. But users now have the advantage
-that they can make there own decision how low they want to go.
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 02d534d..931fa67 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -826,8 +826,19 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ {
+ 	struct cpufreq_policy new_policy;
+ 	int ret = 0;
++	int init_policy;
+ 
+ 	memcpy(&new_policy, policy, sizeof(*policy));
++
++	/* honor the default governor policy, unless its invalid */
++	if (cpufreq_driver->setpolicy) {
++		init_policy = new_policy.policy;
++		if (cpufreq_parse_governor(policy->governor->name,
++				&new_policy.policy, &new_policy.governor)) {
++			new_policy.policy = init_policy;
++		}
++	}
++
+ 	/* assure that the starting sequence is run in cpufreq_set_policy */
+ 	policy->governor = NULL;
+ 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.8.2.rc2
+
