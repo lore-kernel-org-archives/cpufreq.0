@@ -1,40 +1,57 @@
-From: bilhuang <bilhuang@nvidia.com>
-Subject: Re: [PATCH v3 2/2] cpufreq: tegra: Re-model Tegra cpufreq driver
-Date: Thu, 19 Dec 2013 13:57:33 +0800
-Message-ID: <52B28ACD.5080204@nvidia.com>
-References: <1386229462-3474-1-git-send-email-bilhuang@nvidia.com>	<1386229462-3474-3-git-send-email-bilhuang@nvidia.com>	<CAKohponns4B+BPPum3EN6EuXx6U+6MzOa50gMdR1BNBtxMNf0Q@mail.gmail.com>	<52B02D04.4050905@nvidia.com>	<CAKohpom0n8P8goQnsgBnWJwyqCVv_FRX3xKvO1yFW0VUMpMW8w@mail.gmail.com>	<52B187F5.7020105@nvidia.com>	<CAKohpokwhYC4FGnhpZPOGuJ2AM_7vygNk+3S+VpA_eXAexQX7g@mail.gmail.com>	<52B28397.5010808@nvidia.com> <CAKohpo=fJTLrN6myq5b9FTSro1m9oN3ep-aMu-3iv0J-S6TpdQ@mail.gmail.com>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH 2/3] clk: exynos5420: Add alias names for cpu clocks
+Date: Thu, 19 Dec 2013 00:00:22 -0800
+Message-ID: <20131219080022.18119.20692@quantum>
+References: <1386323284-15646-1-git-send-email-arun.kk@samsung.com>
+ <1386323284-15646-3-git-send-email-arun.kk@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=fJTLrN6myq5b9FTSro1m9oN3ep-aMu-3iv0J-S6TpdQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1386323284-15646-3-git-send-email-arun.kk@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Arun Kumar K <arun.kk@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org
+Cc: kgene.kim@samsung.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, tomasz.figa@gmail.com, arjun.kv@samsung.com, abrestic@chromium.org, arunkk.samsung@gmail.com
 
-On 12/19/2013 01:29 PM, Viresh Kumar wrote:
-> On 19 December 2013 10:56, bilhuang <bilhuang@nvidia.com> wrote:
->> I'm not sure virtual regulator for CPU is a good idea, in addition to that,
->> we don't have a single SoC OPP table, we need several which are speedo-id
->> and process-id dependant, but generic cpufreq-cpu0 is assuming there is only
->> one statically
->
-> Can't that be handled via DT ?
-I don't think it can be handled via DT unless we separate DTB according 
-to different CPU speedo/process-id but that is not a good idea.
->
->> for some SoC the frequency table is not fixed, they are
->> created at runtime combining our fast and slow CPU frequency table and dvfs
->> table. So I'm really not sure is it worth adding so many tweaks in order to
->> use the generic cpufreq-cpu0 driver.
->
-> Hmm, maybe I got confused because I don't have a clear picture in my mind.
-> It might be better to go ahead with your implementation for now and after
-> everything is set, we can choose to use cpufreq-cpu0 if it is worth it.
->
-This makes more sense to me, thanks.
-> --
-> viresh
->
+Quoting Arun Kumar K (2013-12-06 01:48:03)
+> Adds alias names for cpu clocks to be used in the cpufreq driver.
+> 
+> Signed-off-by: Arun Kumar K <arun.kk@samsung.com>
 
+Acked-by: Mike Turquette <mturquette@linaro.org>
+
+> ---
+>  drivers/clk/samsung/clk-exynos5420.c |    9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
+> index 48c4a93..c65c040 100644
+> --- a/drivers/clk/samsung/clk-exynos5420.c
+> +++ b/drivers/clk/samsung/clk-exynos5420.c
+> @@ -316,9 +316,10 @@ static struct samsung_fixed_factor_clock exynos5420_fixed_factor_clks[] __initda
+>  
+>  static struct samsung_mux_clock exynos5420_mux_clks[] __initdata = {
+>         MUX(none, "mout_mspll_kfc", mspll_cpu_p, SRC_TOP7, 8, 2),
+> -       MUX(none, "mout_mspll_cpu", mspll_cpu_p, SRC_TOP7, 12, 2),
+> -       MUX(none, "mout_apll", apll_p, SRC_CPU, 0, 1),
+> -       MUX(none, "mout_cpu", cpu_p, SRC_CPU, 16, 1),
+> +       MUX_A(none, "mout_mspll_cpu", mspll_cpu_p, SRC_TOP7, 12, 2,
+> +                       "mout_mspll_cpu"),
+> +       MUX_A(none, "mout_apll", apll_p, SRC_CPU, 0, 1, "mout_apll"),
+> +       MUX_A(none, "mout_cpu", cpu_p, SRC_CPU, 16, 1, "mout_cpu"),
+>         MUX(none, "mout_kpll", kpll_p, SRC_KFC, 0, 1),
+>         MUX(none, "mout_cpu_kfc", kfc_p, SRC_KFC, 16, 1),
+>  
+> @@ -373,7 +374,7 @@ static struct samsung_mux_clock exynos5420_mux_clks[] __initdata = {
+>  
+>         MUX(none, "sclk_mpll", mpll_p, SRC_TOP6, 0, 1),
+>         MUX(none, "sclk_vpll", vpll_p, SRC_TOP6, 4, 1),
+> -       MUX(none, "sclk_spll", spll_p, SRC_TOP6, 8, 1),
+> +       MUX_A(none, "sclk_spll", spll_p, SRC_TOP6, 8, 1, "mout_spll"),
+>         MUX(none, "sclk_ipll", ipll_p, SRC_TOP6, 12, 1),
+>         MUX(none, "sclk_rpll", rpll_p, SRC_TOP6, 16, 1),
+>         MUX(none, "sclk_epll", epll_p, SRC_TOP6, 20, 1),
+> -- 
+> 1.7.9.5
+> 
