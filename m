@@ -1,41 +1,50 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
-Date: Thu, 19 Dec 2013 12:33:35 -0700
-Message-ID: <52B34A0F.5080901@wwwdotorg.org>
-References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Jason Baron <jbaron@akamai.com>
+Subject: [PATCH v2] cpufreq: Use CONFIG_CPU_FREQ_DEFAULT_* to set initial policy for setpolicy drivers
+Date: Thu, 19 Dec 2013 22:50:50 +0000 (GMT)
+Message-ID: <20131219225050.E82C91FF9@prod-mail-relay06.akamai.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Bill Huang <bilhuang@nvidia.com>, rjw@rjwysocki.net, viresh.kumar@linaro.org, thierry.reding@gmail.com
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, dirk.j.brandewie@intel.com, dirk.brandewie@gmail.com
 
-On 12/19/2013 04:18 AM, Bill Huang wrote:
-> Re-model Tegra20 cpufreq driver as below.
-> 
-> * Rename tegra-cpufreq.c to tegra20-cpufreq.c since this file supports
->   only Tegra20.
-> * Add probe function so defer probe can be used when we're going to
->   support DVFS.
-> * Create a fake cpufreq platform device with its name being
->   "${root_compatible}-cpufreq" so SoC cpufreq driver can bind to it
->   accordingly.
+When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
+intel_pstate driver, the desired default policy is not properly set. For
+example, setting 'CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE' ended up with the
+'powersave' policy being set.
 
-Tested-by: Stephen Warren <swarren@nvidia.com>
-Acked-by: Stephen Warren <swarren@nvidia.com>
+Fix by configuring the correct default policy, if either 'powersave' or
+'performance' are requested. Otherwise, fallback to what the driver originally
+set via its 'init' routine.
 
-It should be fine to merge the arch/arm/mach-tegra/ changes in this
-patch through the cpufreq tree, since I don't think they'll conflict at
-all with anything in other trees this kernel cycle.
+Signed-off-by: Jason Baron <jbaron@akamai.com>
+---
 
-> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+v2: simplify logic
 
-> -#define NUM_CPUS	2
-> +#define MAX_CPUS	2
+ drivers/cpufreq/cpufreq.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Nit: Given this driver is explicitly for a 2-CPU SoC, I don't think
-there's any need to s/NUM/MAX/ here. But I don't care that much.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 02d534d..42e1ea4 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -828,6 +828,12 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ 	int ret = 0;
+ 
+ 	memcpy(&new_policy, policy, sizeof(*policy));
++
++	/* Use the default policy if its valid. */
++	if (cpufreq_driver->setpolicy)
++		cpufreq_parse_governor(policy->governor->name,
++					&new_policy.policy, NULL);
++
+ 	/* assure that the starting sequence is run in cpufreq_set_policy */
+ 	policy->governor = NULL;
+ 
+-- 
+1.8.2.rc2
 
