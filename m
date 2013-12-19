@@ -1,50 +1,100 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Apply default governor for setpolicy drivers
-Date: Thu, 19 Dec 2013 14:18:20 +0100
-Message-ID: <1705569.2YBVYpbg6Q@vostro.rjw.lan>
-References: <20131218203102.9F9692036@prod-mail-relay06.akamai.com> <2651749.Dr3egRT25J@vostro.rjw.lan> <52B26D3E.2070600@akamai.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH V4 3/3] cpufreq: imx6: Add device tree binding document
+Date: Thu, 19 Dec 2013 14:21:08 +0000
+Message-ID: <52B300D4.4090309@arm.com>
+References: <1387462609-13013-1-git-send-email-b20788@freescale.com> <1387462609-13013-3-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <52B26D3E.2070600@akamai.com>
+In-Reply-To: <1387462609-13013-3-git-send-email-b20788@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Jason Baron <jbaron@akamai.com>
-Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "dirk.brandewie@gmail.com" <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Anson Huang <b20788@freescale.com>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Cc: Sudeep.KarkadaNagesha@arm.com, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Wednesday, December 18, 2013 10:51:26 PM Jason Baron wrote:
-> On 12/18/2013 06:33 PM, Rafael J. Wysocki wrote:
-> > On Wednesday, December 18, 2013 04:35:04 PM Jason Baron wrote:
-> >> On 12/18/2013 04:38 PM, Rafael J. Wysocki wrote:
-> >>> On Wednesday, December 18, 2013 08:31:02 PM Jason Baron wrote:
-> >>>> When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
-> >>>> 'intel_pstate' driver, I found that the default is not honored. For example,
-> >>>> configure 'CONFIG_CPU_FREQ_GOV_PERFORMANCE', and then do:
-> >>> intel_pstate doesn't use any cpufreq governors, so all of this is pointless
-> >>> for that particular driver anyway.
-> >>>
-> >>> Thanks!
-> >>>
-> >> Ok, but if I look at 'intel_pstate', I see a 'set_policy' call that does different
-> >> things if the policy is 'performance' vs. 'powersave'. Same for the 'longrun'
-> >> driver. So yes, they don't use the 'governors', but changing the governors
-> >> at runtime does appear to change change how they behave.
-> > OK, so you want the initial policy to be set in accordance with the
-> > CONFIG_CPU_FREQ_DEFAULT_* setting.  That makes sense, although it is not
-> > immediately clear from the patch changelog.
-> >
-> > That said the change in the patch looks kind of overly complicated.
-> > What about adding something like this instead?
+On 19/12/13 14:16, Anson Huang wrote:
+> This device tree binding document describes the imx6 cpufreq
+> DT bindings. This document lists all required and optional properties
+> for imx6 cpufreq.
 > 
-> Agreed - this is better. Will you just pull the below patch, or should
-> I re-post with a better changelog?
+> Signed-off-by: Anson Huang <b20788@freescale.com>
+> ---
+>  .../devicetree/bindings/cpufreq/cpufreq-imx6.txt   |   56 ++++++++++++++++++++
+>  1 file changed, 56 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+> new file mode 100644
+> index 0000000..a14b895
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+> @@ -0,0 +1,56 @@
+> +i.MX6 cpufreq driver
+> +-------------------
+> +
+> +i.MX6 SoC cpufreq driver for CPU frequency scaling.
+> +
+> +This binding doc defines properties that must be put in the /cpus/cpu@0 node,
+> +please refer to Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> +for detail.
+> +
+> +Required properties:
+> +- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
+> +  for details.
+> +- clocks: Specify clocks that need to be used when cpu frequency is scaled,
+> +  refer to Documentation/devicetree/bindings/clock/clock-bindings.txt for
+> +  details.
+> +- clock-names: List of clock input name strings sorted in the same order as the
+> +  clocks property, refer to Documentation/devicetree/bindings/clock/clock-bindings.txt
+> +  for details.
+> +- xxx-supply: Input voltage supply regulator, refer to
+> +  Documentation/devicetree/bindings/regulator/regulator.txt for details.
+> +  arm-supply: regulator node supplying arm.
+> +  pu-supply: regulator node supplying pu.
+> +  soc-supply: regulator node supplying soc.
+> +
+> +Optional properties:
+> +- fsl,soc-operating-points: Specify vddsoc/pu voltage settings that must
+> +  go with cpu0's operating-points.
+> +- clock-latency: Specify the possible maximum transition latency for clock,
+> +  in unit of nanoseconds.
+> +
 
-I think the Viresh' version is the best one, but it needs a comment about what
-it is for and a better changelog would be welcome. :-)
+Sorry if I am missing something obvious as I have not followed the previous
+versions and corresponding comments.
 
-Thanks!
+Should these SoC properties be part of cpu node ? If so which cpu or why cpu0 ?
+IIUC it's more a SoC properties which also influences ARM CPU OPPs. IOW other
+regulators may depend on pu/soc-supply. In that case it would be cleaner if that
+dependency is setup through regulators framework.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> +Examples:
+> +
+> +	cpu@0 {
+> +		operating-points = <
+> +			/* kHz    uV */
+> +			1200000 1275000
+> +			996000  1250000
+> +			792000  1150000
+> +			396000  975000
+> +		>;
+> +		fsl,soc-operating-points = <
+> +			/* ARM kHz  SOC-PU uV */
+> +			1200000 1275000
+> +			996000	1250000
+> +			792000	1175000
+> +			396000	1175000
+> +		>;
+> +		clock-latency = <61036>; /* two CLK32 periods */
+> +		clocks = <&clks 104>, <&clks 6>, <&clks 16>,
+> +			 <&clks 17>, <&clks 170>;
+> +		clock-names = "arm", "pll2_pfd2_396m", "step",
+> +			      "pll1_sw", "pll1_sys";
+> +		arm-supply = <&reg_arm>;
+> +		pu-supply = <&reg_pu>;
+> +		soc-supply = <&reg_soc>;
+> +	};
+> 
+
+
