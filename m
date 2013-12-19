@@ -1,103 +1,34 @@
-From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
-Subject: Re: [PATCH V3 1/2] ARM: imx: add vddsoc/pu setpoint info into dts
-Date: Wed, 18 Dec 2013 23:31:47 +0000
-Message-ID: <43A4EB83-ED8F-43F8-A458-4AEEDA886008@freescale.com>
-References: <1387402010-31749-1-git-send-email-b20788@freescale.com>,
- <20131218142157.GL6691@S2101-09.ap.freescale.net>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 65501] Blind angle of 1% between up_threshold and
+ down_threshold
+Date: Thu, 19 Dec 2013 01:59:47 +0000
+Message-ID: <bug-65501-12968-fVMOQlZbUm@https.bugzilla.kernel.org/>
+References: <bug-65501-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20131218142157.GL6691@S2101-09.ap.freescale.net>
-Content-Language: zh-CN
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-65501-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-DQoNClNlbnQgZnJvbSBBbnNvbidzIGlQaG9uZQ0KDQo+INTaIDIwMTPE6jEy1MIxOMjVo6wyMjoy
-MaOsIlNoYXduIEd1byIgPHNoYXduLmd1b0BsaW5hcm8ub3JnPiDQtLXAo7oNCj4gDQo+PiBPbiBX
-ZWQsIERlYyAxOCwgMjAxMyBhdCAwNDoyNjo0OVBNIC0wNTAwLCBBbnNvbiBIdWFuZyB3cm90ZToN
-Cj4+IGkuTVg2USBuZWVkcyB0byB1cGRhdGUgdmRkYXJtLCB2ZGRzb2MvcHUgcmVndWxhdG9ycyB3
-aGVuIGNwdSBmcmVxDQo+PiBpcyBjaGFuZ2VkLCBlYWNoIHNldHBvaW50IGhhcyBkaWZmZXJlbnQg
-dm9sdGFnZSwgc28gd2UgbmVlZCB0bw0KPj4gcGFzcyB2ZGRhcm0sIHZkZHNvYy9wdSdzIGZyZXEt
-dm9sdGFnZSBpbmZvIGZyb20gZHRzIHRvZ2V0aGVyLg0KPj4gDQo+PiBTaWduZWQtb2ZmLWJ5OiBB
-bnNvbiBIdWFuZyA8YjIwNzg4QGZyZWVzY2FsZS5jb20+DQo+PiAtLS0NCj4+IC4uLi9kZXZpY2V0
-cmVlL2JpbmRpbmdzL2NwdWZyZXEvY3B1ZnJlcS1pbXg2LnR4dCAgIHwgICA1NiArKysrKysrKysr
-KysrKysrKysrKw0KPiANCj4gQXMgSSBzYWlkIGluIFYyIHJldmlldywgdGhlIGRldmljZSB0cmVl
-IGJpbmRpbmcgZG9jIGNoYW5nZSBzaG91bGQgYmUNCj4gcGFydCBvZiBkcml2ZXIgcGF0Y2ggKHBh
-dGNoICMyIGluIHRoaXMgY2FzZSkgb3IgYSBzZXBhcmF0ZSBwYXRjaCwgYnV0DQo+IG5ldmVyIGJl
-IGluIHRoZSBzYW1lIHBhdGNoIGFzIERUUyBjaGFuZ2UuDQoNCkkgbWlzc2VkIHRoYXQgb25lLCBz
-b3JyeSBmb3IgdGhhdCwgdGhlbiBJIHdpbGwgc2VuZCBvdXQgYSBWNCBwYXRjaCBzZXQuDQo+IA0K
-PiBTaGF3bg0KPiANCj4+IGFyY2gvYXJtL2Jvb3QvZHRzL2lteDZxLmR0c2kgICAgICAgICAgICAg
-ICAgICAgICAgIHwgICAgNyArKysNCj4+IDIgZmlsZXMgY2hhbmdlZCwgNjMgaW5zZXJ0aW9ucygr
-KQ0KPj4gY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
-cy9jcHVmcmVxL2NwdWZyZXEtaW14Ni50eHQNCj4+IA0KPj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50
-YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9jcHVmcmVxL2NwdWZyZXEtaW14Ni50eHQgYi9Eb2N1
-bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY3B1ZnJlcS9jcHVmcmVxLWlteDYudHh0DQo+
-PiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0KPj4gaW5kZXggMDAwMDAwMC4uY2YxYzVmNw0KPj4gLS0t
-IC9kZXYvbnVsbA0KPj4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nw
-dWZyZXEvY3B1ZnJlcS1pbXg2LnR4dA0KPj4gQEAgLTAsMCArMSw1NiBAQA0KPj4gK2kuTVg2IGNw
-dWZyZXEgZHJpdmVyDQo+PiArLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPj4gKw0KPj4gK2kuTVg2IFNv
-QyBjcHVmcmVxIGRyaXZlciBmb3IgQ1BVIGZyZXF1ZW5jeSBzY2FsaW5nLg0KPj4gKw0KPj4gK1Ro
-aXMgYmluZGluZyBkb2MgZGVmaW5lcyBwcm9wZXJ0aWVzIHRoYXQgbXVzdCBiZSBwdXQgaW4gdGhl
-IC9jcHVzL2NwdUAwIG5vZGUsDQo+PiArcGxlYXNlIHJlZmVyIHRvIERvY3VtZW50YXRpb24vZGV2
-aWNldHJlZS9iaW5kaW5ncy9jcHVmcmVxL2NwdWZyZXEtY3B1MC50eHQNCj4+ICtmb3IgZGV0YWls
-Lg0KPj4gKw0KPj4gK1JlcXVpcmVkIHByb3BlcnRpZXM6DQo+PiArLSBvcGVyYXRpbmctcG9pbnRz
-OiBSZWZlciB0byBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvb3BwLnR4
-dA0KPj4gKyAgZm9yIGRldGFpbHMuDQo+PiArLSBjbG9ja3M6IFNwZWNpZnkgY2xvY2tzIHRoYXQg
-bmVlZCB0byBiZSB1c2VkIHdoZW4gY3B1IGZyZXF1ZW5jeSBpcyBzY2FsZWQsDQo+PiArICByZWZl
-ciB0byBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2svY2xvY2stYmluZGlu
-Z3MudHh0IGZvcg0KPj4gKyAgZGV0YWlscy4NCj4+ICstIGNsb2NrLW5hbWVzOiBMaXN0IG9mIGNs
-b2NrIGlucHV0IG5hbWUgc3RyaW5ncyBzb3J0ZWQgaW4gdGhlIHNhbWUgb3JkZXIgYXMgdGhlDQo+
-PiArICBjbG9ja3MgcHJvcGVydHksIHJlZmVyIHRvIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy9jbG9jay9jbG9jay1iaW5kaW5ncy50eHQNCj4+ICsgIGZvciBkZXRhaWxzLg0KPj4g
-Ky0geHh4LXN1cHBseTogSW5wdXQgdm9sdGFnZSBzdXBwbHkgcmVndWxhdG9yLCByZWZlciB0bw0K
-Pj4gKyAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3JlZ3VsYXRvci9yZWd1bGF0
-b3IudHh0IGZvciBkZXRhaWxzLg0KPj4gKyAgYXJtLXN1cHBseTogdmRkYXJtIGlucHV0Lg0KPj4g
-KyAgcHUtc3VwcGx5OiB2ZGRwdSBpbnB1dC4NCj4+ICsgIHNvYy1zdXBwbHk6IHZkZHNvYyBpbnB1
-dC4NCj4+ICsNCj4+ICtPcHRpb25hbCBwcm9wZXJ0aWVzOg0KPj4gKy0gZnNsLHNvYy1vcGVyYXRp
-bmctcG9pbnRzOiBTcGVjaWZ5IHZkZHNvYy9wdSB2b2x0YWdlIHNldHRpbmdzIHRoYXQgbXVzdA0K
-Pj4gKyAgZ28gd2l0aCBjcHUwJ3Mgb3BlcmF0aW5nLXBvaW50cy4NCj4+ICstIGNsb2NrLWxhdGVu
-Y3k6IFNwZWNpZnkgdGhlIHBvc3NpYmxlIG1heGltdW0gdHJhbnNpdGlvbiBsYXRlbmN5IGZvciBj
-bG9jaywNCj4+ICsgIGluIHVuaXQgb2YgbmFub3NlY29uZHMuDQo+PiArDQo+PiArRXhhbXBsZXM6
-DQo+PiArDQo+PiArICAgIGNwdUAwIHsNCj4+ICsgICAgICAgIG9wZXJhdGluZy1wb2ludHMgPSA8
-DQo+PiArICAgICAgICAgICAgLyoga0h6ICAgIHVWICovDQo+PiArICAgICAgICAgICAgMTIwMDAw
-MCAxMjc1MDAwDQo+PiArICAgICAgICAgICAgOTk2MDAwICAxMjUwMDAwDQo+PiArICAgICAgICAg
-ICAgNzkyMDAwICAxMTUwMDAwDQo+PiArICAgICAgICAgICAgMzk2MDAwICA5NzUwMDANCj4+ICsg
-ICAgICAgID47DQo+PiArICAgICAgICBmc2wsc29jLW9wZXJhdGluZy1wb2ludHMgPSA8DQo+PiAr
-ICAgICAgICAgICAgLyogQVJNIGtIeiAgU09DLVBVIHVWICovDQo+PiArICAgICAgICAgICAgMTIw
-MDAwMCAxMjc1MDAwDQo+PiArICAgICAgICAgICAgOTk2MDAwICAgIDEyNTAwMDANCj4+ICsgICAg
-ICAgICAgICA3OTIwMDAgICAgMTE3NTAwMA0KPj4gKyAgICAgICAgICAgIDM5NjAwMCAgICAxMTc1
-MDAwDQo+PiArICAgICAgICA+Ow0KPj4gKyAgICAgICAgY2xvY2stbGF0ZW5jeSA9IDw2MTAzNj47
-IC8qIHR3byBDTEszMiBwZXJpb2RzICovDQo+PiArICAgICAgICBjbG9ja3MgPSA8JmNsa3MgMTA0
-PiwgPCZjbGtzIDY+LCA8JmNsa3MgMTY+LA0KPj4gKyAgICAgICAgICAgICA8JmNsa3MgMTc+LCA8
-JmNsa3MgMTcwPjsNCj4+ICsgICAgICAgIGNsb2NrLW5hbWVzID0gImFybSIsICJwbGwyX3BmZDJf
-Mzk2bSIsICJzdGVwIiwNCj4+ICsgICAgICAgICAgICAgICAgICAicGxsMV9zdyIsICJwbGwxX3N5
-cyI7DQo+PiArICAgICAgICBhcm0tc3VwcGx5ID0gPCZyZWdfYXJtPjsNCj4+ICsgICAgICAgIHB1
-LXN1cHBseSA9IDwmcmVnX3B1PjsNCj4+ICsgICAgICAgIHNvYy1zdXBwbHkgPSA8JnJlZ19zb2M+
-Ow0KPj4gKyAgICB9Ow0KPj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDZxLmR0
-c2kgYi9hcmNoL2FybS9ib290L2R0cy9pbXg2cS5kdHNpDQo+PiBpbmRleCBlN2U4MzMyLi4wMjFl
-MGNiIDEwMDY0NA0KPj4gLS0tIGEvYXJjaC9hcm0vYm9vdC9kdHMvaW14NnEuZHRzaQ0KPj4gKysr
-IGIvYXJjaC9hcm0vYm9vdC9kdHMvaW14NnEuZHRzaQ0KPj4gQEAgLTMwLDYgKzMwLDEzIEBADQo+
-PiAgICAgICAgICAgICAgICA3OTIwMDAgIDExNTAwMDANCj4+ICAgICAgICAgICAgICAgIDM5NjAw
-MCAgOTc1MDAwDQo+PiAgICAgICAgICAgID47DQo+PiArICAgICAgICAgICAgZnNsLHNvYy1vcGVy
-YXRpbmctcG9pbnRzID0gPA0KPj4gKyAgICAgICAgICAgICAgICAvKiBBUk0ga0h6ICBTT0MtUFUg
-dVYgKi8NCj4+ICsgICAgICAgICAgICAgICAgMTIwMDAwMCAxMjc1MDAwDQo+PiArICAgICAgICAg
-ICAgICAgIDk5NjAwMCAgICAxMjUwMDAwDQo+PiArICAgICAgICAgICAgICAgIDc5MjAwMCAgICAx
-MTc1MDAwDQo+PiArICAgICAgICAgICAgICAgIDM5NjAwMCAgICAxMTc1MDAwDQo+PiArICAgICAg
-ICAgICAgPjsNCj4+ICAgICAgICAgICAgY2xvY2stbGF0ZW5jeSA9IDw2MTAzNj47IC8qIHR3byBD
-TEszMiBwZXJpb2RzICovDQo+PiAgICAgICAgICAgIGNsb2NrcyA9IDwmY2xrcyAxMDQ+LCA8JmNs
-a3MgNj4sIDwmY2xrcyAxNj4sDQo+PiAgICAgICAgICAgICAgICAgPCZjbGtzIDE3PiwgPCZjbGtz
-IDE3MD47DQo+PiAtLSANCj4+IDEuNy45LjUNCj4gDQpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51
-eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5v
-cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+https://bugzilla.kernel.org/show_bug.cgi?id=65501
+
+--- Comment #14 from Viresh Kumar <viresh.kumar@linaro.org> ---
+(In reply to sworddragon2 from comment #13)
+> This is the point that disturbs me. We are setting a fixed minimum limit of
+> 11 while there is no logical reason to do this.
+
+This must be based on the reasoning that we don't have to go to max freq for
+loads as low as 10%. That sounds reasonable too, atleast to me. If you want
+such system where you want to go to max freq as soon as there is any load then
+better use performance governor. Otherwise what's currently in there looks good
+to me. I would actually say even 10% is a very low value of min up_threshold.
+It could have been more :)
+
+Don't know what Rafael have to say on this.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
