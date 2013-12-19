@@ -1,56 +1,40 @@
-From: Jason Baron <jbaron@akamai.com>
-Subject: Re: [PATCH] cpufreq: Apply default governor for setpolicy drivers
-Date: Wed, 18 Dec 2013 22:51:26 -0500
-Message-ID: <52B26D3E.2070600@akamai.com>
-References: <20131218203102.9F9692036@prod-mail-relay06.akamai.com> <1451068.r0h0sa1DaG@vostro.rjw.lan> <52B21508.3000303@akamai.com> <2651749.Dr3egRT25J@vostro.rjw.lan>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH 1/1] cpufreq: exynos5250: Set APLL rate using CCF API
+Date: Thu, 19 Dec 2013 10:18:23 +0530
+Message-ID: <CAK9yfHz1jC-=G9rAmQ54MFn=PKacfgoPJ6JsFaGVXqGb28yG1A@mail.gmail.com>
+References: <1385009046-22070-1-git-send-email-sachin.kamat@linaro.org>
+	<20131129071139.46eff334@amdc2363>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <2651749.Dr3egRT25J@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20131129071139.46eff334@amdc2363>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "dirk.brandewie@gmail.com" <dirk.brandewie@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 12/18/2013 06:33 PM, Rafael J. Wysocki wrote:
-> On Wednesday, December 18, 2013 04:35:04 PM Jason Baron wrote:
->> On 12/18/2013 04:38 PM, Rafael J. Wysocki wrote:
->>> On Wednesday, December 18, 2013 08:31:02 PM Jason Baron wrote:
->>>> When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
->>>> 'intel_pstate' driver, I found that the default is not honored. For example,
->>>> configure 'CONFIG_CPU_FREQ_GOV_PERFORMANCE', and then do:
->>> intel_pstate doesn't use any cpufreq governors, so all of this is pointless
->>> for that particular driver anyway.
->>>
->>> Thanks!
->>>
->> Ok, but if I look at 'intel_pstate', I see a 'set_policy' call that does different
->> things if the policy is 'performance' vs. 'powersave'. Same for the 'longrun'
->> driver. So yes, they don't use the 'governors', but changing the governors
->> at runtime does appear to change change how they behave.
-> OK, so you want the initial policy to be set in accordance with the
-> CONFIG_CPU_FREQ_DEFAULT_* setting.  That makes sense, although it is not
-> immediately clear from the patch changelog.
+On 29 November 2013 11:41, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> Hi Sachin,
 >
-> That said the change in the patch looks kind of overly complicated.
-> What about adding something like this instead?
+>> Use common clock framework (CCF) APIs to set the clock rates
+>> instead of direct register manipulation. This now updates the
+>> sysfs entry (cpuinfo_cur_freq) correctly which did not reflect
+>> the correct value until now. While at it clean up the PLL s-div
+>> parameter setting as it is handled by the PLL driver.
+>>
+>> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+>> ---
 
-Agreed - this is better. Will you just pull the below patch, or should
-I re-post with a better changelog?
-
-Thanks,
-
--Jason
-
-> +       if (cpufreq_driver->setpolicy) {
-> +               unsigned int ret;
-> +
-> +       	/* Use the default policyt if it is valid. */
-> +               if (!cpufreq_parse_governor(policy->governor->name, &ret, NULL))
-> +                       new_policy.policy = ret;
-> +       }
 >
-> Rafael
+> Looks good to me.
 >
+> Reviewed-by: Lukasz Majewski <l.majewski@samsung.com>
 
+
+Didn't see this in linux-next yet, hence gentle ping, Rafael.
+
+
+-- 
+With warm regards,
+Sachin
