@@ -1,34 +1,48 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 65501] Blind angle of 1% between up_threshold and
- down_threshold
-Date: Thu, 19 Dec 2013 01:59:47 +0000
-Message-ID: <bug-65501-12968-fVMOQlZbUm@https.bugzilla.kernel.org/>
-References: <bug-65501-12968@https.bugzilla.kernel.org/>
+From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
+Subject: RE: [PATCH V3 1/2] ARM: imx: add vddsoc/pu setpoint info into dts
+Date: Thu, 19 Dec 2013 02:13:21 +0000
+Message-ID: <112fab48e08c43749c0797328b1f1ee1@DM2PR03MB317.namprd03.prod.outlook.com>
+References: <1387402010-31749-1-git-send-email-b20788@freescale.com>,<CAOMZO5DCGOkUtWmEok-uEFsUpGLF+93Vhm9XFs02yH9Z+eV0uQ@mail.gmail.com>
+ <ADD49D66-30FE-4D87-88D6-F8AE07376F3F@freescale.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-65501-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <ADD49D66-30FE-4D87-88D6-F8AE07376F3F@freescale.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=65501
-
---- Comment #14 from Viresh Kumar <viresh.kumar@linaro.org> ---
-(In reply to sworddragon2 from comment #13)
-> This is the point that disturbs me. We are setting a fixed minimum limit of
-> 11 while there is no logical reason to do this.
-
-This must be based on the reasoning that we don't have to go to max freq for
-loads as low as 10%. That sounds reasonable too, atleast to me. If you want
-such system where you want to go to max freq as soon as there is any load then
-better use performance governor. Otherwise what's currently in there looks good
-to me. I would actually say even 10% is a very low value of min up_threshold.
-It could have been more :)
-
-Don't know what Rafael have to say on this.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+DQpCZXN0IFJlZ2FyZHMuDQpBbnNvbiBodWFuZyDpu4Tli4fmiY0NCsKgDQpGcmVlc2NhbGUgU2Vt
+aWNvbmR1Y3RvciBTaGFuZ2hhaQ0K5LiK5rW35rWm5Lic5paw5Yy65Lqu5pmv6LevMTky5Y+3QeW6
+pzLmpbwNCjIwMTIwMw0KVGVsOjAyMS0yODkzNzA1OA0KDQoNCj4tLS0tLU9yaWdpbmFsIE1lc3Nh
+Z2UtLS0tLQ0KPkZyb206IEh1YW5nIFlvbmdjYWktQjIwNzg4DQo+U2VudDogV2VkbmVzZGF5LCBE
+ZWNlbWJlciAxOCwgMjAxMyA4OjAxIFBNDQo+VG86IEZhYmlvIEVzdGV2YW0NCj5DYzogSHVhbmcg
+WW9uZ2NhaS1CMjA3ODg7IFNoYXduIEd1bzsgcmp3QHJqd3lzb2NraS5uZXQ7IFZpcmVzaCBLdW1h
+cjsNCj5kZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5p
+bmZyYWRlYWQub3JnOw0KPmNwdWZyZXFAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtl
+cm5lbC5vcmcNCj5TdWJqZWN0OiBSZTogW1BBVENIIFYzIDEvMl0gQVJNOiBpbXg6IGFkZCB2ZGRz
+b2MvcHUgc2V0cG9pbnQgaW5mbyBpbnRvIGR0cw0KPg0KPg0KPg0KPlNlbnQgZnJvbSBBbnNvbidz
+IGlQaG9uZQ0KPg0KPj4g5ZyoIDIwMTPlubQxMuaciDE45pel77yMMTk6MDjvvIwiRmFiaW8gRXN0
+ZXZhbSIgPGZlc3RldmFtQGdtYWlsLmNvbT4g5YaZ6YGT77yaDQo+Pg0KPj4gSGkgQW5zb24sDQo+
+Pg0KPj4+IE9uIFdlZCwgRGVjIDE4LCAyMDEzIGF0IDc6MjYgUE0sIEFuc29uIEh1YW5nIDxiMjA3
+ODhAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+Pj4NCj4+PiArICBEb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3MvcmVndWxhdG9yL3JlZ3VsYXRvci50eHQgZm9yIGRldGFpbHMuDQo+Pj4g
+KyAgYXJtLXN1cHBseTogdmRkYXJtIGlucHV0Lg0KPj4+ICsgIHB1LXN1cHBseTogdmRkcHUgaW5w
+dXQuDQo+Pj4gKyAgc29jLXN1cHBseTogdmRkc29jIGlucHV0Lg0KPj4NCj4+IEkgZm91bmQgdGhl
+c2UgbWVzc2FnZXMgY29uZnVzaW5nLCBhcyBzb21lb25lIG1heSB0aGluayB0aGF0IHlvdSBhcmUN
+Cj4+IHJlZmVycmluZyB0byB0aGUgVkREX0FSTV9JTi9WRERfQVJNMjNfSU4gYW5kIFZERF9TT0Nf
+SU4sIHdoaWNoIGFyZQ0KPj4gcmVhbGx5IGlucHV0cy4NCj4+DQo+PiBXaGF0IGFib3V0IGRvaW5n
+IHRoaXMgaW5zdGVhZD8NCj4+DQo+PiBhcm0tc3VwcGx5OiBWRERBUk0gTERPIG91dHB1dA0KPj4g
+cHUtc3VwcGx5OiAgVkREUFUgTERPIG91dHB1dA0KPj4gc29jLXN1cHBseTogVkREU09DIExETyBv
+dXRwdXQNCj4NCj5JIHRoaW5rIHRoZXkgc2hvdWxkIGtub3cgdGhlc2UgcmVndWxhdG9ycyBtZWFu
+IHRoZSBhcm0sIHNvYy9wdSdzIHJlYWwgd29ya2luZw0KPnZvbHRhZ2UsIGFzIHlvdSBrbm93LCBv
+dXIgaS5NWDYgYWxzbyBzdXBwb3J0IExETyBieXBhc3MgbW9kZSwgdGhlbiB0aGVzZQ0KPnJlZ3Vs
+YXRvcnMgY2FuIGJlIFZERFhYWF9JTi4gdGhhdCBpcyB3aHkgSSB1c2UgdmRkeHh4IGlucHV0LCBu
+b3QgdmRkeHh4IExETw0KPmlucHV0LlRoYW5rcyENCg0KQWZ0ZXIgcmUtY29uc2lkZXJhdGlvbiwg
+SSB0aGluayBiZWxvdyBzaG91bGQgYmUgYmV0dGVyOg0KYXJtLXN1cHBseTogcmVndWxhdG9yIG5v
+ZGUgc3VwcGx5aW5nIGFybS4NCnB1LXN1cHBseTogcmVndWxhdG9yIG5vZGUgc3VwcGx5aW5nIHB1
+Lg0Kc29jLXN1cHBseTogcmVndWxhdG9yIG5vZGUgc3VwcGx5aW5nIHNvYy4NCg0KQW5zb24gDQoN
+Cg0KPj4NCj4+IFJlZ2FyZHMsDQo+Pg0KPj4gRmFiaW8gRXN0ZXZhbQ0KPj4NCj4+DQo=
