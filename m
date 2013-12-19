@@ -1,40 +1,32 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: exynos5250: Set APLL rate using CCF API
-Date: Thu, 19 Dec 2013 10:18:23 +0530
-Message-ID: <CAK9yfHz1jC-=G9rAmQ54MFn=PKacfgoPJ6JsFaGVXqGb28yG1A@mail.gmail.com>
-References: <1385009046-22070-1-git-send-email-sachin.kamat@linaro.org>
-	<20131129071139.46eff334@amdc2363>
+From: bilhuang <bilhuang@nvidia.com>
+Subject: Re: [PATCH v3 2/2] cpufreq: tegra: Re-model Tegra cpufreq driver
+Date: Thu, 19 Dec 2013 13:26:47 +0800
+Message-ID: <52B28397.5010808@nvidia.com>
+References: <1386229462-3474-1-git-send-email-bilhuang@nvidia.com>	<1386229462-3474-3-git-send-email-bilhuang@nvidia.com>	<CAKohponns4B+BPPum3EN6EuXx6U+6MzOa50gMdR1BNBtxMNf0Q@mail.gmail.com>	<52B02D04.4050905@nvidia.com>	<CAKohpom0n8P8goQnsgBnWJwyqCVv_FRX3xKvO1yFW0VUMpMW8w@mail.gmail.com>	<52B187F5.7020105@nvidia.com> <CAKohpokwhYC4FGnhpZPOGuJ2AM_7vygNk+3S+VpA_eXAexQX7g@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20131129071139.46eff334@amdc2363>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokwhYC4FGnhpZPOGuJ2AM_7vygNk+3S+VpA_eXAexQX7g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On 29 November 2013 11:41, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Hi Sachin,
+On 12/18/2013 10:39 PM, Viresh Kumar wrote:
+> On 18 December 2013 17:03, bilhuang <bilhuang@nvidia.com> wrote:
+>> cpufreq-cpu0 driver will call regulator_set_voltage_tol() directly according
+>> to the pre-defined OPP freq/volt pairs, the regulator drivers could be
+>> shared by other SoC so is not suitable to handle this, or do I
+>> misunderstand?
 >
->> Use common clock framework (CCF) APIs to set the clock rates
->> instead of direct register manipulation. This now updates the
->> sysfs entry (cpuinfo_cur_freq) correctly which did not reflect
->> the correct value until now. While at it clean up the PLL s-div
->> parameter setting as it is handled by the PLL driver.
->>
->> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->> ---
-
+> In case regulator's driver is shared, then you can probably add another
+> virtual regulator for CPU which would have the special code you want.
 >
-> Looks good to me.
->
-> Reviewed-by: Lukasz Majewski <l.majewski@samsung.com>
-
-
-Didn't see this in linux-next yet, hence gentle ping, Rafael.
-
-
--- 
-With warm regards,
-Sachin
+I'm not sure virtual regulator for CPU is a good idea, in addition to 
+that, we don't have a single SoC OPP table, we need several which are 
+speedo-id and process-id dependant, but generic cpufreq-cpu0 is assuming 
+there is only one statically, for some SoC the frequency table is not 
+fixed, they are created at runtime combining our fast and slow CPU 
+frequency table and dvfs table. So I'm really not sure is it worth 
+adding so many tweaks in order to use the generic cpufreq-cpu0 driver.
