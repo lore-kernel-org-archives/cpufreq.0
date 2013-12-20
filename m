@@ -1,38 +1,79 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
-Date: Fri, 20 Dec 2013 09:29:51 -0700
-Message-ID: <52B4707F.4040303@wwwdotorg.org>
-References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>	<CAKohpomCPJYd+d_NnM9gxwQ7bH6C6=iLxbiWZbfNcjZ8Bi+2wA@mail.gmail.com>	<52B41B18.30302@nvidia.com> <CAKohpontQwTc4KP7XMvtkvS2sQTyF+ngXnXfbJ1ev+MLEp-H0g@mail.gmail.com> <52B41F1B.3030005@nvidia.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH 1/3] ARM: EXYNOS: Add exynos5 CPU clock divider offsets
+Date: Sat, 21 Dec 2013 06:23:44 +0900
+Message-ID: <52B4B560.6030001@samsung.com>
+References: <1386323284-15646-1-git-send-email-arun.kk@samsung.com> <1386323284-15646-2-git-send-email-arun.kk@samsung.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <52B41F1B.3030005@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=mXcUzsoy45g8RnrnYScOahWgoPp3zjc2diWCHkz1Afo=;
+        b=B+kl1OKtqoqF73CxLnWh1m8CHNA3OowG982xf/MbPVSQp+AeVasF9+3h+TJQZxAEvB
+         SrVsfCu/ZMVWOQNpfBQClq9AeqN0GDI1VyGyQjD8FTw0UIAjiDOXtyX/E8HeiyFx4EeL
+         FhcCbvWvqk+oGeCP7kkTEWdWYknf8NjT7X5IVbzRYze93wCLF9RH0vjN3659R7MUXRuE
+         0wwMVACgaAR++JiIzPiZJkahZ93Mw6nMQusECm1vsTnx5ry/b3peq+WpYcYyKo1Nz35v
+         exeYShLQJVeOVwMvXpv5kBjkS9vdDOi7zDRWebcRwC5zE2/+bhRoJ3737fa56vXundLV
+         HghA==
+In-Reply-To: <1386323284-15646-2-git-send-email-arun.kk@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: bilhuang <bilhuang@nvidia.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Arun Kumar K <arun.kk@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, kgene.kim@samsung.com, mturquette@linaro.org, abrestic@chromium.org, viresh.kumar@linaro.org, arunkk.samsung@gmail.com, rjw@rjwysocki.net, tomasz.figa@gmail.com, arjun.kv@samsung.com
 
-On 12/20/2013 03:42 AM, bilhuang wrote:
-> On 12/20/2013 06:33 PM, Viresh Kumar wrote:
->> On 20 December 2013 15:55, bilhuang <bilhuang@nvidia.com> wrote:
->>> Don't you think it worth creating a file here so this can be shared to
->>> arm64?
->>
->> We will see how to handle virtual devices when we will start getting
->> arm64 SoCs. Probably we might end up writing a single file in cpufreq,
->> if required, that will create virtual devices for every arm64 platform..
->>
->> So, some people might use it and others wouldn't.. But no platform
->> specific files for such stuff. So, the best we can do for now is to move
->> these to platform code as we are talking about arm32 SoC's for now
->> which do have a mach-* directory..
->>
-> OK thanks, this is suggested by Stephen earlier, I'll let him comment in
-> case he might think otherwise.
+On 12/06/13 18:48, Arun Kumar K wrote:
+> Adds the CPU clock divider shifts and masks for Exynos5 SoC.
+> These defines will be used in cpufreq driver.
+>
+> Signed-off-by: Arjun.K.V<arjun.kv@samsung.com>
+> Signed-off-by: Arun Kumar K<arun.kk@samsung.com>
+> ---
+>   arch/arm/mach-exynos/include/mach/regs-clock.h |   24 ++++++++++++++++++++++++
+>   1 file changed, 24 insertions(+)
+>
+> diff --git a/arch/arm/mach-exynos/include/mach/regs-clock.h b/arch/arm/mach-exynos/include/mach/regs-clock.h
+> index d36ad76..d0186d3 100644
+> --- a/arch/arm/mach-exynos/include/mach/regs-clock.h
+> +++ b/arch/arm/mach-exynos/include/mach/regs-clock.h
+> @@ -347,6 +347,30 @@
+>
+>   #define EXYNOS5_EPLLCON0_LOCKED_SHIFT		(29)
+>
+> +/* CLK_DIV_CPU0 */
+> +#define EXYNOS5_CLKDIV_CPU0_CORE_SHIFT		0
+> +#define EXYNOS5_CLKDIV_CPU0_CORE_MASK		(0x7<<  EXYNOS5_CLKDIV_CPU0_CORE_SHIFT)
+> +#define EXYNOS5_CLKDIV_CPU0_CPUD_SHIFT		4
+> +#define EXYNOS5_CLKDIV_CPU0_CPUD_MASK		(0x7<<  EXYNOS5_CLKDIV_CPU0_CPUD_SHIFT)
+> +#define EXYNOS5_CLKDIV_CPU0_ACP_SHIFT		8
+> +#define EXYNOS5_CLKDIV_CPU0_ACP_MASK		(0x7<<  EXYNOS5_CLKDIV_CPU0_ACP_SHIFT)
+> +#define EXYNOS5_CLKDIV_CPU0_ATB_SHIFT		16
+> +#define EXYNOS5_CLKDIV_CPU0_ATB_MASK		(0x7<<  EXYNOS5_CLKDIV_CPU0_ATB_SHIFT)
+> +#define EXYNOS5_CLKDIV_CPU0_PCLKDBG_SHIFT	20
+> +#define EXYNOS5_CLKDIV_CPU0_PCLKDBG_MASK	(0x7<<  EXYNOS5_CLKDIV_CPU0_PCLKDBG_SHIFT)
+> +#define EXYNOS5_CLKDIV_CPU0_APLL_SHIFT		24
+> +#define EXYNOS5_CLKDIV_CPU0_APLL_MASK		(0x7<<  EXYNOS5_CLKDIV_CPU0_APLL_SHIFT)
+> +#define EXYNOS5_CLKDIV_CPU0_CORE2_SHIFT		28
+> +#define EXYNOS5_CLKDIV_CPU0_CORE2_MASK		(0x7<<  EXYNOS5_CLKDIV_CPU0_CORE2_SHIFT)
+> +
+> +/* CLK_DIV_CPU1 */
+> +#define EXYNOS5_CLKDIV_CPU1_COPY_SHIFT		0
+> +#define EXYNOS5_CLKDIV_CPU1_COPY_MASK		(0x7<<  EXYNOS5_CLKDIV_CPU1_COPY_SHIFT)
+> +#define EXYNOS5_CLKDIV_CPU1_HPM_SHIFT		4
+> +#define EXYNOS5_CLKDIV_CPU1_HPM_MASK		(0x7<<  EXYNOS5_CLKDIV_CPU1_HPM_SHIFT)
+> +#define EXYNOS5_CLKSRC_CPU_MUXCORE_SHIFT	16
+> +#define EXYNOS5_CLKMUX_STATCPU_MUXCORE_MASK	(0x7<<  EXYNOS5_CLKSRC_CPU_MUXCORE_SHIFT)
+> +
+>   #define PWR_CTRL1_CORE2_DOWN_RATIO		(7<<  28)
+>   #define PWR_CTRL1_CORE1_DOWN_RATIO		(7<<  16)
+>   #define PWR_CTRL1_DIV2_DOWN_EN			(1<<  9)
 
-No, I definitely don't agree here. The rules for arch/arm64 are: no
-platform-specific code. We should immediately start planning for that.
-If this means renaming the file that creates the virtual device from
-tegra-cpufreq.c to something else, so be it, but we shouldn't go
-backwards and push stuff into the arch directories.
+Hi Arun,
+
+Above definitions should be moved into regarding driver not into arch. 
+Please see my current for-next, there is no <mach/regs-clock.h>.
+
+Thanks,
+Kukjin
