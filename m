@@ -1,50 +1,45 @@
-From: Jason Baron <jbaron@akamai.com>
-Subject: [PATCH v2] cpufreq: Use CONFIG_CPU_FREQ_DEFAULT_* to set initial policy for setpolicy drivers
-Date: Thu, 19 Dec 2013 22:50:50 +0000 (GMT)
-Message-ID: <20131219225050.E82C91FF9@prod-mail-relay06.akamai.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: [PATCH] cpufreq: imx6q-cpufreq driver is reused on i.MX6 series SoCs
+Date: Fri, 20 Dec 2013 10:12:16 +0800
+Message-ID: <1387505536-22720-1-git-send-email-shawn.guo@linaro.org>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, dirk.j.brandewie@intel.com, dirk.brandewie@gmail.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, John Tobias <john.tobias.ph@gmail.com>, Anson Huang <b20788@freescale.com>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
 
-When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
-intel_pstate driver, the desired default policy is not properly set. For
-example, setting 'CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE' ended up with the
-'powersave' policy being set.
+The imx6q-cpufreq driver nowadays is not only running on imx6q but also
+other i.MX6 series SoCs like imx6dl and imx6sl.  Update Kconfig prompt
+and help text to make it clear to users.
 
-Fix by configuring the correct default policy, if either 'powersave' or
-'performance' are requested. Otherwise, fallback to what the driver originally
-set via its 'init' routine.
-
-Signed-off-by: Jason Baron <jbaron@akamai.com>
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
 ---
+ drivers/cpufreq/Kconfig.arm |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-v2: simplify logic
-
- drivers/cpufreq/cpufreq.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 02d534d..42e1ea4 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -828,6 +828,12 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
- 	int ret = 0;
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index ce52ed9..3ba5dcc 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -79,11 +79,11 @@ config ARM_HIGHBANK_CPUFREQ
+ 	  If in doubt, say N.
  
- 	memcpy(&new_policy, policy, sizeof(*policy));
-+
-+	/* Use the default policy if its valid. */
-+	if (cpufreq_driver->setpolicy)
-+		cpufreq_parse_governor(policy->governor->name,
-+					&new_policy.policy, NULL);
-+
- 	/* assure that the starting sequence is run in cpufreq_set_policy */
- 	policy->governor = NULL;
+ config ARM_IMX6Q_CPUFREQ
+-	tristate "Freescale i.MX6Q cpufreq support"
+-	depends on SOC_IMX6Q
++	tristate "Freescale i.MX6 cpufreq support"
++	depends on ARCH_MXC
+ 	depends on REGULATOR_ANATOP
+ 	help
+-	  This adds cpufreq driver support for Freescale i.MX6Q SOC.
++	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.
+ 
+ 	  If in doubt, say N.
  
 -- 
-1.8.2.rc2
+1.7.9.5
+
 
