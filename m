@@ -1,85 +1,29 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v3 2/2] cpufreq: imx6q: add of_init_opp_table
-Date: Fri, 20 Dec 2013 14:06:05 +0800
-Message-ID: <20131220060603.GO7172@S2101-09.ap.freescale.net>
-References: <1387512929-7304-1-git-send-email-john.tobias.ph@gmail.com>
- <1387512929-7304-2-git-send-email-john.tobias.ph@gmail.com>
+From: Wang wenbing <wenson4375@gmail.com>
+Subject: Re: subscribe cpufreq
+Date: Fri, 20 Dec 2013 14:48:19 +0800
+Message-ID: <CAKz_-AkGiquY2GFWGGoQK6stA69MNL6QtakaA6JZeH+KCa9Vug@mail.gmail.com>
+References: <CAKz_-A=2tche8TMFztBWN+QPvDRMncLQrWGygao7_WdxjJU2eg@mail.gmail.com>
 Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        bh=hq4vxe/8YO3ZuCU60crtAlTYJalZaK0e709z4AOw9Hg=;
+        b=CbR2f2vdVGXxV33dJ4c1YdGUFkvz3JTLHYSvtScqUiB3/c0o5lxlBtrp90zbXUfMM0
+         UioZEBR6FrtpSJk2cpMu0lDf8L3touWK7IaqcafpLfNQCO45no2YPTXKvY1fO67uFRcT
+         VQ9hIDMEZLWEY8jD0TFUlu9ReA7Isk163ksQtOOwtrh2O/5xQ9MIWLEvjWAuBF4XPhpK
+         om5DwABq1fimwh7LFNmGwaCfNg6cWVpVc3ttaV+IDxwFquwMBMHPUg72tOQB1+x/O0GL
+         OmYoAT+ew4Rl2X7JKzhDmJXbSUwgF1R2Kg4GLmzlCGtgINuBTjLMoKgLeMRGTmZmkIZI
+         rp0w==
+In-Reply-To: <CAKz_-A=2tche8TMFztBWN+QPvDRMncLQrWGygao7_WdxjJU2eg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1387512929-7304-2-git-send-email-john.tobias.ph@gmail.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: John Tobias <john.tobias.ph@gmail.com>
-Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, b20788@freescale.com, festevam@gmail.com, linux-arm-kernel@lists.infradead.org
+To: cpufreq@vger.kernel.org
 
-On Thu, Dec 19, 2013 at 08:15:29PM -0800, John Tobias wrote:
-> Add a routine check to see if the platform supplied the OPP table.
-> Incase there's not OPP table exist, it will try to get it.
-> 
-> Signed-off-by: John Tobias <john.tobias.ph@gmail.com>
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 21 +++++++++++++++++----
->  1 file changed, 17 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index 4b3f18e..f261a88 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -187,12 +187,25 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  		goto put_node;
->  	}
->  
-> -	/* We expect an OPP table supplied by platform */
-> +	/* We expect an OPP table supplied by platform.
-> +	 * Just, incase the platform did not supply the OPP
-> +	 * table, it will try to get it.
-> +	 */
+subscribe cpufreq
 
-	/*
-	 * Multi-lines comment
-	 */
-
->  	num = dev_pm_opp_get_opp_count(cpu_dev);
->  	if (num < 0) {
-> -		ret = num;
-> -		dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
-> -		goto put_node;
-> +		ret = of_init_opp_table(cpu_dev);
-> +		if (ret < 0) {
-> +			dev_err(cpu_dev, "failed to init OPP table\n");
-
-It should be good to print the error code, i.e. 'ret', here.
-
-> +			ret = -ENODEV;
-
-There is no need to make up an error code, and just return what you get
-from of_init_opp_table().
-
-Shawn
-
-> +			goto put_node;
-> +		}
-> +
-> +		num = dev_pm_opp_get_opp_count(cpu_dev);
-> +		if (num < 0) {
-> +			ret = num;
-> +			dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
-> +			goto put_node;
-> +		}
->  	}
->  
->  	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-> -- 
-> 1.8.3.2
-> 
+On Fri, Dec 20, 2013 at 2:46 PM, Wang wenbing <wenson4375@gmail.com> wrote:
+> subscribe cpufreq
