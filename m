@@ -1,204 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH Resend] cpufreq: remove sysfs files for CPU which failed to come back after resume
-Date: Sun, 22 Dec 2013 02:00:40 +0100
-Message-ID: <1651441.C2UQleWVoy@vostro.rjw.lan>
-References: <610b63b7594e5cd364c498f60e69b9e174db9257.1387554926.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: Make ARM big.LITTLE switcher depend on ARM
+Date: Sun, 22 Dec 2013 02:06:04 +0100
+Message-ID: <2576518.J5IDx9W8BG@vostro.rjw.lan>
+References: <1386799947-6041-1-git-send-email-broonie@kernel.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <610b63b7594e5cd364c498f60e69b9e174db9257.1387554926.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1386799947-6041-1-git-send-email-broonie@kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="macroman"
-To: Viresh Kumar <viresh.kumar@linaro.org>, =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Mark Brown <broonie@kernel.org>
+Cc: Rob Herring <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
 
-On Friday, December 20, 2013 09:26:02 PM Viresh Kumar wrote:
-> There are cases where cpufreq_add_dev() may fail for some CPUs during=
- resume.
-> With the current code we will still have sysfs cpufreq files for such=
- CPUs, and
-> struct cpufreq_policy would be already freed for them. Hence any oper=
-ation on
-> those sysfs files would result in kernel warnings.
->=20
-> To fix this, lets remove those sysfs files or put the associated kobj=
-ect in case
-> of such errors. Also, to make it simple lets remove the sysfs links f=
-rom all the
-> CPUs (except policy->cpu) during suspend as that operation wouldn't r=
-esult with a
-> loss of sysfs file permissions. And so we will create those links dur=
-ing resume
-> as well.
->=20
-> Reported-and-tested-by: Bj=C3=B8rn Mork <bjorn@mork.no>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Wednesday, December 11, 2013 10:12:26 PM Mark Brown wrote:
+> From: Mark Brown <broonie@linaro.org>
+> 
+> The patch currently under review to enable ARM cpufreq drivers for ARM64
+> which is useful due to the large amount of shared IP between ARM and ARM64
+> SoCs. However the big.LITTLE switcher relies on an architecture interface
+> to build which is not present on ARM64. Add a dependency until that is
+> resolved.
+> 
+> Signed-off-by: Mark Brown <broonie@linaro.org>
 
-Queued up for the next PM pull request, thanks!
-
-Bjorn, can you please check if the pm-cpufreq branch of the linux-pm.gi=
-t tree
-fixes the problem that you have reported without causing any new breaka=
-ge to
-happen?
-
-Rafael
-
+Both [1-2/2] queued up for 3.14, thanks!
 
 > ---
->  drivers/cpufreq/cpufreq.c | 63 +++++++++++++++++++++++--------------=
-----------
->  1 file changed, 31 insertions(+), 32 deletions(-)
->=20
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 02d534d..fab042e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -845,8 +845,7 @@ static void cpufreq_init_policy(struct cpufreq_po=
-licy *policy)
-> =20
->  #ifdef CONFIG_HOTPLUG_CPU
->  static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
-> -				  unsigned int cpu, struct device *dev,
-> -				  bool frozen)
-> +				  unsigned int cpu, struct device *dev)
->  {
->  	int ret =3D 0;
->  	unsigned long flags;
-> @@ -877,11 +876,7 @@ static int cpufreq_add_policy_cpu(struct cpufreq=
-_policy *policy,
->  		}
->  	}
-> =20
-> -	/* Don't touch sysfs links during light-weight init */
-> -	if (!frozen)
-> -		ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
-> -
-> -	return ret;
-> +	return sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
->  }
->  #endif
-> =20
-> @@ -926,6 +921,27 @@ err_free_policy:
->  	return NULL;
->  }
-> =20
-> +static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
-> +{
-> +	struct kobject *kobj;
-> +	struct completion *cmp;
-> +
-> +	down_read(&policy->rwsem);
-> +	kobj =3D &policy->kobj;
-> +	cmp =3D &policy->kobj_unregister;
-> +	up_read(&policy->rwsem);
-> +	kobject_put(kobj);
-> +
-> +	/*
-> +	 * We need to make sure that the underlying kobj is
-> +	 * actually not referenced anymore by anybody before we
-> +	 * proceed with unloading.
-> +	 */
-> +	pr_debug("waiting for dropping of refcount\n");
-> +	wait_for_completion(cmp);
-> +	pr_debug("wait complete\n");
-> +}
-> +
->  static void cpufreq_policy_free(struct cpufreq_policy *policy)
->  {
->  	free_cpumask_var(policy->related_cpus);
-> @@ -986,7 +1002,7 @@ static int __cpufreq_add_dev(struct device *dev,=
- struct subsys_interface *sif,
->  	list_for_each_entry(tpolicy, &cpufreq_policy_list, policy_list) {
->  		if (cpumask_test_cpu(cpu, tpolicy->related_cpus)) {
->  			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> -			ret =3D cpufreq_add_policy_cpu(tpolicy, cpu, dev, frozen);
-> +			ret =3D cpufreq_add_policy_cpu(tpolicy, cpu, dev);
->  			up_read(&cpufreq_rwsem);
->  			return ret;
->  		}
-> @@ -1096,7 +1112,10 @@ err_get_freq:
->  	if (cpufreq_driver->exit)
->  		cpufreq_driver->exit(policy);
->  err_set_policy_cpu:
-> +	if (frozen)
-> +		cpufreq_policy_put_kobj(policy);
->  	cpufreq_policy_free(policy);
-> +
->  nomem_out:
->  	up_read(&cpufreq_rwsem);
-> =20
-> @@ -1118,7 +1137,7 @@ static int cpufreq_add_dev(struct device *dev, =
-struct subsys_interface *sif)
->  }
-> =20
->  static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *po=
-licy,
-> -					   unsigned int old_cpu, bool frozen)
-> +					   unsigned int old_cpu)
->  {
->  	struct device *cpu_dev;
->  	int ret;
-> @@ -1126,10 +1145,6 @@ static int cpufreq_nominate_new_policy_cpu(str=
-uct cpufreq_policy *policy,
->  	/* first sibling now owns the new sysfs dir */
->  	cpu_dev =3D get_cpu_device(cpumask_any_but(policy->cpus, old_cpu));
-> =20
-> -	/* Don't touch sysfs files during light-weight tear-down */
-> -	if (frozen)
-> -		return cpu_dev->id;
-> -
->  	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
->  	ret =3D kobject_move(&policy->kobj, &cpu_dev->kobj);
->  	if (ret) {
-> @@ -1196,7 +1211,7 @@ static int __cpufreq_remove_dev_prepare(struct =
-device *dev,
->  		if (!frozen)
->  			sysfs_remove_link(&dev->kobj, "cpufreq");
->  	} else if (cpus > 1) {
-> -		new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
-> +		new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cpu);
->  		if (new_cpu >=3D 0) {
->  			update_policy_cpu(policy, new_cpu);
-> =20
-> @@ -1218,8 +1233,6 @@ static int __cpufreq_remove_dev_finish(struct d=
-evice *dev,
->  	int ret;
->  	unsigned long flags;
->  	struct cpufreq_policy *policy;
-> -	struct kobject *kobj;
-> -	struct completion *cmp;
-> =20
->  	read_lock_irqsave(&cpufreq_driver_lock, flags);
->  	policy =3D per_cpu(cpufreq_cpu_data, cpu);
-> @@ -1249,22 +1262,8 @@ static int __cpufreq_remove_dev_finish(struct =
-device *dev,
->  			}
->  		}
-> =20
-> -		if (!frozen) {
-> -			down_read(&policy->rwsem);
-> -			kobj =3D &policy->kobj;
-> -			cmp =3D &policy->kobj_unregister;
-> -			up_read(&policy->rwsem);
-> -			kobject_put(kobj);
-> -
-> -			/*
-> -			 * We need to make sure that the underlying kobj is
-> -			 * actually not referenced anymore by anybody before we
-> -			 * proceed with unloading.
-> -			 */
-> -			pr_debug("waiting for dropping of refcount\n");
-> -			wait_for_completion(cmp);
-> -			pr_debug("wait complete\n");
-> -		}
-> +		if (!frozen)
-> +			cpufreq_policy_put_kobj(policy);
-> =20
->  		/*
->  		 * Perform the ->exit() even during light-weight tear-down,
->=20
---=20
+>  drivers/cpufreq/Kconfig.arm | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index ce52ed949249..0a141109fd29 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -4,7 +4,7 @@
+>  
+>  config ARM_BIG_LITTLE_CPUFREQ
+>  	tristate "Generic ARM big LITTLE CPUfreq driver"
+> -	depends on ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
+> +	depends on ARM && ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
+>  	help
+>  	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
+>  
+> 
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
