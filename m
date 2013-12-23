@@ -1,49 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: Make ARM big.LITTLE switcher depend on ARM
-Date: Sun, 22 Dec 2013 02:06:04 +0100
-Message-ID: <2576518.J5IDx9W8BG@vostro.rjw.lan>
-References: <1386799947-6041-1-git-send-email-broonie@kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
+Date: Mon, 23 Dec 2013 10:36:49 +0530
+Message-ID: <CAKohpokwO3BgXr9Le02bNo=771saWuDe2H=fgQzcboRWxwVzOg@mail.gmail.com>
+References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
+	<CAKohpomCPJYd+d_NnM9gxwQ7bH6C6=iLxbiWZbfNcjZ8Bi+2wA@mail.gmail.com>
+	<52B41B18.30302@nvidia.com>
+	<CAKohpontQwTc4KP7XMvtkvS2sQTyF+ngXnXfbJ1ev+MLEp-H0g@mail.gmail.com>
+	<52B41F1B.3030005@nvidia.com>
+	<52B4707F.4040303@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1386799947-6041-1-git-send-email-broonie@kernel.org>
+In-Reply-To: <52B4707F.4040303@wwwdotorg.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mark Brown <broonie@kernel.org>
-Cc: Rob Herring <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: Stephen Warren <swarren@wwwdotorg.org>, Rob Herring <robherring2@gmail.com>, Grant Likely <grant.likely@linaro.org>
+Cc: bilhuang <bilhuang@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On Wednesday, December 11, 2013 10:12:26 PM Mark Brown wrote:
-> From: Mark Brown <broonie@linaro.org>
-> 
-> The patch currently under review to enable ARM cpufreq drivers for ARM64
-> which is useful due to the large amount of shared IP between ARM and ARM64
-> SoCs. However the big.LITTLE switcher relies on an architecture interface
-> to build which is not present on ARM64. Add a dependency until that is
-> resolved.
-> 
-> Signed-off-by: Mark Brown <broonie@linaro.org>
+Ccc'ing Grant and Rob as well.
 
-Both [1-2/2] queued up for 3.14, thanks!
+On 20 December 2013 21:59, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> No, I definitely don't agree here. The rules for arch/arm64 are: no
+> platform-specific code. We should immediately start planning for that.
+> If this means renaming the file that creates the virtual device from
+> tegra-cpufreq.c to something else, so be it, but we shouldn't go
+> backwards and push stuff into the arch directories.
 
-> ---
->  drivers/cpufreq/Kconfig.arm | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index ce52ed949249..0a141109fd29 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -4,7 +4,7 @@
->  
->  config ARM_BIG_LITTLE_CPUFREQ
->  	tristate "Generic ARM big LITTLE CPUfreq driver"
-> -	depends on ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
-> +	depends on ARM && ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
->  	help
->  	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
->  
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+I don't mind doing this now as well if it is generic enough. I wasn't sure
+if you guys wanted to take it on now..
+
+@Bill: So, please create a separate commit for creating such file which
+would create a virtual device for probing cpufreq drivers with name picked
+from root-node. Compilation of such a file should be configurable but if
+it is compiled, then it shouldn't cause any problems if that device isn't
+used, for multiplatform kernels specially..
+
+Probably then you can widen the scope of your patchset by modifying
+some of the existing drivers which require a device to get cpufreq
+driver probed. Currently they are all making such a device from
+their arch/ stuff.
+
+I am not sure about the location of such file. Should this be placed in DT
+code somewhere or kept in cpufreq? Rob/Grant ??
+
+--
+viresh
