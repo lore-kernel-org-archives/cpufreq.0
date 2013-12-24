@@ -1,75 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: =?UTF-8?q?=5BPATCH=202/2=5D=20cpufreq=3A=20preserve=20user=5Fpolicy=20across=20suspend/resume?=
-Date: Tue, 24 Dec 2013 07:11:01 +0530
-Message-ID: <03303e46795a89272ba66d5fa230cbfdb9a177a9.1387848958.git.viresh.kumar@linaro.org>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+From: "Jarzmik, Robert" <robert.jarzmik@intel.com>
+Subject: RE: [PATCH] cpufreq: fix garbage kobj on errors during
+ suspend/resume
+Date: Tue, 24 Dec 2013 09:46:38 +0000
+Message-ID: <65F5F98566038744B1B43C8FD3B7549F1C04883F@IRSMSX104.ger.corp.intel.com>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+ <529ECA66.2090607@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-In-Reply-To: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <529ECA66.2090607@linux.vnet.ibm.com>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="macroman"
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bjorn@mork.no, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, =?utf-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>
 
-In __cpufreq_add_dev() we are reinitializing user_policy with default v=
-alues and
-hence would loose values of user_policy.{min|max|policy|governor} field=
-s.
-
-Preserve them by not overriding these for suspend/resume.
-
-Reported-by: Bj=C3=B8rn Mork <bjorn@mork.no>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0a48e71..59e918e 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -839,9 +839,6 @@ static void cpufreq_init_policy(struct cpufreq_poli=
-cy *policy)
-=20
- 	/* set default policy */
- 	ret =3D cpufreq_set_policy(policy, &new_policy);
--	policy->user_policy.policy =3D policy->policy;
--	policy->user_policy.governor =3D policy->governor;
--
- 	if (ret) {
- 		pr_debug("setting policy failed\n");
- 		if (cpufreq_driver->exit)
-@@ -1077,8 +1074,10 @@ static int __cpufreq_add_dev(struct device *dev,=
- struct subsys_interface *sif,
- 	 */
- 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
-=20
--	policy->user_policy.min =3D policy->min;
--	policy->user_policy.max =3D policy->max;
-+	if (!frozen) {
-+		policy->user_policy.min =3D policy->min;
-+		policy->user_policy.max =3D policy->max;
-+	}
-=20
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 				     CPUFREQ_START, policy);
-@@ -1109,6 +1108,11 @@ static int __cpufreq_add_dev(struct device *dev,=
- struct subsys_interface *sif,
-=20
- 	cpufreq_init_policy(policy);
-=20
-+	if (!frozen) {
-+		policy->user_policy.policy =3D policy->policy;
-+		policy->user_policy.governor =3D policy->governor;
-+	}
-+
- 	kobject_uevent(&policy->kobj, KOBJ_ADD);
- 	up_read(&cpufreq_rwsem);
-=20
---=20
-1.7.12.rc2.18.g61b472e
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTcml2YXRzYSBTLiBCaGF0IFtt
+YWlsdG86c3JpdmF0c2EuYmhhdEBsaW51eC52bmV0LmlibS5jb21dDQo+IFNlbnQ6IFdlZG5lc2Rh
+eSwgRGVjZW1iZXIgNCwgMjAxMyAwNzoyNA0KPiBUbzogQmrDuHJuIE1vcmsNCj4gQ2M6IGNwdWZy
+ZXFAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IFZpcmVzaCBLdW1h
+cjsNCj4gV3lzb2NraSwgUmFmYWVsIEo7IEphcnptaWssIFJvYmVydDsgUiwgRHVyZ2Fkb3NzDQo+
+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IGZpeCBnYXJiYWdlIGtvYmogb24gZXJyb3Jz
+IGR1cmluZw0KPiBzdXNwZW5kL3Jlc3VtZQ0KPiANCj4gPiAgSXQgaXMgdGhlcmVmb3JlDQo+ID4g
+YmVzdCB0byByZXZlcnQgdGhlIHBhdGNoIGVuYWJsaW5nIHRoaXMgY29kZSB1bnRpbCB0aGUgZXJy
+b3IgaGFuZGxpbmcNCj4gPiBpcyBpbiBwbGFjZS4NCkFncmVlZC4NCg0KPiBJIGFncmVlLCB0aGF0
+J3MgYSBnb29kIGRlY2lzaW9uLiBJJ2xsIHRha2UgYSBsb29rIGF0IGl0IGxhdGVyIHRvIHNlZSBp
+ZiB3ZQ0KPiBjYW4gcmVzdHJ1Y3R1cmUgdGhlIGNvZGUgdG8gaW5jbHVkZSBwcm9wZXIgZXJyb3Ig
+aGFuZGxpbmcgaW4gYWxsIHRoZQ0KPiBmYWlsdXJlIHBhdGhzLiBJZiB0aGF0IGdldHMgd2F5IG91
+dCBvZiBjb250cm9sIGluIHRlcm1zIG9mIGNvbXBsZXhpdHksDQo+IHRoZW4gaXRzIHByb2JhYmx5
+IGJlc3QgdG8gZHJvcCB0aGlzICJmZWF0dXJlIiBhbHRvZ2V0aGVyLiBJdCBoYXMgY2F1c2VkDQo+
+IGVub3VnaCBwcm9ibGVtcyBhbHJlYWR5LCBhbmQgdGhlIGluaXRpYWwgbW90aXZhdGlvbiBiZWhp
+bmQgZG9pbmcgdGhhdA0KPiBkb2Vzbid0IHNlZW0gdG8gYmUgdGhhdCBzdHJvbmcgbm93IChDQydp
+bmcgUm9iZXJ0IGFuZCBEdXJnYSkuDQoNCldlbGwsIHRoZSBtb3RpdmF0aW9uIGlzIHN0aWxsIHRo
+ZSBzYW1lIEkgdGhpbmssIGllLiBtYWtpbmcgdGhlcm1hbCBtYW5hZ2VtZW50DQp3b3JrLCBidXQg
+dGhhdCdzIG5vdCBhcyBpbXBvcnRhbnQgYXMgYSBicm9rZW4gaGliZXJuYXRpb24uDQoNCkFuZCBp
+biB0aGUgbG9uZyB0ZXJtLCBpZiBJIHVuZGVyc3Rvb2QgY29ycmVjdGx5IHRoYXQgaXQncyB0aGUg
+c3VzcGVuZCBlcnJvcg0KcGF0aCB3aXRoICJzdGFsZSIga29iamVjdHMgd2hpY2ggaXMgdGhlIHBy
+b2JsZW0sIHRoZW4gdGhpcyB3aWxsIGhhdmUgdG8gYmUNCmFkZHJlc3NlZCBzb29uZXIgb3IgbGF0
+ZXIsIHdvbid0IGl0ID8NCg0KQ2hlZXJzLg0KDQotLQ0KUm9iZXJ0DQoNCi0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpJ
+bnRlbCBDb3Jwb3JhdGlvbiBTQVMgKEZyZW5jaCBzaW1wbGlmaWVkIGpvaW50IHN0b2NrIGNvbXBh
+bnkpClJlZ2lzdGVyZWQgaGVhZHF1YXJ0ZXJzOiAiTGVzIE1vbnRhbGV0cyItIDIsIHJ1ZSBkZSBQ
+YXJpcywgCjkyMTk2IE1ldWRvbiBDZWRleCwgRnJhbmNlClJlZ2lzdHJhdGlvbiBOdW1iZXI6ICAz
+MDIgNDU2IDE5OSBSLkMuUy4gTkFOVEVSUkUKQ2FwaXRhbDogNCw1NzIsMDAwIEV1cm9zCgpUaGlz
+IGUtbWFpbCBhbmQgYW55IGF0dGFjaG1lbnRzIG1heSBjb250YWluIGNvbmZpZGVudGlhbCBtYXRl
+cmlhbCBmb3IKdGhlIHNvbGUgdXNlIG9mIHRoZSBpbnRlbmRlZCByZWNpcGllbnQocykuIEFueSBy
+ZXZpZXcgb3IgZGlzdHJpYnV0aW9uCmJ5IG90aGVycyBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLiBJ
+ZiB5b3UgYXJlIG5vdCB0aGUgaW50ZW5kZWQKcmVjaXBpZW50LCBwbGVhc2UgY29udGFjdCB0aGUg
+c2VuZGVyIGFuZCBkZWxldGUgYWxsIGNvcGllcy4K
 
