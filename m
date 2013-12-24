@@ -1,32 +1,91 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH Resend] cpufreq: remove sysfs files for CPU which failed to come back after resume
-Date: Tue, 24 Dec 2013 01:43:51 +0100
-Message-ID: <1720555.1A4z81RqtR@vostro.rjw.lan>
-References: <610b63b7594e5cd364c498f60e69b9e174db9257.1387554926.git.viresh.kumar@linaro.org> <1614824.4yERnS53EQ@vostro.rjw.lan> <CAKohpokHajZ0OudZp1Tb-a-Q70-4OuLDGV9SR==yX1K9P0rDgA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
+Date: Tue, 24 Dec 2013 07:11:00 +0530
+Message-ID: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokHajZ0OudZp1Tb-a-Q70-4OuLDGV9SR==yX1K9P0rDgA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="macroman"
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bjorn@mork.no, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tuesday, December 24, 2013 05:57:35 AM Viresh Kumar wrote:
-> On 24 December 2013 06:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > OK
-> >
-> > Can you please combine this with the patch you sent previously (if that one
-> > is still necessary) and resubmit with a new subject?
-> 
-> Yes both are required and I really want two separate patches here as they
-> potentially target separate problems.
+__cpufreq_add_dev() can fail sometimes while we are resuming our system=
+=2E
+Currently we are clearing all sysfs nodes for cpufreq's failed policy a=
+s that
+could make userspace unstable. But if we suspend/resume again, we shoul=
+d atleast
+try to bring back those policies.
 
-OK
+This patch fixes this issue by clearing fallback data on failure and tr=
+ying to
+allocate a new struct cpufreq_policy on second resume.
 
-Please resubmit them as a proper series then.
+Reported-and-tested-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+These are sent again (earlier sent as reply to emails), so that people =
+can
+give inputs if they have any.
 
-Thanks,
-Rafael
+Tested on my thinkpad T420.
+
+ drivers/cpufreq/cpufreq.c | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 16d7b4a..0a48e71 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1016,16 +1016,24 @@ static int __cpufreq_add_dev(struct device *dev=
+, struct subsys_interface *sif,
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ #endif
+=20
+-	if (frozen)
++	if (frozen) {
+ 		/* Restore the saved policy when doing light-weight init */
+ 		policy =3D cpufreq_policy_restore(cpu);
+-	else
++
++		/*
++		 * As we failed to resume cpufreq core last time, lets try to
++		 * create a new policy.
++		 */
++		if (!policy)
++			frozen =3D false;
++	}
++
++	if (!frozen)
+ 		policy =3D cpufreq_policy_alloc();
+=20
+ 	if (!policy)
+ 		goto nomem_out;
+=20
+-
+ 	/*
+ 	 * In the resume path, since we restore a saved policy, the assignmen=
+t
+ 	 * to policy->cpu is like an update of the existing policy, rather th=
+an
+@@ -1118,8 +1126,14 @@ err_get_freq:
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(policy);
+ err_set_policy_cpu:
+-	if (frozen)
++	if (frozen) {
++		/*
++		 * Clear fallback data as we should try to make things work on
++		 * next suspend/resume
++		 */
++		per_cpu(cpufreq_cpu_data_fallback, cpu) =3D NULL;
+ 		cpufreq_policy_put_kobj(policy);
++	}
+ 	cpufreq_policy_free(policy);
+=20
+ nomem_out:
+--=20
+1.7.12.rc2.18.g61b472e
 
