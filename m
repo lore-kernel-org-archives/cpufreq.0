@@ -1,24 +1,35 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Fri, 27 Dec 2013 15:28:24 +0530
-Message-ID: <CAKohpokW2FCN33VZOSUQ0xbgt6FgxtfQyPZintGL9URDHH8LCQ@mail.gmail.com>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-	<5562479.pVWRuDL0y6@vostro.rjw.lan>
-	<CAKohponHBaGG1e5e+Wmg6rqMB-nbRx1e=F+u5AoaNb=mxfQL6A@mail.gmail.com>
-	<CAKohpom9_-9bDJ9tWDHmm1inMporaHytAvmrgfPSs2koRqGzBw@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 65671] hibernation - IO errors writing to swap, crashing apps,
+ 3,11.8 worked
+Date: Fri, 27 Dec 2013 11:42:24 +0000
+Message-ID: <bug-65671-12968-60jqJccMZN@https.bugzilla.kernel.org/>
+References: <bug-65671-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom9_-9bDJ9tWDHmm1inMporaHytAvmrgfPSs2koRqGzBw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-65671-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: cpufreq@vger.kernel.org
 
-On 27 December 2013 15:27, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> I think there is nothing much different in this patch compared to what Bjorn
-> tested. So you can probably push that now and let him test linux-next later
-> once he is back?
+https://bugzilla.kernel.org/show_bug.cgi?id=65671
 
-Just saw that you already pushed it. :)
+--- Comment #11 from higuita <higuita@gmx.net> ---
+This problem can be much older than kernel 3.12...  i've been having sporadic
+problems with random corrupted filesystems since maybe about june. During all
+summer i assumed it was a bad HD (that started to report bad sectors and is
+mostly unused, it's actually umounted and suspended on boot) was introducing
+problems in other SATA channels and corrupting other HD partitions.
+
+Since i switch to the performance governor, i had no FS corruption, so looks
+like the (unused) HD was not the problem, but again some bug in the ondemand
+governor. If true, this could be a lot older and recent changes made it much
+more frequent and reproducible. 
+
+Sadly, the old FS corruption was hard to trigger, so it's not easy to point
+when it started to show up
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
