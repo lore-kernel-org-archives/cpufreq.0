@@ -1,35 +1,40 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 65671] hibernation - IO errors writing to swap, crashing apps,
- 3,11.8 worked
-Date: Fri, 27 Dec 2013 11:42:24 +0000
-Message-ID: <bug-65671-12968-60jqJccMZN@https.bugzilla.kernel.org/>
-References: <bug-65671-12968@https.bugzilla.kernel.org/>
+From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
+Date: Fri, 27 Dec 2013 12:24:22 +0000
+Message-ID: <20131227122422.62857cec@alan.etchedpixels.co.uk>
+References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com>
+	<CAKohpomqHApogDEXA5LyWk-+B-Y1mwNQ63-wL3PPGz64s_3Dmw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-65671-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <CAKohpomqHApogDEXA5LyWk-+B-Y1mwNQ63-wL3PPGz64s_3Dmw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Josh Boyer <jwboyer@fedoraproject.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=65671
+On Tue, 24 Dec 2013 21:36:01 +0530
+Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
---- Comment #11 from higuita <higuita@gmx.net> ---
-This problem can be much older than kernel 3.12...  i've been having sporadic
-problems with random corrupted filesystems since maybe about june. During all
-summer i assumed it was a bad HD (that started to report bad sectors and is
-mostly unused, it's actually umounted and suspended on boot) was introducing
-problems in other SATA channels and corrupting other HD partitions.
+> Adding Dirk..
+> 
+> On 24 December 2013 20:06, Josh Boyer <jwboyer@fedoraproject.org> wrote:
+> > Hi All,
+> >
+> > We've had a report [1] that the pstate driver causes KVM guests to
+> > fail to boot because of a divide error.  See the backtrace below.
+> >
+> >     4.839784] Intel P-state driver initializing.
+> > [    4.859972] Intel pstate controlling: cpu 0
+> > [    4.867653] cpufreq: __cpufreq_add_dev: ->get() failed
+> 
+> After a call to ->init(), ->get() is supposed to work.
+> @Dirk: Any idea why it failed?
+> 
+> And then I don't know what made this divide by zero to happen :)
 
-Since i switch to the performance governor, i had no FS corruption, so looks
-like the (unused) HD was not the problem, but again some bug in the ondemand
-governor. If true, this could be a lot older and recent changes made it much
-more frequent and reproducible. 
+> > [    4.878127] Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
 
-Sadly, the old FS corruption was hard to trigger, so it's not easy to point
-when it started to show up
+Emulator bug perhaps ?
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
