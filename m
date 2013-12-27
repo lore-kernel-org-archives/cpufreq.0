@@ -1,62 +1,40 @@
-From: Jane Li <jiel@marvell.com>
-Subject: Re: cpufreq ondemand governor debugobjects warning
-Date: Fri, 27 Dec 2013 17:35:54 +0800
-Message-ID: <52BD49FA.9070002@marvell.com>
-References: <52BCEA76.1020906@marvell.com>	<52BCEEA3.4090107@marvell.com> <CAKohpo=xxt2BRsiLkufkH7qdBeQrxw_SinRMyLWFiC6MTHUJWw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Fix timer/workqueue corruption by protecting
+ reading governor_enabled
+Date: Fri, 27 Dec 2013 15:10:04 +0530
+Message-ID: <CAKohpokWMgXotgKWFmqOPzdoZME=frBQOjeU1uFJwQ778DHAKg@mail.gmail.com>
+References: <1388136651-21883-1-git-send-email-jiel@marvell.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=xxt2BRsiLkufkH7qdBeQrxw_SinRMyLWFiC6MTHUJWw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1388136651-21883-1-git-send-email-jiel@marvell.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jane Li <jiel@marvell.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+On 27 December 2013 15:00,  <jiel@marvell.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> -static DEFINE_MUTEX(cpufreq_governor_lock);
 
-On 12/27/2013 04:01 PM, Viresh Kumar wrote:
-> On 27 December 2013 08:36, Jane Li <jiel@marvell.com> wrote:
->> When gov_queue_work(), governor_enabled may be modified.  Following patch
->> can fix it by adding cpufreq_governor_lock in gov_queue_work. But in this
->> way, cpufreq_governor_lock also protects __gov_queue_work(). Do you think
->> this is a good idea?
-> I don't see a alternative than this solution after the deadlock issue with timer
-> lock.
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index dc196bb..4faafe7 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -254,6 +254,7 @@ struct cpufreq_driver {
 >
->> diff --git a/drivers/cpufreq/cpufreq_governor.c
->> b/drivers/cpufreq/cpufreq_governor.c
->> index e6be635..a27246c 100644
->> --- a/drivers/cpufreq/cpufreq_governor.c
->> +++ b/drivers/cpufreq/cpufreq_governor.c
->> @@ -118,9 +118,11 @@ void gov_queue_work(struct dbs_data *dbs_data,
->> struct cpufreq_policy *policy,
->>                    unsigned int delay, bool all_cpus)
->>     {
->>            int i;
->> -
-> don't remove this.
->
->> -       if (!policy->governor_enabled)
->> +       mutex_lock(&cpufreq_governor_lock);
->> +       if (!policy->governor_enabled) {
->> +               mutex_unlock(&cpufreq_governor_lock);
->>                    return;
->> +       }
->>
->>            if (!all_cpus) {
->>                    /*
->> @@ -135,6 +137,7 @@ void gov_queue_work(struct dbs_data *dbs_data,
->> struct cpufreq_policy *policy,
->>                    for_each_cpu(i, policy->cpus)
->>                            __gov_queue_work(i, dbs_data, delay);
->>            }
->> +       mutex_unlock(&cpufreq_governor_lock);
->>     }
->>     EXPORT_SYMBOL_GPL(gov_queue_work);
-> You also need to remove 'static' from lock's declaration.
->
-> --
-> viresh
+>  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+>  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+> +static DEFINE_MUTEX(cpufreq_governor_lock);
 
-Thanks. I have pushed one patch named "[PATCH] cpufreq: Fix timer/workqueue corruption by protecting reading governor_enabled".
+No way, this would never work. This would create separate locks
+in each file that includes cpufreq.h. And so the locks you are talking
+about wouldn't protect governor.
 
+Have you actually tested this code? If this fixes the breakage you
+saw? If this fixes it then you need to do better investigation of your
+problem..
+
+you actually need to remove the static keyword from cpufreq.c file.
+Nothing else.
