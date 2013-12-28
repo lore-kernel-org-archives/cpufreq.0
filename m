@@ -1,63 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
-Date: Fri, 27 Dec 2013 22:51:59 +0100
-Message-ID: <231382870.yshsPRR4KM@vostro.rjw.lan>
-References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <20131227170147.GH10961@minantech.com> <52BDB63B.70107@redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <52BDB63B.70107@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mateusz Krawczuk <mat.krawczuk@gmail.com>
+Subject: [PATCH v5 Resend 0/3] ARM: S5PV210: move to common clk framework
+Date: Sat, 28 Dec 2013 18:09:13 +0100
+Message-ID: <1388250556-4594-1-git-send-email-mat.krawczuk@gmail.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=from:to:cc:subject:date:message-id;
+        bh=IaV8qfvxS5Wy8SToAEtO51mvj6RF8qAg2EgPUwGgUk4=;
+        b=aEUFNwfevsjmu0EnetAkMV1c26BRGQX70EzFPOcsc0NY9fwvrTFTEQB8pJN5cPXu6T
+         Eye0S8XGCuaKrowR42+ohi/CaSN4u7Nea6+69dbJaHekc9aqHjBVL6qVMQokNERAgYCA
+         lNY//LlvfmRmTrHuwY7SED/ydRF/v/LcaLnv3HGJgrF/js5z+24mHaBzo+m4xed2NuoN
+         AT+fi1fB+VvjcwmJ3b7C6WMXroSLyYDCOWAdNTsG7Cl9Kg5Mi4cJPEPSz5BEBcE//wJv
+         Dntpaz2m2fMIt+ttxQzxrB/n1ge96GW5UZYK5wRsg6/Nusf1i9IxSsHrCVlvUIKGLmIz
+         MH1w==
+Sender: linux-doc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Kashyap Chamarthy <kchamart@redhat.com>
-Cc: Gleb Natapov <gleb@kernel.org>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
+Content-Transfer-Encoding: 7bit
+To: kgene.kim@samsung.com
+Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, rob@landley.net, mturquette@linaro.org, tomasz.figa@gmail.com, thomas.abraham@linaro.org, s.nawrocki@samsung.com, m.szyprowski@samsung.com, padma.v@samsung.com, chander.kashyap@linaro.org, t.dakhran@samsung.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, ben-linux@fluff.org, linux-samsung-soc@vger.kernel.org
 
-On Friday, December 27, 2013 06:17:47 PM Kashyap Chamarthy wrote:
-> On 12/27/2013 06:01 PM, Gleb Natapov wrote:
-> > On Fri, Dec 27, 2013 at 06:52:48PM +0200, Gleb Natapov wrote:
-> >> On Fri, Dec 27, 2013 at 03:15:39PM +0100, Kashyap Chamarthy wrote:
-> >>> [. . .]
-> >>>
-> >>>>> KVM does not emulate P-states at all. intel_pstate_init() calls
-> >>>>> intel_pstate_msrs_not_valid() before printing "Intel P-state driver
-> >>>>> initializing."  which suppose to fail since it checks that two reads of
-> >>>>> MSR_IA32_APERF return different values, but KVM does not emulate this msr
-> >>>>> at all, so both calls should return zero (KVM suppose to inject #GP, all rdmsrl
-> >>>>> are patched to be rdmsrl_safe in a guest).
-> >>>>>
-> >>>>> Anything interesting in host dmesg?
-> >>>
-> >>> Heya Gleb,
-> >>>
-> >>> Here's the relevant dmesg snippet (full dmesg, refer the attachment below):
-> >> That's guest dmesg. What about host one? 
-> 
-> Here's host dmesg: https://bugzilla.kernel.org/attachment.cgi?id=119751
-> 
-> >> Can you ftrace the failure?
-> 
-> Can try, need some time (rest of the day I'll be away travelling,
-> will try to do it over the weekend, and update the Kernel
-> bugzilla with observations).
-> 
-> >>
-> > Ugh, it looks like guest dmesg but there are KVM messages there too ("[
-> > 281.443662] kvm [2452]: vcpu0 unhandled rdmsr: 0xe8" is unhandled access
-> > to MSR_IA32_APERF I was talking about above), so I guess this is nested
-> > guest invocation? 
-> 
-> Yeah -- sorry, I forgot to note it's in a nested environment :(
-> 
-> > Does it happen in non nested guest?
-> 
-> I need to that.
-> 
-> Note to self: Also try with a newer Kernel on the host.
+This patch series is the new s5pv210 clock implementation
+(using common clk framework).
 
-Please try the patch I posted earlier today when you're at it:
+This implementation is compatible with device tree definition and board
+files.
 
-https://patchwork.kernel.org/patch/3411991/
+This patch series is based on linux-next and has been tested on goni and
+aquila boards using board file.
 
-Rafael
+Since v4:
+Corrected mux flags for finpll.
+
+Since v3:
+
+Replace s5pv210_clk_register_finpll, by creating mux finpll
+with xusbxti and xxti as parrents.
+
+Mateusz Krawczuk (3):
+  clk: samsung: Add clock driver for s5pc110/s5pv210
+  Cpufreq: s5pv210 cpufreq fixes for CCF
+  ARM: s5pv210: Migrate clock handling to Common Clock Framework
+
+ .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
+ arch/arm/mach-s5pv210/Kconfig                      |   9 +
+ arch/arm/mach-s5pv210/Makefile                     |   4 +-
+ arch/arm/mach-s5pv210/common.c                     |  17 +
+ arch/arm/mach-s5pv210/common.h                     |  10 +
+ arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
+ arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
+ arch/arm/plat-samsung/Kconfig                      |   2 +-
+ drivers/clk/samsung/Makefile                       |   3 +
+ drivers/clk/samsung/clk-s5pv210.c                  | 673 +++++++++++++++++++++
+ drivers/cpufreq/s5pv210-cpufreq.c                  |   6 +-
+ include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
+ 12 files changed, 1019 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+ create mode 100644 drivers/clk/samsung/clk-s5pv210.c
+ create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
+
+-- 
+1.8.3.3
 
