@@ -1,74 +1,103 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix timer/workqueue corruption by protecting
- reading governor_enabled
-Date: Mon, 30 Dec 2013 12:04:51 +0530
-Message-ID: <CAKohpomwA0PHBvFiK+-i6LDHX8J_s2hfm4-ciKFB9DSS8q0Wdw@mail.gmail.com>
-References: <1388136651-21883-1-git-send-email-jiel@marvell.com>
-	<CAKohpokWMgXotgKWFmqOPzdoZME=frBQOjeU1uFJwQ778DHAKg@mail.gmail.com>
-	<52C112CC.4040306@marvell.com>
+From: Kashyap Chamarthy <kchamart@redhat.com>
+Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
+Date: Mon, 30 Dec 2013 15:58:43 +0100
+Message-ID: <52C18A23.10703@redhat.com>
+References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <231382870.yshsPRR4KM@vostro.rjw.lan> <52C011A2.3040800@redhat.com> <4794554.Hmd2RUNYDT@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52C112CC.4040306@marvell.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <4794554.Hmd2RUNYDT@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jane Li <jiel@marvell.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Gleb Natapov <gleb@kernel.org>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
 
-On 30 December 2013 11:59, Jane Li <jiel@marvell.com> wrote:
-> I checked my code, and found I lost following part.
-> My local code base is not exactly same as open source, and has included
-> this.
->
->
-> diff --git a/drivers/cpufreq/cpufreq_governor.c
-> b/drivers/cpufreq/cpufreq_governor.c
-> index e6be635..c4d0ee6 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -19,6 +19,7 @@
->  #include <linux/export.h>
->  #include <linux/kernel_stat.h>
->  #include <linux/slab.h>
-> +#include <linux/cpufreq.h>
->
->  #include "cpufreq_governor.h"
+On 12/29/2013 04:04 PM, Rafael J. Wysocki wrote:
+> On Sunday, December 29, 2013 01:12:18 PM Kashyap Chamarthy wrote:
+>> [. . .]
+>>
+>>>> Here's host dmesg: https://bugzilla.kernel.org/attachment.cgi?id=119751
+>>>>
+>>>>>> Can you ftrace the failure?
+>>>>
+>>>> Can try, need some time (rest of the day I'll be away travelling,
+>>>> will try to do it over the weekend, and update the Kernel
+>>>> bugzilla with observations).
+>>>>
+>>>>>>
+>>>>> Ugh, it looks like guest dmesg but there are KVM messages there too ("[
+>>>>> 281.443662] kvm [2452]: vcpu0 unhandled rdmsr: 0xe8" is unhandled access
+>>>>> to MSR_IA32_APERF I was talking about above), so I guess this is nested
+>>>>> guest invocation? 
+>>>>
+>>>> Yeah -- sorry, I forgot to note it's in a nested environment :(
+>>>>
+>>>>> Does it happen in non nested guest?
+>>>>
+>>>> I need to that.
+>>>>
+>>>> Note to self: Also try with a newer Kernel on the host.
+>>>
+>>> Please try the patch I posted earlier today when you're at it:
+>>>
+>>> https://patchwork.kernel.org/patch/3411991/
+>>
+>> I applied the patch & tried to build the Kernel, it failed with:
+>>
+>> =======
+>> .
+>> .
+>> .
+>> Generating a 4096 bit RSA private key
+>> ............................................................................................................drivers/cpufreq/intel_pstate.c:
+>> In function 'intel_pstate_init_cpu':
+>> drivers/cpufreq/intel_pstate.c:617:18: error: 'struct pstate_data' has no member named
+>> 'current_state'
+>>   if (!cpu->pstate.current_state) {
+> 
+> My bad, that should have been current_pstate.  Updated patch is appended.
+> 
+> Thanks,
+> Rafael
+> 
+> 
+> ---
+>  drivers/cpufreq/intel_pstate.c |    5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
+>  	cpu = all_cpu_data[cpunum];
+>  
+>  	intel_pstate_get_cpu_pstates(cpu);
+> +	if (!cpu->pstate.current_pstate) {
+> +		all_cpu_data[cpunum] = NULL;
+> +		kfree(cpu);
+> +		return -ENODATA;
+> +	}
+>  
+>  	cpu->cpu = cpunum;
+>  
+> 
 
-This shouldn't be required as cpufreq_governor.h must be including
-cpufreq.h..
 
-> Yes, I test it. After adding cpufreq_governor_lock in gov_queue_work() and
-> running same test, there is no debugobjects warning.
+Thanks Rafel, I can confirm this patch helps.
 
-But it really can't work at all.. There should be a separate copy of lock
-in every file that includes cpufreq.h.. And so this shouldn't have worked.
+I re-built the Kernel on L0 (physical host) and L1 (guest hypervisor) with
+the above patch, and re-ran the libguestfs test (which invokes an L2 appliance),
+it now successfully completes:
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 16d7b4a..185c9f5 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -39,7 +39,7 @@ static struct cpufreq_driver *cpufreq_driver;
->
->  static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
->  static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data_fallback);
->  static DEFINE_RWLOCK(cpufreq_driver_lock);
-> -static DEFINE_MUTEX(cpufreq_governor_lock);
-> +DEFINE_MUTEX(cpufreq_governor_lock);
->
->  static LIST_HEAD(cpufreq_policy_list);
->
->  #ifdef CONFIG_HOTPLUG_CPU
-> diff --git a/drivers/cpufreq/cpufreq_governor.c
-> b/drivers/cpufreq/cpufreq_governor.c
-> index e6be635..485ee0d 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -22,6 +22,8 @@
->
->  #include "cpufreq_governor.h"
->
-> +extern struct mutex cpufreq_governor_lock;
-> +
+   http://kashyapc.fedorapeople.org/temp/libguestfs-test-tool-stdout.txt
 
-Looks fine.
+
+Here's a Fedora Kernel scratch build (not retained for more than 2 weeks)
+with the above patch I used -- http://koji.fedoraproject.org/koji/taskinfo?taskID=6342414
+
+
+
+-- 
+/kashyap
