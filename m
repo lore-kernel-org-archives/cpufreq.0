@@ -1,191 +1,143 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
-Date: Tue, 31 Dec 2013 03:07:02 +0100
-Message-ID: <3710588.K8glfx1cYs@vostro.rjw.lan>
-References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <4794554.Hmd2RUNYDT@vostro.rjw.lan> <52C18A23.10703@redhat.com>
+From: <jiel@marvell.com>
+Subject: [PATCH v2] cpufreq: Fix timer/workqueue corruption by protecting reading governor_enabled
+Date: Thu, 2 Jan 2014 11:14:42 +0800
+Message-ID: <1388632482-16921-1-git-send-email-jiel@marvell.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52C18A23.10703@redhat.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Kashyap Chamarthy <kchamart@redhat.com>
-Cc: Gleb Natapov <gleb@kernel.org>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jane Li <jiel@marvell.com>
 
-On Monday, December 30, 2013 03:58:43 PM Kashyap Chamarthy wrote:
-> On 12/29/2013 04:04 PM, Rafael J. Wysocki wrote:
-> > On Sunday, December 29, 2013 01:12:18 PM Kashyap Chamarthy wrote:
-> >> [. . .]
-> >>
-> >>>> Here's host dmesg: https://bugzilla.kernel.org/attachment.cgi?id=119751
-> >>>>
-> >>>>>> Can you ftrace the failure?
-> >>>>
-> >>>> Can try, need some time (rest of the day I'll be away travelling,
-> >>>> will try to do it over the weekend, and update the Kernel
-> >>>> bugzilla with observations).
-> >>>>
-> >>>>>>
-> >>>>> Ugh, it looks like guest dmesg but there are KVM messages there too ("[
-> >>>>> 281.443662] kvm [2452]: vcpu0 unhandled rdmsr: 0xe8" is unhandled access
-> >>>>> to MSR_IA32_APERF I was talking about above), so I guess this is nested
-> >>>>> guest invocation? 
-> >>>>
-> >>>> Yeah -- sorry, I forgot to note it's in a nested environment :(
-> >>>>
-> >>>>> Does it happen in non nested guest?
-> >>>>
-> >>>> I need to that.
-> >>>>
-> >>>> Note to self: Also try with a newer Kernel on the host.
-> >>>
-> >>> Please try the patch I posted earlier today when you're at it:
-> >>>
-> >>> https://patchwork.kernel.org/patch/3411991/
-> >>
-> >> I applied the patch & tried to build the Kernel, it failed with:
-> >>
-> >> =======
-> >> .
-> >> .
-> >> .
-> >> Generating a 4096 bit RSA private key
-> >> ............................................................................................................drivers/cpufreq/intel_pstate.c:
-> >> In function 'intel_pstate_init_cpu':
-> >> drivers/cpufreq/intel_pstate.c:617:18: error: 'struct pstate_data' has no member named
-> >> 'current_state'
-> >>   if (!cpu->pstate.current_state) {
-> > 
-> > My bad, that should have been current_pstate.  Updated patch is appended.
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > 
-> > ---
-> >  drivers/cpufreq/intel_pstate.c |    5 +++++
-> >  1 file changed, 5 insertions(+)
-> > 
-> > Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> > +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> > @@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
-> >  	cpu = all_cpu_data[cpunum];
-> >  
-> >  	intel_pstate_get_cpu_pstates(cpu);
-> > +	if (!cpu->pstate.current_pstate) {
-> > +		all_cpu_data[cpunum] = NULL;
-> > +		kfree(cpu);
-> > +		return -ENODATA;
-> > +	}
-> >  
-> >  	cpu->cpu = cpunum;
-> >  
-> > 
-> 
-> 
-> Thanks Rafel, I can confirm this patch helps.
+From: Jane Li <jiel@marvell.com>
 
-Awesome, thanks!
+When a CPU is hot removed we'll cancel all the delayed work items via
+gov_cancel_work(). Sometimes the delayed work function determines that
+it should adjust the delay for all other CPUs that the policy is
+managing. If this scenario occurs, the canceling CPU will cancel its own
+work but queue up the other CPUs works to run.
 
-Below is an official version with a changelog.  I'll queue it up as a fix
-for 3.13.
+Commit 3617f2(cpufreq: Fix timer/workqueue corruption due to double
+queueing) has tried to fix this, but reading governor_enabled is not
+protected by cpufreq_governor_lock. Even though od_dbs_timer() checks
+governor_enabled before gov_queue_work(), this scenario may occur. For
+example:
 
-Thanks,
-Rafael
+ CPU0                                        CPU1
+ ----                                        ----
+ cpu_down()
+  ...                                        <work runs>
+  __cpufreq_remove_dev()                     od_dbs_timer()
+   __cpufreq_governor()                       policy->governor_enabled
+    policy->governor_enabled = false;
+    cpufreq_governor_dbs()
+     case CPUFREQ_GOV_STOP:
+      gov_cancel_work(dbs_data, policy);
+       cpu0 work is canceled
+        timer is canceled
+        cpu1 work is canceled
+        <waits for cpu1>
+                                              gov_queue_work(*, *, true);
+                                               cpu0 work queued
+                                               cpu1 work queued
+                                               cpu2 work queued
+                                               ...
+        cpu1 work is canceled
+        cpu2 work is canceled
+        ...
 
+At the end of the GOV_STOP case cpu0 still has a work queued to
+run although the code is expecting all of the works to be
+canceled. __cpufreq_remove_dev() will then proceed to
+re-initialize all the other CPUs works except for the CPU that is
+going down. The CPUFREQ_GOV_START case in cpufreq_governor_dbs()
+will trample over the queued work and debugobjects will spit out
+a warning:
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: intel_pstate: Fail initialization if P-state information is missing
-
-If pstate.current_pstate is 0 after the initial
-intel_pstate_get_cpu_pstates(), this means that we were unable to
-obtain any useful P-state information and there is no reason to
-continue, so free memory and return an error in that case.
-
-This fixes the following divide error occuring in a nested KVM
-guest:
-
-Intel P-state driver initializing.
-Intel pstate controlling: cpu 0
-cpufreq: __cpufreq_add_dev: ->get() failed
-divide error: 0000 [#1] SMP
+WARNING: at lib/debugobjects.c:260 debug_print_object+0x94/0xbc()
+ODEBUG: init active (active state 0) object type: timer_list hint: delayed_work_timer_fn+0x0/0x14
 Modules linked in:
-CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.13.0-0.rc4.git5.1.fc21.x86_64 #1
-Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
-task: ffff88001ea20000 ti: ffff88001e9bc000 task.ti: ffff88001e9bc000
-RIP: 0010:[<ffffffff815c551d>]  [<ffffffff815c551d>] intel_pstate_timer_func+0x11d/0x2b0
-RSP: 0000:ffff88001ee03e18  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: ffff88001a454348 RCX: 0000000000006100
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-RBP: ffff88001ee03e38 R08: 0000000000000000 R09: 0000000000000000
-R10: ffff88001ea20000 R11: 0000000000000000 R12: 00000c0a1ea20000
-R13: 1ea200001ea20000 R14: ffffffff815c5400 R15: ffff88001a454348
-FS:  0000000000000000(0000) GS:ffff88001ee00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 0000000001c0c000 CR4: 00000000000006f0
-Stack:
- fffffffb1a454390 ffffffff821a4500 ffff88001a454390 0000000000000100
- ffff88001ee03ea8 ffffffff81083e9a ffffffff81083e15 ffffffff82d5ed40
- ffffffff8258cc60 0000000000000000 ffffffff81ac39de 0000000000000000
-Call Trace:
- <IRQ>
- [<ffffffff81083e9a>] call_timer_fn+0x8a/0x310
- [<ffffffff81083e15>] ? call_timer_fn+0x5/0x310
- [<ffffffff815c5400>] ? pid_param_set+0x130/0x130
- [<ffffffff81084354>] run_timer_softirq+0x234/0x380
- [<ffffffff8107aee4>] __do_softirq+0x104/0x430
- [<ffffffff8107b5fd>] irq_exit+0xcd/0xe0
- [<ffffffff81770645>] smp_apic_timer_interrupt+0x45/0x60
- [<ffffffff8176efb2>] apic_timer_interrupt+0x72/0x80
- <EOI>
- [<ffffffff810e15cd>] ? vprintk_emit+0x1dd/0x5e0
- [<ffffffff81757719>] printk+0x67/0x69
- [<ffffffff815c1493>] __cpufreq_add_dev.isra.13+0x883/0x8d0
- [<ffffffff815c14f0>] cpufreq_add_dev+0x10/0x20
- [<ffffffff814a14d1>] subsys_interface_register+0xb1/0xf0
- [<ffffffff815bf5cf>] cpufreq_register_driver+0x9f/0x210
- [<ffffffff81fb19af>] intel_pstate_init+0x27d/0x3be
- [<ffffffff81761e3e>] ? mutex_unlock+0xe/0x10
- [<ffffffff81fb1732>] ? cpufreq_gov_dbs_init+0x12/0x12
- [<ffffffff8100214a>] do_one_initcall+0xfa/0x1b0
- [<ffffffff8109dbf5>] ? parse_args+0x225/0x3f0
- [<ffffffff81f64193>] kernel_init_freeable+0x1fc/0x287
- [<ffffffff81f638d0>] ? do_early_param+0x88/0x88
- [<ffffffff8174b530>] ? rest_init+0x150/0x150
- [<ffffffff8174b53e>] kernel_init+0xe/0x130
- [<ffffffff8176e27c>] ret_from_fork+0x7c/0xb0
- [<ffffffff8174b530>] ? rest_init+0x150/0x150
-Code: c1 e0 05 48 63 bc 03 10 01 00 00 48 63 83 d0 00 00 00 48 63 d6 48 c1 e2 08 c1 e1 08 4c 63 c2 48 c1 e0 08 48 98 48 c1 e0 08 48 99 <49> f7 f8 48 98 48 0f af f8 48 c1 ff 08 29 f9 89 ca c1 fa 1f 89
-RIP  [<ffffffff815c551d>] intel_pstate_timer_func+0x11d/0x2b0
- RSP <ffff88001ee03e18>
----[ end trace f166110ed22cc37a ]---
-Kernel panic - not syncing: Fatal exception in interrupt
+CPU: 1 PID: 1205 Comm: sh Tainted: G        W    3.10.0 #200
+[<c01144f0>] (unwind_backtrace+0x0/0xf8) from [<c0111d98>] (show_stack+0x10/0x14)
+[<c0111d98>] (show_stack+0x10/0x14) from [<c01272cc>] (warn_slowpath_common+0x4c/0x68)
+[<c01272cc>] (warn_slowpath_common+0x4c/0x68) from [<c012737c>] (warn_slowpath_fmt+0x30/0x40)
+[<c012737c>] (warn_slowpath_fmt+0x30/0x40) from [<c034c640>] (debug_print_object+0x94/0xbc)
+[<c034c640>] (debug_print_object+0x94/0xbc) from [<c034c7f8>] (__debug_object_init+0xc8/0x3c0)
+[<c034c7f8>] (__debug_object_init+0xc8/0x3c0) from [<c01360e0>] (init_timer_key+0x20/0x104)
+[<c01360e0>] (init_timer_key+0x20/0x104) from [<c04872ac>] (cpufreq_governor_dbs+0x1dc/0x68c)
+[<c04872ac>] (cpufreq_governor_dbs+0x1dc/0x68c) from [<c04833a8>] (__cpufreq_governor+0x80/0x1b0)
+[<c04833a8>] (__cpufreq_governor+0x80/0x1b0) from [<c0483704>] (__cpufreq_remove_dev.isra.12+0x22c/0x380)
+[<c0483704>] (__cpufreq_remove_dev.isra.12+0x22c/0x380) from [<c0692f38>] (cpufreq_cpu_callback+0x48/0x5c)
+[<c0692f38>] (cpufreq_cpu_callback+0x48/0x5c) from [<c014fb40>] (notifier_call_chain+0x44/0x84)
+[<c014fb40>] (notifier_call_chain+0x44/0x84) from [<c012ae44>] (__cpu_notify+0x2c/0x48)
+[<c012ae44>] (__cpu_notify+0x2c/0x48) from [<c068dd40>] (_cpu_down+0x80/0x258)
+[<c068dd40>] (_cpu_down+0x80/0x258) from [<c068df40>] (cpu_down+0x28/0x3c)
+[<c068df40>] (cpu_down+0x28/0x3c) from [<c068e4c0>] (store_online+0x30/0x74)
+[<c068e4c0>] (store_online+0x30/0x74) from [<c03a7308>] (dev_attr_store+0x18/0x24)
+[<c03a7308>] (dev_attr_store+0x18/0x24) from [<c0256fe0>] (sysfs_write_file+0x100/0x180)
+[<c0256fe0>] (sysfs_write_file+0x100/0x180) from [<c01fec9c>] (vfs_write+0xbc/0x184)
+[<c01fec9c>] (vfs_write+0xbc/0x184) from [<c01ff034>] (SyS_write+0x40/0x68)
+[<c01ff034>] (SyS_write+0x40/0x68) from [<c010e200>] (ret_fast_syscall+0x0/0x48)
 
-Reported-and-tested-by: Kashyap Chamarthy <kchamart@redhat.com>
-Cc: Josh Boyer <jwboyer@fedoraproject.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+In gov_queue_work(), lock cpufreq_governor_lock before gov_queue_work,
+and unlock it after __gov_queue_work(). In this way, governor_enabled
+is guaranteed not changed in gov_queue_work().
+
+Signed-off-by: Jane Li <jiel@marvell.com>
 ---
- drivers/cpufreq/intel_pstate.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/cpufreq/cpufreq.c          |    2 +-
+ drivers/cpufreq/cpufreq_governor.c |    8 +++++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
- 	cpu = all_cpu_data[cpunum];
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 16d7b4a..185c9f5 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -39,7 +39,7 @@ static struct cpufreq_driver *cpufreq_driver;
+ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data_fallback);
+ static DEFINE_RWLOCK(cpufreq_driver_lock);
+-static DEFINE_MUTEX(cpufreq_governor_lock);
++DEFINE_MUTEX(cpufreq_governor_lock);
+ static LIST_HEAD(cpufreq_policy_list);
  
- 	intel_pstate_get_cpu_pstates(cpu);
-+	if (!cpu->pstate.current_pstate) {
-+		all_cpu_data[cpunum] = NULL;
-+		kfree(cpu);
-+		return -ENODATA;
+ #ifdef CONFIG_HOTPLUG_CPU
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index e6be635..485ee0d 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -22,6 +22,8 @@
+ 
+ #include "cpufreq_governor.h"
+ 
++extern struct mutex cpufreq_governor_lock;
++
+ static struct attribute_group *get_sysfs_attr(struct dbs_data *dbs_data)
+ {
+ 	if (have_governor_per_policy())
+@@ -119,8 +121,11 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+ {
+ 	int i;
+ 
+-	if (!policy->governor_enabled)
++	mutex_lock(&cpufreq_governor_lock);
++	if (!policy->governor_enabled) {
++		mutex_unlock(&cpufreq_governor_lock);
+ 		return;
 +	}
  
- 	cpu->cpu = cpunum;
+ 	if (!all_cpus) {
+ 		/*
+@@ -135,6 +140,7 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+ 		for_each_cpu(i, policy->cpus)
+ 			__gov_queue_work(i, dbs_data, delay);
+ 	}
++	mutex_unlock(&cpufreq_governor_lock);
+ }
+ EXPORT_SYMBOL_GPL(gov_queue_work);
  
+-- 
+1.7.9.5
 
