@@ -1,33 +1,67 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: Re: [PATCH 3/3] powernow-k6: reorder frequencies
-Date: Thu, 2 Jan 2014 12:40:52 -0500 (EST)
-Message-ID: <alpine.LRH.2.02.1401021238460.16351@file01.intranet.prod.int.rdu2.redhat.com>
-References: <alpine.LRH.2.02.1312111751180.9686@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1312111937570.23022@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1312111938370.23022@file01.intranet.prod.int.rdu2.redhat.com>
- <alpine.LRH.2.02.1312111938580.23022@file01.intranet.prod.int.rdu2.redhat.com> <CAKohpok_+Dxk0G3hutAtejjhNOj5d2uK+58C6TBf-KuU+Xc7eA@mail.gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v2] cpufreq: Fix timer/workqueue corruption by protecting
+ reading governor_enabled
+Date: Thu, 2 Jan 2014 15:26:38 -0800
+Message-ID: <20140102232638.GA21548@core.coreip.homeip.net>
+References: <1388632482-16921-1-git-send-email-jiel@marvell.com>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok_+Dxk0G3hutAtejjhNOj5d2uK+58C6TBf-KuU+Xc7eA@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=XoU8mqFNlsAn2XN6P4FQSQB9C0oYwx3fXA9F+z8wWOc=;
+        b=HTdrZJOZl7X4IJpPNhYs+xoDrHawACJjARn2h2t1g57F1RGvIl/GU2Xt9zbNTUNTcs
+         QLrHv/oZmhDesuhwy8um2KNAD1+ym3psWpiTG7ojuUXgdJUECqfcjZYAUOwdlutBd8KQ
+         N/Jcmfhe+ZXMqUvFrwYs2aYlb8+Qw3sB4ipP6LvcHRXPYt96ctBVxXmBgDs/Yij5gOFi
+         xp8vpvf84D5Lvi0NnHHD0jXsJOxKn0BGGnqSPUojhwRNHXMkqDMNZWQe3DCJFYPJTqJr
+         0sXAmTaxdv/FhFQORC7YOXdbOYcYeFIDYLIJlkzGSk731nxfj0kA0WpYP1kheAyNi1sp
+         IH9w==
+Content-Disposition: inline
+In-Reply-To: <1388632482-16921-1-git-send-email-jiel@marvell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: jiel@marvell.com
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Hi Jane:
 
+On Thu, Jan 02, 2014 at 11:14:42AM +0800, jiel@marvell.com wrote:
+> @@ -119,8 +121,11 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>  {
+>  	int i;
+>  
+> -	if (!policy->governor_enabled)
+> +	mutex_lock(&cpufreq_governor_lock);
+> +	if (!policy->governor_enabled) {
+> +		mutex_unlock(&cpufreq_governor_lock);
+>  		return;
+> +	}
+>  
+>  	if (!all_cpus) {
+>  		/*
+> @@ -135,6 +140,7 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>  		for_each_cpu(i, policy->cpus)
+>  			__gov_queue_work(i, dbs_data, delay);
+>  	}
+> +	mutex_unlock(&cpufreq_governor_lock);
 
-On Tue, 17 Dec 2013, Viresh Kumar wrote:
+Unlocking in different branches is not the best practice IMO, I'd
+recommend doing:
 
-> On 12 December 2013 06:09, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> > This patch reorders reported frequencies from the highest to the lowest,
-> > just like in other frequency drivers.
-> 
-> This isn't required I believe.. cpufreq core doesn't enforce any restrictions
-> on order of freqs present in table.
+	mutex_lock(&cpufreq_governor_lock);
 
-But the cpufreq-info tool lists the frequencies misordered.
+	if (!policy->governor_enabled)
+		goto out_unlock;
 
-This is not a serious bug. The patch just makes the output of cpufreq-info 
-look better.
+	...
 
-Mikulas
+out_unlock:
+	mutex_unlock(&cpufreq_governor_lock);
+
+Thanks!
+
+-- 
+Dmitry
