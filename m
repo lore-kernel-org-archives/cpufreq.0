@@ -1,177 +1,89 @@
-From: Gleb Natapov <gleb@kernel.org>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
-Date: Fri, 3 Jan 2014 20:04:36 +0200
-Message-ID: <20140103180435.GK10961@minantech.com>
-References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com>
- <4794554.Hmd2RUNYDT@vostro.rjw.lan>
- <52C18A23.10703@redhat.com>
- <3710588.K8glfx1cYs@vostro.rjw.lan>
- <52C6F3B4.3050904@gmail.com>
+Date: Fri, 03 Jan 2014 12:00:01 -0800
+Message-ID: <52C716C1.6070704@gmail.com>
+References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <4794554.Hmd2RUNYDT@vostro.rjw.lan> <52C18A23.10703@redhat.com> <3710588.K8glfx1cYs@vostro.rjw.lan> <52C6F3B4.3050904@gmail.com> <20140103180435.GK10961@minantech.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <52C6F3B4.3050904@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=LLwiJ4Rd4t4dsQgqbzw2ELovzxUVVxy2cfjxcHO15bE=;
+        b=mfzxAqFGUNYxdKtZCc8s36u4zTW8dhZBqf/2jlAsjdy4/eOTOmQ9FlXpNGOqlnR4J/
+         8ERjUxy1ROeUBoqoW4aE7o1QZv+UjRpSKQIbD/GzK320iEx5gF/UNnnc0H2rq6kXyulF
+         ETgryh0aYNXQxLyTlp1T+a9Gkqeeh7Jlz+5Nzhc4n54o0V2On3RkLG9+cJ6emZliTpNE
+         /zD4+5qPvkaDbyRtN6ZusZdXh8FDjToCzYGGXvY7oU1q2YlhRTDq7NdZWSWgllIOCo52
+         f8N+SDK1TF/z2enLG7vr4MUAkpAWKwXYWaBSalfWp6kAJuDBU5jIkjuTJHIxpR1jnr8/
+         tOcQ==
+In-Reply-To: <20140103180435.GK10961@minantech.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Gleb Natapov <gleb@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kashyap Chamarthy <kchamart@redhat.com>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
 
-On Fri, Jan 03, 2014 at 09:30:28AM -0800, Dirk Brandewie wrote:
-> Hi All,
-> 
-> Sorry for being late to the party but I just got back from vacation.
-> 
-> There is something deeply wrong here.  We should have never gotten to
-> intel_pstate_init_cpu().  The VM had to have returned value from the read
-> of the max pstate at driver init time and 0 when the CPU was being brought up.
-> 
-> intel_pstate_msrs_not_valid() was added to solve this issue early on
-> if I remember correctly it was Josh that reported it then.  Is there
-> a definative way to detect whether we are running in a VM?
-> 
-Checking for VM is a wrong thing to do here. KVM should behave like it
-does not support p-state.
+On 01/03/2014 10:04 AM, Gleb Natapov wrote:
+> On Fri, Jan 03, 2014 at 09:30:28AM -0800, Dirk Brandewie wrote:
+>> Hi All,
+>>
+>> Sorry for being late to the party but I just got back from vacation.
+>>
+>> There is something deeply wrong here.  We should have never gotten to
+>> intel_pstate_init_cpu().  The VM had to have returned value from the read
+>> of the max pstate at driver init time and 0 when the CPU was being brought up.
+>>
+>> intel_pstate_msrs_not_valid() was added to solve this issue early on
+>> if I remember correctly it was Josh that reported it then.  Is there
+>> a definative way to detect whether we are running in a VM?
+>>
+> Checking for VM is a wrong thing to do here. KVM should behave like it
+> does not support p-state.
+>
+>> Can some one tell me how the nested environment differs in regards to
+>> reading MSRs?
+>>
+> It shouldn't differ, but there may be bug somewhere in nested emulation.
+> We shouldn't try and hind the bug by doing more checks in Linux but
+> rather fixing KVM bug that causes Linux to behave incorrectly.
 
-> Can some one tell me how the nested environment differs in regards to
-> reading MSRs?
-> 
-It shouldn't differ, but there may be bug somewhere in nested emulation.
-We shouldn't try and hind the bug by doing more checks in Linux but
-rather fixing KVM bug that causes Linux to behave incorrectly.
+Based on the unhandled MSR messages in the host dmesg the following patch
+should make sure the correct values are returned for PLAT_FORM_INFO, APERF
+and MPERF.  intel_pstate and turbostat are the only users of these registers.
 
-> TIA
-> --Dirk
-> 
-> On 12/30/2013 06:07 PM, Rafael J. Wysocki wrote:
-> >>>---
-> >>>  drivers/cpufreq/intel_pstate.c |    5 +++++
-> >>>  1 file changed, 5 insertions(+)
-> >>>
-> >>>Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> >>>===================================================================
-> >>>--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> >>>+++ linux-pm/drivers/cpufreq/intel_pstate.c
-> >>>@@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
-> >>>  	cpu = all_cpu_data[cpunum];
-> >>>
-> >>>  	intel_pstate_get_cpu_pstates(cpu);
-> >>>+	if (!cpu->pstate.current_pstate) {
-> >>>+		all_cpu_data[cpunum] = NULL;
-> >>>+		kfree(cpu);
-> >>>+		return -ENODATA;
-> >>>+	}
-> >>>
-> >>>  	cpu->cpu = cpunum;
-> >>>
-> >>>
-> >>
-> >>
-> >>Thanks Rafel, I can confirm this patch helps.
-> >
-> >Awesome, thanks!
-> >
-> >Below is an official version with a changelog.  I'll queue it up as a fix
-> >for 3.13.
-> >
-> >Thanks,
-> >Rafael
-> >
-> >
-> >---
-> >From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >Subject: intel_pstate: Fail initialization if P-state information is missing
-> >
-> >If pstate.current_pstate is 0 after the initial
-> >intel_pstate_get_cpu_pstates(), this means that we were unable to
-> >obtain any useful P-state information and there is no reason to
-> >continue, so free memory and return an error in that case.
-> >
-> >This fixes the following divide error occuring in a nested KVM
-> >guest:
-> >
-> >Intel P-state driver initializing.
-> >Intel pstate controlling: cpu 0
-> >cpufreq: __cpufreq_add_dev: ->get() failed
-> >divide error: 0000 [#1] SMP
-> >Modules linked in:
-> >CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.13.0-0.rc4.git5.1.fc21.x86_64 #1
-> >Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
-> >task: ffff88001ea20000 ti: ffff88001e9bc000 task.ti: ffff88001e9bc000
-> >RIP: 0010:[<ffffffff815c551d>]  [<ffffffff815c551d>] intel_pstate_timer_func+0x11d/0x2b0
-> >RSP: 0000:ffff88001ee03e18  EFLAGS: 00010246
-> >RAX: 0000000000000000 RBX: ffff88001a454348 RCX: 0000000000006100
-> >RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-> >RBP: ffff88001ee03e38 R08: 0000000000000000 R09: 0000000000000000
-> >R10: ffff88001ea20000 R11: 0000000000000000 R12: 00000c0a1ea20000
-> >R13: 1ea200001ea20000 R14: ffffffff815c5400 R15: ffff88001a454348
-> >FS:  0000000000000000(0000) GS:ffff88001ee00000(0000) knlGS:0000000000000000
-> >CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> >CR2: 0000000000000000 CR3: 0000000001c0c000 CR4: 00000000000006f0
-> >Stack:
-> >  fffffffb1a454390 ffffffff821a4500 ffff88001a454390 0000000000000100
-> >  ffff88001ee03ea8 ffffffff81083e9a ffffffff81083e15 ffffffff82d5ed40
-> >  ffffffff8258cc60 0000000000000000 ffffffff81ac39de 0000000000000000
-> >Call Trace:
-> >  <IRQ>
-> >  [<ffffffff81083e9a>] call_timer_fn+0x8a/0x310
-> >  [<ffffffff81083e15>] ? call_timer_fn+0x5/0x310
-> >  [<ffffffff815c5400>] ? pid_param_set+0x130/0x130
-> >  [<ffffffff81084354>] run_timer_softirq+0x234/0x380
-> >  [<ffffffff8107aee4>] __do_softirq+0x104/0x430
-> >  [<ffffffff8107b5fd>] irq_exit+0xcd/0xe0
-> >  [<ffffffff81770645>] smp_apic_timer_interrupt+0x45/0x60
-> >  [<ffffffff8176efb2>] apic_timer_interrupt+0x72/0x80
-> >  <EOI>
-> >  [<ffffffff810e15cd>] ? vprintk_emit+0x1dd/0x5e0
-> >  [<ffffffff81757719>] printk+0x67/0x69
-> >  [<ffffffff815c1493>] __cpufreq_add_dev.isra.13+0x883/0x8d0
-> >  [<ffffffff815c14f0>] cpufreq_add_dev+0x10/0x20
-> >  [<ffffffff814a14d1>] subsys_interface_register+0xb1/0xf0
-> >  [<ffffffff815bf5cf>] cpufreq_register_driver+0x9f/0x210
-> >  [<ffffffff81fb19af>] intel_pstate_init+0x27d/0x3be
-> >  [<ffffffff81761e3e>] ? mutex_unlock+0xe/0x10
-> >  [<ffffffff81fb1732>] ? cpufreq_gov_dbs_init+0x12/0x12
-> >  [<ffffffff8100214a>] do_one_initcall+0xfa/0x1b0
-> >  [<ffffffff8109dbf5>] ? parse_args+0x225/0x3f0
-> >  [<ffffffff81f64193>] kernel_init_freeable+0x1fc/0x287
-> >  [<ffffffff81f638d0>] ? do_early_param+0x88/0x88
-> >  [<ffffffff8174b530>] ? rest_init+0x150/0x150
-> >  [<ffffffff8174b53e>] kernel_init+0xe/0x130
-> >  [<ffffffff8176e27c>] ret_from_fork+0x7c/0xb0
-> >  [<ffffffff8174b530>] ? rest_init+0x150/0x150
-> >Code: c1 e0 05 48 63 bc 03 10 01 00 00 48 63 83 d0 00 00 00 48 63 d6 48 c1 e2 08 c1 e1 08 4c 63 c2 48 c1 e0 08 48 98 48 c1 e0 08 48 99 <49> f7 f8 48 98 48 0f af f8 48 c1 ff 08 29 f9 89 ca c1 fa 1f 89
-> >RIP  [<ffffffff815c551d>] intel_pstate_timer_func+0x11d/0x2b0
-> >  RSP <ffff88001ee03e18>
-> >---[ end trace f166110ed22cc37a ]---
-> >Kernel panic - not syncing: Fatal exception in interrupt
-> >
-> >Reported-and-tested-by: Kashyap Chamarthy <kchamart@redhat.com>
-> >Cc: Josh Boyer <jwboyer@fedoraproject.org>
-> >Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >---
-> >  drivers/cpufreq/intel_pstate.c |    5 +++++
-> >  1 file changed, 5 insertions(+)
-> >
-> >Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> >===================================================================
-> >--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> >+++ linux-pm/drivers/cpufreq/intel_pstate.c
-> >@@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
-> >  	cpu = all_cpu_data[cpunum];
-> >
-> >  	intel_pstate_get_cpu_pstates(cpu);
-> >+	if (!cpu->pstate.current_pstate) {
-> >+		all_cpu_data[cpunum] = NULL;
-> >+		kfree(cpu);
-> >+		return -ENODATA;
-> >+	}
-> >
-> >  	cpu->cpu = cpunum;
-> >
-> >
-> 
+Could you try the folloinw patch minus Rafael's patch please.
+Compile tested only.
 
---
-			Gleb.
+TIA
+--Dirk
+
+commit 5594b89bee7f83200c1a70bf95d50ac35e4fe3f8
+Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Date:   Fri Jan 3 11:44:15 2014 -0800
+
+     x86/kvm: Handle MSR_PLATFORM_INFO, MSR_IA32_MPERF and MSR_IA32_APERF MSRs
+
+     Handle MSRs correctly when read from a nested KVM
+
+     Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+---
+  arch/x86/kvm/x86.c | 3 +++
+  1 file changed, 3 insertions(+)
+
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 5d004da..390ef27 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2336,6 +2336,9 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 
+*pdata)
+
+  	switch (msr) {
+  	case MSR_IA32_PLATFORM_ID:
++	case MSR_IA32_MPERF:
++	case MSR_IA32_APERF:
++	case MSR_PLATFORM_INFO:
+  	case MSR_IA32_EBL_CR_POWERON:
+  	case MSR_IA32_DEBUGCTLMSR:
+  	case MSR_IA32_LASTBRANCHFROMIP:
+
