@@ -1,73 +1,172 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Fri, 03 Jan 2014 12:55:29 +0100
-Message-ID: <87wqihmg9a.fsf@nemi.mork.no>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-	<5562479.pVWRuDL0y6@vostro.rjw.lan> <87zjne7f75.fsf@nemi.mork.no>
-	<2302938.b8tymqrMEz@vostro.rjw.lan> <878uuxquxu.fsf@nemi.mork.no>
-	<871u0po0gx.fsf@nemi.mork.no>
-	<CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
+Date: Fri, 03 Jan 2014 09:30:28 -0800
+Message-ID: <52C6F3B4.3050904@gmail.com>
+References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <4794554.Hmd2RUNYDT@vostro.rjw.lan> <52C18A23.10703@redhat.com> <3710588.K8glfx1cYs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
-	(Viresh Kumar's message of "Fri, 3 Jan 2014 16:49:17 +0530")
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=Wb+umypMWTWKM6QCiY3OXKnjq8KM/Y67AJ0X1HayNcc=;
+        b=ClyPLmsh3ULY7FzR51wzHGA0xqRiwI9oS3Xafg/Fb480twCP89tgYcy5qka7KNWd0a
+         qkLn5apuq3EutyIG+w0lv2fFpQOFVMEvUx/kgQI1YtBwnaLJKe61148dsO2yZDVpVx9v
+         kZuLHk4FOcFg1JUX6YljtKcAecHg/M+U3av3injGhSvPA2c36uMeJDERxePbhEicIwQY
+         390oaA/bbv+V++UTfTTu+Alf0Opyb+KrJe6BWJaIGNfhspjitmb9dXJP2hMmkSBurbBo
+         lH1Kp8XqkVDUpnfXQVK1UspZXR02VsK5xZadpLFNfoVPR+0SHLu+9chAWG+fuAKBWV7T
+         /UQQ==
+In-Reply-To: <3710588.K8glfx1cYs@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kashyap Chamarthy <kchamart@redhat.com>
+Cc: Gleb Natapov <gleb@kernel.org>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
+Hi All,
 
-> On 3 January 2014 15:23, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
->> Note that "ondemand" and "1401000" are the default vaules, so I don'=
-t
->> actually change anything here.  The write is causing the problem, no=
-t
->> the value.  As expected, I guess.
+Sorry for being late to the party but I just got back from vacation.
+
+There is something deeply wrong here.  We should have never gotten to
+intel_pstate_init_cpu().  The VM had to have returned value from the read
+of the max pstate at driver init time and 0 when the CPU was being brought up.
+
+intel_pstate_msrs_not_valid() was added to solve this issue early on
+if I remember correctly it was Josh that reported it then.  Is there
+a definative way to detect whether we are running in a VM?
+
+Can some one tell me how the nested environment differs in regards to
+reading MSRs?
+
+TIA
+--Dirk
+
+On 12/30/2013 06:07 PM, Rafael J. Wysocki wrote:
+>>> ---
+>>>   drivers/cpufreq/intel_pstate.c |    5 +++++
+>>>   1 file changed, 5 insertions(+)
+>>>
+>>> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+>>> ===================================================================
+>>> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+>>> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+>>> @@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
+>>>   	cpu = all_cpu_data[cpunum];
+>>>
+>>>   	intel_pstate_get_cpu_pstates(cpu);
+>>> +	if (!cpu->pstate.current_pstate) {
+>>> +		all_cpu_data[cpunum] = NULL;
+>>> +		kfree(cpu);
+>>> +		return -ENODATA;
+>>> +	}
+>>>
+>>>   	cpu->cpu = cpunum;
+>>>
+>>>
 >>
->> Also note that boot vs non-boot cpu doesn't seem to matter.  Nor doe=
-s
->> cancelling the hibernation.  The warning appears on hibernate - not =
-on
->> resume.
+>>
+>> Thanks Rafel, I can confirm this patch helps.
 >
-> Hmm... I spent quite some time understanding whats going on and reall=
-y
-> couldn't get across anything as of now. I haven't tried reproducing i=
-t though.
+> Awesome, thanks!
 >
-> Few things that I can make out of this mail chain so far:
-> - Apart from the log, everything is working fine. i.e. system is back=
- in
-> working condition.
+> Below is an official version with a changelog.  I'll queue it up as a fix
+> for 3.13.
+>
+> Thanks,
+> Rafael
+>
+>
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: intel_pstate: Fail initialization if P-state information is missing
+>
+> If pstate.current_pstate is 0 after the initial
+> intel_pstate_get_cpu_pstates(), this means that we were unable to
+> obtain any useful P-state information and there is no reason to
+> continue, so free memory and return an error in that case.
+>
+> This fixes the following divide error occuring in a nested KVM
+> guest:
+>
+> Intel P-state driver initializing.
+> Intel pstate controlling: cpu 0
+> cpufreq: __cpufreq_add_dev: ->get() failed
+> divide error: 0000 [#1] SMP
+> Modules linked in:
+> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.13.0-0.rc4.git5.1.fc21.x86_64 #1
+> Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
+> task: ffff88001ea20000 ti: ffff88001e9bc000 task.ti: ffff88001e9bc000
+> RIP: 0010:[<ffffffff815c551d>]  [<ffffffff815c551d>] intel_pstate_timer_func+0x11d/0x2b0
+> RSP: 0000:ffff88001ee03e18  EFLAGS: 00010246
+> RAX: 0000000000000000 RBX: ffff88001a454348 RCX: 0000000000006100
+> RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
+> RBP: ffff88001ee03e38 R08: 0000000000000000 R09: 0000000000000000
+> R10: ffff88001ea20000 R11: 0000000000000000 R12: 00000c0a1ea20000
+> R13: 1ea200001ea20000 R14: ffffffff815c5400 R15: ffff88001a454348
+> FS:  0000000000000000(0000) GS:ffff88001ee00000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 0000000001c0c000 CR4: 00000000000006f0
+> Stack:
+>   fffffffb1a454390 ffffffff821a4500 ffff88001a454390 0000000000000100
+>   ffff88001ee03ea8 ffffffff81083e9a ffffffff81083e15 ffffffff82d5ed40
+>   ffffffff8258cc60 0000000000000000 ffffffff81ac39de 0000000000000000
+> Call Trace:
+>   <IRQ>
+>   [<ffffffff81083e9a>] call_timer_fn+0x8a/0x310
+>   [<ffffffff81083e15>] ? call_timer_fn+0x5/0x310
+>   [<ffffffff815c5400>] ? pid_param_set+0x130/0x130
+>   [<ffffffff81084354>] run_timer_softirq+0x234/0x380
+>   [<ffffffff8107aee4>] __do_softirq+0x104/0x430
+>   [<ffffffff8107b5fd>] irq_exit+0xcd/0xe0
+>   [<ffffffff81770645>] smp_apic_timer_interrupt+0x45/0x60
+>   [<ffffffff8176efb2>] apic_timer_interrupt+0x72/0x80
+>   <EOI>
+>   [<ffffffff810e15cd>] ? vprintk_emit+0x1dd/0x5e0
+>   [<ffffffff81757719>] printk+0x67/0x69
+>   [<ffffffff815c1493>] __cpufreq_add_dev.isra.13+0x883/0x8d0
+>   [<ffffffff815c14f0>] cpufreq_add_dev+0x10/0x20
+>   [<ffffffff814a14d1>] subsys_interface_register+0xb1/0xf0
+>   [<ffffffff815bf5cf>] cpufreq_register_driver+0x9f/0x210
+>   [<ffffffff81fb19af>] intel_pstate_init+0x27d/0x3be
+>   [<ffffffff81761e3e>] ? mutex_unlock+0xe/0x10
+>   [<ffffffff81fb1732>] ? cpufreq_gov_dbs_init+0x12/0x12
+>   [<ffffffff8100214a>] do_one_initcall+0xfa/0x1b0
+>   [<ffffffff8109dbf5>] ? parse_args+0x225/0x3f0
+>   [<ffffffff81f64193>] kernel_init_freeable+0x1fc/0x287
+>   [<ffffffff81f638d0>] ? do_early_param+0x88/0x88
+>   [<ffffffff8174b530>] ? rest_init+0x150/0x150
+>   [<ffffffff8174b53e>] kernel_init+0xe/0x130
+>   [<ffffffff8176e27c>] ret_from_fork+0x7c/0xb0
+>   [<ffffffff8174b530>] ? rest_init+0x150/0x150
+> Code: c1 e0 05 48 63 bc 03 10 01 00 00 48 63 83 d0 00 00 00 48 63 d6 48 c1 e2 08 c1 e1 08 4c 63 c2 48 c1 e0 08 48 98 48 c1 e0 08 48 99 <49> f7 f8 48 98 48 0f af f8 48 c1 ff 08 29 f9 89 ca c1 fa 1f 89
+> RIP  [<ffffffff815c551d>] intel_pstate_timer_func+0x11d/0x2b0
+>   RSP <ffff88001ee03e18>
+> ---[ end trace f166110ed22cc37a ]---
+> Kernel panic - not syncing: Fatal exception in interrupt
+>
+> Reported-and-tested-by: Kashyap Chamarthy <kchamart@redhat.com>
+> Cc: Josh Boyer <jwboyer@fedoraproject.org>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>   drivers/cpufreq/intel_pstate.c |    5 +++++
+>   1 file changed, 5 insertions(+)
+>
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
+>   	cpu = all_cpu_data[cpunum];
+>
+>   	intel_pstate_get_cpu_pstates(cpu);
+> +	if (!cpu->pstate.current_pstate) {
+> +		all_cpu_data[cpunum] = NULL;
+> +		kfree(cpu);
+> +		return -ENODATA;
+> +	}
+>
+>   	cpu->cpu = cpunum;
+>
+>
 
-Correct. And users not running a lock debugging kernel will of course
-not even see the warning.
-
-> - It only happens when cpufreq_add_dev() fails during hibernation whi=
-le
-> we enable non-boot CPUs again to save image to disk. So, isn't a prob=
-lem
-> for a system which doesn't have any issues with add_dev() failing on
-> hibernation
-
-Wrong.  This was my initial assumption but I later found out that the
-issue is unrelated to hibernation failures.  Sorry about the confusion.
-
-> - There is a contention of locks in the order they are taken. And the=
- contention
-> looks to be between, hotplug lock taken by cpu_online_cpus() and s_ac=
-tive
-> lock for sysfs files. Don't know what's the role of previous write to
-> sysfs files.
-> As that should finish before hibernation starts and so all locks shou=
-ld be back
-> in place.
-
-Yes, that seems logical.  But I guess this is where it fails?
-
-
-
-Bj=C3=B8rn
