@@ -1,9 +1,11 @@
 From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [PATCH 1/3] cpufreq: s3c2440: Remove hardware.h inclusion
-Date: Fri,  3 Jan 2014 14:57:35 +0530
-Message-ID: <1388741257-26438-1-git-send-email-sachin.kamat@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH 3/3] cpufreq: s3c24xx: Staticize local variable
+Date: Fri,  3 Jan 2014 14:57:37 +0530
+Message-ID: <1388741257-26438-3-git-send-email-sachin.kamat@linaro.org>
+References: <1388741257-26438-1-git-send-email-sachin.kamat@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1388741257-26438-1-git-send-email-sachin.kamat@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,26 +13,25 @@ Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, sachin.kamat@linaro.org, patches@linaro.org
 
-The contents of this header file are not referenced in the driver.
-Remove its inclusion.
+Local variable used only in this file is made static.
 
 Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/cpufreq/s3c2440-cpufreq.c |    2 --
- 1 file changed, 2 deletions(-)
+ drivers/cpufreq/s3c24xx-cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/s3c2440-cpufreq.c b/drivers/cpufreq/s3c2440-cpufreq.c
-index 72b2cc8a5a85..717ef04ec90e 100644
---- a/drivers/cpufreq/s3c2440-cpufreq.c
-+++ b/drivers/cpufreq/s3c2440-cpufreq.c
-@@ -22,8 +22,6 @@
- #include <linux/err.h>
- #include <linux/io.h>
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+index 485088253358..35fa697e615a 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+@@ -509,7 +509,7 @@ int __init s3c_cpufreq_setboard(struct s3c_cpufreq_board *board)
+ 	return 0;
+ }
  
--#include <mach/hardware.h>
--
- #include <asm/mach/arch.h>
- #include <asm/mach/map.h>
+-int __init s3c_cpufreq_auto_io(void)
++static int __init s3c_cpufreq_auto_io(void)
+ {
+ 	int ret;
  
 -- 
 1.7.9.5
