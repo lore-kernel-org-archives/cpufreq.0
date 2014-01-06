@@ -1,34 +1,73 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: Re: [PATCH 1/3] powernow-k6: disable cache when changing frequency
-Date: Mon, 6 Jan 2014 15:17:13 -0500 (EST)
-Message-ID: <alpine.LRH.2.02.1401061514450.25034@file01.intranet.prod.int.rdu2.redhat.com>
-References: <alpine.LRH.2.02.1312111751180.9686@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1312111937570.23022@file01.intranet.prod.int.rdu2.redhat.com> <CAKohpo=_0i43EDSoOAm2ROwEmu9__p+MyoObcLPoZWxUB5XmDA@mail.gmail.com>
- <alpine.LRH.2.02.1401021233280.16351@file01.intranet.prod.int.rdu2.redhat.com> <CAKohpok=exdOO-T+SFxsyqCBZ1N8ZFBMcVNn-AYsxxMw74DeJQ@mail.gmail.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: [PATCH] cpufreq: speedstep: remove unused speedstep_get_state
+Date: Mon, 06 Jan 2014 21:30:12 +0100
+Message-ID: <1389040212.2562.3.camel@x41>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok=exdOO-T+SFxsyqCBZ1N8ZFBMcVNn-AYsxxMw74DeJQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+The only caller of speedstep_get_state() was removed in commit d4019f0a92ab
+("cpufreq: move freq change notifications to cpufreq core"). So building
+speedstep-smi.o now triggers a GCC warning:
+    drivers/cpufreq/speedstep-smi.c:148:12: warning: 'speedstep_get_state' defined but not used [-Wunused-function]
 
+Remove this unused function.
 
-On Fri, 3 Jan 2014, Viresh Kumar wrote:
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+This seems to be a rather obvious fix. Hasn't it been submitted before?
 
-> On 2 January 2014 23:08, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> > Flushing the cache and changing frequency takes approximatelly 500us. The
-> > patch increases policy->cpuinfo.transition_latency to that value.
-> 
-> Its not about how fast caches get cleaned but how much time would
-> be wasted to get them filled again as same data could be required again
-> which is just flushed out. That would impact performance more than
-> flushing caches.
+ drivers/cpufreq/speedstep-smi.c | 32 --------------------------------
+ 1 file changed, 32 deletions(-)
 
-I didn't see any performance degradation when I tried changing the 
-frequency manually with or without the cache flush patch - the overhead of 
-running cpufreq (8ms) is far worse than the frequency transition itself.
+diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
+index 0f5326d..998c17b 100644
+--- a/drivers/cpufreq/speedstep-smi.c
++++ b/drivers/cpufreq/speedstep-smi.c
+@@ -141,38 +141,6 @@ static int speedstep_smi_get_freqs(unsigned int *low, unsigned int *high)
+ }
+ 
+ /**
+- * speedstep_get_state - set the SpeedStep state
+- * @state: processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
+- *
+- */
+-static int speedstep_get_state(void)
+-{
+-	u32 function = GET_SPEEDSTEP_STATE;
+-	u32 result, state, edi, command, dummy;
+-
+-	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
+-
+-	pr_debug("trying to determine current setting with command %x "
+-		"at port %x\n", command, smi_port);
+-
+-	__asm__ __volatile__(
+-		"push %%ebp\n"
+-		"out %%al, (%%dx)\n"
+-		"pop %%ebp\n"
+-		: "=a" (result),
+-		  "=b" (state), "=D" (edi),
+-		  "=c" (dummy), "=d" (dummy), "=S" (dummy)
+-		: "a" (command), "b" (function), "c" (0),
+-		  "d" (smi_port), "S" (0), "D" (0)
+-	);
+-
+-	pr_debug("state is %x, result is %x\n", state, result);
+-
+-	return state & 1;
+-}
+-
+-
+-/**
+  * speedstep_set_state - set the SpeedStep state
+  * @state: new processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
+  *
+-- 
+1.8.1.4
 
-Mikulas
