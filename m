@@ -1,41 +1,32 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Mon, 06 Jan 2014 12:14:13 +0100
-Message-ID: <2207601.6Y4Zru5qMP@vostro.rjw.lan>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org> <CAKohpo=KgHqz0KYv7h0EYP3=8h7T3ZfPpFTMS6qVoEb6dXGnSQ@mail.gmail.com> <87a9f92xnn.fsf@nemi.mork.no>
+Date: Mon, 06 Jan 2014 12:33:09 +0100
+Message-ID: <43419777.Exys3DrW83@vostro.rjw.lan>
+References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org> <87a9f92xnn.fsf@nemi.mork.no> <CAKohpon7u_1h+9rKQeC8J4Pqd_6bSajn7Ag8=COqczhbSPEgMA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87a9f92xnn.fsf@nemi.mork.no>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpon7u_1h+9rKQeC8J4Pqd_6bSajn7Ag8=COqczhbSPEgMA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="macroman"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Monday, January 06, 2014 11:49:00 AM Bj=C3=B8rn Mork wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
->=20
-> > On 6 January 2014 14:31, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
-> >> That's correct.  I have not observed this on suspend to RAM.  But =
-then
-> >> again I haven't rigged any way to log that, so I don't think it's
-> >> conclusive..
-> >>
-> >> The point I tried to make is that it isn't related to any hibernat=
-ion
-> >> *failures*.  The warning appears even if the add_dev() is successf=
-ul,
-> >> and it also appears if I touch only the *boot* cpu cpufreq attribu=
-tes.
-> >
-> > Okay.. But your log below is for add_dev() failure case.
->=20
-> Any suggestion on how to capure warnings issued between freeze and th=
-aw
-> is appreciated :-)
+On Monday, January 06, 2014 04:24:09 PM Viresh Kumar wrote:
+> On 6 January 2014 16:19, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
+> > I cancelled by pressing backspace while the image was being written=
+=2E
 
-You can try to add no_console_suspend to the kernel's command line.
+Basically, stuff is still frozen at this point, but devices are fully
+functional.  It's kind of like returning an error code from swsusp_writ=
+e()
+in hibernate() (kernel/power/hibernate.c).
+
+> I will answer other queries on next mail, but a quick question:
+> Do you get these warnings even if you don't cancel hibernation?
+
+Good question. :-)
 
 Thanks!
 
