@@ -1,35 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Mon, 06 Jan 2014 12:33:09 +0100
-Message-ID: <43419777.Exys3DrW83@vostro.rjw.lan>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org> <87a9f92xnn.fsf@nemi.mork.no> <CAKohpon7u_1h+9rKQeC8J4Pqd_6bSajn7Ag8=COqczhbSPEgMA@mail.gmail.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
+Date: Mon, 06 Jan 2014 12:20:32 +0100
+Message-ID: <52CA9180.1020106@redhat.com>
+References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <52C84733.1090507@redhat.com> <20140104174813.GL10961@minantech.com> <4410803.FiVxaMNxvJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon7u_1h+9rKQeC8J4Pqd_6bSajn7Ag8=COqczhbSPEgMA@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=Uq0z7xwKHSoWJmUZ5HxAnwdtKUz23h/biq8AhlAVZrY=;
+        b=LqvNEbLzmGwgrb/S+Tlpn17MDrwDv6eZ4ywajCS4UYGknbtRszk8HwBSIHYdz7zfnf
+         LKGTAp0jnBUwjVowZG0z40Y3R2XHtMVCcFetis4x3b1GaZAOZZPRmnRzXEerE4h9rpfJ
+         CbbgKFy0IVis5aFcdnMiNP9LgOayA1SV18FKKI1mbMEvuExbcvbQi8qHldFp/7YgKp7s
+         ko87oI+5mrR1TUMpdHdLgyTl4q8BjoPUnZcVtuQei6xdSAm6uPRmtm7vshJJSef2HuWV
+         NTzoMKDiam6+Zs3wv7Bj0bz2d/BI9z31/vOfpxd6TME+kdlMprnBbvNA9CIEp0p0s7Bd
+         MLBA==
+In-Reply-To: <4410803.FiVxaMNxvJ@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="macroman"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Gleb Natapov <gleb@minantech.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Kashyap Chamarthy <kchamart@redhat.com>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
 
-On Monday, January 06, 2014 04:24:09 PM Viresh Kumar wrote:
-> On 6 January 2014 16:19, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
-> > I cancelled by pressing backspace while the image was being written=
-=2E
+Il 04/01/2014 22:38, Rafael J. Wysocki ha scritto:
+> On Saturday, January 04, 2014 07:48:13 PM Gleb Natapov wrote:
+>> On Sat, Jan 04, 2014 at 06:38:59PM +0100, Paolo Bonzini wrote:
+>>> Il 04/01/2014 15:38, Rafael J. Wysocki ha scritto:
+>>>> Well, it's just a sanity check and it makes the problem go away for the reporter.
+>>>>
+>>>>>> Your patch is welcome but perhaps it should have a WARN_ON too.
+>>>> It has been pulled in already, so the WARN_ON() can only be added via a separate
+>>>> patch now.  Would you like to prepare that patch?
+>>>
+>>> Yes, I'll add it together with the CPUID check.  I'll send the patch so
+>>> that it can get into 3.14.
+>>>
+>> CPUID check, while correct, will sweep the problem under the rug. Current
+>> Linux logic should detect non working pstate in KVM. We should look into
+>> why this is not happening for nested.
+> 
+> I agree.  It's better not to use CPUID for that in my opinion.
 
-Basically, stuff is still frozen at this point, but devices are fully
-functional.  It's kind of like returning an error code from swsusp_writ=
-e()
-in hibernate() (kernel/power/hibernate.c).
+Among hypervisors, RHEL5's Xen is probably one of the oldest in actual
+use with new hardware and new kernels, and the CPUID bit has been fixed
+in 2011.  Older versions wouldn't run new kernels due to other CPUID
+bits not being cleared properly in VMs.
 
-> I will answer other queries on next mail, but a quick question:
-> Do you get these warnings even if you don't cancel hibernation?
+Is there real hardware that has the CPUID bit set and non-working
+pstate?  If there's no such real hardware, CPUID is what the SDM says
+you should use to detect presence of the APERF/MPERF msrs.
 
-Good question. :-)
+Having extra safety checks is fine on top of what the SDM says, but IMO
+they should be WARN_ONs.  Otherwise you are sweeping bugs under the rug
+just as much.
 
-Thanks!
-
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Paolo
