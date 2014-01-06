@@ -1,40 +1,54 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] powernow-k6: fixes for the frequency driver
-Date: Mon, 06 Jan 2014 21:51:05 +0100
-Message-ID: <2372881.ND9u0a4YHW@vostro.rjw.lan>
-References: <alpine.LRH.2.02.1312111751180.9686@file01.intranet.prod.int.rdu2.redhat.com>
+Subject: Re: [PATCH 0/4] CPUFreq stats: Bug fixes
+Date: Mon, 06 Jan 2014 22:02:35 +0100
+Message-ID: <1555125.bAi9TgavWd@vostro.rjw.lan>
+References: <cover.1380190886.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.02.1312111751180.9686@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <cover.1380190886.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, nicolas.pitre@linaro.org
 
-On Wednesday, December 11, 2013 07:37:48 PM Mikulas Patocka wrote:
-> Hi
+On Thursday, September 26, 2013 03:59:50 PM Viresh Kumar wrote:
+> Hi Rafael,
 > 
-> Here I'm sending three patches for k6 frequency governor.
+> I know you asked me not to send any more patches before the earlier ones get
+> into kernel. I got to this as Nicolas Pitre required to send few CPUFreq patches
+> for ARM's big LITTLE In-Kernel-Switcher. And within linaro we have hacked these
+> bugs in a bad way..
 > 
-> 1. the processor doesn't respond to cache snoops when changing the 
-> frequency, so we need to disable cache while doing the change.
+> Because of his dependency I am forced to send these.. These aren't introduced
+> recently and so they can be included in 3.13.
 > 
-> 2. it is impossible to read the default multiplier. After reset, the 
-> register always reports zero regardless of the current multiplier. So we 
-> set the multiplier based on current frequency and allow the user to 
-> override it with module parameter.
+> There are several problems/bugs in cpufreq-stats specially with cpufreq drivers
+> as modules and suspend/resume path. These are mentioned well in changelogs.
 > 
-> 3. reorder frequencies from the highest to the lowest.
+> These are tested over my thinkpad (acpi-cpufreq) in following way:
+> [1] offline+online all CPUs except boot cpu in a while loop
+> [2] then do suspend resume
+> [3] repeat [1] and [2] several times.
+> 
+> No issues found..
+> 
+> Also tested on my exynos board:
+> - Added cpufreq_unregister/register while loop in exynos-cpufreq.c so that we
+>   continuously register/unregister driver... Stats were working fine now..
+> - Compile cpufreq-stats as module and insert/remove it several times after
+>   removing above hack (as that doesn't let linux boot :) )..
+> 
+> @Srivatsa: You also have fairly good idea of cpufreq now, so please give some
+> time to review this :)
+> 
+> @Nico: Can you remove the hacky code from IKS tree and test these instead to see
+> if we still have any issues?
 
-I've queued up this series (and the speedstep-smi patch) for 3.14, but I don't
-want it to go to stable upfront, so I removed the "Cc: stable" tags.  Please
-send a stable inclusion request to Greg & Co after it spends a few weeks in
-the Linus' tree.
+Can you please rebase this series on top of linux-pm.git/bleeding-edge and
+resend it?  Chances are it might make it into 3.14.
 
-Thanks!
+Thanks,
+Rafael
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
