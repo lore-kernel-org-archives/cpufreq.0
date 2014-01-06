@@ -1,53 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: arm-big-little: Make driver dependent on CONFIG_BIG_LITTLE
-Date: Mon, 06 Jan 2014 02:32:24 +0100
-Message-ID: <2100649.OqVGEpXy07@vostro.rjw.lan>
-References: <a76f7b6a290d9174a24e15b13df21f53e3f5655f.1388736624.git.viresh.kumar@linaro.org> <126282099.XSjqFqKQFW@vostro.rjw.lan> <20140106011137.GE27432@n2100.arm.linux.org.uk>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
+Date: Mon, 6 Jan 2014 11:57:19 +0530
+Message-ID: <CAKohpo=3s6=gw8OJTrUdLH8o2ouA=8a8MhrgNRXwHmOf0si5Pw@mail.gmail.com>
+References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+	<5562479.pVWRuDL0y6@vostro.rjw.lan>
+	<87zjne7f75.fsf@nemi.mork.no>
+	<2302938.b8tymqrMEz@vostro.rjw.lan>
+	<878uuxquxu.fsf@nemi.mork.no>
+	<871u0po0gx.fsf@nemi.mork.no>
+	<CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
+	<87wqihmg9a.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20140106011137.GE27432@n2100.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <87wqihmg9a.fsf@nemi.mork.no>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Monday, January 06, 2014 01:11:37 AM Russell King - ARM Linux wrote:
-> On Mon, Jan 06, 2014 at 02:23:39AM +0100, Rafael J. Wysocki wrote:
-> > On Monday, January 06, 2014 12:58:56 AM Russell King - ARM Linux wrote:
-> > > On Mon, Jan 06, 2014 at 02:08:21AM +0100, Rafael J. Wysocki wrote:
-> > > > On Friday, January 03, 2014 03:51:39 PM Viresh Kumar wrote:
-> > > > > arm_big_little cpufreq driver is only used for ARM bigLITTLE platforms and hence
-> > > > > must be dependent on CONFIG_BIG_LITTLE.
-> > > > > 
-> > > > > This was highlighted by Russell earlier when he reported this issue:
-> > > > > 
-> > > > > drivers/built-in.o: In function `bL_cpufreq_set_rate':
-> > > > > powercap_sys.c:(.text+0x5ed9a0): undefined reference to `bL_switch_request_cb'
-> > > > > 
-> > > > > Reported-by: Russell King <linux@arm.linux.org.uk>
-> > > > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > 
-> > > > Queued up for 3.14, thanks!
-> > > 
-> > > This is actually a build fix, not a new feature, so IMHO it should go
-> > > in for 3.13.  Linus has said he's going to do -rc8 anyway next weekend
-> > > so -final is at the earliest two weeks away.
-> > 
-> > Well, it can go into 3.13 too.
-> > 
-> > Thanks!
-> 
-> Thanks.
+On 3 January 2014 17:25, Bj=F8rn Mork <bjorn@mork.no> wrote:
+> Correct. And users not running a lock debugging kernel will of course
+> not even see the warning.
 
-Well, actually, I was wrong.  It depends on stuff already queued up for 3.14,
-so either I'd need to drag all that into 3.13, or it needs to wait for 3.14.
+Okay..
 
-So it will wait, sorry about that.
+>> - It only happens when cpufreq_add_dev() fails during hibernation wh=
+ile
+>> we enable non-boot CPUs again to save image to disk. So, isn't a pro=
+blem
+>> for a system which doesn't have any issues with add_dev() failing on
+>> hibernation
+>
+> Wrong.  This was my initial assumption but I later found out that the
+> issue is unrelated to hibernation failures.  Sorry about the confusio=
+n.
 
-Thanks!
+Hmm.. Can we have the latest warning logs you have? Earlier ones were
+related to hibernation..
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>> - There is a contention of locks in the order they are taken. And th=
+e contention
+>> looks to be between, hotplug lock taken by cpu_online_cpus() and s_a=
+ctive
+>> lock for sysfs files. Don't know what's the role of previous write t=
+o
+>> sysfs files.
+>> As that should finish before hibernation starts and so all locks sho=
+uld be back
+>> in place.
+>
+> Yes, that seems logical.  But I guess this is where it fails?
+
+It looked like that.. Though your new logs might indicate something els=
+e.
