@@ -1,107 +1,50 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4] cpufreq: Fix timer/workqueue corruption by protecting reading governor_enabled
-Date: Mon, 06 Jan 2014 02:07:19 +0100
-Message-ID: <1538311.12EC6AbbfU@vostro.rjw.lan>
-References: <1388740661-15011-1-git-send-email-jiel@marvell.com> <CAKohpo=osvNc0rKEsawCE9nggCQdGr7bgT+D8=KhkgpnAyXXaw@mail.gmail.com> <20140103231023.GC13489@core.coreip.homeip.net>
+Subject: Re: [PATCH] cpufreq: arm-big-little: Make driver dependent on CONFIG_BIG_LITTLE
+Date: Mon, 06 Jan 2014 02:08:21 +0100
+Message-ID: <39696841.2xGCnmPGdl@vostro.rjw.lan>
+References: <a76f7b6a290d9174a24e15b13df21f53e3f5655f.1388736624.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20140103231023.GC13489@core.coreip.homeip.net>
+In-Reply-To: <a76f7b6a290d9174a24e15b13df21f53e3f5655f.1388736624.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jane Li <jiel@marvell.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk
 
-On Friday, January 03, 2014 03:10:23 PM Dmitry Torokhov wrote:
-> On Fri, Jan 03, 2014 at 03:40:16PM +0530, Viresh Kumar wrote:
-> > On 3 January 2014 14:47,  <jiel@marvell.com> wrote:
-> > > From: Jane Li <jiel@marvell.com>
-> > >
-> > > When a CPU is hot removed we'll cancel all the delayed work items via
-> > > gov_cancel_work(). Sometimes the delayed work function determines that
-> > > it should adjust the delay for all other CPUs that the policy is
-> > > managing. If this scenario occurs, the canceling CPU will cancel its own
-> > > work but queue up the other CPUs works to run.
-> > >
-> > > Commit 3617f2(cpufreq: Fix timer/workqueue corruption due to double
-> > > queueing) has tried to fix this, but reading governor_enabled is not
-> > > protected by cpufreq_governor_lock. Even though od_dbs_timer() checks
-> > > governor_enabled before gov_queue_work(), this scenario may occur. For
-> > > example:
-> > >
-> > >  CPU0                                        CPU1
-> > >  ----                                        ----
-> > >  cpu_down()
-> > >   ...                                        <work runs>
-> > >   __cpufreq_remove_dev()                     od_dbs_timer()
-> > >    __cpufreq_governor()                       policy->governor_enabled
-> > >     policy->governor_enabled = false;
-> > >     cpufreq_governor_dbs()
-> > >      case CPUFREQ_GOV_STOP:
-> > >       gov_cancel_work(dbs_data, policy);
-> > >        cpu0 work is canceled
-> > >         timer is canceled
-> > >         cpu1 work is canceled
-> > >         <waits for cpu1>
-> > >                                               gov_queue_work(*, *, true);
-> > >                                                cpu0 work queued
-> > >                                                cpu1 work queued
-> > >                                                cpu2 work queued
-> > >                                                ...
-> > >         cpu1 work is canceled
-> > >         cpu2 work is canceled
-> > >         ...
-> > >
-> > > At the end of the GOV_STOP case cpu0 still has a work queued to
-> > > run although the code is expecting all of the works to be
-> > > canceled. __cpufreq_remove_dev() will then proceed to
-> > > re-initialize all the other CPUs works except for the CPU that is
-> > > going down. The CPUFREQ_GOV_START case in cpufreq_governor_dbs()
-> > > will trample over the queued work and debugobjects will spit out
-> > > a warning:
-> > >
-> > > WARNING: at lib/debugobjects.c:260 debug_print_object+0x94/0xbc()
-> > > ODEBUG: init active (active state 0) object type: timer_list hint: delayed_work_timer_fn+0x0/0x14
-> > > Modules linked in:
-> > > CPU: 1 PID: 1205 Comm: sh Tainted: G        W    3.10.0 #200
-> > > [<c01144f0>] (unwind_backtrace+0x0/0xf8) from [<c0111d98>] (show_stack+0x10/0x14)
-> > > [<c0111d98>] (show_stack+0x10/0x14) from [<c01272cc>] (warn_slowpath_common+0x4c/0x68)
-> > > [<c01272cc>] (warn_slowpath_common+0x4c/0x68) from [<c012737c>] (warn_slowpath_fmt+0x30/0x40)
-> > > [<c012737c>] (warn_slowpath_fmt+0x30/0x40) from [<c034c640>] (debug_print_object+0x94/0xbc)
-> > > [<c034c640>] (debug_print_object+0x94/0xbc) from [<c034c7f8>] (__debug_object_init+0xc8/0x3c0)
-> > > [<c034c7f8>] (__debug_object_init+0xc8/0x3c0) from [<c01360e0>] (init_timer_key+0x20/0x104)
-> > > [<c01360e0>] (init_timer_key+0x20/0x104) from [<c04872ac>] (cpufreq_governor_dbs+0x1dc/0x68c)
-> > > [<c04872ac>] (cpufreq_governor_dbs+0x1dc/0x68c) from [<c04833a8>] (__cpufreq_governor+0x80/0x1b0)
-> > > [<c04833a8>] (__cpufreq_governor+0x80/0x1b0) from [<c0483704>] (__cpufreq_remove_dev.isra.12+0x22c/0x380)
-> > > [<c0483704>] (__cpufreq_remove_dev.isra.12+0x22c/0x380) from [<c0692f38>] (cpufreq_cpu_callback+0x48/0x5c)
-> > > [<c0692f38>] (cpufreq_cpu_callback+0x48/0x5c) from [<c014fb40>] (notifier_call_chain+0x44/0x84)
-> > > [<c014fb40>] (notifier_call_chain+0x44/0x84) from [<c012ae44>] (__cpu_notify+0x2c/0x48)
-> > > [<c012ae44>] (__cpu_notify+0x2c/0x48) from [<c068dd40>] (_cpu_down+0x80/0x258)
-> > > [<c068dd40>] (_cpu_down+0x80/0x258) from [<c068df40>] (cpu_down+0x28/0x3c)
-> > > [<c068df40>] (cpu_down+0x28/0x3c) from [<c068e4c0>] (store_online+0x30/0x74)
-> > > [<c068e4c0>] (store_online+0x30/0x74) from [<c03a7308>] (dev_attr_store+0x18/0x24)
-> > > [<c03a7308>] (dev_attr_store+0x18/0x24) from [<c0256fe0>] (sysfs_write_file+0x100/0x180)
-> > > [<c0256fe0>] (sysfs_write_file+0x100/0x180) from [<c01fec9c>] (vfs_write+0xbc/0x184)
-> > > [<c01fec9c>] (vfs_write+0xbc/0x184) from [<c01ff034>] (SyS_write+0x40/0x68)
-> > > [<c01ff034>] (SyS_write+0x40/0x68) from [<c010e200>] (ret_fast_syscall+0x0/0x48)
-> > >
-> > > In gov_queue_work(), lock cpufreq_governor_lock before gov_queue_work,
-> > > and unlock it after __gov_queue_work(). In this way, governor_enabled
-> > > is guaranteed not changed in gov_queue_work().
-> > >
-> > > Signed-off-by: Jane Li <jiel@marvell.com>
-> > > ---
-> > >  drivers/cpufreq/cpufreq.c          |    2 +-
-> > >  drivers/cpufreq/cpufreq_governor.c |    6 +++++-
-> > >  drivers/cpufreq/cpufreq_governor.h |    2 ++
-> > >  3 files changed, 8 insertions(+), 2 deletions(-)
-> > 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Friday, January 03, 2014 03:51:39 PM Viresh Kumar wrote:
+> arm_big_little cpufreq driver is only used for ARM bigLITTLE platforms and hence
+> must be dependent on CONFIG_BIG_LITTLE.
 > 
-> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> This was highlighted by Russell earlier when he reported this issue:
+> 
+> drivers/built-in.o: In function `bL_cpufreq_set_rate':
+> powercap_sys.c:(.text+0x5ed9a0): undefined reference to `bL_switch_request_cb'
+> 
+> Reported-by: Russell King <linux@arm.linux.org.uk>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 Queued up for 3.14, thanks!
+
+> ---
+>  drivers/cpufreq/Kconfig.arm | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 456ba5e..3275e9c 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -4,7 +4,7 @@
+>  
+>  config ARM_BIG_LITTLE_CPUFREQ
+>  	tristate "Generic ARM big LITTLE CPUfreq driver"
+> -	depends on ARM && ARM_CPU_TOPOLOGY && HAVE_CLK
+> +	depends on ARM && BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK
+>  	select PM_OPP
+>  	help
+>  	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
+> 
 
 -- 
 I speak only for myself.
