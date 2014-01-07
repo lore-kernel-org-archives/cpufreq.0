@@ -1,55 +1,67 @@
-From: Gleb Natapov <gleb@kernel.org>
-Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
-Date: Tue, 7 Jan 2014 18:11:10 +0200
-Message-ID: <20140107161109.GM10961@minantech.com>
-References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com>
- <4794554.Hmd2RUNYDT@vostro.rjw.lan>
- <52C18A23.10703@redhat.com>
- <3710588.K8glfx1cYs@vostro.rjw.lan>
- <52C6F3B4.3050904@gmail.com>
- <20140103180435.GK10961@minantech.com>
- <52C716C1.6070704@gmail.com>
- <52C7345D.30603@redhat.com>
- <52CAE574.3010304@gmail.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: Possible SNB throttling erratum in need of workaround?
+Date: Tue, 7 Jan 2014 14:02:49 -0800
+Message-ID: <CALCETrX41X6ZbB-C1Y0V4Au9o6=p17aGo6NLMjxtEkRJQJHGgA@mail.gmail.com>
+References: <CALCETrVmWAVwLtEbK0AZGBmcqUEkM_Zhz1WGSY5wSpLsaHiOkA@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <52CAE574.3010304@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CALCETrVmWAVwLtEbK0AZGBmcqUEkM_Zhz1WGSY5wSpLsaHiOkA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kashyap Chamarthy <kchamart@redhat.com>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: cpufreq@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>
 
-On Mon, Jan 06, 2014 at 09:18:44AM -0800, Dirk Brandewie wrote:
-> On 01/03/2014 02:06 PM, Paolo Bonzini wrote:
-> >Il 03/01/2014 21:00, Dirk Brandewie ha scritto:
-> >>+    case MSR_IA32_MPERF:
-> >>+    case MSR_IA32_APERF:
-> >
-> OK I will spin the patch to only add MSR_PLATFORM_INFO.
-> 
-> >These should never be accessed.  A KVM VM will always have
-> >CPUID[06H].ECX = 0, and the Intel manual says that the MSRs are only
-> >present if CPUID returns that value with bit 0 set.
-> >
-> >I think the actual bug is that intel_pstate_init does not check the
-> >feature bits in CPUID (either manually or via x86_match_cpu).
-> 
-> I will add the feature check.
-> 
-> What are the differences between the first and the nested KVM's?
-There shouldn't be any. There is a bug in nested emulation probably.
+[cc: some more people]
 
-> At load time intel_pstate checks that APERF and MPERF are incrementing
-> and that PLATFORM_INFO has some value.  Somehow these checks pass
-> in the nested environment and we fall over when the CPU is being added
-> by cpufreq.
-> 
-KVM does not emulate either of those and inject #GP if one is accessed. Linux
-catches those #GPs and fixs up rdmsr to return zero. It would be interesting to
-see ftrace for nested kvm run.
+On Wed, Dec 18, 2013 at 6:02 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+> I have a box running 3.9.4.  For a few hundred ms, all packages and
+> cores* exceeded their power limits, and then they all came back to
+> normal.
+>
+> Since then, turbo boost went away.
+>
+> The first thing I tried was writing 0 to msr 0x19C to clear the
+> throttling "log" bit.  The bit was clear, but still no turbo.  (I only
+> did this on one package to avoid destroying information.)
+>
+> I have the performance governor set, so there are never any
+> software-initiated performance transitions.  As an experiment, I
+> switched core 0 to powersave (aka very low frequency) and then back to
+> performance.  The entire package's turbo came back.  I did the same
+> thing to the cores on package 1 (all of them, sorry), and that
+> package's turbo boost came back.
+>
+> Does the kernel need to reprogram CPU frequencies after thermal/power
+> throttling conditions clear?
+>
+> My CPUs are:
+>
+> processor       : 31
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 45
+> model name      : Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
+> stepping        : 7
+> microcode       : 0x710
+>
+>
+> * Slight lie here.  CPU18 exceeded core limit but not power limit.
 
---
-			Gleb.
+I got another power-limit-exceeded warning, but this one didn't kill Turbo.
+
+This problem might be more widespread than people would notice,
+because the log line was removed by:
+
+commit c81147483e525e4a471d581877d7d634591246e1
+Author: Fenghua Yu <fenghua.yu@intel.com>
+Date:   Tue May 21 15:35:16 2013 -0400
+
+    x86 thermal: Delete power-limit-notification console messages
+
+and if the only symptom is that, under certain workloads, turbo goes
+away until the system is rebooted or cpufreq is manually twiddled,
+people might not notice.
+
+--Andy
