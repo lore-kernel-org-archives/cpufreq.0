@@ -1,81 +1,162 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: speedstep: remove unused speedstep_get_state
-Date: Mon, 06 Jan 2014 23:24:21 +0100
-Message-ID: <1756077.6t9Ofi9GiT@vostro.rjw.lan>
-References: <1389040212.2562.3.camel@x41>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1389040212.2562.3.camel@x41>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH Resend 1/4] cpufreq: stats: handle cpufreq_unregister_driver() and suspend/resume properly
+Date: Tue,  7 Jan 2014 07:10:10 +0530
+Message-ID: <b4c2b7c1f5e480e6ae6fcbc737ae52c1e0a88549.1389058746.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Monday, January 06, 2014 09:30:12 PM Paul Bolle wrote:
-> The only caller of speedstep_get_state() was removed in commit d4019f0a92ab
-> ("cpufreq: move freq change notifications to cpufreq core"). So building
-> speedstep-smi.o now triggers a GCC warning:
->     drivers/cpufreq/speedstep-smi.c:148:12: warning: 'speedstep_get_state' defined but not used [-Wunused-function]
-> 
-> Remove this unused function.
-> 
-> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+There are several problems cpufreq stats in the way it handles
+cpufreq_unregister_driver() and suspend/resume..
 
-Queued up for 3.14, thanks!
+- We must not loose data collected so far when suspend/resume happens and so
+  stats directories must not be removed/allocated during these operations, Which
+  is done currently.
 
-> ---
-> This seems to be a rather obvious fix. Hasn't it been submitted before?
-> 
->  drivers/cpufreq/speedstep-smi.c | 32 --------------------------------
->  1 file changed, 32 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-> index 0f5326d..998c17b 100644
-> --- a/drivers/cpufreq/speedstep-smi.c
-> +++ b/drivers/cpufreq/speedstep-smi.c
-> @@ -141,38 +141,6 @@ static int speedstep_smi_get_freqs(unsigned int *low, unsigned int *high)
->  }
->  
->  /**
-> - * speedstep_get_state - set the SpeedStep state
-> - * @state: processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
-> - *
-> - */
-> -static int speedstep_get_state(void)
-> -{
-> -	u32 function = GET_SPEEDSTEP_STATE;
-> -	u32 result, state, edi, command, dummy;
-> -
-> -	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
-> -
-> -	pr_debug("trying to determine current setting with command %x "
-> -		"at port %x\n", command, smi_port);
-> -
-> -	__asm__ __volatile__(
-> -		"push %%ebp\n"
-> -		"out %%al, (%%dx)\n"
-> -		"pop %%ebp\n"
-> -		: "=a" (result),
-> -		  "=b" (state), "=D" (edi),
-> -		  "=c" (dummy), "=d" (dummy), "=S" (dummy)
-> -		: "a" (command), "b" (function), "c" (0),
-> -		  "d" (smi_port), "S" (0), "D" (0)
-> -	);
-> -
-> -	pr_debug("state is %x, result is %x\n", state, result);
-> -
-> -	return state & 1;
-> -}
-> -
-> -
-> -/**
->   * speedstep_set_state - set the SpeedStep state
->   * @state: new processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
->   *
-> 
+- cpufreq_stat has registered notifiers with both cpufreq and hotplug. It adds
+  sysfs stats directory with a cpufreq notifier: CPUFREQ_NOTIFY and removes this
+  directory with a notifier from hotplug core.
 
+  In case cpufreq_unregister_driver() is called (on rmmod cpufreq driver), stats
+  directories per cpu aren't removed as CPUs are still online. The only call
+  cpufreq_stats gets is cpufreq_stats_update_policy_cpu for all CPUs except the
+  last of each policy. And pointer to stat information is stored in the entry
+  for last cpu in per-cpu cpufreq_stats_table. But policy structure would be
+  freed inside cpufreq core and so that will result in memory leak inside
+  cpufreq stats (as we are never freeing memory for stats).
+
+  Now if we again insert the module cpufreq_register_driver() will be called and
+  we will again allocate stats data and put it on for first cpu of every policy.
+  In case we only have a single cpu per policy we will return with a error from
+  cpufreq_stats_create_table() due to below code:
+
+	if (per_cpu(cpufreq_stats_table, cpu))
+		return -EBUSY;
+
+  And so probably cpufreq stats directory would show up anymore (as it was added
+  inside last policies->kobj which doesn't exist anymore). I haven't tested it
+  though. Also the values in stats files wouldn't be refreshed as we are using
+  the earlier stats structure.
+
+- CPUFREQ_NOTIFY is called from cpufreq_set_policy() which is called for
+  scenarios where we don't really want cpufreq_stat_notifier_policy() to get
+  called. For example whenever we are changing anything related to a policy:
+  min/max/current freq, etc.. cpufreq_set_policy() is called and so cpufreq
+  stats is notified. Where we don't do any useful stuff other than simply
+  returning with -EBUSY from cpufreq_stats_create_table(). And so this isn't the
+  right notifier that cpufreq stats..
+
+Due to all above reasons this patch does following changes:
+- Add new notifiers CPUFREQ_CREATE_POLICY and CPUFREQ_REMOVE_POLICY, which are
+  only called when policy is created/destroyed. They aren't called for
+  suspend/resume paths..
+- Use these notifiers in cpufreq_stat_notifier_policy() to create/destory stats
+  sysfs entries. And so cpufreq_unregister_driver() or suspend/resume shouldn't
+  be a problem for cpufreq_stats.
+- Return early from cpufreq_stat_cpu_callback() for suspend/resume sequence, so
+  that we don't free stats structure.
+
+Acked-and-tested-by: Nicolas Pitre <nico@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c       |  5 +++++
+ drivers/cpufreq/cpufreq_stats.c | 24 +++++++++++++++++-------
+ include/linux/cpufreq.h         |  2 ++
+ 3 files changed, 24 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 3509ca0..1afbe52 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -943,6 +943,9 @@ static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
+ 	struct kobject *kobj;
+ 	struct completion *cmp;
+ 
++	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
++			CPUFREQ_REMOVE_POLICY, policy);
++
+ 	down_read(&policy->rwsem);
+ 	kobj = &policy->kobj;
+ 	cmp = &policy->kobj_unregister;
+@@ -1148,6 +1151,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 		ret = cpufreq_add_dev_interface(policy, dev);
+ 		if (ret)
+ 			goto err_out_unregister;
++		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
++				CPUFREQ_CREATE_POLICY, policy);
+ 	}
+ 
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 4cf0d28..0f71562 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -277,7 +277,7 @@ static void cpufreq_stats_update_policy_cpu(struct cpufreq_policy *policy)
+ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
+ 		unsigned long val, void *data)
+ {
+-	int ret;
++	int ret = 0;
+ 	struct cpufreq_policy *policy = data;
+ 	struct cpufreq_frequency_table *table;
+ 	unsigned int cpu = policy->cpu;
+@@ -287,15 +287,21 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
+ 		return 0;
+ 	}
+ 
+-	if (val != CPUFREQ_NOTIFY)
+-		return 0;
+ 	table = cpufreq_frequency_get_table(cpu);
+ 	if (!table)
+ 		return 0;
+-	ret = cpufreq_stats_create_table(policy, table);
+-	if (ret)
+-		return ret;
+-	return 0;
++
++	if (val == CPUFREQ_CREATE_POLICY)
++		ret = cpufreq_stats_create_table(policy, table);
++	else if (val == CPUFREQ_REMOVE_POLICY) {
++		/* This might already be freed by cpu hotplug notifier */
++		if (per_cpu(cpufreq_stats_table, cpu)) {
++			cpufreq_stats_free_sysfs(cpu);
++			cpufreq_stats_free_table(cpu);
++		}
++	}
++
++	return ret;
+ }
+ 
+ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
+@@ -340,6 +346,10 @@ static int cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+ {
+ 	unsigned int cpu = (unsigned long)hcpu;
+ 
++	/* Don't free/allocate stats during suspend/resume */
++	if (action & CPU_TASKS_FROZEN)
++		return 0;
++
+ 	switch (action) {
+ 	case CPU_DOWN_PREPARE:
+ 		cpufreq_stats_free_sysfs(cpu);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index aaf800e..bb727eb 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -308,6 +308,8 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
+ #define CPUFREQ_NOTIFY			(2)
+ #define CPUFREQ_START			(3)
+ #define CPUFREQ_UPDATE_POLICY_CPU	(4)
++#define CPUFREQ_CREATE_POLICY		(5)
++#define CPUFREQ_REMOVE_POLICY		(6)
+ 
+ #ifdef CONFIG_CPU_FREQ
+ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.12.rc2.18.g61b472e
+
