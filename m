@@ -1,107 +1,113 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v12 0/7] cpufreq:boost: CPU Boost mode support
-Date: Wed, 08 Jan 2014 01:35:18 +0100
-Message-ID: <9268964.f27SUq68sj@vostro.rjw.lan>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1387549495-809-1-git-send-email-l.majewski@samsung.com> <20140107075824.59a1ed3c@amdc2363>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
+Date: Wed, 8 Jan 2014 11:21:00 +0530
+Message-ID: <CAKohpomEr_caoDGeUWWMeJ1_siEQguUTaPF6zgD62YqT=4F7og@mail.gmail.com>
+References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+	<5562479.pVWRuDL0y6@vostro.rjw.lan>
+	<87zjne7f75.fsf@nemi.mork.no>
+	<2302938.b8tymqrMEz@vostro.rjw.lan>
+	<878uuxquxu.fsf@nemi.mork.no>
+	<871u0po0gx.fsf@nemi.mork.no>
+	<CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
+	<87wqihmg9a.fsf@nemi.mork.no>
+	<CAKohpo=3s6=gw8OJTrUdLH8o2ouA=8a8MhrgNRXwHmOf0si5Pw@mail.gmail.com>
+	<87iotx32mx.fsf@nemi.mork.no>
+	<CAKohpo=KgHqz0KYv7h0EYP3=8h7T3ZfPpFTMS6qVoEb6dXGnSQ@mail.gmail.com>
+	<87a9f92xnn.fsf@nemi.mork.no>
+	<CAKohpon7u_1h+9rKQeC8J4Pqd_6bSajn7Ag8=COqczhbSPEgMA@mail.gmail.com>
+	<8738l15pht.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20140107075824.59a1ed3c@amdc2363>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <8738l15pht.fsf@nemi.mork.no>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org, rjw@sisk.pl
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tuesday, January 07, 2014 07:58:24 AM Lukasz Majewski wrote:
-> Hi Rafael,
+On 6 January 2014 16:47, Bj=F8rn Mork <bjorn@mork.no> wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>
+>> On 6 January 2014 16:19, Bj=F8rn Mork <bjorn@mork.no> wrote:
+>>> I cancelled by pressing backspace while the image was being written=
+=2E
+>>
+>> I will answer other queries on next mail, but a quick question:
+>> Do you get these warnings even if you don't cancel hibernation?
+>
+> Yes.
 
-Hi,
+Hmm.. I see. Now, I really don't believe that you wouldn't get these
+warnings on a suspend/resume but only on hibernation.
 
-> > This patch series introduces support for CPU overclocking technique
-> > called Boost.
-> > 
-> > It is a follow up of a LAB governor proposal. Boost is a LAB
-> > component:
-> > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> > 
-> > Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> > software oriented one (like the one done at Exynos).
-> > For this reason cpufreq/freq_table code has been reorganized to
-> > include common code.
-> > 
-> > Important design decisions:
-> > - Boost related code is compiled-in unconditionally to cpufreq core
-> > and disabled by default. The cpufreq_driver is responsibile for
-> > setting boost_supported flag and providing set_boost callback(if HW
-> > support is needed). For software managed boost, special Kconfig flag -
-> >   CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
-> >   when a target platform has thermal framework properly configured.
-> > 
-> > - struct cpufreq_driver has been extended with boost related fields:
-> >         -- boost_supported - when driver supports boosting
-> >         -- boost_enabled - boost state
-> >         -- set_boost - callback to function, which is necessary to
-> >            enable/disable boost
-> > 
-> > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
-> > visible _only_ when cpufreq driver supports Boost.
-> > 
-> > - No special spin_lock for Boost was created. The one from cpufreq
-> > core was reused.
-> > 
-> > - The Boost code doesn't rely on any policy. When boost state is
-> > changed, then the policy list is iterated and proper adjustements are
-> > done.
-> > 
-> > - To improve safety level, the thermal framework is also extended to
-> > disable software boosting, when thermal trip point is reached. After
-> > cooling down the boost can be enabled again. This emulates behaviour
-> > similar to HW managed boost (like x86)
-> > 
-> > Tested at HW:
-> >        Exynos 4412 3.13-rc4 Linux
-> >        Intel Core i7-3770 3.13-rc4 Linux
-> > 
-> > Above patches were posted on top of kernel_pm/bleeding-edge
-> > (SHA1: bd0f3a5d9dce48a917ce1f1047534d79c725149)
-> > 
-> > Lukasz Majewski (7):
-> >   cpufreq: Add boost frequency support in core
-> >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
-> >     boost solution
-> >   cpufreq:boost:Kconfig: Provide support for software managed BOOST
-> >   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
-> >     framework
-> >   Documentation:cpufreq:boost: Update BOOST documentation
-> >   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
-> >   thermal:exynos:boost: Automatic enable/disable of BOOST feature (at
-> >     Exynos4412)
-> > 
-> >  Documentation/cpu-freq/boost.txt          |   26 +++----
-> >  drivers/cpufreq/Kconfig                   |    4 +
-> >  drivers/cpufreq/Kconfig.arm               |   15 ++++
-> >  drivers/cpufreq/acpi-cpufreq.c            |   86
-> > +++++++-------------- drivers/cpufreq/cpufreq.c                 |
-> > 118 ++++++++++++++++++++++++++++-
-> > drivers/cpufreq/exynos-cpufreq.c          |    3 +
-> > drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
-> > drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
-> > drivers/thermal/samsung/exynos_tmu_data.c |   12 +--
-> > include/linux/cpufreq.h                   |   24 ++++++ 10 files
-> > changed, 261 insertions(+), 85 deletions(-)
-> > 
-> 
-> A gentle ping about BOOST patches.
-> 
-> Its been already acked by Viresh and Eduardo.
-> 
-> It applies on kernel_pm/bleeding_edge SHA1:
-> 4836deb72c5e2a9af0cb2129c1149783a26d99ab
+> I believe the photo shows that you are right: This warning happens wh=
+en
+> the failure path is entered, even if both the hibernation and followi=
+ng
+> resume is successful.  We see __cpufreq_add_dev calling
+> cpufreq_policy_put_kobj here as well.
 
-It looks like Rui is still looking into this.
+@Rafael: I need your expert opinion here, I am not so good with these
+concepts :)
 
-Rui, are you fine with this series?
+Here is my theory about these warnings:
+- Bjorn gets these only when CONFIG_PROVE_LOCKING=3Dy.
+- This feature enables the kernel to report locking related deadlocks
+before they actually occur. (lib/Kconfig.debug)
+- So, no locking issue has happened here but its just an warning that
+you might end up getting into such issue later.
+- Contention is between sysfs and cpu-hotplug lock.
+- While changing stuff from sysfs we do this:
+   sysfs-lock (by kernel)
+   cpu-hotplug lock (by cpufreq)
+- And while doing hibernation if add_dev fails then we do this
+   cpu-hotplug lock (by kernel while adding CPUs)
+   sysfs-lock (by cpufreq while removing sysfs directories)
 
-Rafael
+And kernel is recording all these sequences all the time. Because
+we first tried changing values from sysfs, kernel recorded that
+sequence. And as soon as it found another one it WARNed us?
 
+While on a suspend/resume, we will get into add-dev failure only
+in resume and probably by that time these recordings are refreshed?
+And that's why Bjorn isn't facing any issue there ? Just an wild guess.
+
+And if all above "virtual" theory is correct, then I don't know if we
+can/want to fix that..
+
+> Thinking about this: This failure will always happen, regardless of
+> cancelling or not, won't it?
+
+Yeah.
+
+> But it happens *after* the freeze so it
+> doesn't matter if we resume from the frozen image.
+
+yeah..
+
+So, even tests like this should give you this warning:
+
+Documentation/power/basic-pm-debugging.txt
+core
+- test the freezing of processes, suspending of devices, platform globa=
+l
+  control methods(*), the disabling of nonboot CPUs and suspending of
+  platform/system devices
+
+> So you are probably right as usual:
+
+Really? Ask Rafael, he doesn't agree :)
+
+> This warning is related to the
+> acpi-cpufreq driver failing, and you cannot reproduce it without
+> simulating such a failure (or using that driver yourself).  Which mea=
+ns
+> that the warning disappears with my patch in
+> http://www.spinics.net/lists/cpufreq/msg08714.html
+> which explains why I don't normally see it.  I depend on being able t=
+o
+> cancel hibernation, so I use that patch most of the time. Except when
+> I'm testing one of your branches.
+
+Correct.
