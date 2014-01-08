@@ -1,74 +1,107 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH Resend 1/4] cpufreq: stats: handle cpufreq_unregister_driver() and suspend/resume properly
-Date: Wed, 08 Jan 2014 01:14:11 +0100
-Message-ID: <2641423.LeSa8tdYgZ@vostro.rjw.lan>
-References: <b4c2b7c1f5e480e6ae6fcbc737ae52c1e0a88549.1389058746.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH v12 0/7] cpufreq:boost: CPU Boost mode support
+Date: Wed, 08 Jan 2014 01:35:18 +0100
+Message-ID: <9268964.f27SUq68sj@vostro.rjw.lan>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1387549495-809-1-git-send-email-l.majewski@samsung.com> <20140107075824.59a1ed3c@amdc2363>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <b4c2b7c1f5e480e6ae6fcbc737ae52c1e0a88549.1389058746.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20140107075824.59a1ed3c@amdc2363>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org, rjw@sisk.pl
 
-On Tuesday, January 07, 2014 07:10:10 AM Viresh Kumar wrote:
-> There are several problems cpufreq stats in the way it handles
-> cpufreq_unregister_driver() and suspend/resume..
-> 
-> - We must not loose data collected so far when suspend/resume happens and so
->   stats directories must not be removed/allocated during these operations, Which
->   is done currently.
-> 
-> - cpufreq_stat has registered notifiers with both cpufreq and hotplug. It adds
->   sysfs stats directory with a cpufreq notifier: CPUFREQ_NOTIFY and removes this
->   directory with a notifier from hotplug core.
-> 
->   In case cpufreq_unregister_driver() is called (on rmmod cpufreq driver), stats
->   directories per cpu aren't removed as CPUs are still online. The only call
->   cpufreq_stats gets is cpufreq_stats_update_policy_cpu for all CPUs except the
->   last of each policy. And pointer to stat information is stored in the entry
->   for last cpu in per-cpu cpufreq_stats_table. But policy structure would be
->   freed inside cpufreq core and so that will result in memory leak inside
->   cpufreq stats (as we are never freeing memory for stats).
-> 
->   Now if we again insert the module cpufreq_register_driver() will be called and
->   we will again allocate stats data and put it on for first cpu of every policy.
->   In case we only have a single cpu per policy we will return with a error from
->   cpufreq_stats_create_table() due to below code:
-> 
-> 	if (per_cpu(cpufreq_stats_table, cpu))
-> 		return -EBUSY;
-> 
->   And so probably cpufreq stats directory would show up anymore (as it was added
->   inside last policies->kobj which doesn't exist anymore). I haven't tested it
->   though. Also the values in stats files wouldn't be refreshed as we are using
->   the earlier stats structure.
-> 
-> - CPUFREQ_NOTIFY is called from cpufreq_set_policy() which is called for
->   scenarios where we don't really want cpufreq_stat_notifier_policy() to get
->   called. For example whenever we are changing anything related to a policy:
->   min/max/current freq, etc.. cpufreq_set_policy() is called and so cpufreq
->   stats is notified. Where we don't do any useful stuff other than simply
->   returning with -EBUSY from cpufreq_stats_create_table(). And so this isn't the
->   right notifier that cpufreq stats..
-> 
-> Due to all above reasons this patch does following changes:
-> - Add new notifiers CPUFREQ_CREATE_POLICY and CPUFREQ_REMOVE_POLICY, which are
->   only called when policy is created/destroyed. They aren't called for
->   suspend/resume paths..
-> - Use these notifiers in cpufreq_stat_notifier_policy() to create/destory stats
->   sysfs entries. And so cpufreq_unregister_driver() or suspend/resume shouldn't
->   be a problem for cpufreq_stats.
-> - Return early from cpufreq_stat_cpu_callback() for suspend/resume sequence, so
->   that we don't free stats structure.
-> 
-> Acked-and-tested-by: Nicolas Pitre <nico@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Tuesday, January 07, 2014 07:58:24 AM Lukasz Majewski wrote:
+> Hi Rafael,
 
-The entire series applied to bleeding-edge, thanks!
+Hi,
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> > This patch series introduces support for CPU overclocking technique
+> > called Boost.
+> > 
+> > It is a follow up of a LAB governor proposal. Boost is a LAB
+> > component:
+> > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+> > 
+> > Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> > software oriented one (like the one done at Exynos).
+> > For this reason cpufreq/freq_table code has been reorganized to
+> > include common code.
+> > 
+> > Important design decisions:
+> > - Boost related code is compiled-in unconditionally to cpufreq core
+> > and disabled by default. The cpufreq_driver is responsibile for
+> > setting boost_supported flag and providing set_boost callback(if HW
+> > support is needed). For software managed boost, special Kconfig flag -
+> >   CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+> >   when a target platform has thermal framework properly configured.
+> > 
+> > - struct cpufreq_driver has been extended with boost related fields:
+> >         -- boost_supported - when driver supports boosting
+> >         -- boost_enabled - boost state
+> >         -- set_boost - callback to function, which is necessary to
+> >            enable/disable boost
+> > 
+> > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
+> > visible _only_ when cpufreq driver supports Boost.
+> > 
+> > - No special spin_lock for Boost was created. The one from cpufreq
+> > core was reused.
+> > 
+> > - The Boost code doesn't rely on any policy. When boost state is
+> > changed, then the policy list is iterated and proper adjustements are
+> > done.
+> > 
+> > - To improve safety level, the thermal framework is also extended to
+> > disable software boosting, when thermal trip point is reached. After
+> > cooling down the boost can be enabled again. This emulates behaviour
+> > similar to HW managed boost (like x86)
+> > 
+> > Tested at HW:
+> >        Exynos 4412 3.13-rc4 Linux
+> >        Intel Core i7-3770 3.13-rc4 Linux
+> > 
+> > Above patches were posted on top of kernel_pm/bleeding-edge
+> > (SHA1: bd0f3a5d9dce48a917ce1f1047534d79c725149)
+> > 
+> > Lukasz Majewski (7):
+> >   cpufreq: Add boost frequency support in core
+> >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+> >     boost solution
+> >   cpufreq:boost:Kconfig: Provide support for software managed BOOST
+> >   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+> >     framework
+> >   Documentation:cpufreq:boost: Update BOOST documentation
+> >   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+> >   thermal:exynos:boost: Automatic enable/disable of BOOST feature (at
+> >     Exynos4412)
+> > 
+> >  Documentation/cpu-freq/boost.txt          |   26 +++----
+> >  drivers/cpufreq/Kconfig                   |    4 +
+> >  drivers/cpufreq/Kconfig.arm               |   15 ++++
+> >  drivers/cpufreq/acpi-cpufreq.c            |   86
+> > +++++++-------------- drivers/cpufreq/cpufreq.c                 |
+> > 118 ++++++++++++++++++++++++++++-
+> > drivers/cpufreq/exynos-cpufreq.c          |    3 +
+> > drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+> > drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
+> > drivers/thermal/samsung/exynos_tmu_data.c |   12 +--
+> > include/linux/cpufreq.h                   |   24 ++++++ 10 files
+> > changed, 261 insertions(+), 85 deletions(-)
+> > 
+> 
+> A gentle ping about BOOST patches.
+> 
+> Its been already acked by Viresh and Eduardo.
+> 
+> It applies on kernel_pm/bleeding_edge SHA1:
+> 4836deb72c5e2a9af0cb2129c1149783a26d99ab
+
+It looks like Rui is still looking into this.
+
+Rui, are you fine with this series?
+
+Rafael
+
