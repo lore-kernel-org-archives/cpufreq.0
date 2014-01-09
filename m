@@ -1,35 +1,105 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH] drivers/cpufreq: delete non-required instances of include
- <linux/init.h>
-Date: Thu, 9 Jan 2014 10:42:31 -0500
-Message-ID: <52CEC367.3030609@windriver.com>
-References: <1389280207-11846-1-git-send-email-paul.gortmaker@windriver.com> <CAOh2x=mfQ1qoWBW3=kwML0aLYu60v107svb4knYwTwsSXTzEaQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: [PATCH 0/6] cpufreq: use cpufreq-cpu0 driver for exynos4210 based platforms
+Date: Thu,  9 Jan 2014 21:29:19 +0530
+Message-ID: <1389283165-17708-1-git-send-email-thomas.ab@samsung.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=mfQ1qoWBW3=kwML0aLYu60v107svb4knYwTwsSXTzEaQ@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=from:to:cc:subject:date:message-id;
+        bh=UqjsuEKzlFxwbuMmhu3n5wNBJq55niJHpcFD64V12Yg=;
+        b=Pug6tY/Ywg6twyxy+hBAcSlwPfl303cRalhgKbLjx2QuHDxtxeKYUGohdhKww8Hz1a
+         4znMMn1srtCaK99+msaZfb5JYpuFcm9G7hiBl8XOGgzoshcYjJlq7ycChlBnI0diH/nT
+         u1T8X+rZjlVn9bjz1NJD/ULIlxwKQMHTGZwGVQbx5exzgMIOtS0+w5tv94jSji3jh672
+         nYggNGd2eOrqqhsUgY1qp+kU9xq5W3PYm/Po8NxNjycrxl5QIAshGxcaq0spTdQUBIFc
+         iLolRyPQ/0g98SIRY8cK7ol/RdV6Zmzj3p95nk/dnf5gcZnnla3UYE+rTDAJliy67CJg
+         7aAw==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, t.figa@samsung.com, kgene.kim@samsung.com, shawn.guo@linaro.org, viresh.kumar@linaro.org
 
-On 14-01-09 10:17 AM, Viresh Kumar wrote:
-> On Thu, Jan 9, 2014 at 8:40 PM, Paul Gortmaker
-> <paul.gortmaker@windriver.com> wrote:
->> None of these files are actually using any __init type directives
->> and hence don't need to include <linux/init.h>.  Most are just a
->> left over from __devinit and __cpuinit removal, or simply due to
->> code getting copied from one driver to the next.
-> 
-> Are you sure? Its not only about devinit or cpuinit but module_init()
-> and others as well. And they are pretty much used by most of them.
+The patch series removes the use of Exynos4210 specific cpufreq driver
+and enables to use the cpufreq-cpu0 driver for Exynos4210 based platforms.
+This is being done for few reasons.
 
-Actually, module_init is an interesting point; we are implicitly getting
-init.h in module.h -- but (1) that should be explicit, and (2) module_init
-should/could really be in module.h and not stuck in init.h
+(a) The Exynos4210 cpufreq driver reads/writes clock controller registers
+    bypassing the Exynos4 CCF driver which is sort of problematic.
+(b) Removes the need for having clock controller register definitions
+    in the cpufreq driver and also removes the need for statically
+    io-remapping clock controller address space (helps in moving towards
+    multiplatform kernel).
 
-I'll add that to my queue and do some testing.
+In order to use cpufreq-cpu0 driver and provide fast cpu clock switching
+during dvfs operations, the following apporach has been used.
 
-Thanks for the comments,
-Paul.
+(a) A new CPU clock provider type has been introduced in Samsung's CCF
+    support. This clock provider type can be a compostion of multiple
+    clock blocks such as mux, dividers and gates. Typically, in Exynos
+    platforms, there are multiple clock blocks in between the output
+    of the APLL and the CPU clock domain output. Representing these
+    mutiple clock blocks within a opaque CPU clock provider type helps
+    in reducing the time taken to perform a CPU clock frequency change
+    operation, which is generally required during DVFS operations.
+    This approach was suggested by Arnd Bergmann <arnd@arndb.de> during
+    LCE-2013.
+
+(b) A new optional safe operating point property has been introduced
+    in the cpufreq-cpu0 driver binding. On some platforms such as the
+    Samsung Exynos, a change in CPU frequency requires a change in the
+    PLL output that drives the CPU clock. A change in PLL output
+    requires the PLL output be turned off, which implies that the CPU
+    (and other components in the CPU clock domain) be supplied with
+    an alternate clock source during the time the PLL output is changed.
+
+    The clock speed of this alternate clock source could be higher
+    than the clock speed of the PLL at the time of switching over to
+    the alternate clock source. This temporary increase in clock speed
+    of the CPU clock domain implies that the blocks within the CPU
+    clock domain should also be supplied with an appropriate voltage
+    supply level as required to drive the CPU clock domain components
+    at the speed of the alternative clock source. This temporary
+    voltage level required during switching of CPU clock speed is
+    called safe voltage level. And the cpufreq-cpu0 driver has been
+    modified to setup the safe voltage levels during the changes
+    in CPU clock speed.
+
+(c) The CPU clock supply as been restructured as
+    [ Output of APLL -> Opaque CPU clock provider -> CPU clock output ]
+    And with the changes in (a) and (b) above, the cpufreq-cpu0 driver
+    can now be used and can remove the use of Exynos4210 specific
+    cpufreq driver.
+
+This approach is currently tried on Exynos4210 only. The same approach
+can be adopted for other Exynos SoCs as well. This patch series is
+based on linux-next master branch.
+
+Thomas Abraham (6):
+  cpufreq: cpufreq-cpu0: allow optional safe voltage during frequency transitions
+  clk: samsung: add infrastructure to register CPU clocks
+  clk: samsung: register cpu clock provider for exynos4210 SoC
+  cpufreq: exynos: remove Exynos4210 specific cpufreq driver support
+  arm: exynos4-dt: statically add platform device for cpufreq-cpu0 platform driver
+  arm: dts: add cpu nodes for Exynos4210 SoC
+
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    5 +
+ arch/arm/boot/dts/exynos4210-origen.dts            |    6 +
+ arch/arm/boot/dts/exynos4210-trats.dts             |    6 +
+ arch/arm/boot/dts/exynos4210-universal_c210.dts    |    6 +
+ arch/arm/boot/dts/exynos4210.dtsi                  |   22 +++
+ arch/arm/mach-exynos/mach-exynos4-dt.c             |    6 +
+ drivers/clk/samsung/clk-exynos4.c                  |   96 ++++++++++++-
+ drivers/clk/samsung/clk.c                          |   71 +++++++++
+ drivers/clk/samsung/clk.h                          |   37 +++++-
+ drivers/cpufreq/Kconfig.arm                        |   11 --
+ drivers/cpufreq/Makefile                           |    1 -
+ drivers/cpufreq/cpufreq-cpu0.c                     |   49 ++++++-
+ drivers/cpufreq/exynos-cpufreq.c                   |    4 +-
+ drivers/cpufreq/exynos-cpufreq.h                   |    8 -
+ drivers/cpufreq/exynos4210-cpufreq.c               |  157 --------------------
+ 15 files changed, 301 insertions(+), 184 deletions(-)
+ delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+
+
