@@ -1,99 +1,115 @@
-From: John Tobias <john.tobias.ph@gmail.com>
-Subject: [PATCH v4 1/2] ARM: imx: add select on ARCH_MXC for cpufreq support
-Date: Thu,  9 Jan 2014 18:39:51 -0800
-Message-ID: <1389321592-33220-1-git-send-email-john.tobias.ph@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v12 0/7] cpufreq:boost: CPU Boost mode support
+Date: Fri, 10 Jan 2014 14:33:43 +0800
+Message-ID: <1389335623.2411.15.camel@rzhang1-mobl4>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	 <1387549495-809-1-git-send-email-l.majewski@samsung.com>
+	 <20140107075824.59a1ed3c@amdc2363> <9268964.f27SUq68sj@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20120113;
- h=from:to:cc:subject:date:message-id;
- bh=2pihVC+MnhmiLwKNXPCeJq1uzmWIgL9vz1Wd0U7r6MA=;
- b=NPKl+afr3x9cCo6G3MvXJjSucA1QLUrBFiZ49Ld6r71T8UbgoEio+NWu+Fzqaf8k1z
- rQyJw15wpK66fxRofKbW+WKkKQCKYVWkrn8GH4S2NY9HLN3hWKkGXffzTquNZaOX8HF5
- bjdGjDMnOuAOiDW0LvIknfIA0hCrvPKBCx3VgfAwaZu763rSqGKtIJNqH63vSBhIoxtE
- yhcJVOWuagKkZ2oPiy9aoAgT1Ep2h7T5JFznwPAx061xVFyS/gxyYwr5synlnQQpElAB
- eCVSuQc3YLCkpWH8QWcWvYx47l+5biWPVnlhvgu7jGQzc1WV1kB+6ffNMy4MK4vJH9hQ
- c0Cg==
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, shawn.guo@linaro.org, festevam@gmail.com
-Cc: John Tobias <john.tobias.ph@gmail.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <9268964.f27SUq68sj@vostro.rjw.lan>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org, rjw@sisk.pl
 
-Moved ARCH_HAS_CPUFREQ, HAVE_IMX_ANATOP and PM_OPP on ARCH_MXC so that
-the user can enable the cpufreq support for iMX6Q and/or iMX6SL.
+On Wed, 2014-01-08 at 01:35 +0100, Rafael J. Wysocki wrote:
+> On Tuesday, January 07, 2014 07:58:24 AM Lukasz Majewski wrote:
+> > Hi Rafael,
+> 
+> Hi,
+> 
+> > > This patch series introduces support for CPU overclocking technique
+> > > called Boost.
+> > > 
+> > > It is a follow up of a LAB governor proposal. Boost is a LAB
+> > > component:
+> > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+> > > 
+> > > Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> > > software oriented one (like the one done at Exynos).
+> > > For this reason cpufreq/freq_table code has been reorganized to
+> > > include common code.
+> > > 
+> > > Important design decisions:
+> > > - Boost related code is compiled-in unconditionally to cpufreq core
+> > > and disabled by default. The cpufreq_driver is responsibile for
+> > > setting boost_supported flag and providing set_boost callback(if HW
+> > > support is needed). For software managed boost, special Kconfig flag -
+> > >   CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+> > >   when a target platform has thermal framework properly configured.
+> > > 
+> > > - struct cpufreq_driver has been extended with boost related fields:
+> > >         -- boost_supported - when driver supports boosting
+> > >         -- boost_enabled - boost state
+> > >         -- set_boost - callback to function, which is necessary to
+> > >            enable/disable boost
+> > > 
+> > > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
+> > > visible _only_ when cpufreq driver supports Boost.
+> > > 
+> > > - No special spin_lock for Boost was created. The one from cpufreq
+> > > core was reused.
+> > > 
+> > > - The Boost code doesn't rely on any policy. When boost state is
+> > > changed, then the policy list is iterated and proper adjustements are
+> > > done.
+> > > 
+> > > - To improve safety level, the thermal framework is also extended to
+> > > disable software boosting, when thermal trip point is reached. After
+> > > cooling down the boost can be enabled again. This emulates behaviour
+> > > similar to HW managed boost (like x86)
+> > > 
+> > > Tested at HW:
+> > >        Exynos 4412 3.13-rc4 Linux
+> > >        Intel Core i7-3770 3.13-rc4 Linux
+> > > 
+> > > Above patches were posted on top of kernel_pm/bleeding-edge
+> > > (SHA1: bd0f3a5d9dce48a917ce1f1047534d79c725149)
+> > > 
+> > > Lukasz Majewski (7):
+> > >   cpufreq: Add boost frequency support in core
+> > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+> > >     boost solution
+> > >   cpufreq:boost:Kconfig: Provide support for software managed BOOST
+> > >   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+> > >     framework
+> > >   Documentation:cpufreq:boost: Update BOOST documentation
+> > >   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+> > >   thermal:exynos:boost: Automatic enable/disable of BOOST feature (at
+> > >     Exynos4412)
+> > > 
+> > >  Documentation/cpu-freq/boost.txt          |   26 +++----
+> > >  drivers/cpufreq/Kconfig                   |    4 +
+> > >  drivers/cpufreq/Kconfig.arm               |   15 ++++
+> > >  drivers/cpufreq/acpi-cpufreq.c            |   86
+> > > +++++++-------------- drivers/cpufreq/cpufreq.c                 |
+> > > 118 ++++++++++++++++++++++++++++-
+> > > drivers/cpufreq/exynos-cpufreq.c          |    3 +
+> > > drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+> > > drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
+> > > drivers/thermal/samsung/exynos_tmu_data.c |   12 +--
+> > > include/linux/cpufreq.h                   |   24 ++++++ 10 files
+> > > changed, 261 insertions(+), 85 deletions(-)
+> > > 
+> > 
+> > A gentle ping about BOOST patches.
+> > 
+> > Its been already acked by Viresh and Eduardo.
+> > 
+> > It applies on kernel_pm/bleeding_edge SHA1:
+> > 4836deb72c5e2a9af0cb2129c1149783a26d99ab
+> 
+> It looks like Rui is still looking into this.
+> 
+> Rui, are you fine with this series?
+> 
+Yes, I'm okay with the thermal related parts of this patch set.
 
-Signed-off-by: John Tobias <john.tobias.ph@gmail.com>
----
- arch/arm/mach-imx/Kconfig | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+thanks,
+rui
+> Rafael
+> 
 
-diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
-index 7a6e6f7..d6aa34d 100644
---- a/arch/arm/mach-imx/Kconfig
-+++ b/arch/arm/mach-imx/Kconfig
-@@ -1,5 +1,6 @@
- config ARCH_MXC
- 	bool "Freescale i.MX family" if ARCH_MULTI_V4_V5 || ARCH_MULTI_V6_V7
-+	select ARCH_HAS_CPUFREQ
- 	select ARCH_REQUIRE_GPIOLIB
- 	select ARM_CPU_SUSPEND if PM
- 	select ARM_PATCH_PHYS_VIRT
-@@ -9,8 +10,10 @@ config ARCH_MXC
- 	select GENERIC_ALLOCATOR
- 	select GENERIC_CLOCKEVENTS
- 	select GENERIC_IRQ_CHIP
-+	select HAVE_IMX_ANATOP if SOC_IMX6Q || SOC_IMX6SL
- 	select MIGHT_HAVE_CACHE_L2X0 if ARCH_MULTI_V6_V7
- 	select MULTI_IRQ_HANDLER
-+	select PM_OPP if PM
- 	select SOC_BUS
- 	select SPARSE_IRQ
- 	select USE_OF
-@@ -779,16 +782,14 @@ config	SOC_IMX53
- 
- config SOC_IMX6Q
- 	bool "i.MX6 Quad/DualLite support"
--	select ARCH_HAS_CPUFREQ
--	select ARCH_HAS_OPP
-+	select ARCH_HAS_OPP	
- 	select ARM_ERRATA_754322
- 	select ARM_ERRATA_764369 if SMP
- 	select ARM_ERRATA_775420
- 	select ARM_GIC
- 	select CPU_V7
- 	select HAVE_ARM_SCU if SMP
--	select HAVE_ARM_TWD if SMP
--	select HAVE_IMX_ANATOP
-+	select HAVE_ARM_TWD if SMP	
- 	select HAVE_IMX_GPC
- 	select HAVE_IMX_MMDC
- 	select HAVE_IMX_SRC
-@@ -800,8 +801,7 @@ config SOC_IMX6Q
- 	select PINCTRL_IMX6Q
- 	select PL310_ERRATA_588369 if CACHE_PL310
- 	select PL310_ERRATA_727915 if CACHE_PL310
--	select PL310_ERRATA_769419 if CACHE_PL310
--	select PM_OPP if PM
-+	select PL310_ERRATA_769419 if CACHE_PL310	
- 
- 	help
- 	  This enables support for Freescale i.MX6 Quad processor.
-@@ -812,7 +812,6 @@ config SOC_IMX6SL
- 	select ARM_ERRATA_775420
- 	select ARM_GIC
- 	select CPU_V7
--	select HAVE_IMX_ANATOP
- 	select HAVE_IMX_GPC
- 	select HAVE_IMX_MMDC
- 	select HAVE_IMX_SRC
--- 
-1.8.3.2
