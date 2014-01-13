@@ -1,108 +1,62 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH 0/6] cpufreq: use cpufreq-cpu0 driver for exynos4210 based
- platforms
-Date: Mon, 13 Jan 2014 19:57:47 +0530
-Message-ID: <CAJuA9ag_DqEAknx6g-Wb0h4syzKGmg6awCybjLn8A_e3jfcEbw@mail.gmail.com>
-References: <1389283165-17708-1-git-send-email-thomas.ab@samsung.com>
- <20140110113240.797381e6@amdc2363>
- <CAJuA9ahCc7b=209Tmh-O_cx2aEhPY+s_TjHHnjGk1x3duE-P1g@mail.gmail.com>
- <52D1FD6B.9050503@gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv5 05/20] cpufreq: cpufreq-cpu0: add dt node parsing for
+ cooling device properties
+Date: Mon, 13 Jan 2014 11:08:45 -0400
+Message-ID: <52D4017D.7050400@ti.com>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com> <744357E9AAD1214791ACBA4B0B909263011C9A19@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20120113;
- h=mime-version:in-reply-to:references:date:message-id:subject:from:to
- :cc:content-type;
- bh=JP5lmkw/wztbJagfH5XZaWS3vIN3VsTVOnVHi+AdAkk=;
- b=W8NkE4tjATrRVXMmUL6IpkKnuTSTRISsKXsqycSgdhoYwSKurE8evD19oT082KCK+/
- Up4Vl5+7jC2vsXYK6H7OCz1TQi94Sp1Y9GgjAlKHAzbUp1CFDNp1pa9tCRJDdssnaU5q
- +eoOsR5n4I9P+azeX7FznkF1Bq/1hBJF4SdXIzZ1vF4hsyvcY8YTnJNk6cQIYtQosjWX
- GTocoHvytBBarUm+yLSqAuDNTO4EZQqdkU8tbOPZ0FmvGNU9RFuI7nVjK+XJEv7IjtIY
- xKjqLlYltSngREXILwPrqQ5vLkFzmyT0rXWuKHxiMMRkO81lUyrlEETSziAslZNOVcl4
- u2VA==
-In-Reply-To: <52D1FD6B.9050503@gmail.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>, kgene.kim@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, t.figa@samsung.com, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, thomas.ab@samsung.com, Shawn Guo <shawn.guo@linaro.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="6w14OBBopNRxnkc23Fn6ofb3GQF7Pl6gc"
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <744357E9AAD1214791ACBA4B0B909263011C9A19@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "wni@nvidia.com" <wni@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "R, Durgadoss" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discu>
 
-On Sun, Jan 12, 2014 at 7:56 AM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
-> On 10.01.2014 12:59, Thomas Abraham wrote:
->>
->> Hi Lukasz,
->>
->> On Fri, Jan 10, 2014 at 4:02 PM, Lukasz Majewski <l.majewski@samsung.com>
->> wrote:
->>>
->>> Hi Thomas,
->>>
->>> I've investigated the topic for a while, so if you don't mind I will
->>> share my thoughts :-)
->>
->>
->> Sure. Thanks for having a look at this patch series.
->>
->>>
->>>> The patch series removes the use of Exynos4210 specific cpufreq driver
->>>> and enables to use the cpufreq-cpu0 driver for Exynos4210 based
->>>> platforms. This is being done for few reasons.
->>>>
->>>> (a) The Exynos4210 cpufreq driver reads/writes clock controller
->>>> registers bypassing the Exynos4 CCF driver which is sort of
->>>> problematic.
->>>
->>>
->>> Also other, already supported devices suffer from it. Namely -
->>> Exynos4x12 and Exynos5250.
->>>
->>
->> Right, I did check the cpufreq driver of these SoCs.
->>
->>> That's why the solution shall be as generic as possible to also work
->>> with those two SoCs.
->>
->>
->> The approach taken here is to encapsulate the source of the CPU domain
->> clock in a single logical clock. The implementation of this logical
->> clock can vary for different Exynos SoCs but the interface to register
->> and use this clock is common for all Exynos SoCs. If the changes in
->> the cpufreq-cpu0 driver are accepted, the combination of cpufreq-cpu0
->> and the logical clock representing the CPU clock is sufficient to
->> provide a generic solution for Exynos4x12 and Exynos5250 SoCs.
->
->
-> Well, looking at Exynos SoCs, the structure of core block is very similar on
-> all of them. You have a single mux to select between MPLL and APLL and then
-> a number of dividers that need to be configured quasi-atomically when CPU
-> frequency is to be changed or, looking at higher level, a set of registers,
-> which values need to be changed (possibly masked).
->
-> I'd say it wouldn't require much more effort to make this common at least
-> for all currently supported Exynos SoCs (except 5440, which has completely
-> different clock logic).
+--6w14OBBopNRxnkc23Fn6ofb3GQF7Pl6gc
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hi Tomasz,
+On 12-01-2014 10:31, Zhang, Rui wrote:
+>> +++ b/drivers/cpufreq/Kconfig
+>> > @@ -186,7 +186,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
+>> >=20
+>> >  config GENERIC_CPUFREQ_CPU0
+>> >  	tristate "Generic CPU0 cpufreq driver"
+>> > -	depends on HAVE_CLK && REGULATOR && PM_OPP && OF
+>> > +	depends on HAVE_CLK && REGULATOR && PM_OPP && OF && THERMAL &&
+>> > +CPU_THERMAL
+> config: make ARCH=3Darm multi_v7_defconfig
+> All warnings:
+> warning: (ARM_HIGHBANK_CPUFREQ) selects GENERIC_CPUFREQ_CPU0 which=20
+> has unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ &&=20
+> HAVE_CLK && REGULATOR && PM_OPP && OF && THERMAL && CPU_THERMAL)
+>=20
+> I think you need to select THERMAL and CPU_THERMAL instead, right?
+>=20
 
-Sorry, I did not get your point here. The core clock is meant to be
-generic for all Samsung SoCs. There are simple get_rate and round_rate
-generic callbacks provide which a core implementation can optionally
-use. Only the set_rate callback tend to be specific for a core clock.
-And that will also be reused across SoC as applicable. For instance,
-the clock blocks that make up the ARM domain core clock of Exynos5420
-is different from that in Exynos4210.
+Yeah, I think that would be better. I will send you a fix for that.
 
-Thanks,
-Thomas.
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
->
-> Best regards,
-> Tomasz
+Eduardo Valentin
+
+
+--6w14OBBopNRxnkc23Fn6ofb3GQF7Pl6gc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlLUAYEACgkQCXcVR3XQvP1DeAEAtnKafVtyvPO7Aa4m6IQtHL+5
+YB9DVIxxyydT4d5qTHAA/jHNYC4nj97SiItKkcKO5lw0d6JhzWkAKc+CB4pBD2Ti
+=blOg
+-----END PGP SIGNATURE-----
+
+--6w14OBBopNRxnkc23Fn6ofb3GQF7Pl6gc--
