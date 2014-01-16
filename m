@@ -1,131 +1,131 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: linux-next: build failure after merge of the tip tree
-Date: Tue, 14 Jan 2014 23:18:16 +0100
-Message-ID: <2433882.lLbOWJV5fl@vostro.rjw.lan>
-References: <20140114142627.537a702607e703c6eff63640@canb.auug.org.au> <1742600.ID61iX8uKd@vostro.rjw.lan> <alpine.LRH.2.02.1401141651490.19206@file01.intranet.prod.int.rdu2.redhat.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v12 0/7] cpufreq:boost: CPU Boost mode support
+Date: Thu, 16 Jan 2014 10:40:08 +0100
+Message-ID: <20140116104008.15b77a1f@amdc2363>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1387549495-809-1-git-send-email-l.majewski@samsung.com>
+ <20140107075824.59a1ed3c@amdc2363> <9268964.f27SUq68sj@vostro.rjw.lan>
+ <1389335623.2411.15.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.02.1401141651490.19206@file01.intranet.prod.int.rdu2.redhat.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1389335623.2411.15.camel@rzhang1-mobl4>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Zhang Rui <rui.zhang@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org, rjw@sisk.pl
 
-On Tuesday, January 14, 2014 04:52:20 PM Mikulas Patocka wrote:
-> 
-> On Tue, 14 Jan 2014, Rafael J. Wysocki wrote:
-> 
-> > On Tuesday, January 14, 2014 04:43:43 PM Mikulas Patocka wrote:
-> > > 
-> > > On Tue, 14 Jan 2014, Peter Zijlstra wrote:
-> > > 
-> > > > On Tue, Jan 14, 2014 at 02:06:57PM -0500, Mikulas Patocka wrote:
-> > > > > On Tue, 14 Jan 2014, Peter Zijlstra wrote:
-> > > > > > > Caused by commit 62b94a08da1b ("sched/preempt: Take away
-> > > > > > > preempt_enable_no_resched() from modules")
-> > > > 
-> > > > Read these two lines, then note that:
-> > > > 
-> > > > > Try adding #include <linux/preempt.h> to speedstep-lib.c. Does it help?
-> > > > 
-> > > > this obviously will not work as preempt_check_resched() and
-> > > > preempt_enable_no_resched() are no longer available to modules.
-> > > 
-> > > I see, you added commit 62b94a08da1bae9d187d49dfcd6665af393750f8 to 
-> > > linux-next, that broke my patch.
-> > > 
-> > > > > > I think that pm commit is a very good example of why the sched/preempt
-> > > > > > patch is a very good idea.
-> > > > > > 
-> > > > > > Also that Changelog fails to explain why enabling interrupts helps. What
-> > > > > > interrupt is required for progress, and how does it make the progress
-> > > > > > happen.
-> > > > > 
-> > > > > There is no explanation. It's hardware issue and I have no documentation 
-> > > > > for the hardware.
-> > > > 
-> > > > Rafael works for Intel, he ought to be able to figure out wtf the
-> > > > hardware does/needs.
-> > > > 
-> > > > > The general problem is that if there are bus-master transfers running (or 
-> > > > > possibly for other hardware reasons), the CPU refuses to change frequency. 
-> > > > > You can wait a little bit and retry and maybe you succeed changing the 
-> > > > > frequency next time.
-> > > > > 
-> > > > > If you enable interrupts, wait, disable interrupts and retry, you may 
-> > > > > succeed. If you keep interrupts disabled and retry, you never succeed, no 
-> > > > > matter how long do you wait. I found it experimentally, I don't know 
-> > > > > reason for that.
-> > > > 
-> > > > Sounds like magic goo..
-> > > > 
-> > > > In any case, try the below, it does the same but is far less horrid.
-> > > > 
-> > > > ---
-> > > >  drivers/cpufreq/speedstep-smi.c | 4 ++++
-> > > >  1 file changed, 4 insertions(+)
-> > > > 
-> > > > diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-> > > > index 0f5326d6f79f..57d31538c248 100644
-> > > > --- a/drivers/cpufreq/speedstep-smi.c
-> > > > +++ b/drivers/cpufreq/speedstep-smi.c
-> > > > @@ -188,6 +188,7 @@ static void speedstep_set_state(unsigned int state)
-> > > >  		return;
-> > > >  
-> > > >  	/* Disable IRQs */
-> > > > +	preempt_disable();
-> > > >  	local_irq_save(flags);
-> > > >  
-> > > >  	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
-> > > > @@ -200,7 +201,9 @@ static void speedstep_set_state(unsigned int state)
-> > > >  		if (retry) {
-> > > >  			pr_debug("retry %u, previous result %u, waiting...\n",
-> > > >  					retry, result);
-> > > > +			local_irq_restore(flags);
-> > > 
-> > > ^^^ this is wrong, because the function speedstep_set_state may already be 
-> > > called with interrupts disabled from speedstep_get_freqs. So, you need to 
-> > > enable interrupts unconditionally, even if they were disabled at the 
-> > > beginning of the function speedstep_set_state.
-> > > 
-> > > I know it's dirty to enable interrupts in a function that was called with 
-> > > disabled interrupts, but here it must be so (you could rewrite 
-> > > speedstep_get_freqs to not disable interrupts if you want to avoid this 
-> > > dirtiness).
-> > > 
-> > > >  			mdelay(retry * 50);
-> > > > +			local_irq_save(flags);
-> > > >  		}
-> > > >  		retry++;
-> > > >  		__asm__ __volatile__(
-> > > > @@ -217,6 +220,7 @@ static void speedstep_set_state(unsigned int state)
-> > > >  
-> > > >  	/* enable IRQs */
-> > > >  	local_irq_restore(flags);
-> > > > +	preempt_enable();
-> > > >  
-> > > >  	if (new_state == state)
-> > > >  		pr_debug("change to %u MHz succeeded after %u tries "
-> > > 
-> > > You need also preempt_disable/enable in speedstep_get_freqs.
-> > > 
-> > > 
-> > > Here I'm resending the patch, to account for 
-> > > 62b94a08da1bae9d187d49dfcd6665af393750f8.
+Hi Rafael,
+
+> On Wed, 2014-01-08 at 01:35 +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, January 07, 2014 07:58:24 AM Lukasz Majewski wrote:
+> > > Hi Rafael,
 > > 
-> > Do I think correctly that this should work regardless of whether or not
-> > 62b94a08da1bae9d187d49dfcd6665af393750f8 is applied?
+> > Hi,
+> > 
+> > > > This patch series introduces support for CPU overclocking
+> > > > technique called Boost.
+> > > > 
+> > > > It is a follow up of a LAB governor proposal. Boost is a LAB
+> > > > component:
+> > > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+> > > > 
+> > > > Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> > > > software oriented one (like the one done at Exynos).
+> > > > For this reason cpufreq/freq_table code has been reorganized to
+> > > > include common code.
+> > > > 
+> > > > Important design decisions:
+> > > > - Boost related code is compiled-in unconditionally to cpufreq
+> > > > core and disabled by default. The cpufreq_driver is
+> > > > responsibile for setting boost_supported flag and providing
+> > > > set_boost callback(if HW support is needed). For software
+> > > > managed boost, special Kconfig flag - CONFIG_CPU_FREQ_BOOST_SW
+> > > > has been defined. It will be selected only when a target
+> > > > platform has thermal framework properly configured.
+> > > > 
+> > > > - struct cpufreq_driver has been extended with boost related
+> > > > fields: -- boost_supported - when driver supports boosting
+> > > >         -- boost_enabled - boost state
+> > > >         -- set_boost - callback to function, which is necessary
+> > > > to enable/disable boost
+> > > > 
+> > > > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost)
+> > > > is visible _only_ when cpufreq driver supports Boost.
+> > > > 
+> > > > - No special spin_lock for Boost was created. The one from
+> > > > cpufreq core was reused.
+> > > > 
+> > > > - The Boost code doesn't rely on any policy. When boost state is
+> > > > changed, then the policy list is iterated and proper
+> > > > adjustements are done.
+> > > > 
+> > > > - To improve safety level, the thermal framework is also
+> > > > extended to disable software boosting, when thermal trip point
+> > > > is reached. After cooling down the boost can be enabled again.
+> > > > This emulates behaviour similar to HW managed boost (like x86)
+> > > > 
+> > > > Tested at HW:
+> > > >        Exynos 4412 3.13-rc4 Linux
+> > > >        Intel Core i7-3770 3.13-rc4 Linux
+> > > > 
+> > > > Above patches were posted on top of kernel_pm/bleeding-edge
+> > > > (SHA1: bd0f3a5d9dce48a917ce1f1047534d79c725149)
+> > > > 
+> > > > Lukasz Majewski (7):
+> > > >   cpufreq: Add boost frequency support in core
+> > > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
+> > > > common boost solution
+> > > >   cpufreq:boost:Kconfig: Provide support for software managed
+> > > > BOOST cpufreq:exynos:Extend Exynos cpufreq driver to support
+> > > > boost framework
+> > > >   Documentation:cpufreq:boost: Update BOOST documentation
+> > > >   cpufreq:exynos4x12: Change L0 driver data to
+> > > > CPUFREQ_BOOST_FREQ thermal:exynos:boost: Automatic
+> > > > enable/disable of BOOST feature (at Exynos4412)
+> > > > 
+> > > >  Documentation/cpu-freq/boost.txt          |   26 +++----
+> > > >  drivers/cpufreq/Kconfig                   |    4 +
+> > > >  drivers/cpufreq/Kconfig.arm               |   15 ++++
+> > > >  drivers/cpufreq/acpi-cpufreq.c            |   86
+> > > > +++++++-------------- drivers/cpufreq/cpufreq.c
+> > > > | 118 ++++++++++++++++++++++++++++-
+> > > > drivers/cpufreq/exynos-cpufreq.c          |    3 +
+> > > > drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+> > > > drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
+> > > > drivers/thermal/samsung/exynos_tmu_data.c |   12 +--
+> > > > include/linux/cpufreq.h                   |   24 ++++++ 10 files
+> > > > changed, 261 insertions(+), 85 deletions(-)
+> > > > 
+> > > 
+> > > A gentle ping about BOOST patches.
+> > > 
+> > > Its been already acked by Viresh and Eduardo.
+> > > 
+> > > It applies on kernel_pm/bleeding_edge SHA1:
+> > > 4836deb72c5e2a9af0cb2129c1149783a26d99ab
+> > 
+> > It looks like Rui is still looking into this.
+> > 
+> > Rui, are you fine with this series?
+> > 
+> Yes, I'm okay with the thermal related parts of this patch set.
 > 
-> Yes.
 
-OK
+Rafael, gentle reminder about BOOST patches ... :-)
 
-I'll replace your original patch with this version, then.
+> thanks,
+> rui
+> > Rafael
+> > 
+> 
+> 
 
-Thanks!
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
