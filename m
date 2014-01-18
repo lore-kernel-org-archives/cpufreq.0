@@ -1,183 +1,165 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] speedstep: clean up interrupt disabling (was: linux-next: build failure after merge of the tip tree)
-Date: Fri, 17 Jan 2014 02:21:18 +0100
-Message-ID: <5695714.71aNYAnsh1@vostro.rjw.lan>
-References: <20140114142627.537a702607e703c6eff63640@canb.auug.org.au> <20140116121415.GP31570@twins.programming.kicks-ass.net> <alpine.LRH.2.02.1401161238270.16143@file01.intranet.prod.int.rdu2.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.02.1401161238270.16143@file01.intranet.prod.int.rdu2.redhat.com>
-Sender: linux-next-owner@vger.kernel.org
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: [PATCH v2 1/7] cpufreq: cpufreq-cpu0: allow optional safe voltage during frequency transitions
+Date: Sat, 18 Jan 2014 17:40:51 +0530
+Message-ID: <1390047057-2239-2-git-send-email-thomas.ab@samsung.com>
+References: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=OaMVVvx1VL+Ab5cGkEMYY9sRTMquKCRlFULBKNt9miM=;
+        b=Qg7LO68hQIBXNbSb6rvDv9rNlMfR3Wng18/yt/HGjO+Sld13KQoNowuvsGsED3xLHM
+         Vqlqz/ts/N+wiyK/05la+haqI+COS+RbuT7J2bfJ+EeEINhp/QW96xBSHzmASXgOQCc9
+         drQI3tHMs5cuHanQZpBAL5U2X8ST4Zm8G3KcOXOL/IodyiGnMxbUITyYOen7MfP8yYPp
+         iA5i+BMo+ggLKuRPiMAyRnr3mtjIpFRUS+LmMZtXMhJ7U/8Xj17CiRDcCRJillyvhAIi
+         daNPRdpIh66OiQEF+Tid0jt0wFA9/lt8Ly/hK06JNbm08SEP8ViHylp3tWtry9Ru2/4s
+         moCw==
+In-Reply-To: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, shawn.guo@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com
 
-On Thursday, January 16, 2014 02:33:02 PM Mikulas Patocka wrote:
-> 
-> On Thu, 16 Jan 2014, Peter Zijlstra wrote:
-> 
-> > > >  		retry++;
-> > > >  		__asm__ __volatile__(
-> > > > @@ -217,6 +220,7 @@ static void speedstep_set_state(unsigned int state)
-> > > >  
-> > > >  	/* enable IRQs */
-> > > >  	local_irq_restore(flags);
-> > > > +	preempt_enable();
-> > > >  
-> > > >  	if (new_state == state)
-> > > >  		pr_debug("change to %u MHz succeeded after %u tries "
-> > > 
-> > > You need also preempt_disable/enable in speedstep_get_freqs.
-> > 
-> > Argh I see, this is really horrid.
-> > 
-> > 
-> > Anyway, its Rafael's call, its his subsystem he gets to fix it when it
-> > explodes.
-> > 
-> > /me shudders
-> 
-> speedstep_get_freqs disables the interrupts to measure the transition 
-> latency. It is called from speedstep-ich.c (that requires the latency) and 
-> from speedstep-smi.c (that passes NULL as a pointer to latency, because it 
-> doesn't need it).
-> 
-> So, you could disable interrupts in speedstep_get_freqs only when the 
-> transition_latency pointer is non-NULL.
-> 
-> I think speedstep_set_state doesn't need to disable interrupts at all - 
-> all that it does is one "out" instruction, you don't need to synchronize 
-> that "out" instruction with anything, so there is no need to disable 
-> interrupts. Or - does some specification say that interrupts must be 
-> disabled there?
-> 
-> I am sending this patch to clean up the mess to be applied on the top of 
-> my previous patch.
+From: Thomas Abraham <thomas.ab@samsung.com>
 
-Well, I really don't appreciate sending me stuff like this two days before a
-merge window.  So I've dropped the speedstep_smi patch and please send me
-something I can queue up for 3.15 without making Peter shudder.
+On some platforms such as the Samsung Exynos, changing the frequency
+of the CPU clock requires changing the frequency of the PLL that is
+supplying the CPU clock. To change the frequency of the PLL, the CPU
+clock is temporarily reparented to another parent clock.
 
-Thanks!
+The clock frequency of this temporary parent clock could be much higher
+than the clock frequency of the PLL at the time of reparenting. Due
+to the temporary increase in the CPU clock speed, the CPU (and any other
+components in the CPU clock domain such as dividers, mux, etc.) have to
+to be operated at a higher voltage level, called the safe voltage level.
+This patch adds optional support to temporarily switch to a safe voltage
+level during CPU frequency transitions.
 
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+---
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    7 ++++
+ drivers/cpufreq/cpufreq-cpu0.c                     |   37 +++++++++++++++++--
+ 2 files changed, 40 insertions(+), 4 deletions(-)
 
-> From: Mikulas Patocka <mpatocka@redhat.com>
-> Subject: speedstep: clean up interrupt disabling
-> 
-> This patch cleans up interrupt disabling in speedstep-smi and
-> speedstep-lib.
-> 
-> speedstep_get_freqs in speedstep-lib may be called from speedstep-smi or
-> speedstep-ich. When it is called from speedstep-ich, it needs to calculate
-> transition latency. When it is called from speedstep-smi, transition
-> latency doesn't have to be calculated.
-> 
-> The function speedstep_set_state in speedstep-smi needs to enable
-> interrupts. Previously it enabled interrupts even if it was called with
-> disabled interrupts, but it is dirty.
-> 
-> This patch changes speedstep_get_freqs so that it disables interrupts only
-> when it is called from speedstep-ich and when it is measuring the
-> transition latency. This avoids much of the code dirtiness.
-> 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-> 
-> ---
->  drivers/cpufreq/speedstep-lib.c |   13 ++++++-------
->  drivers/cpufreq/speedstep-smi.c |   11 ++++-------
->  2 files changed, 10 insertions(+), 14 deletions(-)
-> 
-> Index: linux-3.4.75/drivers/cpufreq/speedstep-lib.c
-> ===================================================================
-> --- linux-3.4.75.orig/drivers/cpufreq/speedstep-lib.c	2014-01-16 18:51:16.000000000 +0100
-> +++ linux-3.4.75/drivers/cpufreq/speedstep-lib.c	2014-01-16 18:51:22.000000000 +0100
-> @@ -400,9 +400,6 @@ unsigned int speedstep_get_freqs(enum sp
->  
->  	pr_debug("previous speed is %u\n", prev_speed);
->  
-> -	preempt_disable();
-> -	local_irq_save(flags);
-> -
->  	/* switch to low state */
->  	set_state(SPEEDSTEP_LOW);
->  	*low_speed = speedstep_get_frequency(processor);
-> @@ -414,15 +411,19 @@ unsigned int speedstep_get_freqs(enum sp
->  	pr_debug("low speed is %u\n", *low_speed);
->  
->  	/* start latency measurement */
-> -	if (transition_latency)
-> +	if (transition_latency) {
-> +		local_irq_save(flags);
->  		do_gettimeofday(&tv1);
-> +	}
->  
->  	/* switch to high state */
->  	set_state(SPEEDSTEP_HIGH);
->  
->  	/* end latency measurement */
-> -	if (transition_latency)
-> +	if (transition_latency) {
->  		do_gettimeofday(&tv2);
-> +		local_irq_restore(flags);
-> +	}
->  
->  	*high_speed = speedstep_get_frequency(processor);
->  	if (!*high_speed) {
-> @@ -464,8 +465,6 @@ unsigned int speedstep_get_freqs(enum sp
->  	}
->  
->  out:
-> -	local_irq_restore(flags);
-> -	preempt_enable();
->  
->  	return ret;
->  }
-> Index: linux-3.4.75/drivers/cpufreq/speedstep-smi.c
-> ===================================================================
-> --- linux-3.4.75.orig/drivers/cpufreq/speedstep-smi.c	2014-01-16 18:51:16.000000000 +0100
-> +++ linux-3.4.75/drivers/cpufreq/speedstep-smi.c	2014-01-16 18:51:22.000000000 +0100
-> @@ -180,16 +180,16 @@ static int speedstep_get_state(void)
->  static void speedstep_set_state(unsigned int state)
->  {
->  	unsigned int result = 0, command, new_state, dummy;
-> -	unsigned long flags;
->  	unsigned int function = SET_SPEEDSTEP_STATE;
->  	unsigned int retry = 0;
->  
->  	if (state > 0x1)
->  		return;
->  
-> -	/* Disable IRQs */
-> +	WARN_ON_ONCE(irqs_disabled());
-> +
-> +	/* Disable preemption so that other processes don't run */
->  	preempt_disable();
-> -	local_irq_save(flags);
->  
->  	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
->  
-> @@ -209,9 +209,7 @@ static void speedstep_set_state(unsigned
->  			 */
->  			pr_debug("retry %u, previous result %u, waiting...\n",
->  					retry, result);
-> -			local_irq_enable();
->  			mdelay(retry * 50);
-> -			local_irq_disable();
->  		}
->  		retry++;
->  		__asm__ __volatile__(
-> @@ -226,8 +224,7 @@ static void speedstep_set_state(unsigned
->  			);
->  	} while ((new_state != state) && (retry <= SMI_TRIES));
->  
-> -	/* enable IRQs */
-> -	local_irq_restore(flags);
-> +	/* enable preemption */
->  	preempt_enable();
->  
->  	if (new_state == state)
-
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+index f055515..37453ab 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+@@ -19,6 +19,12 @@ Optional properties:
+ - cooling-min-level:
+ - cooling-max-level:
+      Please refer to Documentation/devicetree/bindings/thermal/thermal.txt.
++- safe-opp: Certain platforms require that during a opp transition,
++  a system should not go below a particular opp level. For such systems,
++  this property specifies the minimum opp to be maintained during the
++  opp transitions. The safe-opp value is a tuple with first element
++  representing the safe frequency and the second element representing the
++  safe voltage.
+ 
+ Examples:
+ 
+@@ -36,6 +42,7 @@ cpus {
+ 			396000  950000
+ 			198000  850000
+ 		>;
++		safe-opp = <396000 950000>
+ 		clock-latency = <61036>; /* two CLK32 periods */
+ 		#cooling-cells = <2>;
+ 		cooling-min-level = <0>;
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 0c12ffc..075d3d1 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -27,6 +27,8 @@
+ 
+ static unsigned int transition_latency;
+ static unsigned int voltage_tolerance; /* in percentage */
++static unsigned long safe_frequency;
++static unsigned long safe_voltage;
+ 
+ static struct device *cpu_dev;
+ static struct clk *cpu_clk;
+@@ -64,17 +66,30 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 		volt_old = regulator_get_voltage(cpu_reg);
+ 	}
+ 
+-	pr_debug("%u MHz, %ld mV --> %u MHz, %ld mV\n",
++	pr_debug("\n\n%u MHz, %ld mV --> %u MHz, %ld mV\n",
+ 		 old_freq / 1000, volt_old ? volt_old / 1000 : -1,
+ 		 new_freq / 1000, volt ? volt / 1000 : -1);
+ 
+ 	/* scaling up?  scale voltage before frequency */
+-	if (!IS_ERR(cpu_reg) && new_freq > old_freq) {
++	if (!IS_ERR(cpu_reg) && new_freq > old_freq &&
++				new_freq >= safe_frequency) {
+ 		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+ 		if (ret) {
+ 			pr_err("failed to scale voltage up: %d\n", ret);
+ 			return ret;
+ 		}
++	} else if (!IS_ERR(cpu_reg) && old_freq < safe_frequency) {
++		/*
++		 * the scaled up voltage level for the new_freq is lower
++		 * than the safe voltage level. so set safe_voltage
++		 * as the intermediate voltage level and revert it
++		 * back after the frequency has been changed.
++		 */
++		ret = regulator_set_voltage_tol(cpu_reg, safe_voltage, tol);
++		if (ret) {
++			pr_err("failed to set safe voltage: %d\n", ret);
++			return ret;
++		}
+ 	}
+ 
+ 	ret = clk_set_rate(cpu_clk, freq_exact);
+@@ -86,7 +101,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 	}
+ 
+ 	/* scaling down?  scale voltage after frequency */
+-	if (!IS_ERR(cpu_reg) && new_freq < old_freq) {
++	if (!IS_ERR(cpu_reg) &&
++			(new_freq < old_freq || new_freq < safe_frequency)) {
+ 		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+ 		if (ret) {
+ 			pr_err("failed to scale voltage down: %d\n", ret);
+@@ -116,6 +132,8 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
+ 
+ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ {
++	const struct property *prop;
++	struct dev_pm_opp *opp;
+ 	struct device_node *np;
+ 	int ret;
+ 
+@@ -165,13 +183,24 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 		goto out_put_node;
+ 	}
+ 
++	prop = of_find_property(np, "safe-opp", NULL);
++	if (prop) {
++		if (prop->value && (prop->length / sizeof(u32)) == 2) {
++			const __be32 *val;
++			val = prop->value;
++			safe_frequency = be32_to_cpup(val++);
++			safe_voltage = be32_to_cpup(val);
++		} else {
++			pr_err("invalid safe-opp level specified\n");
++		}
++	}
++
+ 	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
+ 
+ 	if (of_property_read_u32(np, "clock-latency", &transition_latency))
+ 		transition_latency = CPUFREQ_ETERNAL;
+ 
+ 	if (!IS_ERR(cpu_reg)) {
+-		struct dev_pm_opp *opp;
+ 		unsigned long min_uV, max_uV;
+ 		int i;
+ 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.6.6.rc2
