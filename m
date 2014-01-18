@@ -1,21 +1,21 @@
 From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: [PATCH v2 6/7] ARM: Exynos: switch to using generic cpufreq-cpu0 driver
-Date: Sat, 18 Jan 2014 17:40:56 +0530
-Message-ID: <1390047057-2239-7-git-send-email-thomas.ab@samsung.com>
+Subject: [PATCH v2 5/7] clk: exynos: use cpu-clock provider type to represent arm clock
+Date: Sat, 18 Jan 2014 17:40:55 +0530
+Message-ID: <1390047057-2239-6-git-send-email-thomas.ab@samsung.com>
 References: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=WY0EUVtTiX6RbAVN4cSWH8Z1nO/vTet0/p3X1d5AZMc=;
-        b=eKT8RdcEJgo+k8xhLdXFASaeTf8iTfPOc+MR0hXt3/5JvMmPyLOHj+nzJY43NE8Eby
-         LWfFfxVBV6qUo1KHeRXUBP/ny72auqwpzNAhxJxVjV7mHcatZ08m5XOXQLDVofiY6fGG
-         Vv0omVQu3ave1fdQKw9ezjB94FPucdrNjAGi3iAmhqo2QM1/obJY+DFL/sZzTKX4JwQ5
-         o59BYoxUcqksOpAawntRR54C3K3V6084KMgA1ct1cfFU7sUYkV0EcFDITnihC+au1ph3
-         j/CRyghZIPkprgc4LqT1gjhFMn4X0OD46mwPxU1QSCj5PZNnHIMXO9hDHr1EP6aNg64m
-         GY6g==
+        bh=w1L7VI83PUcLqD7KReVbGYRcaJZrh/c75CoezK2Uxl0=;
+        b=ne91WRvE1KuuNJbumGZys3wuP1fwj2t22fiuthkyy7jGOSxAzGcixxWI8VyPgfoY71
+         cs0K73RddTFudNklAyeftnQOsGHez6kX0nYEnV3MgNslzE98oUwXC9MxyKydD4atSG83
+         GMRuSSJNjohp3IHYhmAgp0MUGjKeney8/Atgf+6CR4vfjoD23GWU/PeCbxRIL9txvv11
+         EFXcN77PIn0SXRJz6rjFG79U6LBcYH8cSSvtiW4ijRJYGie3+fkJAQJ+tN03r8zLqxeX
+         jRnQu8W1dPLWBO+YGmFMaEPm/J/pZg++jKRkAfzfrNbn8AEwwWNT2K6ylOx80yuOCMOW
+         5qlw==
 In-Reply-To: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,74 +25,116 @@ Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, shawn.guo@linaro.o
 
 From: Thomas Abraham <thomas.ab@samsung.com>
 
-Remove the platform device instantiation for Exynos specific cpufreq
-driver and add the platform device for cpufreq-cpu0 driver.
+With the addition of the new Samsung specific cpu-clock type, the
+arm clock can be represented as a cpu-clock type and the independent
+clock blocks that made up the arm clock can be removed.
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
 ---
- arch/arm/mach-exynos/common.c          |    5 -----
- arch/arm/mach-exynos/common.h          |    1 -
- arch/arm/mach-exynos/mach-exynos4-dt.c |    2 +-
- arch/arm/mach-exynos/mach-exynos5-dt.c |    2 +-
- 4 files changed, 2 insertions(+), 8 deletions(-)
+ .../devicetree/bindings/clock/exynos5250-clock.txt |    1 +
+ drivers/clk/samsung/clk-exynos4.c                  |   11 +++++------
+ drivers/clk/samsung/clk-exynos5250.c               |    8 ++++----
+ include/dt-bindings/clock/exynos5250.h             |    1 +
+ 4 files changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/common.c b/arch/arm/mach-exynos/common.c
-index f18be40..72ae5d3 100644
---- a/arch/arm/mach-exynos/common.c
-+++ b/arch/arm/mach-exynos/common.c
-@@ -303,11 +303,6 @@ void __init exynos_cpuidle_init(void)
- 	platform_device_register(&exynos_cpuidle);
+diff --git a/Documentation/devicetree/bindings/clock/exynos5250-clock.txt b/Documentation/devicetree/bindings/clock/exynos5250-clock.txt
+index 99eae9c..acf867a 100644
+--- a/Documentation/devicetree/bindings/clock/exynos5250-clock.txt
++++ b/Documentation/devicetree/bindings/clock/exynos5250-clock.txt
+@@ -38,6 +38,7 @@ clock which they consume.
+   ----------------------------
+ 
+   fin_pll		1
++  armclk		12
+ 
+   [Clock Gate for Special Clocks]
+ 
+diff --git a/drivers/clk/samsung/clk-exynos4.c b/drivers/clk/samsung/clk-exynos4.c
+index 010f071..efcf4a3 100644
+--- a/drivers/clk/samsung/clk-exynos4.c
++++ b/drivers/clk/samsung/clk-exynos4.c
+@@ -437,8 +437,6 @@ static struct samsung_mux_clock exynos4x12_mux_clks[] __initdata = {
+ 
+ /* list of divider clocks supported in all exynos4 soc's */
+ static struct samsung_div_clock exynos4_div_clks[] __initdata = {
+-	DIV(0, "div_core", "mout_core", DIV_CPU0, 0, 3),
+-	DIV(0, "div_core2", "div_core", DIV_CPU0, 28, 3),
+ 	DIV(0, "div_fimc0", "mout_fimc0", DIV_CAM, 0, 4),
+ 	DIV(0, "div_fimc1", "mout_fimc1", DIV_CAM, 4, 4),
+ 	DIV(0, "div_fimc2", "mout_fimc2", DIV_CAM, 8, 4),
+@@ -484,8 +482,8 @@ static struct samsung_div_clock exynos4_div_clks[] __initdata = {
+ 	DIV(0, "div_spi_pre2", "div_spi2", DIV_PERIL2, 8, 8),
+ 	DIV(0, "div_audio1", "mout_audio1", DIV_PERIL4, 0, 4),
+ 	DIV(0, "div_audio2", "mout_audio2", DIV_PERIL4, 16, 4),
+-	DIV(CLK_ARM_CLK, "arm_clk", "div_core2", DIV_CPU0, 28, 3),
+-	DIV(CLK_SCLK_APLL, "sclk_apll", "mout_apll", DIV_CPU0, 24, 3),
++	DIV_F(CLK_SCLK_APLL, "sclk_apll", "mout_apll", DIV_CPU0, 24, 3,
++			CLK_GET_RATE_NOCACHE, 0),
+ 	DIV_F(0, "div_mipi_pre0", "div_mipi0", DIV_LCD0, 20, 4,
+ 			CLK_SET_RATE_PARENT, 0),
+ 	DIV_F(0, "div_mmc_pre0", "div_mmc0", DIV_FSYS1, 8, 8,
+@@ -870,7 +868,6 @@ static struct samsung_gate_clock exynos4x12_gate_clks[] __initdata = {
+ 
+ static struct samsung_clock_alias exynos4_aliases[] __initdata = {
+ 	ALIAS(CLK_MOUT_CORE, NULL, "moutcore"),
+-	ALIAS(CLK_ARM_CLK, NULL, "armclk"),
+ 	ALIAS(CLK_SCLK_APLL, NULL, "mout_apll"),
+ };
+ 
+@@ -1125,12 +1122,14 @@ static void __init exynos4_clk_init(struct device_node *np,
+ 	samsung_clk_register_alias(exynos4_aliases,
+ 			ARRAY_SIZE(exynos4_aliases));
+ 
++	samsung_register_arm_clock(np, CLK_ARM_CLK, "mout_apll", reg_base);
++
+ 	pr_info("%s clocks: sclk_apll = %ld, sclk_mpll = %ld\n"
+ 		"\tsclk_epll = %ld, sclk_vpll = %ld, arm_clk = %ld\n",
+ 		exynos4_soc == EXYNOS4210 ? "Exynos4210" : "Exynos4x12",
+ 		_get_rate("sclk_apll"),	_get_rate("sclk_mpll"),
+ 		_get_rate("sclk_epll"), _get_rate("sclk_vpll"),
+-		_get_rate("arm_clk"));
++		_get_rate("armclk"));
  }
  
--void __init exynos_cpufreq_init(void)
--{
--	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
--}
--
- void __init exynos_init_late(void)
- {
- 	if (of_machine_is_compatible("samsung,exynos5440"))
-diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
-index f76967b..0c31b34 100644
---- a/arch/arm/mach-exynos/common.h
-+++ b/arch/arm/mach-exynos/common.h
-@@ -22,7 +22,6 @@ void exynos_init_io(void);
- void exynos4_restart(enum reboot_mode mode, const char *cmd);
- void exynos5_restart(enum reboot_mode mode, const char *cmd);
- void exynos_cpuidle_init(void);
--void exynos_cpufreq_init(void);
- void exynos_init_late(void);
  
- void exynos_firmware_init(void);
-diff --git a/arch/arm/mach-exynos/mach-exynos4-dt.c b/arch/arm/mach-exynos/mach-exynos4-dt.c
-index d3e54b7..9a25320 100644
---- a/arch/arm/mach-exynos/mach-exynos4-dt.c
-+++ b/arch/arm/mach-exynos/mach-exynos4-dt.c
-@@ -22,8 +22,8 @@
- static void __init exynos4_dt_machine_init(void)
- {
- 	exynos_cpuidle_init();
--	exynos_cpufreq_init();
+diff --git a/drivers/clk/samsung/clk-exynos5250.c b/drivers/clk/samsung/clk-exynos5250.c
+index ff4beeb..487be36 100644
+--- a/drivers/clk/samsung/clk-exynos5250.c
++++ b/drivers/clk/samsung/clk-exynos5250.c
+@@ -298,9 +298,8 @@ static struct samsung_div_clock exynos5250_div_clks[] __initdata = {
+ 	/*
+ 	 * CMU_CPU
+ 	 */
+-	DIV(0, "div_arm", "mout_cpu", DIV_CPU0, 0, 3),
+-	DIV(0, "div_apll", "mout_apll", DIV_CPU0, 24, 3),
+-	DIV_A(0, "div_arm2", "div_arm", DIV_CPU0, 28, 3, "armclk"),
++	DIV_F(0, "div_apll", "mout_apll", DIV_CPU0, 24, 3,
++			CLK_GET_RATE_NOCACHE, 0),
  
-+	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ 	/*
+ 	 * CMU_TOP
+@@ -684,8 +683,9 @@ static void __init exynos5250_clk_init(struct device_node *np)
+ 			ARRAY_SIZE(exynos5250_div_clks));
+ 	samsung_clk_register_gate(exynos5250_gate_clks,
+ 			ARRAY_SIZE(exynos5250_gate_clks));
++	samsung_register_arm_clock(np, CLK_ARM_CLK, "mout_apll", reg_base);
+ 
+ 	pr_info("Exynos5250: clock setup completed, armclk=%ld\n",
+-			_get_rate("div_arm2"));
++			_get_rate("armclk"));
  }
+ CLK_OF_DECLARE(exynos5250_clk, "samsung,exynos5250-clock", exynos5250_clk_init);
+diff --git a/include/dt-bindings/clock/exynos5250.h b/include/dt-bindings/clock/exynos5250.h
+index 922f2dc..59a10fb 100644
+--- a/include/dt-bindings/clock/exynos5250.h
++++ b/include/dt-bindings/clock/exynos5250.h
+@@ -21,6 +21,7 @@
+ #define CLK_FOUT_CPLL		6
+ #define CLK_FOUT_EPLL		7
+ #define CLK_FOUT_VPLL		8
++#define CLK_ARM_CLK		12
  
-diff --git a/arch/arm/mach-exynos/mach-exynos5-dt.c b/arch/arm/mach-exynos/mach-exynos5-dt.c
-index 37ea261..9dc3710 100644
---- a/arch/arm/mach-exynos/mach-exynos5-dt.c
-+++ b/arch/arm/mach-exynos/mach-exynos5-dt.c
-@@ -44,8 +44,8 @@ static void __init exynos5_dt_machine_init(void)
- 	}
- 
- 	exynos_cpuidle_init();
--	exynos_cpufreq_init();
- 
-+	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
- }
- 
+ /* gate for special clocks (sclk) */
+ #define CLK_SCLK_CAM_BAYER	128
 -- 
 1.6.6.rc2
-
