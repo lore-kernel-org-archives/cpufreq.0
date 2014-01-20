@@ -1,475 +1,151 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2 2/7] clk: samsung: add infrastructure to register cpu
- clocks
-Date: Mon, 20 Jan 2014 09:24:12 +0100
-Message-ID: <20140120092412.0c2d57e4@amdc2363>
-References: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
- <1390047057-2239-3-git-send-email-thomas.ab@samsung.com>
+From: Benoit Pradelle <benoit.pradelle@uvsq.fr>
+Subject: Kernel taint on setspeed
+Date: Mon, 20 Jan 2014 15:08:36 +0100
+Message-ID: <52DD2DE4.6080002@uvsq.fr>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1390047057-2239-3-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, shawn.guo@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, Lukasz Majewski <l.majewski@majess.pl>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@vger.kernel.org
 
-Hi Thomas,
+Hi all,
 
-> From: Thomas Abraham <thomas.ab@samsung.com>
-> 
-> The CPU clock provider supplies the clock to the CPU clock domain. The
-> composition and organization of the CPU clock provider could vary
-> among Exynos SoCs. A CPU clock provider can be composed of clock mux,
-> dividers and gates. This patch defines a new clock type for CPU clock
-> provider and adds infrastructure to register the CPU clock providers
-> for Samsung platforms.
-> 
-> In addition to this, the arm cpu clock provider for Exynos4210 and
-> compatible SoCs is instantiated using the new cpu clock type. The
-> clock frequency table and the clock configuration data for this clock
-> is obtained from device tree. This implementation is reusable for
-> Exynos4x12 and Exynos5250 SoCs as well.
-> 
-> Cc: Tomasz Figa <t.figa@samsung.com>
-> Cc: Lukasz Majewski <l.majewski@majess.pl>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> ---
->  drivers/clk/samsung/Makefile  |    2 +-
->  drivers/clk/samsung/clk-cpu.c |  345
-> +++++++++++++++++++++++++++++++++++++++++
-> drivers/clk/samsung/clk.h     |    3 + 3 files changed, 349
-> insertions(+), 1 deletions(-) create mode 100644
-> drivers/clk/samsung/clk-cpu.c
-> 
-> diff --git a/drivers/clk/samsung/Makefile
-> b/drivers/clk/samsung/Makefile index 8eb4799..e2b453f 100644
-> --- a/drivers/clk/samsung/Makefile
-> +++ b/drivers/clk/samsung/Makefile
-> @@ -2,7 +2,7 @@
->  # Samsung Clock specific Makefile
->  #
->  
-> -obj-$(CONFIG_COMMON_CLK)	+= clk.o clk-pll.o
-> +obj-$(CONFIG_COMMON_CLK)	+= clk.o clk-pll.o clk-cpu.o
->  obj-$(CONFIG_ARCH_EXYNOS4)	+= clk-exynos4.o
->  obj-$(CONFIG_SOC_EXYNOS5250)	+= clk-exynos5250.o
->  obj-$(CONFIG_SOC_EXYNOS5420)	+= clk-exynos5420.o
-> diff --git a/drivers/clk/samsung/clk-cpu.c
-> b/drivers/clk/samsung/clk-cpu.c new file mode 100644
-> index 0000000..92fba45
-> --- /dev/null
-> +++ b/drivers/clk/samsung/clk-cpu.c
-> @@ -0,0 +1,345 @@
-> +/*
-> + * Copyright (c) 2014 Samsung Electronics Co., Ltd.
-> + * Author: Thomas Abraham <thomas.ab@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or
-> modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This file contains the utility functions to register the cpu
-> clocks
-> + * for samsung platforms.
-> +*/
-> +
-> +#include <linux/errno.h>
-> +#include "clk.h"
-> +
-> +#define SRC_CPU			0x0
-> +#define STAT_CPU		0x200
-> +#define DIV_CPU0		0x300
-> +#define DIV_CPU1		0x304
-> +#define DIV_STAT_CPU0		0x400
-> +#define DIV_STAT_CPU1		0x404
-> +
-> +/**
-> + * struct samsung_cpuclk_freq_table: table of frequency supported by
-> + * a cpu clock and associated data if any.
-> + * @freq: points to a table of supported frequencies (in KHz)
-> + * @freq_count: number of entries in the frequency table
-> + * @data: cpu clock specific data, if any
-> + *
-> + * This structure holds the frequency options supported by the cpu
-> clock in
-> + * which this structure is contained. The data pointer is an
-> optional data
-> + * that can provide any additional configuration options for the
-> supported
-> + * frequencies. This structure is intended to be reusable for all
-> cpu clocks
-> + * in Samsung SoC based platforms
-> + */
-> +struct samsung_cpuclk_freq_table {
-> +	const unsigned long	*freq;       /* in KHz */
-> +	unsigned long		freq_count;
-> +	const void		*data;
-> +};
-> +
-> +/**
-> + * struct exynos4210_freq_data: format of auxillary data associated
-> with
-> + * each frequency supported by the cpu clock for exynos4210.
-> + * @parent_freq: The frequency of the parent clock required to
-> generate the
-> + * supported cpu clock speed.
-> + * @div0: value to be programmed in the div_cpu0 register.
-> + * @div1: value to be programmed in the div_cpu1 register.
-> + *
-> + * This structure holds the auxillary configuration data for each
-> supported
-> + * cpu clock frequency on Exynos4210 and compatible SoCs.
-> + */
-> +struct exynos4210_freq_data {
-> +	unsigned long	parent_freq;
-> +	unsigned int	div0;
-> +	unsigned int	div1;
-> +};
-> +
-> +/**
-> + * struct samsung_cpuclk: information about clock supplied to a CPU
-> core.
-> + * @hw: handle between ccf and cpu clock.
-> + * @ctrl_base: base address of the clock controller.
-> + * @offset: offset from the ctrl_base address where the cpu clock
-> div/mux
-> + *          registers can be accessed.
-> + * @parent: clock handle representing the clock output of the parent
-> clock.
-> + * @freq_table: the frequency table supported by this cpu clock.
-> + */
-> +struct samsung_cpuclk {
-> +	struct clk_hw		hw;
-> +	void __iomem		*ctrl_base;
-> +	unsigned long		offset;
-> +	struct clk		*parent;
-> +	const struct samsung_cpuclk_freq_table *freq_table;
-> +};
-> +
-> +#define to_samsung_cpuclk(hw)	container_of(hw, struct
-> samsung_cpuclk, hw) +
-> +/**
-> + * struct samsung_cpuclk_match_data: soc specific data for cpu
-> clocks.
-> + * @parser: pointer to a function that can parse SoC specific cpu
-> clock
-> + *	frequency and associated configuration data.
-> + * @offset: optional offset from base of clock controller register
-> base,
-> + *	to be used when accessing clock controller registers
-> related to the
-> + * cpu clock.
-> + * @offset: offset from the ctrl_base address where the cpu clock
-> div/mux
-> + *	registers can be accessed.
-> + */
-> +struct samsung_cpuclk_match_data {
-> +	int (*parser)(struct device_node *,
-> +			struct samsung_cpuclk_freq_table **);
-> +	unsigned int offset;
-> +};
-> +
-> +/* This is a helper function to perform clock rounding for cpu
-> clocks. */ +static long samsung_cpuclk_round_rate(struct clk_hw *hw,
-> +			unsigned long drate, unsigned long *prate)
-> +{
-> +	struct samsung_cpuclk *cpuclk = to_samsung_cpuclk(hw);
-> +	const struct samsung_cpuclk_freq_table *freq_tbl;
-> +	int i;
-> +
-> +	freq_tbl = cpuclk->freq_table;
-> +	drate /= 1000;
-> +
-> +	for (i = 0; i < freq_tbl->freq_count; i++) {
-> +		if (drate >= freq_tbl->freq[i])
-> +			return freq_tbl->freq[i] * 1000;
-> +	}
-> +	return freq_tbl->freq[i - 1] * 1000;
-> +}
-> +
-> +#define EXYNOS4210_ARM_DIV1(base) ((readl(base + DIV_CPU0) & 0xf) +
-> 1) +#define EXYNOS4210_ARM_DIV2(base) (((readl(base + DIV_CPU0) >>
-> 28) & 0xf) + 1) +
-> +/*
-> + * CPU clock speed for Exynos4210 and compatible SoCs is
-> + * parent clock speed / core1_ratio / core2_ratio
-> + */
-> +static unsigned long exynos4210_armclk_recalc_rate(struct clk_hw *hw,
-> +				unsigned long parent_rate)
-> +{
-> +	struct samsung_cpuclk *armclk = to_samsung_cpuclk(hw);
-> +	void __iomem *base = armclk->ctrl_base + armclk->offset;
-> +
-> +	return parent_rate / EXYNOS4210_ARM_DIV1(base) /
-> +				EXYNOS4210_ARM_DIV2(base);
-> +}
-> +
-> +/* set rate callback for cpuclk type on Exynos4210 and similar SoCs
-> */ +static int exynos4210_armclk_set_rate(struct clk_hw *hw, unsigned
-> long drate,
-> +					unsigned long prate)
-> +{
-> +	struct samsung_cpuclk *armclk = to_samsung_cpuclk(hw);
-> +	const struct samsung_cpuclk_freq_table *freq_tbl;
-> +	const struct exynos4210_freq_data *freq_data;
-> +	unsigned long mux_reg, idx;
-> +	void __iomem *base;
-> +
-> +	if (drate == prate)
-> +		return 0;
-> +
-> +	freq_tbl = armclk->freq_table;
-> +	freq_data = freq_tbl->data;
-> +	base = armclk->ctrl_base + armclk->offset;
-> +
-> +	for (idx = 0; idx < freq_tbl->freq_count; idx++, freq_data++)
-> +		if ((freq_tbl->freq[idx] * 1000) == drate)
-> +			break;
-> +
-> +	if (drate < prate) {
-> +		mux_reg = readl(base + SRC_CPU);
-> +		writel(mux_reg | (1 << 16), base + SRC_CPU);
-> +		while (((readl(base + STAT_CPU) >> 16) & 0x7) != 2)
-> +			;
-> +
-> +		clk_set_rate(armclk->parent, drate);
-> +	}
-> +
-> +	writel(freq_data->div0, base + DIV_CPU0);
-> +	while (readl(base + DIV_STAT_CPU0) != 0)
-> +		;
-> +	writel(freq_data->div1, base + DIV_CPU1);
-> +	while (readl(base + DIV_STAT_CPU1) != 0)
-> +		;
-> +
-> +	if (drate > prate) {
-> +		mux_reg = readl(base + SRC_CPU);
-> +		writel(mux_reg | (1 << 16), base + SRC_CPU);
-> +		while (((readl(base + STAT_CPU) >> 16) & 0x7) != 2)
-> +			;
-> +
-> +		clk_set_rate(armclk->parent, freq_data->parent_freq
-> * 1000);
-> +	}
-> +
-> +	mux_reg = readl(base + SRC_CPU);
-> +	writel(mux_reg & ~(1 << 16), base + SRC_CPU);
-> +	while (((readl(base + STAT_CPU) >> 16) & 0x7) != 1)
-> +			;
-> +	return 0;
-> +}
-> +
-> +/* clock ops for armclk on Exynos4210 and compatible platforms. */
-> +static const struct clk_ops exynos4210_armclk_clk_ops = {
-> +	.recalc_rate = exynos4210_armclk_recalc_rate,
-> +	.round_rate = samsung_cpuclk_round_rate,
-> +	.set_rate = exynos4210_armclk_set_rate,
-> +};
-> +
-> +/* helper function to register a cpu clock */
-> +static void __init samsung_cpuclk_register(unsigned int lookup_id,
-> +		const char *name, const char *parent, const struct
-> clk_ops *ops,
-> +		const struct samsung_cpuclk_freq_table *freq_tbl,
-> +		void __iomem *reg_base,
-> +		const struct samsung_cpuclk_match_data *data)
-> +{
-> +	struct samsung_cpuclk *cpuclk;
-> +	struct clk_init_data init;
-> +	struct clk *clk;
-> +
-> +	cpuclk = kzalloc(sizeof(*cpuclk), GFP_KERNEL);
-> +	if (!cpuclk) {
-> +		pr_err("%s: could not allocate memory for cpuclk
-> %s\n",
-> +					__func__, name);
-> +		return;
-> +	}
-> +
-> +	init.name = name;
-> +	init.flags = CLK_GET_RATE_NOCACHE;
-> +	init.parent_names = &parent;
-> +	init.num_parents = 1;
-> +	init.ops = ops;
-> +
-> +	cpuclk->hw.init = &init;
-> +	cpuclk->ctrl_base = reg_base;
-> +	cpuclk->offset = data->offset;
-> +	cpuclk->freq_table = freq_tbl;
-> +	cpuclk->parent = __clk_lookup(parent);
-> +
-> +	clk = clk_register(NULL, &cpuclk->hw);
-> +	if (IS_ERR(clk)) {
-> +		pr_err("%s: could not register cpuclk %s\n",
-> __func__,	name);
-> +		kfree(cpuclk);
-> +		return;
-> +	}
-> +	samsung_clk_add_lookup(clk, lookup_id);
-> +}
-> +
-> +#define EXYNOS4210_DIV_CPU01(d0, d1, d2, d3, d4, d5, d6,
-> d7)		\
-> +		((d0 << 28) | (d1 << 24) | (d2 << 20) |	(d3
-> << 16) |	\
-> +		 (d4 << 12) | (d5 << 8) | (d6 << 4) | (d7 << 0))
-> +#define EXYNOS4210_DIV_CPU11(d0, d1,
-> d2)				\
-> +		((d0 << 8) | (d1 << 4) | (d2 << 0))
-> +#define EXYNOS4210_CFG_LEN 13
-> +
-> +/*
-> + * parse cpu clock frequency table and auxillary configuration data
-> from dt
-> + * for exynos4210 and compatible SoC's.
-> + */
-> +static int exynos4210_armclk_cfg_parser(struct device_node *np,
-> +		struct samsung_cpuclk_freq_table **tbl)
-> +{
-> +	struct samsung_cpuclk_freq_table *freq_tbl;
-> +	struct exynos4210_freq_data *fdata, *t_fdata;
-> +	unsigned long *freqs, cfg[EXYNOS4210_CFG_LEN];
-> +	const struct property *prop;
-> +	unsigned int tbl_sz, i, j;
-> +	const __be32 *val;
-> +	int ret;
-> +
-> +	prop = of_find_property(np, "arm-frequency-table", NULL);
-> +	if (!prop)
-> +		return -EINVAL;
-> +	if (!prop->value)
-> +		return -EINVAL;
-> +	if ((prop->length / sizeof(u32)) % EXYNOS4210_CFG_LEN)
+On Linux 3.12.6 over an Intel x86 processor (with intel_pstate=disable), 
+I am trying to change the frequency with the following command sequence:
 
-Cannot we have the EXYNOS4210_CFG_LEN parsed from DT as well?
+echo "userspace" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+echo "3000000" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_setspeed
 
-> +		return -EINVAL;
-> +	tbl_sz = (prop->length / sizeof(u32)) / EXYNOS4210_CFG_LEN;
-> +
-> +	freq_tbl = kzalloc(sizeof(*freq_tbl), GFP_KERNEL);
-> +	if (!freq_tbl)
-> +		return -ENOMEM;
-> +
-> +	freqs = kzalloc(sizeof(u32) * tbl_sz, GFP_KERNEL);
-> +	if (!freqs) {
-> +		ret = -ENOMEM;
-> +		goto free_freq_tbl;
-> +	}
-> +
-> +	fdata = kzalloc(sizeof(*fdata) * tbl_sz, GFP_KERNEL);
-> +	if (!fdata) {
-> +		ret = -ENOMEM;
-> +		goto free_freqs;
-> +	}
-> +	t_fdata = fdata;
-> +
-> +	val = prop->value;
-> +	for (i = 0; i < tbl_sz; i++, fdata++) {
-> +		for (j = 0; j < EXYNOS4210_CFG_LEN; j++)
-> +			cfg[j] = be32_to_cpup(val++);
-> +		freqs[i] = cfg[0];
-> +		fdata->parent_freq = cfg[1];
+It used to work well on older kernels, but since a recent (unknown) 
+kernel version, the last command occasionaly never returns but I got the 
+following log:
 
-Why do we need the separate parent_freq entry here?
+[344746.428121] ------------[ cut here ]------------
+[344746.428132] WARNING: CPU: 7 PID: 1882 at 
+/build/linux-xS3nxO/linux-3.12.6/drivers/cpufreq/cpufreq_governor.c:203 
+cpufreq_governor_dbs+0x6a2/0x710()
+[344746.428134] Modules linked in: msr cpufreq_userspace nfsv3 
+parport_pc ppdev lp parport bnep rfcomm bluetooth ip6table_filter 
+ip6_tables iptable_filter ip_tables x_tables autofs4 tun pci_stub 
+vboxpci(O) vboxnetadp(O) vboxnetflt(O) vboxdrv(O) binfmt_misc uinput 
+nfsd auth_rpcgss oid_registry nfs_acl nfs lockd fscache sunrpc fuse loop 
+joydev hid_generic usbhid hid snd_hda_codec_hdmi x86_pkg_temp_thermal 
+snd_hda_codec_realtek snd_hda_intel snd_hda_codec intel_powerclamp 
+snd_hwdep coretemp kvm_intel kvm crc32_pclmul nvidia(PO) snd_pcm 
+iTCO_wdt iTCO_vendor_support snd_page_alloc crc32c_intel 
+ghash_clmulni_intel hp_wmi sparse_keymap evdev rfkill acpi_cpufreq 
+processor psmouse snd_seq snd_seq_device snd_timer snd mei_me 
+aesni_intel wmi pcspkr i2c_i801 serio_raw aes_x86_64 ablk_helper cryptd 
+lrw gf128mul soundcore mei glue_helper lpc_ich mfd_core i2c_core button 
+ext4 crc16 mbcache jbd2 sg sd_mod sr_mod crc_t10dif crct10dif_common 
+cdrom xhci_hcd ahci libahci ehci_pci ehci_hcd libata scsi_mod e1000e 
+usbcore usb_common ptp pps_core thermal fan thermal_sys
+[344746.428213] CPU: 7 PID: 1882 Comm: tee Tainted: P           O 
+3.12-1-amd64 #1 Debian 3.12.6-2
+[344746.428215] Hardware name: Hewlett-Packard HP Z220 CMT 
+Workstation/1790, BIOS K51 v01.14 09/27/2012
+[344746.428217]  0000000000000009 ffffffff8148c9d5 0000000000000000 
+ffffffff8105b572
+[344746.428221]  0000000000000000 ffff880037046a00 0000000000000007 
+0000000000000002
+[344746.428224]  ffffffff81881fe0 ffffffff81376732 ffffffff8148f559 
+ffff88033449dd00
+[344746.428228] Call Trace:
+[344746.428237]  [<ffffffff8148c9d5>] ? dump_stack+0x41/0x51
+[344746.428245]  [<ffffffff8105b572>] ? warn_slowpath_common+0x72/0x90
+[344746.428248]  [<ffffffff81376732>] ? cpufreq_governor_dbs+0x6a2/0x710
+[344746.428253]  [<ffffffff8148f559>] ? mutex_lock+0x9/0x30
+[344746.428261]  [<ffffffffa02d600f>] ? 
+acpi_processor_ppc_notifier+0xc0/0xc4 [processor]
+[344746.428267]  [<ffffffff81495c64>] ? notifier_call_chain+0x44/0x70
+[344746.428274]  [<ffffffff81372b84>] ? __cpufreq_governor+0xf4/0x280
+[344746.428277]  [<ffffffff81373b59>] ? __cpufreq_set_policy+0x129/0x1f0
+[344746.428280]  [<ffffffff81373fa5>] ? store_scaling_governor+0xd5/0x1e0
+[344746.428284]  [<ffffffff81373d30>] ? cpufreq_update_policy+0x110/0x110
+[344746.428287]  [<ffffffff81373902>] ? store+0x72/0xb0
+[344746.428292]  [<ffffffff811deba9>] ? sysfs_write_file+0xb9/0x140
+[344746.428297]  [<ffffffff81173113>] ? vfs_write+0xb3/0x1e0
+[344746.428301]  [<ffffffff81173b23>] ? SyS_write+0x43/0xa0
+[344746.428305]  [<ffffffff81499b39>] ? system_call_fastpath+0x16/0x1b
+[344746.428307] ---[ end trace 42394bba698a65fd ]---
+[344746.428314] BUG: unable to handle kernel NULL pointer dereference at 
+           (null)
+[344746.428317] IP: [<ffffffff813760df>] cpufreq_governor_dbs+0x4f/0x710
+[344746.428321] PGD 3be4fe067 PUD 35dc6a067 PMD 0
+[344746.428325] Oops: 0000 [#1] SMP
+[344746.428327] Modules linked in: msr cpufreq_userspace nfsv3 
+parport_pc ppdev lp parport bnep rfcomm bluetooth ip6table_filter 
+ip6_tables iptable_filter ip_tables x_tables autofs4 tun pci_stub 
+vboxpci(O) vboxnetadp(O) vboxnetflt(O) vboxdrv(O) binfmt_misc uinput 
+nfsd auth_rpcgss oid_registry nfs_acl nfs lockd fscache sunrpc fuse loop 
+joydev hid_generic usbhid hid snd_hda_codec_hdmi x86_pkg_temp_thermal 
+snd_hda_codec_realtek snd_hda_intel snd_hda_codec intel_powerclamp 
+snd_hwdep coretemp kvm_intel kvm crc32_pclmul nvidia(PO) snd_pcm 
+iTCO_wdt iTCO_vendor_support snd_page_alloc crc32c_intel 
+ghash_clmulni_intel hp_wmi sparse_keymap evdev rfkill acpi_cpufreq 
+processor psmouse snd_seq snd_seq_device snd_timer snd mei_me 
+aesni_intel wmi pcspkr i2c_i801 serio_raw aes_x86_64 ablk_helper cryptd 
+lrw gf128mul soundcore mei glue_helper lpc_ich mfd_core i2c_core button 
+ext4 crc16 mbcache jbd2 sg sd_mod sr_mod crc_t10dif crct10dif_common 
+cdrom xhci_hcd ahci libahci ehci_pci ehci_hcd libata scsi_mod e1000e 
+usbcore usb_common ptp pps_core thermal fan thermal_sys
+[344746.428386] CPU: 7 PID: 1882 Comm: tee Tainted: P        W  O 
+3.12-1-amd64 #1 Debian 3.12.6-2
+[344746.428388] Hardware name: Hewlett-Packard HP Z220 CMT 
+Workstation/1790, BIOS K51 v01.14 09/27/2012
+[344746.428390] task: ffff8803a3f03080 ti: ffff88033449c000 task.ti: 
+ffff88033449c000
+[344746.428391] RIP: 0010:[<ffffffff813760df>]  [<ffffffff813760df>] 
+cpufreq_governor_dbs+0x4f/0x710
+[344746.428395] RSP: 0018:ffff88033449dc50  EFLAGS: 00010293
+[344746.428397] RAX: 0000000000000024 RBX: 0000000000000000 RCX: 
+0000000000000006
+[344746.428398] RDX: 0000000000000007 RSI: 0000000000000000 RDI: 
+0000000000000009
+[344746.428400] RBP: ffff880037046a00 R08: 000000000000000a R09: 
+0000000000000376
+[344746.428402] R10: 0000000000000000 R11: ffff88033449d986 R12: 
+0000000000000007
+[344746.428403] R13: 0000000000000002 R14: ffffffff81881fe0 R15: 
+ffff88040cba16d8
+[344746.428406] FS:  00007f4067ae6700(0000) GS:ffff88041ddc0000(0000) 
+knlGS:0000000000000000
+[344746.428407] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[344746.428409] CR2: 0000000000000000 CR3: 000000035dc7d000 CR4: 
+00000000001407e0
+[344746.428411] Stack:
+[344746.428412]  ffffffff8148f559 ffff88033449dd00 ffffffffa02d600f 
+00000000fffffffe
+[344746.428415]  ffffffff81495c64 ffffffff81881be0 0000000000000000 
+ffff880037046a00
+[344746.428419]  0000000000000002 ffffffff81881d00 ffff8803df64b000 
+000000000000000a
+[344746.428422] Call Trace:
+[344746.428425]  [<ffffffff8148f559>] ? mutex_lock+0x9/0x30
+[344746.428432]  [<ffffffffa02d600f>] ? 
+acpi_processor_ppc_notifier+0xc0/0xc4 [processor]
+[344746.428436]  [<ffffffff81495c64>] ? notifier_call_chain+0x44/0x70
+[344746.428440]  [<ffffffff81372b84>] ? __cpufreq_governor+0xf4/0x280
+[344746.428443]  [<ffffffff81373b59>] ? __cpufreq_set_policy+0x129/0x1f0
+[344746.428446]  [<ffffffff81373fa5>] ? store_scaling_governor+0xd5/0x1e0
+[344746.428449]  [<ffffffff81373d30>] ? cpufreq_update_policy+0x110/0x110
+[344746.428452]  [<ffffffff81373902>] ? store+0x72/0xb0
+[344746.428456]  [<ffffffff811deba9>] ? sysfs_write_file+0xb9/0x140
+[344746.428459]  [<ffffffff81173113>] ? vfs_write+0xb3/0x1e0
+[344746.428463]  [<ffffffff81173b23>] ? SyS_write+0x43/0xa0
+[344746.428466]  [<ffffffff81499b39>] ? system_call_fastpath+0x16/0x1b
+[344746.428468] Code: c0 0f 84 55 02 00 00 48 8b 9d b0 00 00 00 48 85 db 
+0f 84 4c 06 00 00 41 83 fd 04 0f 84 7b 02 00 00 41 83 fd 05 0f 84 41 02 
+00 00 <48> 8b 03 44 89 e7 ff 50 20 48 89 44 24 08 48 8b 03 83 38 01 0f
+[344746.428500] RIP  [<ffffffff813760df>] cpufreq_governor_dbs+0x4f/0x710
+[344746.428503]  RSP <ffff88033449dc50>
+[344746.428504] CR2: 0000000000000000
+[344746.428507] ---[ end trace 42394bba698a65fe ]---
 
-In the patch 4/7 the freqs (cfg[0]) and parent_freq (cfg[1]) values are
-the same for all supported devices (at "arm-frequency-table").
+Can anyone help with that?
 
-What is the rationale for having those values duplicated in the DT?
+Cheers,
 
-
-> +		fdata->div0 = EXYNOS4210_DIV_CPU01(cfg[9], cfg[8],
-> cfg[7],
-> +				cfg[6], cfg[5], cfg[4], cfg[3],
-> cfg[2]);
-> +		fdata->div1 = EXYNOS4210_DIV_CPU11(cfg[12], cfg[11],
-> cfg[10]);
-> +	}
-> +
-> +	freq_tbl->freq = freqs;
-> +	freq_tbl->freq_count = tbl_sz;
-> +	freq_tbl->data = t_fdata;
-> +	*tbl = freq_tbl;
-> +	return 0;
-> +
-> +free_freqs:
-> +	kfree(freqs);
-> +free_freq_tbl:
-> +	kfree(freq_tbl);
-> +	return ret;
-> +}
-> +
-> +static struct samsung_cpuclk_match_data exynos4210_cpuclk_match_data
-> = {
-> +	.parser = exynos4210_armclk_cfg_parser,
-> +	.offset = 0x14200,
-> +};
-> +
-> +static struct samsung_cpuclk_match_data exynos5250_cpuclk_match_data
-> = {
-> +	.parser = exynos4210_armclk_cfg_parser,
-> +	.offset = 0x200,
-> +};
-> +
-> +static const struct of_device_id samsung_clock_ids[] = {
-> +	{ .compatible = "samsung,exynos4210-clock",
-> +			.data = &exynos4210_cpuclk_match_data, },
-> +	{ .compatible = "samsung,exynos4412-clock",
-> +			.data = &exynos4210_cpuclk_match_data, },
-> +	{ .compatible = "samsung,exynos5250-clock",
-> +			.data = &exynos5250_cpuclk_match_data, },
-> +};
-> +
-> +int __init samsung_register_arm_clock(struct device_node *np,
-> +		unsigned int lookup_id,	const char *parent,
-> void __iomem *base) +{
-> +	const struct of_device_id *match;
-> +	struct samsung_cpuclk_freq_table *freq_table;
-> +	const struct samsung_cpuclk_match_data *data;
-> +	int ret;
-> +
-> +	match = of_match_node(samsung_clock_ids, np);
-> +	if (!match) {
-> +		pr_err("%s: could not determine soc type\n",
-> __func__);
-> +		return -EINVAL;
-> +	}
-> +
-> +	data = match->data;
-> +	ret = data->parser(np, &freq_table);
-> +	if (ret) {
-> +		pr_err("%s: error %d in parsing arm clock freq
-> table",
-> +						__func__, ret);
-> +		return -EINVAL;
-> +	}
-> +
-> +	samsung_cpuclk_register(lookup_id, "armclk", parent,
-> +		&exynos4210_armclk_clk_ops, freq_table, base, data);
-> +
-> +	return 0;
-> +}
-> diff --git a/drivers/clk/samsung/clk.h b/drivers/clk/samsung/clk.h
-> index 31b4174..a759330 100644
-> --- a/drivers/clk/samsung/clk.h
-> +++ b/drivers/clk/samsung/clk.h
-> @@ -340,4 +340,7 @@ extern void __init
-> samsung_clk_register_pll(struct samsung_pll_clock *pll_list, 
->  extern unsigned long _get_rate(const char *clk_name);
->  
-> +extern int __init samsung_register_arm_clock(struct device_node *np,
-> +		unsigned int lookup_id, const char *parent, void
-> __iomem *base); +
->  #endif /* __SAMSUNG_CLK_H */
-
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Benoit.
