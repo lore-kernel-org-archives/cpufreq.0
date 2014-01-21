@@ -1,72 +1,185 @@
-From: "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
-Subject: RE: [PATCH] cpufreq: Align all CPUs to the same frequency if using
- shared clock
-Date: Tue, 21 Jan 2014 07:26:28 +0000
-Message-ID: <630F9443351D2B4BB7EC6BAE6B6B08342549C5DC@SHSMSX104.ccr.corp.intel.com>
-References: <1390273543-18032-1-git-send-email-zhuangzhi.li@intel.com>
- <CAKohponL_R8M40BJa3X+++1yDtw5KRvk88w8kVfA+_D+poK08A@mail.gmail.com>
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH v2 3/7] devicetree: bindings: add cpu clock configuration
+ data binding for Exynos4/5
+Date: Tue, 21 Jan 2014 13:01:56 +0530
+Message-ID: <CAJuA9ai+5+t=WKvvxK7MzriAFd2fBXOVVt9YgZ18XQ5a9mr4Og@mail.gmail.com>
+References: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
+	<1390047057-2239-4-git-send-email-thomas.ab@samsung.com>
+	<CAL_JsqJSSW3DKQvcwzuapAYRbZMP3CP5vne-Bvg7-4z-rDGSxw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponL_R8M40BJa3X+++1yDtw5KRvk88w8kVfA+_D+poK08A@mail.gmail.com>
-Content-Language: en-US
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        bh=V0sajNKX7q+Tv6ZFnIJd0veqkT9jKItx1Luv3GDdCt0=;
+        b=Sj5YROB3WCTGqox0FOVpsc2dXgvfNJE5Ln4dy3a8/WF7ItDZhClNrf9KH+mF1Nmjz2
+         o5KcmNaR531qk+krpOLv2lkeECaAAF+b7cgsvMlHV0F28zJk6DFHUsSwaL5u25Bo2/qr
+         TXaIZtegbE1VTw0Uf0Vc7AZya1ypD6+MoQSRc79xDXi/wyNyxvYsW5CE0GL9Z8sz2BGg
+         adKQxvaFkjqx1ef5bO/iXCz2v0jKTj0TCSku/elPDuGoDTzPCuVba8x8graf8JLLtN7o
+         OiehVR96x/W1jsVORmu0u+AKVz4RTFV2RdgAdORNd27MIli8kSKvQlASge4/XABIS/Jl
+         jIoQ==
+In-Reply-To: <CAL_JsqJSSW3DKQvcwzuapAYRbZMP3CP5vne-Bvg7-4z-rDGSxw@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rob Herring <robherring2@gmail.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, thomas.ab@samsung.com, Rob Herring <robh+dt@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Thanks for reviewing.
-
-Sorry for make you misunderstanding, on our x86 platform, we want all the CPUs share one policy by setting CPUFREQ_SHARED_TYPE_ALL, not share one HW clock line.
-If the CPUs work at different frequency at init stage, then while the CPUs registering, no policy to align all the CPUs to the same frequency, this caused some conflicts with current CPUs P-state.
-
-For example:
-CPU0: P0
-CPU1: P14
-CPU2: P14
-CPU3: P14
-During all the CPUs registering, kernel considers all the CPUs work at P0 state because of sharing CPU0 policy, but the other three CPUs really work at P14 state,
-all CPUs frequency only wait to be aligned until CPU0 state changed by governor based on shared policy. 
-
-Best Regards
-
-Li zhuangzhi
-Android System Integration Shanghai
-Tel: +86 (0)21 6116 4323
+Hi Rob,
 
 
------Original Message-----
-From: Viresh Kumar [mailto:viresh.kumar@linaro.org] 
-Sent: Tuesday, January 21, 2014 2:35 PM
-To: Li, Zhuangzhi
-Cc: Rafael J. Wysocki; cpufreq@vger.kernel.org; linux-pm@vger.kernel.org; Linux Kernel Mailing List; Liu, Chuansheng
-Subject: Re: [PATCH] cpufreq: Align all CPUs to the same frequency if using shared clock
-
-On 21 January 2014 08:35, lizhuangzhi <zhuangzhi.li@intel.com> wrote:
-> Some SMP systems want to make all the possible CPUs share the clock, 
-> if the CPUs init frequencies aren't the same, we need to align all the 
-> CPUs to the same frequency while CPUs registing to avoid mismatched 
-> CPU's P-states.
+On Sat, Jan 18, 2014 at 8:52 PM, Rob Herring <robherring2@gmail.com> wrote:
+> On Sat, Jan 18, 2014 at 6:10 AM, Thomas Abraham <ta.omasab@gmail.com> wrote:
+>> From: Thomas Abraham <thomas.ab@samsung.com>
+>>
+>> The clk ops of the new Samsung cpu clock provider type requires configuration
+>> data that will be programmed in the multiple clock blocks encapsulated within
+>> the cpu clock provider type. This configuration data is held in the clock
+>> controller node. Update clock binding documentation about this configuration
+>> data format for Samsung Exynos4 and Exynos5 platforms.
+>>
+>> Cc: Rob Herring <robh+dt@kernel.org>
 >
-> Signed-off-by: lizhuangzhi <zhuangzhi.li@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c |    2 ++
->  1 file changed, 2 insertions(+)
+> Please copy all maintainers.
+
+Okay.
+
 >
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c 
-> index 8d19f7c..d00abb5 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -991,6 +991,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
->          * CPU because it is in the same boat. */
->         policy = cpufreq_cpu_get(cpu);
->         if (unlikely(policy)) {
-> +               /* according present policy to align all the cpus frequencies */
-> +               cpufreq_driver->target(policy, policy->cur, 
-> + CPUFREQ_RELATION_H);
+>> Cc: Tomasz Figa <t.figa@samsung.com>
+>> Cc: <devicetree@vger.kernel.org>
+>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+>> ---
+>>  .../devicetree/bindings/clock/exynos4-clock.txt    |   30 ++++++++++++++++++++
+>>  .../devicetree/bindings/clock/exynos5250-clock.txt |   21 ++++++++++++++
+>>  2 files changed, 51 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/clock/exynos4-clock.txt b/Documentation/devicetree/bindings/clock/exynos4-clock.txt
+>> index a2ac2d9..c28aabd 100644
+>> --- a/Documentation/devicetree/bindings/clock/exynos4-clock.txt
+>> +++ b/Documentation/devicetree/bindings/clock/exynos4-clock.txt
+>> @@ -15,6 +15,29 @@ Required Properties:
+>>
+>>  - #clock-cells: should be 1.
+>>
+>> +- arm-frequency-table: defines the list of arm clock speeds supported and
+>
+> Seems like a Samsung specific property and nothing to do with ARM, so
+> it should be named accordingly.
 
-I don't really understand why is this required? CPUs sharing clocks means that CPUs runs on the same clock line and so all of them must be running on same frequency. So, why do we need to call this routine? policy->cur must be the current freq here for CPU in question.
+Okay.
 
---
-viresh
+>
+>> +  the associated configuration values required to setup the clock controller
+>> +  for generating those speeds. The format of each entry included in the
+>> +  arm-frequency-table should be as defined below (#cells per entry = 13)
+>> +
+>> +  - for Exynos4210 and Exynos4212 based platforms:
+>> +      cell #1: arm clock frequency
+>> +      cell #2: expected arm clock parent frequency
+>> +      cell #3 ~ cell 12#: value of clock divider in the following order
+>> +              core_ratio, corem0_ratio, corem1_ratio, periph_ratio,
+>> +              atb_ratio, pclk_dbg_ratio, apll_ratio, core2_ratio,
+>> +              copy_ratio, hpm_ratio.
+>> +      cell #13: reserved (should be zero).
+>> +
+>> +  - for Exynos4412 based platforms:
+>> +      cell #1: arm clock frequency
+>> +      cell #2: expected arm clock parent frequency
+>> +      cell #3 ~ cell #13: value of clock divider in the following order
+>> +              core_ratio, corem0_ratio, corem1_ratio, periph_ratio,
+>> +              atb_ratio, pclk_dbg_ratio, apll_ratio, core2_ratio,
+>> +              copy_ratio, hpm_ratio, cores_ratio
+>
+> You don't need voltages? Are the h/w limitations really ratios or each
+> clock has a max frequency that must be maintained? I would expect the
+> latter and think it would be better to specify maximum frequencies of
+> each clock. Then you can calculate the dividers to keep frequencies in
+> range.
+
+Voltage is not needed here since the cpu clock speed is managed by the
+cpufreq driver which will take care of setting appropriate voltage.
+Any other users apart from cpufreq will have to setup the voltage
+appropriately.
+
+About the ratios, yes the user manual lists the optimal clock
+frequency for these clocks. As suggested, I will remove the ratio list
+for these clocks.
+
+>
+> How will this scale to multi-cluster chips with different frequency ranges?
+
+Usually, each cluster would have its own independent clock input. So
+there will be two or more cpu clocks in multi-cluster chips. So the
+clocks can be independently programmed as required by the cluster.
+
+>
+> Rob
+>
+
+Thanks Rob for your review.
+
+Thomas.
+
+>> +
+>> +
+>>  The following is the list of clocks generated by the controller. Each clock is
+>>  assigned an identifier and client nodes use this identifier to specify the
+>>  clock which they consume. Some of the clocks are available only on a particular
+>> @@ -275,6 +298,13 @@ Example 1: An example of a clock controller node is listed below.
+>>                 compatible = "samsung,exynos4210-clock";
+>>                 reg = <0x10030000 0x20000>;
+>>                 #clock-cells = <1>;
+>> +
+>> +               arm-frequency-table = <1200000 1200000 0 3 7 3 4 1 7 0 5 0>,
+>> +                                     <1000000 1000000 0 3 7 3 4 1 7 0 4 0>,
+>> +                                     < 800000  800000 0 3 7 3 3 1 7 0 3 0>,
+>> +                                     < 500000  500000 0 3 7 3 3 1 7 0 3 0>,
+>> +                                     < 400000  400000 0 3 7 3 3 1 7 0 3 0>,
+>> +                                     < 200000  200000 0 1 3 1 1 1 0 0 3 0>;
+>>         };
+>>
+>>  Example 2: UART controller node that consumes the clock generated by the clock
+>> diff --git a/Documentation/devicetree/bindings/clock/exynos5250-clock.txt b/Documentation/devicetree/bindings/clock/exynos5250-clock.txt
+>> index 72ce617..99eae9c 100644
+>> --- a/Documentation/devicetree/bindings/clock/exynos5250-clock.txt
+>> +++ b/Documentation/devicetree/bindings/clock/exynos5250-clock.txt
+>> @@ -13,6 +13,20 @@ Required Properties:
+>>
+>>  - #clock-cells: should be 1.
+>>
+>> +- arm-frequency-table: defines the list of arm clock speeds supported and
+>> +  the associated configuration values required to setup the clock controller
+>> +  for generating those speeds. The format of each entry included in the
+>> +  arm-frequency-table should be as defined below (#cells per entry = 13)
+>> +
+>> +      cell #1: arm clock frequency
+>> +      cell #2: expected arm clock parent frequency
+>> +      cell #3 ~ cell #12: value of clock divider in the following order
+>> +              arm_ratio, cpud_ratio, acp_ratio, periph_ratio,
+>> +              atb_ratio, pclk_dbg_ratio, apll_ratio, arm2_ratio,
+>> +              copy_ratio, hpm_ratio
+>> +      cell #13: reserved (should be zero)
+>> +
+>> +
+>>  The following is the list of clocks generated by the controller. Each clock is
+>>  assigned an identifier and client nodes use this identifier to specify the
+>>  clock which they consume.
+>> @@ -177,6 +191,13 @@ Example 1: An example of a clock controller node is listed below.
+>>                 compatible = "samsung,exynos5250-clock";
+>>                 reg = <0x10010000 0x30000>;
+>>                 #clock-cells = <1>;
+>> +
+>> +               arm-frequency-table = <1700000 1700000 0 3 7 7 7 3 5 0 0 2>,
+>> +                                     <1600000 1600000 0 3 7 7 7 1 4 0 0 2>,
+>> +                                     <1500000 1500000 0 2 7 7 7 1 4 0 0 2>,
+>> +                                     <1400000 1400000 0 2 7 7 6 1 4 0 0 2>,
+>> +                                     <1300000 1300000 0 2 7 7 6 1 3 0 0 2>,
+>> +                                     <1200000 1200000 0 2 7 7 5 1 3 0 0 2>;
+>>         };
+>>
+>>  Example 2: UART controller node that consumes the clock generated by the clock
+>> --
+>> 1.6.6.rc2
+>>
