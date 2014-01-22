@@ -1,68 +1,66 @@
-From: Paul Gortmaker <paul.gortmaker@gmail.com>
-Subject: Re: [PATCH 68/73] drivers/cpufreq: delete non-required instances of <linux/init.h>
-Date: Wed, 22 Jan 2014 04:17:59 -0500
-Message-ID: <CAP=VYLodPTc4Cum+bqwA927g11-BNOtSo=fs_UKt+jFEc3ABKw@mail.gmail.com>
-References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-	<1390339396-3479-69-git-send-email-paul.gortmaker@windriver.com>
-	<CAKohpo=oWrX2SF5GWYoGzC+cuZeOx_wappTFfOy9vCpBush+BQ@mail.gmail.com>
+From: y@samsung.com
+Subject: [PATCH] cpufreq: exynos: Fix build error of no type of module_init
+Date: Wed, 22 Jan 2014 15:18:29 +0100
+Message-ID: <1390400309-22806-1-git-send-email-y@samsung.com>
+References: <y@samsung.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=U85ejk0+gDilcfl6cV2nvrwy5WvlpYJKJRkPAwareeQ=;
-        b=BD7StSZjNHer0ZYFEt8lm7dMb5QrcQc4dIHq/Yut6Ea77eTnAk9cc1NGIvsggLwo7h
-         1P4z4UydIXBSChFG2Qat45E6ySQ+pJXEShVzq6G5uvhUoQ71Nj+X5MxFx9Tr4ws5yrho
-         Y2BPlHU0IRj8TWDRetrJimExB3kXHoVf9DdDYBW3adV1Lg8hKSOSWHDw2eRUwE0HG6lT
-         VBqCmGkLUJ0NJ/3V8rIRh46dCVYqDbIhWgj+6tNadEKLPyc1DUcz+KfiNeTvbzK07OVP
-         9iNhaov8cI7Od0JRGK8erKWatFr219sCms+uBE882yqC7Cnu+IRzQ+/No97OHNV38AAh
-         pQcA==
-In-Reply-To: <CAKohpo=oWrX2SF5GWYoGzC+cuZeOx_wappTFfOy9vCpBush+BQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-reply-to: <y@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-On 1/21/14, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 22 January 2014 02:53, Paul Gortmaker <paul.gortmaker@windriver.com>
-> wrote:
->> None of these files are actually using any __init type directives
->> and hence don't need to include <linux/init.h>.  Most are just a
->> left over from __devinit and __cpuinit removal, or simply due to
->> code getting copied from one driver to the next.
->>
->> Cc: Kevin Hilman <khilman@deeprootsystems.com>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: cpufreq@vger.kernel.org
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
->> ---
->>  drivers/cpufreq/omap-cpufreq.c    | 1 -
->>  drivers/cpufreq/powernow-k8.c     | 1 -
->>  drivers/cpufreq/s3c2412-cpufreq.c | 1 -
->>  drivers/cpufreq/s3c2440-cpufreq.c | 1 -
->>  drivers/cpufreq/spear-cpufreq.c   | 1 -
->>  drivers/cpufreq/speedstep-lib.c   | 1 -
->>  6 files changed, 6 deletions(-)
->
-> We have discussed this in past where I pointed out this file is required
-> by stuff like module_init, what happened to that query ?
+=46rom: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Patch 31/73 relocates module_init and similar macros to
-module.h so that is no longer an implicit dependency.
+Add missing include to fix build error:
+drivers/cpufreq/exynos-cpufreq.c:292:1: warning: data definition has no=
+ type or storage class [enabled by default]
+drivers/cpufreq/exynos-cpufreq.c:292:1: error: type defaults to =E2=80=98=
+int=E2=80=99 in declaration of =E2=80=98module_init=E2=80=99 [-Werror=3D=
+implicit-int]
+drivers/cpufreq/exynos-cpufreq.c:292:1: warning: parameter names (witho=
+ut types) in function declaration [enabled by default]
+drivers/cpufreq/exynos-cpufreq.c:292:1: warning: data definition has no=
+ type or storage class [enabled by default]
+drivers/cpufreq/exynos-cpufreq.c:292:1: error: type defaults to =E2=80=98=
+int=E2=80=99 in declaration of =E2=80=98module_exit=E2=80=99 [-Werror=3D=
+implicit-int]
+drivers/cpufreq/exynos-cpufreq.c:292:1: warning: parameter names (witho=
+ut types) in function declaration [enabled by default]
+drivers/cpufreq/exynos-cpufreq.c:292:1: warning: =E2=80=98exynos_cpufre=
+q_platdrv_init=E2=80=99 defined but not used [-Wunused-function]
+cc1: some warnings being treated as errors
+make[2]: *** [drivers/cpufreq/exynos-cpufreq.o] Error 1
+make[1]: *** [drivers/cpufreq] Error 2
 
-https://lkml.org/lkml/2014/1/21/488
+Build error happens on gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5)
+and was introduced by commit d568b6f71df1 (cpufreq: exynos: Convert
+exynos-cpufreq to platform driver).
 
-Thanks,
-Paul
---
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Tomasz Figa <t.figa@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-=
+cpufreq.c
+index fcd2914d081a..fa54c2b88dd7 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -17,6 +17,7 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/cpufreq.h>
+ #include <linux/suspend.h>
++#include <linux/module.h>
+ #include <linux/platform_device.h>
+=20
+ #include <plat/cpu.h>
+--=20
+1.7.9.5
+
