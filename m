@@ -1,19 +1,16 @@
-From: y@samsung.com
-Subject: [PATCH] cpufreq: exynos: Fix build error of no type of module_init
-Date: Wed, 22 Jan 2014 15:18:29 +0100
-Message-ID: <1390400309-22806-1-git-send-email-y@samsung.com>
-References: <y@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH RESEND] cpufreq: exynos: Fix build error of no type of
+ module_init
+Date: Wed, 22 Jan 2014 15:21:16 +0100
+Message-ID: <1390400476-22951-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-reply-to: <y@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="utf-8"
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-
-=46rom: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
 Add missing include to fix build error:
 drivers/cpufreq/exynos-cpufreq.c:292:1: warning: data definition has no=
