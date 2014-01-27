@@ -1,172 +1,77 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2 1/7] cpufreq: cpufreq-cpu0: allow optional safe
- voltage during frequency transitions
-Date: Mon, 27 Jan 2014 15:16:59 +0800
-Message-ID: <20140127071656.GB3135@S2101-09.ap.freescale.net>
-References: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
- <1390047057-2239-2-git-send-email-thomas.ab@samsung.com>
+From: Sriram V <vshrirama@gmail.com>
+Subject: double deletion of timer.
+Date: Mon, 27 Jan 2014 14:32:07 +0530
+Message-ID: <CAH9_wRP-LQnenkBrG2i96G4zKTiWsQH1BXHoPCD5Kw0xam=fPQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1390047057-2239-2-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        bh=edWsHmebRdintKG5Seeu8eqn9kOf21UoL3lAGgwNuAk=;
+        b=Lum0M/e/SNLkiYzSeuRTm7Z6iA3COHFIUr/O/578xfdObaD9hQAeUh3niDfcxrqw/Y
+         zmTf2kIq7HUI+yWGr+iDGTczQ6wwb+zVaMwyRm9oDUcNxqV7fG1X3WDulWSEwX6tLIpL
+         CE1NGkDervqIM7JiWXdI3hQij8iudFslSH48DM4HBKeVcg41uiJYh6y6aDKThoNqLTft
+         g+o3Msw/IVO8uOEBoy7Ym3Aie43+aSxj9AKeGsCr6AY/FEKvUNABQrTezXsuTnMQISW2
+         +O8nT/uxaDum3wg8A4CvItmspG3ml/ydSkTmfZxEcxy9nygrRh8q0/+Gl90uGh5bOh3+
+         wx8w==
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com
+To: cpufreq@vger.kernel.org
 
-On Sat, Jan 18, 2014 at 05:40:51PM +0530, Thomas Abraham wrote:
-> From: Thomas Abraham <thomas.ab@samsung.com>
-> 
-> On some platforms such as the Samsung Exynos, changing the frequency
-> of the CPU clock requires changing the frequency of the PLL that is
-> supplying the CPU clock. To change the frequency of the PLL, the CPU
-> clock is temporarily reparented to another parent clock.
-> 
-> The clock frequency of this temporary parent clock could be much higher
-> than the clock frequency of the PLL at the time of reparenting. Due
-> to the temporary increase in the CPU clock speed, the CPU (and any other
-> components in the CPU clock domain such as dividers, mux, etc.) have to
-> to be operated at a higher voltage level, called the safe voltage level.
-> This patch adds optional support to temporarily switch to a safe voltage
-> level during CPU frequency transitions.
-> 
-> Cc: Shawn Guo <shawn.guo@linaro.org>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> ---
->  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    7 ++++
+Hi,
 
-The devicetree list should be copied for this change.
+I am trying to debug an random issue in which __list_del gets a prev
+pointer which is LIST_POISON, But the next pointer contains a valid
+value.
+There seems to be a double deletion. Since the next pointer is valid -
+It determines that the timer is pending and tries to delete it
+resulting in a crash.
 
->  drivers/cpufreq/cpufreq-cpu0.c                     |   37 +++++++++++++++++--
->  2 files changed, 40 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> index f055515..37453ab 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> @@ -19,6 +19,12 @@ Optional properties:
->  - cooling-min-level:
->  - cooling-max-level:
->       Please refer to Documentation/devicetree/bindings/thermal/thermal.txt.
-> +- safe-opp: Certain platforms require that during a opp transition,
-> +  a system should not go below a particular opp level. For such systems,
-> +  this property specifies the minimum opp to be maintained during the
-> +  opp transitions. The safe-opp value is a tuple with first element
-> +  representing the safe frequency and the second element representing the
-> +  safe voltage.
->  
->  Examples:
->  
-> @@ -36,6 +42,7 @@ cpus {
->  			396000  950000
->  			198000  850000
->  		>;
-> +		safe-opp = <396000 950000>
->  		clock-latency = <61036>; /* two CLK32 periods */
->  		#cooling-cells = <2>;
->  		cooling-min-level = <0>;
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index 0c12ffc..075d3d1 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -27,6 +27,8 @@
->  
->  static unsigned int transition_latency;
->  static unsigned int voltage_tolerance; /* in percentage */
-> +static unsigned long safe_frequency;
-> +static unsigned long safe_voltage;
->  
->  static struct device *cpu_dev;
->  static struct clk *cpu_clk;
-> @@ -64,17 +66,30 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
->  		volt_old = regulator_get_voltage(cpu_reg);
->  	}
->  
-> -	pr_debug("%u MHz, %ld mV --> %u MHz, %ld mV\n",
-> +	pr_debug("\n\n%u MHz, %ld mV --> %u MHz, %ld mV\n",
+I am trying to understand when this could happen from the cpufreq governor.
 
-This is an unnecessary change?
+There are a couple of new patches recently applied in the kernel that
+deal with timer corruption. Not sure if they take care of this.
 
-Otherwise,
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+<1>[56.190608541 C0 104 ]    Unable to handle kernel paging request at
+virtual address 00200200
+<1>[56.198518541 C0 104 ]    pgd = c0004000
+<1>[56.201913618 C0 104 ]    [00200200] *pgd=00000000
+<0>[56.206186387 C0 104 ]    Internal error: Oops: 805 [#1] PREEMPT SMP ARM
+<4>[56.212357848 C0 104 ]    Modules linked in: shmobilelfb(O) pvrsrvkm(O)
+<4>[56.218468464 C0 104 ]    CPU: 0 PID: 104 Comm: kworker/0:1
+Tainted: G          O 3.10.17 #1
+<4>[56.226461925 C0 104 ]    Workqueue: events od_dbs_timer
+<4>[56.231250695 C0 104 ]    task: ef0f9100 ti: ef2a0000 task.ti: ef2a0000
+<4>[56.237336541 C0 104 ]    PC is at detach_if_pending+0x48/0x11c
+<4>[56.242726387 C0 104 ]    LR is at del_timer+0x48/0x64
+<4>[56.247336310 C0 104 ]    pc : [<c004487c>]    lr : [<c0044c5c>]
+psr: 20030193
+<4>[57.235326079 C0 104 ]    [<c004487c>]
+(detach_if_pending+0x48/0x11c) from [<c0044c5c>] (del_timer+0x48/0x64)
+<4>[57.244710310 C0 104 ]    [<c0044c5c>] (del_timer+0x48/0x64) from
+[<c0052b44>] (try_to_grab_pending+0x40/0x188)
+<4>[57.254264695 C0 104 ]    [<c0052b44>]
+(try_to_grab_pending+0x40/0x188) from [<c0052ec8>]
+(mod_delayed_work_on+0x38/0x94)
+<4>[57.264687695 C0 104 ]    [<c0052ec8>]
+(mod_delayed_work_on+0x38/0x94) from [<c040faec>]
+(gov_queue_work+0xb4/0xc0)
+<4>[57.274590156 C0 104 ]    [<c040faec>] (gov_queue_work+0xb4/0xc0)
+from [<c040f6c0>] (od_dbs_timer+0xbc/0x140)
+<4>[57.283970079 C0 104 ]    [<c040f6c0>] (od_dbs_timer+0xbc/0x140)
+from [<c0051f0c>] (process_one_work+0x158/0x4b4)
+<4>[57.293696618 C0 104 ]    [<c0051f0c>]
+(process_one_work+0x158/0x4b4) from [<c00523a4>]
+(worker_thread+0x13c/0x444)
+<4>[57.303596925 C0 104 ]    [<c00523a4>] (worker_thread+0x13c/0x444)
+from [<c0058d34>] (kthread+0xb4/0xc0)
+<4>[57.312546925 C0 104 ]    [<c0058d34>] (kthread+0xb4/0xc0) from
+[<c000ffc8>] (ret_from_fork+0x14/0x20)
 
-Shawn
 
->  		 old_freq / 1000, volt_old ? volt_old / 1000 : -1,
->  		 new_freq / 1000, volt ? volt / 1000 : -1);
->  
->  	/* scaling up?  scale voltage before frequency */
-> -	if (!IS_ERR(cpu_reg) && new_freq > old_freq) {
-> +	if (!IS_ERR(cpu_reg) && new_freq > old_freq &&
-> +				new_freq >= safe_frequency) {
->  		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
->  		if (ret) {
->  			pr_err("failed to scale voltage up: %d\n", ret);
->  			return ret;
->  		}
-> +	} else if (!IS_ERR(cpu_reg) && old_freq < safe_frequency) {
-> +		/*
-> +		 * the scaled up voltage level for the new_freq is lower
-> +		 * than the safe voltage level. so set safe_voltage
-> +		 * as the intermediate voltage level and revert it
-> +		 * back after the frequency has been changed.
-> +		 */
-> +		ret = regulator_set_voltage_tol(cpu_reg, safe_voltage, tol);
-> +		if (ret) {
-> +			pr_err("failed to set safe voltage: %d\n", ret);
-> +			return ret;
-> +		}
->  	}
->  
->  	ret = clk_set_rate(cpu_clk, freq_exact);
-> @@ -86,7 +101,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
->  	}
->  
->  	/* scaling down?  scale voltage after frequency */
-> -	if (!IS_ERR(cpu_reg) && new_freq < old_freq) {
-> +	if (!IS_ERR(cpu_reg) &&
-> +			(new_freq < old_freq || new_freq < safe_frequency)) {
->  		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
->  		if (ret) {
->  			pr_err("failed to scale voltage down: %d\n", ret);
-> @@ -116,6 +132,8 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
->  
->  static int cpu0_cpufreq_probe(struct platform_device *pdev)
->  {
-> +	const struct property *prop;
-> +	struct dev_pm_opp *opp;
->  	struct device_node *np;
->  	int ret;
->  
-> @@ -165,13 +183,24 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
->  		goto out_put_node;
->  	}
->  
-> +	prop = of_find_property(np, "safe-opp", NULL);
-> +	if (prop) {
-> +		if (prop->value && (prop->length / sizeof(u32)) == 2) {
-> +			const __be32 *val;
-> +			val = prop->value;
-> +			safe_frequency = be32_to_cpup(val++);
-> +			safe_voltage = be32_to_cpup(val);
-> +		} else {
-> +			pr_err("invalid safe-opp level specified\n");
-> +		}
-> +	}
-> +
->  	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
->  
->  	if (of_property_read_u32(np, "clock-latency", &transition_latency))
->  		transition_latency = CPUFREQ_ETERNAL;
->  
->  	if (!IS_ERR(cpu_reg)) {
-> -		struct dev_pm_opp *opp;
->  		unsigned long min_uV, max_uV;
->  		int i;
->  
-> -- 
-> 1.6.6.rc2
-> 
+
+Regards,
+Sriram
