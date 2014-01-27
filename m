@@ -1,55 +1,172 @@
-From: "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
-Subject: RE: [PATCH] cpufreq: Align all CPUs to the same frequency if using
- shared clock
-Date: Sun, 26 Jan 2014 03:18:01 +0000
-Message-ID: <630F9443351D2B4BB7EC6BAE6B6B08342549EE97@SHSMSX104.ccr.corp.intel.com>
-References: <1390273543-18032-1-git-send-email-zhuangzhi.li@intel.com>
-	<CAKohponL_R8M40BJa3X+++1yDtw5KRvk88w8kVfA+_D+poK08A@mail.gmail.com>
-	<630F9443351D2B4BB7EC6BAE6B6B08342549C5DC@SHSMSX104.ccr.corp.intel.com>
-	<CAKohpo=ng-B6kLdWxBn_cNsWNVsYaNAD-ZzQLLOfkbj+FDg_fg@mail.gmail.com>
-	<CAKohpokHi=yuGJm2Nf-TAMVhGQ8Do02j+s6z3eenKRzoW8pv7g@mail.gmail.com>
-	<630F9443351D2B4BB7EC6BAE6B6B08342549CF6A@SHSMSX104.ccr.corp.intel.com>
- <CAKohpokMFwvY-SMcuJf_C_gASQT-8tT8wRrQ6=YX7QQ0YwcgNg@mail.gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v2 1/7] cpufreq: cpufreq-cpu0: allow optional safe
+ voltage during frequency transitions
+Date: Mon, 27 Jan 2014 15:16:59 +0800
+Message-ID: <20140127071656.GB3135@S2101-09.ap.freescale.net>
+References: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
+ <1390047057-2239-2-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokMFwvY-SMcuJf_C_gASQT-8tT8wRrQ6=YX7QQ0YwcgNg@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1390047057-2239-2-git-send-email-thomas.ab@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Content-Transfer-Encoding: 7bit
+To: Thomas Abraham <ta.omasab@gmail.com>
+Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com
 
+On Sat, Jan 18, 2014 at 05:40:51PM +0530, Thomas Abraham wrote:
+> From: Thomas Abraham <thomas.ab@samsung.com>
+> 
+> On some platforms such as the Samsung Exynos, changing the frequency
+> of the CPU clock requires changing the frequency of the PLL that is
+> supplying the CPU clock. To change the frequency of the PLL, the CPU
+> clock is temporarily reparented to another parent clock.
+> 
+> The clock frequency of this temporary parent clock could be much higher
+> than the clock frequency of the PLL at the time of reparenting. Due
+> to the temporary increase in the CPU clock speed, the CPU (and any other
+> components in the CPU clock domain such as dividers, mux, etc.) have to
+> to be operated at a higher voltage level, called the safe voltage level.
+> This patch adds optional support to temporarily switch to a safe voltage
+> level during CPU frequency transitions.
+> 
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> ---
+>  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    7 ++++
 
+The devicetree list should be copied for this change.
 
-> -----Original Message-----
-> From: Viresh Kumar [mailto:viresh.kumar@linaro.org]
-> Sent: Wednesday, January 22, 2014 2:43 PM
-> To: Li, Zhuangzhi
-> Cc: Rafael J. Wysocki; cpufreq@vger.kernel.org; linux-pm@vger.kernel.org;
-> Linux Kernel Mailing List; Liu, Chuansheng
-> Subject: Re: [PATCH] cpufreq: Align all CPUs to the same frequency if using
-> shared clock
+>  drivers/cpufreq/cpufreq-cpu0.c                     |   37 +++++++++++++++++--
+>  2 files changed, 40 insertions(+), 4 deletions(-)
 > 
-> On 22 January 2014 11:56, Li, Zhuangzhi <zhuangzhi.li@intel.com> wrote:
-> > I don't think it's a real bug in bootloader, the bootloader can set
-> > CPUs to different frequencies according to actually requirements(Power
-> > saving first or Performance first), the CPUs freq policy are initialized in kernel,
-> if the kernel want to share one CPU policy(using CPUFREQ_SHARED_TYPE_ALL
-> type), it should ensure all CPUs frequencies aligned first, don't depend on the
-> bootloader CPUs Pre-states, then the kernel can have better compatibility.
-> >
-> > If the kernel uses CPUFREQ_SHARED_TYPE_ALL policy, the patch can ensure
-> these:
-> > 1. If all CPUs are in the same P-state, it does nothing when cpufreq
-> > registering 2. If the CPUs are in different P-states, all the other CPUs are
-> aligned once to current frequency of CPU0 according to the present policy.
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> index f055515..37453ab 100644
+> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> @@ -19,6 +19,12 @@ Optional properties:
+>  - cooling-min-level:
+>  - cooling-max-level:
+>       Please refer to Documentation/devicetree/bindings/thermal/thermal.txt.
+> +- safe-opp: Certain platforms require that during a opp transition,
+> +  a system should not go below a particular opp level. For such systems,
+> +  this property specifies the minimum opp to be maintained during the
+> +  opp transitions. The safe-opp value is a tuple with first element
+> +  representing the safe frequency and the second element representing the
+> +  safe voltage.
+>  
+>  Examples:
+>  
+> @@ -36,6 +42,7 @@ cpus {
+>  			396000  950000
+>  			198000  850000
+>  		>;
+> +		safe-opp = <396000 950000>
+>  		clock-latency = <61036>; /* two CLK32 periods */
+>  		#cooling-cells = <2>;
+>  		cooling-min-level = <0>;
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index 0c12ffc..075d3d1 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -27,6 +27,8 @@
+>  
+>  static unsigned int transition_latency;
+>  static unsigned int voltage_tolerance; /* in percentage */
+> +static unsigned long safe_frequency;
+> +static unsigned long safe_voltage;
+>  
+>  static struct device *cpu_dev;
+>  static struct clk *cpu_clk;
+> @@ -64,17 +66,30 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  		volt_old = regulator_get_voltage(cpu_reg);
+>  	}
+>  
+> -	pr_debug("%u MHz, %ld mV --> %u MHz, %ld mV\n",
+> +	pr_debug("\n\n%u MHz, %ld mV --> %u MHz, %ld mV\n",
+
+This is an unnecessary change?
+
+Otherwise,
+
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
+
+Shawn
+
+>  		 old_freq / 1000, volt_old ? volt_old / 1000 : -1,
+>  		 new_freq / 1000, volt ? volt / 1000 : -1);
+>  
+>  	/* scaling up?  scale voltage before frequency */
+> -	if (!IS_ERR(cpu_reg) && new_freq > old_freq) {
+> +	if (!IS_ERR(cpu_reg) && new_freq > old_freq &&
+> +				new_freq >= safe_frequency) {
+>  		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+>  		if (ret) {
+>  			pr_err("failed to scale voltage up: %d\n", ret);
+>  			return ret;
+>  		}
+> +	} else if (!IS_ERR(cpu_reg) && old_freq < safe_frequency) {
+> +		/*
+> +		 * the scaled up voltage level for the new_freq is lower
+> +		 * than the safe voltage level. so set safe_voltage
+> +		 * as the intermediate voltage level and revert it
+> +		 * back after the frequency has been changed.
+> +		 */
+> +		ret = regulator_set_voltage_tol(cpu_reg, safe_voltage, tol);
+> +		if (ret) {
+> +			pr_err("failed to set safe voltage: %d\n", ret);
+> +			return ret;
+> +		}
+>  	}
+>  
+>  	ret = clk_set_rate(cpu_clk, freq_exact);
+> @@ -86,7 +101,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  	}
+>  
+>  	/* scaling down?  scale voltage after frequency */
+> -	if (!IS_ERR(cpu_reg) && new_freq < old_freq) {
+> +	if (!IS_ERR(cpu_reg) &&
+> +			(new_freq < old_freq || new_freq < safe_frequency)) {
+>  		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+>  		if (ret) {
+>  			pr_err("failed to scale voltage down: %d\n", ret);
+> @@ -116,6 +132,8 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
+>  
+>  static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>  {
+> +	const struct property *prop;
+> +	struct dev_pm_opp *opp;
+>  	struct device_node *np;
+>  	int ret;
+>  
+> @@ -165,13 +183,24 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>  		goto out_put_node;
+>  	}
+>  
+> +	prop = of_find_property(np, "safe-opp", NULL);
+> +	if (prop) {
+> +		if (prop->value && (prop->length / sizeof(u32)) == 2) {
+> +			const __be32 *val;
+> +			val = prop->value;
+> +			safe_frequency = be32_to_cpup(val++);
+> +			safe_voltage = be32_to_cpup(val);
+> +		} else {
+> +			pr_err("invalid safe-opp level specified\n");
+> +		}
+> +	}
+> +
+>  	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
+>  
+>  	if (of_property_read_u32(np, "clock-latency", &transition_latency))
+>  		transition_latency = CPUFREQ_ETERNAL;
+>  
+>  	if (!IS_ERR(cpu_reg)) {
+> -		struct dev_pm_opp *opp;
+>  		unsigned long min_uV, max_uV;
+>  		int i;
+>  
+> -- 
+> 1.6.6.rc2
 > 
-> I thought, as you are asking kernel to keep same freq on all of them, then same
-> should be true for bootloaders.
-> 
-> Otherwise it was okay.
-Yes, but most of the platforms(ARM&x86) only enable one CPU Core in bootloader or Bios because of multiple threads(SMP) are not supported, 
-and the other Cores stay in default configuration for saving power in bootloader, kernel is responsible for booting up the other Cores from default frequencies for SMP.
-Cpufreq driver need to init them to required P-state before governor active when using CPUFREQ_SHARED_TYPE_ALL policy.
