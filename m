@@ -1,28 +1,35 @@
 From: Sriram V <vshrirama@gmail.com>
-Subject: double deletion of timer.
-Date: Mon, 27 Jan 2014 14:32:07 +0530
-Message-ID: <CAH9_wRP-LQnenkBrG2i96G4zKTiWsQH1BXHoPCD5Kw0xam=fPQ@mail.gmail.com>
+Subject: Re: double deletion of timer.
+Date: Mon, 27 Jan 2014 20:46:08 +0530
+Message-ID: <CAH9_wRMXcaFE8e+MRkTP-zK1AChpDfrYLgL+R4uoKLO3qRY=+w@mail.gmail.com>
+References: <CAH9_wRP-LQnenkBrG2i96G4zKTiWsQH1BXHoPCD5Kw0xam=fPQ@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        bh=edWsHmebRdintKG5Seeu8eqn9kOf21UoL3lAGgwNuAk=;
-        b=Lum0M/e/SNLkiYzSeuRTm7Z6iA3COHFIUr/O/578xfdObaD9hQAeUh3niDfcxrqw/Y
-         zmTf2kIq7HUI+yWGr+iDGTczQ6wwb+zVaMwyRm9oDUcNxqV7fG1X3WDulWSEwX6tLIpL
-         CE1NGkDervqIM7JiWXdI3hQij8iudFslSH48DM4HBKeVcg41uiJYh6y6aDKThoNqLTft
-         g+o3Msw/IVO8uOEBoy7Ym3Aie43+aSxj9AKeGsCr6AY/FEKvUNABQrTezXsuTnMQISW2
-         +O8nT/uxaDum3wg8A4CvItmspG3ml/ydSkTmfZxEcxy9nygrRh8q0/+Gl90uGh5bOh3+
-         wx8w==
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        bh=7c584vEnJkr783Cdxzyryv/PcLIZD3BJz18PN4t120I=;
+        b=CHLL7GB0zAElxoxAjKx5iwFN7BrWtwFmTGD43uvQwWUfU56K2HoL56M9K7/1vWNlHx
+         bVLV3k+CaWirC3sCWl+V4xDCox099ZQc1Ofv2t6+xUbpv9qHTUEaAieRqa8fIJhRDDji
+         16S9LGd6S1GSoqAFpaeKrhVVH8gWH7Mx/de75T37S+9Y7sjaO30ByQ4xt16YY4D4cE0n
+         QWUYNfPoiUMYMQ/jVPpVYhgkqLfpcVJ2NE+QrYYqVMzQVrDLIsfbPrqP1LC0+hgayTui
+         /WYEclMY6BYPGlXIzSAZfezmmm4O6cQ4m79CxARPspvMuI0St0OGczuvRLmctZVEXHzg
+         jenA==
+In-Reply-To: <CAH9_wRP-LQnenkBrG2i96G4zKTiWsQH1BXHoPCD5Kw0xam=fPQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org, viresh.kumar@linaro.org
+
+Looping in linux-pm and viresh to see if they can advice.
+
 
 Hi,
 
-I am trying to debug an random issue in which __list_del gets a prev
+am trying to debug an random issue in which __list_del gets a prev
 pointer which is LIST_POISON, But the next pointer contains a valid
 value.
 There seems to be a double deletion. Since the next pointer is valid -
@@ -52,7 +59,8 @@ psr: 20030193
 <4>[57.235326079 C0 104 ]    [<c004487c>]
 (detach_if_pending+0x48/0x11c) from [<c0044c5c>] (del_timer+0x48/0x64)
 <4>[57.244710310 C0 104 ]    [<c0044c5c>] (del_timer+0x48/0x64) from
-[<c0052b44>] (try_to_grab_pending+0x40/0x188)
+[<c0052b44>] (try_to_grab_pending+0x40/
+0x188)
 <4>[57.254264695 C0 104 ]    [<c0052b44>]
 (try_to_grab_pending+0x40/0x188) from [<c0052ec8>]
 (mod_delayed_work_on+0x38/0x94)
@@ -70,8 +78,3 @@ from [<c0051f0c>] (process_one_work+0x158/0x4b4)
 from [<c0058d34>] (kthread+0xb4/0xc0)
 <4>[57.312546925 C0 104 ]    [<c0058d34>] (kthread+0xb4/0xc0) from
 [<c000ffc8>] (ret_from_fork+0x14/0x20)
-
-
-
-Regards,
-Sriram
