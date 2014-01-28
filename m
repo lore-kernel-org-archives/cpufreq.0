@@ -1,221 +1,258 @@
-From: Benoit Pradelle <benoit.pradelle@uvsq.fr>
-Subject: Re: Kernel taint on setspeed
-Date: Tue, 28 Jan 2014 16:52:38 +0100
-Message-ID: <52E7D246.3010100@uvsq.fr>
-References: <52DD2DE4.6080002@uvsq.fr> <CAOh2x=nF52vaDajLsQTCho_OTJz=2tKyW2nAbMiau7sTgk58WQ@mail.gmail.com>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH v2 1/7] cpufreq: cpufreq-cpu0: allow optional safe voltage
+ during frequency transitions
+Date: Tue, 28 Jan 2014 10:47:44 -0800
+Message-ID: <CAPtuhTj2ZOb+5LDbqghuOhQZfVy8i1xuWotoZ6ocbJFgMxnSMQ@mail.gmail.com>
+References: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
+ <1390047057-2239-2-git-send-email-thomas.ab@samsung.com> <20140127202543.4167.83362@quantum>
+ <CAJuA9ah1vsgpD04QhM5RApkCe9xcvpPkLvdwzgadKGWvngAt+g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=nF52vaDajLsQTCho_OTJz=2tKyW2nAbMiau7sTgk58WQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAJuA9ah1vsgpD04QhM5RApkCe9xcvpPkLvdwzgadKGWvngAt+g@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thomas Abraham <ta.omasab@gmail.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, thomas.ab@samsung.com
 
-Hi,
+On Mon, Jan 27, 2014 at 9:30 PM, Thomas Abraham <ta.omasab@gmail.com> wrote:
+> Hi Mike,
+>
+> On Tue, Jan 28, 2014 at 1:55 AM, Mike Turquette <mturquette@linaro.org> wrote:
+>> Quoting Thomas Abraham (2014-01-18 04:10:51)
+>>> From: Thomas Abraham <thomas.ab@samsung.com>
+>>>
+>>> On some platforms such as the Samsung Exynos, changing the frequency
+>>> of the CPU clock requires changing the frequency of the PLL that is
+>>> supplying the CPU clock. To change the frequency of the PLL, the CPU
+>>> clock is temporarily reparented to another parent clock.
+>>>
+>>> The clock frequency of this temporary parent clock could be much higher
+>>> than the clock frequency of the PLL at the time of reparenting. Due
+>>> to the temporary increase in the CPU clock speed, the CPU (and any other
+>>> components in the CPU clock domain such as dividers, mux, etc.) have to
+>>> to be operated at a higher voltage level, called the safe voltage level.
+>>> This patch adds optional support to temporarily switch to a safe voltage
+>>> level during CPU frequency transitions.
+>>>
+>>> Cc: Shawn Guo <shawn.guo@linaro.org>
+>>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+>>
+>> I'm not a fan of this change. This corner case should be abstracted away
+>> somehow. I had talked to Chander Kayshap previously about handling
+>> voltage changes in clock notifier callbacks, which then renders any
+>> voltage change as a trivial part of the clock rate transition. That
+>> means that this "safe voltage" thing could be handled automagically
+>> without any additional code in the CPUfreq driver.
+>>
+>> There are two nice ways to do this with the clock framework. First is
+>> explicit re-parenting with voltage scaling done in the clock rate-change
+>> notifiers:
+>>
+>> clk_set_parent(cpu_clk, temp_parent);
+>> /* implicit voltage scaling to "safe voltage" happens above */
+>> clk_set_rate(pll, some_rate);
+>> clk_set_parent(cpu_clk, pll);
+>> /* implicit voltage scaling to nominal OPP voltage happens above */
+>>
+>> The above sequence would require a separate exnyos CPUfreq driver, due
+>> to the added clk_set_parent logic.
+>>
+>> The second way to do this is to abstract the clk re-muxing logic out
+>> into the clk driver, which would allow cpufreq-cpu0 to be used for the
+>> exynos chips.
+>
+> This is the approach this patch series takes (patch 2/7). The clock
+> re-muxing logic is handled by a clock driver code. The difference from
+> what you suggested is that the safe voltage (that may be optionally)
+> required before doing the re-muxing is handled here in cpufreq-cpu0
+> driver.
 
-I have trouble reproducing the issue even on 3.12 kernels as it happens=
-=20
-rarely. I've installed a 3.13 and will inform you if I encounter again=20
-the same issue.
+Right, I understand the approach taken in this series and I'm not sure
+it is the right one. Why does the clock driver handle the remuxing if
+it is a functional dependency of the ARM core? As far as I can tell
+the remux does not happen because it is necessary to generate the
+required clock rate, but because we don't want to run the ARM core out
+of spec for a short time while the PLL relocks. Assuming I have that
+part of it right, I prefer for the parent mux operation to be a part
+of the CPUfreq driver's .target callback instead of hidden away in the
+clock driver.
+
+A common pattern I'm seeing for the last 18 months is code
+consolidation for the sake of code consolidation and it is not always
+a good thing. Having hardware-specific machine drivers under
+drivers/cpufreq/ is the right way to go, and we should only
+consolidate a driver to cpufreq-cpu0 if it makes sense.
+
+>
+> The safe voltage setup can be done in the notifier as you suggested.
+> But, doing that in cpufreq-cpu0 driver will help other platforms reuse
+> this feature if required. Also, if done here, the regulator handling
+> is localized in this driver which otherwise would need to be handled
+> in two places, cpufreq-cpu0 driver and the clock notifier.
+
+The notifiers are reusable across other platforms. And the notifier
+can be entirely set up within the cpufreq driver. Code location is not
+a problem. See this RFC series:
+https://lkml.org/lkml/2013/7/7/110
+
+>
+> So I tend to prefer the approach in this patch but I am willing to
+> consider any suggestions. Shawn, it would be helpful if you could let
+> us know your thoughts on this. I am almost done with testing the v3 of
+> this series and want to post it so if there are any objections to the
+> changes in this patch, please let me know.
+
+Well I wonder if the whole approach could be more generalized. The DT
+bindings for CPU frequencies could be used by any platform instead of
+being Exynos-specific. We could construct a binding which captures an
+arbitrary clock sub-tree snapshot. By that I mean a DT binding in
+which any number of clocks and their parents and rates could be
+specified in a table. Separately we could have a binding that links a
+given clock at a given rate to some specified regulator and voltage.
+So in this way the bindings are re-usable.
+
+These DT ideas should be considered separately from the CPUfreq notes
+outlined above, and I will respond to patch #3 in this series once I
+have a chance.
 
 Thanks,
+Mike
 
-Benoit.
-
-Le 21/01/2014 09:49, Viresh Kumar a =E9crit :
-> On Mon, Jan 20, 2014 at 7:38 PM, Benoit Pradelle
-> <benoit.pradelle@uvsq.fr> wrote:
->> Hi all,
->>
->> On Linux 3.12.6 over an Intel x86 processor (with intel_pstate=3Ddis=
-able), I
->> am trying to change the frequency with the following command sequenc=
-e:
->>
->> echo "userspace" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_=
-governor
->> echo "3000000" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_se=
-tspeed
->>
->> It used to work well on older kernels, but since a recent (unknown) =
-kernel
->> version, the last command occasionaly never returns but I got the fo=
-llowing
->> log:
->>
->> [344746.428121] ------------[ cut here ]------------
->> [344746.428132] WARNING: CPU: 7 PID: 1882 at
->> /build/linux-xS3nxO/linux-3.12.6/drivers/cpufreq/cpufreq_governor.c:=
-203
->> cpufreq_governor_dbs+0x6a2/0x710()
->> [344746.428134] Modules linked in: msr cpufreq_userspace nfsv3 parpo=
-rt_pc
->> ppdev lp parport bnep rfcomm bluetooth ip6table_filter ip6_tables
->> iptable_filter ip_tables x_tables autofs4 tun pci_stub vboxpci(O)
->> vboxnetadp(O) vboxnetflt(O) vboxdrv(O) binfmt_misc uinput nfsd auth_=
-rpcgss
->> oid_registry nfs_acl nfs lockd fscache sunrpc fuse loop joydev hid_g=
-eneric
->> usbhid hid snd_hda_codec_hdmi x86_pkg_temp_thermal snd_hda_codec_rea=
-ltek
->> snd_hda_intel snd_hda_codec intel_powerclamp snd_hwdep coretemp kvm_=
-intel
->> kvm crc32_pclmul nvidia(PO) snd_pcm iTCO_wdt iTCO_vendor_support
->> snd_page_alloc crc32c_intel ghash_clmulni_intel hp_wmi sparse_keymap=
- evdev
->> rfkill acpi_cpufreq processor psmouse snd_seq snd_seq_device snd_tim=
-er snd
->> mei_me aesni_intel wmi pcspkr i2c_i801 serio_raw aes_x86_64 ablk_hel=
-per
->> cryptd lrw gf128mul soundcore mei glue_helper lpc_ich mfd_core i2c_c=
-ore
->> button ext4 crc16 mbcache jbd2 sg sd_mod sr_mod crc_t10dif crct10dif=
-_common
->> cdrom xhci_hcd ahci libahci ehci_pci ehci_hcd libata scsi_mod e1000e=
- usbcore
->> usb_common ptp pps_core thermal fan thermal_sys
->> [344746.428213] CPU: 7 PID: 1882 Comm: tee Tainted: P           O
->> 3.12-1-amd64 #1 Debian 3.12.6-2
->> [344746.428215] Hardware name: Hewlett-Packard HP Z220 CMT Workstati=
-on/1790,
->> BIOS K51 v01.14 09/27/2012
->> [344746.428217]  0000000000000009 ffffffff8148c9d5 0000000000000000
->> ffffffff8105b572
->> [344746.428221]  0000000000000000 ffff880037046a00 0000000000000007
->> 0000000000000002
->> [344746.428224]  ffffffff81881fe0 ffffffff81376732 ffffffff8148f559
->> ffff88033449dd00
->> [344746.428228] Call Trace:
->> [344746.428237]  [<ffffffff8148c9d5>] ? dump_stack+0x41/0x51
->> [344746.428245]  [<ffffffff8105b572>] ? warn_slowpath_common+0x72/0x=
-90
->> [344746.428248]  [<ffffffff81376732>] ? cpufreq_governor_dbs+0x6a2/0=
-x710
->> [344746.428253]  [<ffffffff8148f559>] ? mutex_lock+0x9/0x30
->> [344746.428261]  [<ffffffffa02d600f>] ?
->> acpi_processor_ppc_notifier+0xc0/0xc4 [processor]
->> [344746.428267]  [<ffffffff81495c64>] ? notifier_call_chain+0x44/0x7=
-0
->> [344746.428274]  [<ffffffff81372b84>] ? __cpufreq_governor+0xf4/0x28=
-0
->> [344746.428277]  [<ffffffff81373b59>] ? __cpufreq_set_policy+0x129/0=
-x1f0
->> [344746.428280]  [<ffffffff81373fa5>] ? store_scaling_governor+0xd5/=
-0x1e0
->> [344746.428284]  [<ffffffff81373d30>] ? cpufreq_update_policy+0x110/=
-0x110
->> [344746.428287]  [<ffffffff81373902>] ? store+0x72/0xb0
->> [344746.428292]  [<ffffffff811deba9>] ? sysfs_write_file+0xb9/0x140
->> [344746.428297]  [<ffffffff81173113>] ? vfs_write+0xb3/0x1e0
->> [344746.428301]  [<ffffffff81173b23>] ? SyS_write+0x43/0xa0
->> [344746.428305]  [<ffffffff81499b39>] ? system_call_fastpath+0x16/0x=
-1b
->> [344746.428307] ---[ end trace 42394bba698a65fd ]---
->> [344746.428314] BUG: unable to handle kernel NULL pointer dereferenc=
-e at
->> (null)
->> [344746.428317] IP: [<ffffffff813760df>] cpufreq_governor_dbs+0x4f/0=
-x710
->> [344746.428321] PGD 3be4fe067 PUD 35dc6a067 PMD 0
->> [344746.428325] Oops: 0000 [#1] SMP
->> [344746.428327] Modules linked in: msr cpufreq_userspace nfsv3 parpo=
-rt_pc
->> ppdev lp parport bnep rfcomm bluetooth ip6table_filter ip6_tables
->> iptable_filter ip_tables x_tables autofs4 tun pci_stub vboxpci(O)
->> vboxnetadp(O) vboxnetflt(O) vboxdrv(O) binfmt_misc uinput nfsd auth_=
-rpcgss
->> oid_registry nfs_acl nfs lockd fscache sunrpc fuse loop joydev hid_g=
-eneric
->> usbhid hid snd_hda_codec_hdmi x86_pkg_temp_thermal snd_hda_codec_rea=
-ltek
->> snd_hda_intel snd_hda_codec intel_powerclamp snd_hwdep coretemp kvm_=
-intel
->> kvm crc32_pclmul nvidia(PO) snd_pcm iTCO_wdt iTCO_vendor_support
->> snd_page_alloc crc32c_intel ghash_clmulni_intel hp_wmi sparse_keymap=
- evdev
->> rfkill acpi_cpufreq processor psmouse snd_seq snd_seq_device snd_tim=
-er snd
->> mei_me aesni_intel wmi pcspkr i2c_i801 serio_raw aes_x86_64 ablk_hel=
-per
->> cryptd lrw gf128mul soundcore mei glue_helper lpc_ich mfd_core i2c_c=
-ore
->> button ext4 crc16 mbcache jbd2 sg sd_mod sr_mod crc_t10dif crct10dif=
-_common
->> cdrom xhci_hcd ahci libahci ehci_pci ehci_hcd libata scsi_mod e1000e=
- usbcore
->> usb_common ptp pps_core thermal fan thermal_sys
->> [344746.428386] CPU: 7 PID: 1882 Comm: tee Tainted: P        W  O
->> 3.12-1-amd64 #1 Debian 3.12.6-2
->> [344746.428388] Hardware name: Hewlett-Packard HP Z220 CMT Workstati=
-on/1790,
->> BIOS K51 v01.14 09/27/2012
->> [344746.428390] task: ffff8803a3f03080 ti: ffff88033449c000 task.ti:
->> ffff88033449c000
->> [344746.428391] RIP: 0010:[<ffffffff813760df>]  [<ffffffff813760df>]
->> cpufreq_governor_dbs+0x4f/0x710
->> [344746.428395] RSP: 0018:ffff88033449dc50  EFLAGS: 00010293
->> [344746.428397] RAX: 0000000000000024 RBX: 0000000000000000 RCX:
->> 0000000000000006
->> [344746.428398] RDX: 0000000000000007 RSI: 0000000000000000 RDI:
->> 0000000000000009
->> [344746.428400] RBP: ffff880037046a00 R08: 000000000000000a R09:
->> 0000000000000376
->> [344746.428402] R10: 0000000000000000 R11: ffff88033449d986 R12:
->> 0000000000000007
->> [344746.428403] R13: 0000000000000002 R14: ffffffff81881fe0 R15:
->> ffff88040cba16d8
->> [344746.428406] FS:  00007f4067ae6700(0000) GS:ffff88041ddc0000(0000=
-)
->> knlGS:0000000000000000
->> [344746.428407] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->> [344746.428409] CR2: 0000000000000000 CR3: 000000035dc7d000 CR4:
->> 00000000001407e0
->> [344746.428411] Stack:
->> [344746.428412]  ffffffff8148f559 ffff88033449dd00 ffffffffa02d600f
->> 00000000fffffffe
->> [344746.428415]  ffffffff81495c64 ffffffff81881be0 0000000000000000
->> ffff880037046a00
->> [344746.428419]  0000000000000002 ffffffff81881d00 ffff8803df64b000
->> 000000000000000a
->> [344746.428422] Call Trace:
->> [344746.428425]  [<ffffffff8148f559>] ? mutex_lock+0x9/0x30
->> [344746.428432]  [<ffffffffa02d600f>] ?
->> acpi_processor_ppc_notifier+0xc0/0xc4 [processor]
->> [344746.428436]  [<ffffffff81495c64>] ? notifier_call_chain+0x44/0x7=
-0
->> [344746.428440]  [<ffffffff81372b84>] ? __cpufreq_governor+0xf4/0x28=
-0
->> [344746.428443]  [<ffffffff81373b59>] ? __cpufreq_set_policy+0x129/0=
-x1f0
->> [344746.428446]  [<ffffffff81373fa5>] ? store_scaling_governor+0xd5/=
-0x1e0
->> [344746.428449]  [<ffffffff81373d30>] ? cpufreq_update_policy+0x110/=
-0x110
->> [344746.428452]  [<ffffffff81373902>] ? store+0x72/0xb0
->> [344746.428456]  [<ffffffff811deba9>] ? sysfs_write_file+0xb9/0x140
->> [344746.428459]  [<ffffffff81173113>] ? vfs_write+0xb3/0x1e0
->> [344746.428463]  [<ffffffff81173b23>] ? SyS_write+0x43/0xa0
->> [344746.428466]  [<ffffffff81499b39>] ? system_call_fastpath+0x16/0x=
-1b
->> [344746.428468] Code: c0 0f 84 55 02 00 00 48 8b 9d b0 00 00 00 48 8=
-5 db 0f
->> 84 4c 06 00 00 41 83 fd 04 0f 84 7b 02 00 00 41 83 fd 05 0f 84 41 02=
- 00 00
->> <48> 8b 03 44 89 e7 ff 50 20 48 89 44 24 08 48 8b 03 83 38 01 0f
->> [344746.428500] RIP  [<ffffffff813760df>] cpufreq_governor_dbs+0x4f/=
-0x710
->> [344746.428503]  RSP <ffff88033449dc50>
->> [344746.428504] CR2: 0000000000000000
->> [344746.428507] ---[ end trace 42394bba698a65fe ]---
->>
->> Can anyone help with that?
 >
-> Can you confirm if you see the same on latest kernel as well? i.e. 3.=
-13.
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Thanks,
+> Thomas.
 >
+>>
+>> I'm more a fan of explicitly listing the Exact Steps for the cpu opp
+>> transition in a separate exynos-specific CPUfreq driver, but that's
+>> probably an unpopular view.
+>>
+>> Regards,
+>> Mike
+>>
+>>> ---
+>>>  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    7 ++++
+>>>  drivers/cpufreq/cpufreq-cpu0.c                     |   37 +++++++++++++++++--
+>>>  2 files changed, 40 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+>>> index f055515..37453ab 100644
+>>> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+>>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+>>> @@ -19,6 +19,12 @@ Optional properties:
+>>>  - cooling-min-level:
+>>>  - cooling-max-level:
+>>>       Please refer to Documentation/devicetree/bindings/thermal/thermal.txt.
+>>> +- safe-opp: Certain platforms require that during a opp transition,
+>>> +  a system should not go below a particular opp level. For such systems,
+>>> +  this property specifies the minimum opp to be maintained during the
+>>> +  opp transitions. The safe-opp value is a tuple with first element
+>>> +  representing the safe frequency and the second element representing the
+>>> +  safe voltage.
+>>>
+>>>  Examples:
+>>>
+>>> @@ -36,6 +42,7 @@ cpus {
+>>>                         396000  950000
+>>>                         198000  850000
+>>>                 >;
+>>> +               safe-opp = <396000 950000>
+>>>                 clock-latency = <61036>; /* two CLK32 periods */
+>>>                 #cooling-cells = <2>;
+>>>                 cooling-min-level = <0>;
+>>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+>>> index 0c12ffc..075d3d1 100644
+>>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>>> @@ -27,6 +27,8 @@
+>>>
+>>>  static unsigned int transition_latency;
+>>>  static unsigned int voltage_tolerance; /* in percentage */
+>>> +static unsigned long safe_frequency;
+>>> +static unsigned long safe_voltage;
+>>>
+>>>  static struct device *cpu_dev;
+>>>  static struct clk *cpu_clk;
+>>> @@ -64,17 +66,30 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+>>>                 volt_old = regulator_get_voltage(cpu_reg);
+>>>         }
+>>>
+>>> -       pr_debug("%u MHz, %ld mV --> %u MHz, %ld mV\n",
+>>> +       pr_debug("\n\n%u MHz, %ld mV --> %u MHz, %ld mV\n",
+>>>                  old_freq / 1000, volt_old ? volt_old / 1000 : -1,
+>>>                  new_freq / 1000, volt ? volt / 1000 : -1);
+>>>
+>>>         /* scaling up?  scale voltage before frequency */
+>>> -       if (!IS_ERR(cpu_reg) && new_freq > old_freq) {
+>>> +       if (!IS_ERR(cpu_reg) && new_freq > old_freq &&
+>>> +                               new_freq >= safe_frequency) {
+>>>                 ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+>>>                 if (ret) {
+>>>                         pr_err("failed to scale voltage up: %d\n", ret);
+>>>                         return ret;
+>>>                 }
+>>> +       } else if (!IS_ERR(cpu_reg) && old_freq < safe_frequency) {
+>>> +               /*
+>>> +                * the scaled up voltage level for the new_freq is lower
+>>> +                * than the safe voltage level. so set safe_voltage
+>>> +                * as the intermediate voltage level and revert it
+>>> +                * back after the frequency has been changed.
+>>> +                */
+>>> +               ret = regulator_set_voltage_tol(cpu_reg, safe_voltage, tol);
+>>> +               if (ret) {
+>>> +                       pr_err("failed to set safe voltage: %d\n", ret);
+>>> +                       return ret;
+>>> +               }
+>>>         }
+>>>
+>>>         ret = clk_set_rate(cpu_clk, freq_exact);
+>>> @@ -86,7 +101,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+>>>         }
+>>>
+>>>         /* scaling down?  scale voltage after frequency */
+>>> -       if (!IS_ERR(cpu_reg) && new_freq < old_freq) {
+>>> +       if (!IS_ERR(cpu_reg) &&
+>>> +                       (new_freq < old_freq || new_freq < safe_frequency)) {
+>>>                 ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+>>>                 if (ret) {
+>>>                         pr_err("failed to scale voltage down: %d\n", ret);
+>>> @@ -116,6 +132,8 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
+>>>
+>>>  static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>>>  {
+>>> +       const struct property *prop;
+>>> +       struct dev_pm_opp *opp;
+>>>         struct device_node *np;
+>>>         int ret;
+>>>
+>>> @@ -165,13 +183,24 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>>>                 goto out_put_node;
+>>>         }
+>>>
+>>> +       prop = of_find_property(np, "safe-opp", NULL);
+>>> +       if (prop) {
+>>> +               if (prop->value && (prop->length / sizeof(u32)) == 2) {
+>>> +                       const __be32 *val;
+>>> +                       val = prop->value;
+>>> +                       safe_frequency = be32_to_cpup(val++);
+>>> +                       safe_voltage = be32_to_cpup(val);
+>>> +               } else {
+>>> +                       pr_err("invalid safe-opp level specified\n");
+>>> +               }
+>>> +       }
+>>> +
+>>>         of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
+>>>
+>>>         if (of_property_read_u32(np, "clock-latency", &transition_latency))
+>>>                 transition_latency = CPUFREQ_ETERNAL;
+>>>
+>>>         if (!IS_ERR(cpu_reg)) {
+>>> -               struct dev_pm_opp *opp;
+>>>                 unsigned long min_uV, max_uV;
+>>>                 int i;
+>>>
+>>> --
+>>> 1.6.6.rc2
+>>>
