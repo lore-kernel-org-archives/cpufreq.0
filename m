@@ -1,219 +1,90 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v2 1/7] cpufreq: cpufreq-cpu0: allow optional safe voltage
- during frequency transitions
-Date: Mon, 3 Feb 2014 21:36:39 +0530
-Message-ID: <CAJuA9aiKAq5Q_PR_aCGU2QvLDhRWkc3JFHTzKFhcv9q=rJbbSw@mail.gmail.com>
-References: <1390047057-2239-1-git-send-email-thomas.ab@samsung.com>
-	<CAPtuhTj2ZOb+5LDbqghuOhQZfVy8i1xuWotoZ6ocbJFgMxnSMQ@mail.gmail.com>
-	<CAJuA9ajLUPtsReomPuuzMpshTEiUz81sc4584DEVQnG=iwGb-g@mail.gmail.com>
-	<2009408.gnUEcoqA3p@phil>
-	<20140201041051.9977.46568@quantum>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH] cpufreq: cpu0: make THERMAL_CPU support optional
+Date: Mon, 3 Feb 2014 10:14:40 -0600
+Message-ID: <CAL_JsqLVABkE=FAefKthjn-oLitsDitJOktjqGwXM_Rqp3A5jQ@mail.gmail.com>
+References: <1391295009-10844-1-git-send-email-robherring2@gmail.com>
+	<CAKohpomT2Nu2B7-jMA=776N4L9pknsYxvT5QdiHkKk3Ubwivjg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        bh=dndIWrsuQfAoA2D21Q/9zIRoTAPcHT9nqZK7b38a4D4=;
-        b=jgvqD/VM8PJ8WtKLQBLF7Sv8vyYO+6xII4o8hYxYo2ZqOljqrLi13HPOEEx5IyN80u
-         Lg9N63qH8AiGbyAqucy4kIc5VN2k/d9GIuJJOcqlXM24OdPcPbVrt6i7mShajzWwC3UY
-         diWCEy9Z+hK74hIRJOPdC0U775VCAq5eSX9rwT1nnkT+VSXlQC9uzXkqjSLHvZHcVASD
-         J2ZOY7DBL+sBapaQ4xhYf8BRAHnjHo3jcvkC3E7rAJWAcKALxlMfGvo6/JPWKLMJiSev
-         c6M1B4Grytj8V5ZV/jgG35qWddp8cJfquW/FsRFcJWbYz8SQBRdf4PemyGb8LueumIkM
-         N2PQ==
-In-Reply-To: <20140201041051.9977.46568@quantum>
+         :cc:content-type;
+        bh=PWDvd1pnWLy93RVg/ux4LA/RUH/nBFrl0wo+fAHrGYg=;
+        b=p0cB8fHl7ijqYtLW7ngDPE2q1GPH3MdrBrpWMHxmlP0uM3DRkjPavRUqzGeU1C/Jnt
+         QJtn8QesdteR2raMvWnLJcP41O6tznv3PWVOfbXBbxXeU+sKc2WQC0Efu9/Id7S28p83
+         xhm5sCTFA6L7cLTqB5C9hz6UK+eSmXa/1AY7+tuV97S550C6SZwViFDQNRVi2D5Zuqnl
+         JZ0MA+xPQr6MIprWmFgXf05ANWyzC4+Gj+25uoXDH1lCFqgoUG2aP65hc/BuLVt9eZ/7
+         DGv0ipfgBIXp8xPzPlC/lyB16D15/gCqQ7yIDsU9E9rnhr86OBJVBgj4HKNs3fI59d0z
+         SXlA==
+In-Reply-To: <CAKohpomT2Nu2B7-jMA=776N4L9pknsYxvT5QdiHkKk3Ubwivjg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Mike Turquette <mturquette@linaro.org>
-Cc: =?ISO-8859-1?Q?Heiko_St=FCbner?= <heiko@sntech.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, thomas.ab@samsung.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Sat, Feb 1, 2014 at 9:40 AM, Mike Turquette <mturquette@linaro.org> =
-wrote:
-> Quoting Heiko St=FCbner (2014-01-30 07:09:04)
->> On Thursday, 30. January 2014 18:23:44 Thomas Abraham wrote:
->> > Hi Mike,
->> >
->> > On Wed, Jan 29, 2014 at 12:17 AM, Mike Turquette <mturquette@linar=
-o.org>
->> wrote:
->> > > On Mon, Jan 27, 2014 at 9:30 PM, Thomas Abraham <ta.omasab@gmail=
-=2Ecom>
->> wrote:
->> > >> Hi Mike,
->> > >>
->> > >> On Tue, Jan 28, 2014 at 1:55 AM, Mike Turquette <mturquette@lin=
-aro.org>
->> wrote:
->> > >>> Quoting Thomas Abraham (2014-01-18 04:10:51)
->> > >>>
->> > > As far as I can tell
->> > > the remux does not happen because it is necessary to generate th=
-e
->> > > required clock rate, but because we don't want to run the ARM co=
-re out
->> > > of spec for a short time while the PLL relocks. Assuming I have =
-that
->> > > part of it right, I prefer for the parent mux operation to be a =
-part
->> > > of the CPUfreq driver's .target callback instead of hidden away =
-in the
->> > > clock driver.
->> >
->> > The re-parenting is mostly done to keep the ARM CPU clocked while =
-the
->> > PLL is stopped, reprogrammed and restarted. One of the side effect=
-s of
->> > that is, the clock speed of the temporary parent could be higher t=
-hen
->> > what is allowed due to the ARM voltage at the time of re-parenting=
-=2E
->> > That is the reason to use the safe voltage.
+On Mon, Feb 3, 2014 at 12:05 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Cc'ing the guy who introduced this bug..
+>
+> On 2 February 2014 04:20, Rob Herring <robherring2@gmail.com> wrote:
+>> From: Rob Herring <robh@kernel.org>
 >>
->> The Rockchip-SoCs use something similar, so I'm following quite clos=
-ely what
->> Thomas is trying to do here, as similar solution would also solve th=
-is issue
->> for me.
+>> The addition of THERMAL and THERMAL_CPU selections causes a kconfig
+>> warning on highbank platforms:
 >>
->> On some Rockchip-SoCs even stuff like pclk and hclk seems to be sour=
-ced from
->> the divided armclk, creating additional constraints.
+>> warning: (ARM_HIGHBANK_CPUFREQ) selects GENERIC_CPUFREQ_CPU0 which has
+>> unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && HAVE_CLK &&
+>>  REGULATOR && OF && THERMAL && CPU_THERMAL)
 >>
->> But on the RKs (at least in the upstream sources) the armclk is simp=
-ly equal
->> to the pll output. A divider exists, but is only used to make sure t=
-hat the
->> armclk stays below the original rate when sourced from the temp-pare=
-nt, like
+>> The cpufreq-cpu0 driver does not require thermal zone support, and it
+>> should be selectable independently. Add a new kconfig option to enable
+>> this feature.
 >>
->>         if (clk_get_rate(temp_parent) > clk_get_rate(main_parent)
->>                 set_divider(something so that rate(temp) <=3D rate(m=
-ain)
->>         clk_set_parent(...)
+>> Reported-by: Olof Johansson <olof@lixom.net>
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: cpufreq@vger.kernel.org
+>> Signed-off-by: Rob Herring <robh@kernel.org>
+>> ---
+>>  drivers/cpufreq/Kconfig | 10 +++++++++-
+>>  1 file changed, 9 insertions(+), 1 deletion(-)
 >>
->> Isn't there a similar possiblity on your platform, as it would remov=
-e the need
->> for the safe-voltage?
+>> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+>> index 4b029c0..a197a04a 100644
+>> --- a/drivers/cpufreq/Kconfig
+>> +++ b/drivers/cpufreq/Kconfig
+>> @@ -185,7 +185,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
 >>
+>>  config GENERIC_CPUFREQ_CPU0
+>>         tristate "Generic CPU0 cpufreq driver"
+>> -       depends on HAVE_CLK && REGULATOR && OF && THERMAL && CPU_THERMAL
+>> +       depends on HAVE_CLK && REGULATOR && OF
+>
+> That's fine as code would still compile due to dummy routines..
+>
+>>         select PM_OPP
+>>         help
+>>           This adds a generic cpufreq driver for CPU0 frequency management.
+>> @@ -194,6 +194,14 @@ config GENERIC_CPUFREQ_CPU0
 >>
->> In general I also like the approach of hiding the rate-change logic =
-inside
->> this composite clock, as the depending clocks can be easily kept in =
-sync. As
->> with the Rockchips the depending clocks are different for each of th=
-e three
->> Cortex-A9 SoCs I looked at, it would be "interesting" if all of this=
- would
->> need to be done in a cpufreq driver.
+>>           If in doubt, say N.
+>>
+>> +config GENERIC_CPUFREQ_CPU0_THERMAL
+>> +       bool "Thermal zone support for Generic CPU0 cpufreq"
+>> +       depends on GENERIC_CPUFREQ_CPU0
+>> +       select THERMAL
+>> +       select THERMAL_CPU
+>> +       help
+>> +         This adds thermal support to the generic cpufreq driver for CPU0.
 >
-> I wonder if hiding these details inside of the composite clock
-> implementation indicates the lack of some needed feature in the clk
-> core? I've discussed the idea of "coordinated rate changes" before. E=
-=2Eg:
->
-> _________________________________________________________
-> |  clk  |  opp-low      |  opp-mid      |  opp-fast     |
-> |       |               |               |               |
-> |pll    | 300000        |  600000       |  600000       |
-> |       |               |               |               |
-> |div    | 150000        |  300000       |  600000       |
-> |       |               |               |               |
-> |mpu_clk| 150000        |  300000       |  600000       |
-> |       |               |               |               |
-> |periph | 150000        |  150000       |  300000       |
-> ---------------------------------------------------------
->
-> A call to clk_set_rate() against any of those clocks will result in a=
-ll
-> of their dividers being updated. At the implementation level this mig=
-ht
-> look something like this extremely simplified pseudocode:
->
-> int clk_set_rate(struct clk* clk, unsigned long rate)
-> {
->         /* trap clks that support coordinated rate changes */
->         if (clk->ops->coordinate_rate)
->                 return clk->ops->coordinate_rate(clk->hw, rate);
->         ...
-> }
->
-> and,
->
-> struct coord_rates {
->         struct clk_hw *hw;
->         struct clk *parent;
->         struct clk *rate;
-> };
->
-> and in the clock driver,
->
-> #define PLL 0
-> #define DIV 1
-> #define MPU 2
-> #define PER 3
->
-> #define NR_OPP 4
-> #define NR_CLK 4
->
-> struct coord_rates my_opps[NR_OPP][NR_CLK]; // populated from DT data
->
-> int my_coordinate_rate_callback(struct clk_hw *hw, unsigned long rate=
-)
-> {
->         struct coord_rate **selected_opp;
->
->         for(i =3D 0; i < NR_OPP; i++) {
->                 for(j =3D 0; j < NR_CLK; j++) {
->                         if (my_opps[i][j]->hw =3D=3D hw &&
->                                 my_opps[i][j]->rate =3D=3D rate)
->                                 selected_opp =3D my_opps[i];
->                                 break;
->                 }
->         }
->
->         /*
->          * order of operations is specific to my hardware and should =
-be
->          * managed by my clock driver, not generic code
->          */
->
->         __clk_set_parent(selected_opp[DIV]->hw, temp_parent);
->         __clk_set_rate(selected_opp[PLL]->hw, selected_opp[PLL]->rate=
-);
->         __clk_set_parent(selected_opp[DIV]->hw,
->                                 selected_opp[PLL]->hw->clk);
->         ...
->
->         /*
->          * note that the above could be handled by a switch-case or
->          * something else
->          */
-> }
->
-> Thoughts? Please forgive any gaps in my logic or abuse of C.
->
-> I have long thought that something like the above would someday go in=
-to
-> a generic dvfs layer instead of the clock framework, but maybe starti=
-ng
-> with the clk framework makes more sense?
+> But do we really need this? Let the platform enable THERMAL
+> and THERMAL_CPU themselves, as this was the case currently.
 
-Hi Mike,
+That's certainly fine by me, but I don't know which platforms those are.
 
-Yes, this will be very helpful for atomically controlling the rates of
-a group of clocks. This coordinated rate change method can be used
-during the armclk rate changes on Samsung platforms.
+BTW, REGULATOR could probably be dropped as well. It certainly works
+w/o a regulator as highbank does not define one.
 
-Thanks,
-Thomas.
-
->
-> Regards,
-> Mike
->
->>
->>
->> Heiko
->>
+Rob
