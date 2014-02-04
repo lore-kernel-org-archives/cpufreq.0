@@ -1,90 +1,28 @@
-From: Rob Herring <robherring2@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: cpu0: make THERMAL_CPU support optional
-Date: Mon, 3 Feb 2014 10:14:40 -0600
-Message-ID: <CAL_JsqLVABkE=FAefKthjn-oLitsDitJOktjqGwXM_Rqp3A5jQ@mail.gmail.com>
+Date: Tue, 4 Feb 2014 10:44:09 +0530
+Message-ID: <CAKohpo=Q=J1je9jkaDj2nrG9vrbrJvc7kj4KzP=UFeEJbdhvng@mail.gmail.com>
 References: <1391295009-10844-1-git-send-email-robherring2@gmail.com>
 	<CAKohpomT2Nu2B7-jMA=776N4L9pknsYxvT5QdiHkKk3Ubwivjg@mail.gmail.com>
+	<CAL_JsqLVABkE=FAefKthjn-oLitsDitJOktjqGwXM_Rqp3A5jQ@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=PWDvd1pnWLy93RVg/ux4LA/RUH/nBFrl0wo+fAHrGYg=;
-        b=p0cB8fHl7ijqYtLW7ngDPE2q1GPH3MdrBrpWMHxmlP0uM3DRkjPavRUqzGeU1C/Jnt
-         QJtn8QesdteR2raMvWnLJcP41O6tznv3PWVOfbXBbxXeU+sKc2WQC0Efu9/Id7S28p83
-         xhm5sCTFA6L7cLTqB5C9hz6UK+eSmXa/1AY7+tuV97S550C6SZwViFDQNRVi2D5Zuqnl
-         JZ0MA+xPQr6MIprWmFgXf05ANWyzC4+Gj+25uoXDH1lCFqgoUG2aP65hc/BuLVt9eZ/7
-         DGv0ipfgBIXp8xPzPlC/lyB16D15/gCqQ7yIDsU9E9rnhr86OBJVBgj4HKNs3fI59d0z
-         SXlA==
-In-Reply-To: <CAKohpomT2Nu2B7-jMA=776N4L9pknsYxvT5QdiHkKk3Ubwivjg@mail.gmail.com>
+In-Reply-To: <CAL_JsqLVABkE=FAefKthjn-oLitsDitJOktjqGwXM_Rqp3A5jQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: Rob Herring <robherring2@gmail.com>
 Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Mon, Feb 3, 2014 at 12:05 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Cc'ing the guy who introduced this bug..
->
-> On 2 February 2014 04:20, Rob Herring <robherring2@gmail.com> wrote:
->> From: Rob Herring <robh@kernel.org>
->>
->> The addition of THERMAL and THERMAL_CPU selections causes a kconfig
->> warning on highbank platforms:
->>
->> warning: (ARM_HIGHBANK_CPUFREQ) selects GENERIC_CPUFREQ_CPU0 which has
->> unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && HAVE_CLK &&
->>  REGULATOR && OF && THERMAL && CPU_THERMAL)
->>
->> The cpufreq-cpu0 driver does not require thermal zone support, and it
->> should be selectable independently. Add a new kconfig option to enable
->> this feature.
->>
->> Reported-by: Olof Johansson <olof@lixom.net>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: cpufreq@vger.kernel.org
->> Signed-off-by: Rob Herring <robh@kernel.org>
->> ---
->>  drivers/cpufreq/Kconfig | 10 +++++++++-
->>  1 file changed, 9 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
->> index 4b029c0..a197a04a 100644
->> --- a/drivers/cpufreq/Kconfig
->> +++ b/drivers/cpufreq/Kconfig
->> @@ -185,7 +185,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
->>
->>  config GENERIC_CPUFREQ_CPU0
->>         tristate "Generic CPU0 cpufreq driver"
->> -       depends on HAVE_CLK && REGULATOR && OF && THERMAL && CPU_THERMAL
->> +       depends on HAVE_CLK && REGULATOR && OF
->
-> That's fine as code would still compile due to dummy routines..
->
->>         select PM_OPP
->>         help
->>           This adds a generic cpufreq driver for CPU0 frequency management.
->> @@ -194,6 +194,14 @@ config GENERIC_CPUFREQ_CPU0
->>
->>           If in doubt, say N.
->>
->> +config GENERIC_CPUFREQ_CPU0_THERMAL
->> +       bool "Thermal zone support for Generic CPU0 cpufreq"
->> +       depends on GENERIC_CPUFREQ_CPU0
->> +       select THERMAL
->> +       select THERMAL_CPU
->> +       help
->> +         This adds thermal support to the generic cpufreq driver for CPU0.
->
-> But do we really need this? Let the platform enable THERMAL
-> and THERMAL_CPU themselves, as this was the case currently.
+On 3 February 2014 21:44, Rob Herring <robherring2@gmail.com> wrote:
+> That's certainly fine by me, but I don't know which platforms those are.
 
-That's certainly fine by me, but I don't know which platforms those are.
+Probably OMAP as the author came from TI and has tested it on OMAPs
 
-BTW, REGULATOR could probably be dropped as well. It certainly works
-w/o a regulator as highbank does not define one.
+https://lkml.org/lkml/2013/9/26/787
 
-Rob
+> BTW, REGULATOR could probably be dropped as well. It certainly works
+> w/o a regulator as highbank does not define one.
+
+Sure. Get that out as well in the same patch.
