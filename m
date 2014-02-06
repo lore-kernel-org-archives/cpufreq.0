@@ -1,135 +1,110 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH 1/2] cpufreq: imx6q: Drop devm_clk/regulator_get usage
-Date: Thu,  6 Feb 2014 16:11:24 +0100
-Message-ID: <1391699485-2212-1-git-send-email-p.zabel@pengutronix.de>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 35/51] acpi-cpufreq: Fix CPU hotplug callback registration
+Date: Thu, 06 Feb 2014 21:35:51 +0530
+Message-ID: <52F3B2DF.3070104@linux.vnet.ibm.com>
+References: <20140205220251.19080.92336.stgit@srivatsabhat.in.ibm.com> <20140205221052.19080.77507.stgit@srivatsabhat.in.ibm.com> <6272120.pzpJuaTe2d@vostro.rjw.lan>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, Philipp Zabel <p.zabel@pengutronix.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <6272120.pzpJuaTe2d@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, mingo@kernel.org, paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-This driver is using devres managed calls incorrectly, giving the cpu0
-device as first parameter instead of the cpufreq platform device.
-This results in resources not being freed if the cpufreq platform device
-is unbound, for example if probing has to be deferred for a missing
-regulator. This is currently a theoretical problem since the anatop
-regulators are probed earlier, but this might change when adding
-support for external switching regulators.
+On 02/06/2014 06:13 PM, Rafael J. Wysocki wrote:
+> On Thursday, February 06, 2014 03:40:53 AM Srivatsa S. Bhat wrote:
+>> Subsystems that want to register CPU hotplug callbacks, as well as perform
+>> initialization for the CPUs that are already online, often do it as shown
+>> below:
+>>
+>> 	get_online_cpus();
+>>
+>> 	for_each_online_cpu(cpu)
+>> 		init_cpu(cpu);
+>>
+>> 	register_cpu_notifier(&foobar_cpu_notifier);
+>>
+>> 	put_online_cpus();
+>>
+>> This is wrong, since it is prone to ABBA deadlocks involving the
+>> cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+>> with CPU hotplug operations).
+>>
+>> Instead, the correct and race-free way of performing the callback
+>> registration is:
+>>
+>> 	cpu_maps_update_begin();
+>>
+>> 	for_each_online_cpu(cpu)
+>> 		init_cpu(cpu);
+>>
+>> 	/* Note the use of the double underscored version of the API */
+>> 	__register_cpu_notifier(&foobar_cpu_notifier);
+>>
+>> 	cpu_maps_update_done();
+>>
+>>
+>> Fix the acpi-cpufreq code by using this latter form of callback registration.
+>>
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: cpufreq@vger.kernel.org
+>> Cc: linux-pm@vger.kernel.org
+>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> 
+> Looks OK to me.  How does it depend on the rest of your series?
+> 
 
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
----
- drivers/cpufreq/imx6q-cpufreq.c | 53 ++++++++++++++++++++++++++++++-----------
- 1 file changed, 39 insertions(+), 14 deletions(-)
+Thank you! Same here, every patch depends only on the first patch in
+the series. (Except the raid5 and the xen/balloon patches which don't
+have any dependency).
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index ce69059..b1fc5ef 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -171,25 +171,25 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		return -ENOENT;
- 	}
- 
--	arm_clk = devm_clk_get(cpu_dev, "arm");
--	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
--	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
--	step_clk = devm_clk_get(cpu_dev, "step");
--	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
-+	arm_clk = clk_get(cpu_dev, "arm");
-+	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
-+	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
-+	step_clk = clk_get(cpu_dev, "step");
-+	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
- 	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
- 	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
- 		dev_err(cpu_dev, "failed to get clocks\n");
- 		ret = -ENOENT;
--		goto put_node;
-+		goto put_clk;
- 	}
- 
--	arm_reg = devm_regulator_get(cpu_dev, "arm");
--	pu_reg = devm_regulator_get(cpu_dev, "pu");
--	soc_reg = devm_regulator_get(cpu_dev, "soc");
-+	arm_reg = regulator_get(cpu_dev, "arm");
-+	pu_reg = regulator_get(cpu_dev, "pu");
-+	soc_reg = regulator_get(cpu_dev, "soc");
- 	if (IS_ERR(arm_reg) || IS_ERR(pu_reg) || IS_ERR(soc_reg)) {
- 		dev_err(cpu_dev, "failed to get regulators\n");
- 		ret = -ENOENT;
--		goto put_node;
-+		goto put_reg;
- 	}
- 
- 	/*
-@@ -202,21 +202,21 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		ret = of_init_opp_table(cpu_dev);
- 		if (ret < 0) {
- 			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
--			goto put_node;
-+			goto put_reg;
- 		}
- 
- 		num = dev_pm_opp_get_opp_count(cpu_dev);
- 		if (num < 0) {
- 			ret = num;
- 			dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
--			goto put_node;
-+			goto put_reg;
- 		}
- 	}
- 
- 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
- 	if (ret) {
- 		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
--		goto put_node;
-+		goto put_reg;
- 	}
- 
- 	/* Make imx6_soc_volt array's size same as arm opp number */
-@@ -302,7 +302,24 @@ soc_opp_out:
- 
- free_freq_table:
- 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
--put_node:
-+put_reg:
-+	if (!IS_ERR(arm_reg))
-+		regulator_put(arm_reg);
-+	if (!IS_ERR(pu_reg))
-+		regulator_put(pu_reg);
-+	if (!IS_ERR(soc_reg))
-+		regulator_put(soc_reg);
-+put_clk:
-+	if (!IS_ERR(arm_clk))
-+		clk_put(arm_clk);
-+	if (!IS_ERR(pll1_sys_clk))
-+		clk_put(pll1_sys_clk);
-+	if (!IS_ERR(pll1_sw_clk))
-+		clk_put(pll1_sw_clk);
-+	if (!IS_ERR(step_clk))
-+		clk_put(step_clk);
-+	if (!IS_ERR(pll2_pfd2_396m_clk))
-+		clk_put(pll2_pfd2_396m_clk);
- 	of_node_put(np);
- 	return ret;
- }
-@@ -311,6 +328,14 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
- {
- 	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
- 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-+	regulator_put(arm_reg);
-+	regulator_put(pu_reg);
-+	regulator_put(soc_reg);
-+	clk_put(arm_clk);
-+	clk_put(pll1_sys_clk);
-+	clk_put(pll1_sw_clk);
-+	clk_put(step_clk);
-+	clk_put(pll2_pfd2_396m_clk);
- 
- 	return 0;
- }
+But I'll be posting a v2 of this patchset soon with a rename of the
+API..
+
+Regards,
+Srivatsa S. Bhat
+
+>> ---
+>>
+>>  drivers/cpufreq/acpi-cpufreq.c |    7 ++++---
+>>  1 file changed, 4 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+>> index 18448a7..e2eb471 100644
+>> --- a/drivers/cpufreq/acpi-cpufreq.c
+>> +++ b/drivers/cpufreq/acpi-cpufreq.c
+>> @@ -907,15 +907,16 @@ static void __init acpi_cpufreq_boost_init(void)
+>>  
+>>  		acpi_cpufreq_driver.boost_supported = true;
+>>  		acpi_cpufreq_driver.boost_enabled = boost_state(0);
+>> -		get_online_cpus();
+>> +
+>> +		cpu_maps_update_begin();
+>>  
+>>  		/* Force all MSRs to the same value */
+>>  		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
+>>  			       cpu_online_mask);
+>>  
+>> -		register_cpu_notifier(&boost_nb);
+>> +		__register_cpu_notifier(&boost_nb);
+>>  
+>> -		put_online_cpus();
+>> +		cpu_maps_update_done();
+>>  	}
+>>  }
+>>  
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
 -- 
-1.8.5.3
+Regards,
+Srivatsa S. Bhat
 
