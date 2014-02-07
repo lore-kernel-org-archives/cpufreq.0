@@ -1,58 +1,38 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 35/51] acpi-cpufreq: Fix CPU hotplug callback registration
-Date: Fri, 7 Feb 2014 09:39:36 +0530
-Message-ID: <CAKohpok4XOS19XVfpth+8AYnL3D_35=VMMqefSnQLFy1DRDDrQ@mail.gmail.com>
-References: <20140205220251.19080.92336.stgit@srivatsabhat.in.ibm.com>
-	<20140205221052.19080.77507.stgit@srivatsabhat.in.ibm.com>
+Subject: Re: [PATCH 2/2] cpufreq: imx6q: Remove unused include
+Date: Fri, 7 Feb 2014 11:10:03 +0530
+Message-ID: <CAKohpo=0LQ_h-qPXwvbGHse84+CMm5J7D0un30t-zcbuuoewMw@mail.gmail.com>
+References: <1391699485-2212-1-git-send-email-p.zabel@pengutronix.de>
+	<1391699485-2212-2-git-send-email-p.zabel@pengutronix.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140205221052.19080.77507.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1391699485-2212-2-git-send-email-p.zabel@pengutronix.de>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, oleg@redhat.com, rusty@rustcorp.com.au, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, walken@google.com, ego@linux.vnet.ibm.com, Russell King - ARM Linux <linux@arm.linux.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Sascha Hauer <kernel@pengutronix.de>
 
-On 6 February 2014 03:40, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Subsystems that want to register CPU hotplug callbacks, as well as perform
-> initialization for the CPUs that are already online, often do it as shown
-> below:
+On 6 February 2014 20:41, Philipp Zabel <p.zabel@pengutronix.de> wrote:
+> There is no need to include delay.h.
 >
->         get_online_cpus();
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 1 -
+>  1 file changed, 1 deletion(-)
 >
->         for_each_online_cpu(cpu)
->                 init_cpu(cpu);
->
->         register_cpu_notifier(&foobar_cpu_notifier);
->
->         put_online_cpus();
->
-> This is wrong, since it is prone to ABBA deadlocks involving the
-> cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
-> with CPU hotplug operations).
->
-> Instead, the correct and race-free way of performing the callback
-> registration is:
->
->         cpu_maps_update_begin();
->
->         for_each_online_cpu(cpu)
->                 init_cpu(cpu);
->
->         /* Note the use of the double underscored version of the API */
->         __register_cpu_notifier(&foobar_cpu_notifier);
->
->         cpu_maps_update_done();
->
->
-> Fix the acpi-cpufreq code by using this latter form of callback registration.
->
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index b1fc5ef..20f332e 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -9,7 +9,6 @@
+>  #include <linux/clk.h>
+>  #include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+> -#include <linux/delay.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
