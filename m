@@ -1,91 +1,70 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v3 5/7] ARM: dts: Exynos: add cpu nodes, opp and cpu clock
- configuration data
-Date: Sat, 8 Feb 2014 10:50:42 +0530
-Message-ID: <CAJuA9aghuiVtTV4srj_Sp0sJFJ6D=1vS5fVZHf5S+SuUkpvMVA@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH v3 1/7] cpufreq: cpufreq-cpu0: allow use of optional boost
+ mode frequencies
+Date: Sat, 8 Feb 2014 10:31:50 -0600
+Message-ID: <CAGo_u6qdc=dRgRFNq4f4tSC7+3J5dnZfa63wR5C+HRy-z5LBbw@mail.gmail.com>
 References: <1391788548-13056-1-git-send-email-thomas.ab@samsung.com>
-	<1391788548-13056-6-git-send-email-thomas.ab@samsung.com>
-	<52F507CB.6090300@arm.com>
+	<1391788548-13056-2-git-send-email-thomas.ab@samsung.com>
+	<52F506EC.2070907@ti.com>
+	<CAJuA9ah9xHZZknW5yfh8v8GS65TLd4uZedigEt4ATdoiy6-1Gg@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=69Bx8hFtQrVNq71D1dyFeRrWJGD+LDf+E7PCNhUZnTU=;
-        b=niSQgc+Uo/ZB4ChlCwGnWERoiBKgnKhxkCYmQY+D0fZLysTTCJHYCLotxABBzY56RU
-         oQFa9CxoftrpUYjsq83zW1AhJ1i/WrfJiWFi+sd3AAqtOM7WQktVWEsLi1QDWpie1jUv
-         17m0rpKPLL9xsxapDyJpeSKbRYP1BJmRl1CBUdFMghnRSc99onXSoC2W5In5A2u/Qbqm
-         +vI3mWBSyW8krjAFjoBl+Hc34AjINzKFxjSLoqVfdMWm+O3h9Ost/r+Ghe1yr6be5a8g
-         mz+DzdOhQNuu7pArG/cQUZ5w54YCAFjprHqN4OnUF80FDsHpR2gcE1QZ732GvNzfmJU1
-         RGtw==
-In-Reply-To: <52F507CB.6090300@arm.com>
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type;
+        bh=gWqhw4XC71eJrNQ2NQUgouUcJ+5niGj7wS9EJLqsLtw=;
+        b=r/a1ZpltwYnHV+M7iZCt+vF5MfLl4wJY16GPAkYtynshkX+WNOp8jW8KvUhQmQIFzB
+         7DOD98uBDrMazJS4fv6GYBqfVnq7o3Zjz0w4xKGdIgqIuCr6Ih1II1FgWMnjn+yY87PW
+         PmPLQ36hfFmt6Y7GnelZLtOIzceXDeoitgs+TR+VQ5PTCkyDHCsef5Xzt59zRMykMANX
+         Po5T8u+8l6iq/CPMajkNsNPXHyIn+QbLUW+wLozXpSlXwVaw2e3blpmBHKI8W20TluDc
+         /u3uFyiUwda/4v9ikVUhsXwaZZC6n2m3//pigHEkXUNznELOY1My0OQ1/4LNhQlEbfWy
+         0bcw==
+In-Reply-To: <CAJuA9ah9xHZZknW5yfh8v8GS65TLd4uZedigEt4ATdoiy6-1Gg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudeep Holla <Sudeep.Holla@arm.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "mturquette@linaro.org" <mturquette@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "t.figa@samsung.com" <t.figa@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>
+To: Thomas Abraham <ta.omasab@gmail.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?ISO-8859-1?Q?Heiko_St=FCbner?= <heiko@sntech.de>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Fri, Feb 7, 2014 at 9:50 PM, Sudeep Holla <Sudeep.Holla@arm.com> wrote:
-> On 07/02/14 15:55, Thomas Abraham wrote:
->> From: Thomas Abraham <thomas.ab@samsung.com>
->>
->> For all Exynos based platforms, add CPU nodes, operating points and cpu
->> clock data for migrating from Exynos specific cpufreq driver to using
->> generic cpufreq-cpu0 driver.
->>
->> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+On Fri, Feb 7, 2014 at 11:19 PM, Thomas Abraham <ta.omasab@gmail.com> wrote:
+>>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>>> @@ -195,6 +195,9 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>>>                       transition_latency += ret * 1000;
+>>>       }
+>>>
+>>> +     if (of_find_property(cpu_dev->of_node, "boost-frequency", NULL))
+>>> +             cpu0_cpufreq_driver.boost_supported = true;
+>>> +
+>> might as well hide that under the opp api which returns a bool that
+>> says if boost is supported or not. that allows the parse to be
+>> isolated to a single location.
 >
-> [...]
->
->> diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
->> index 5c412aa..c613fc2 100644
->> --- a/arch/arm/boot/dts/exynos4x12.dtsi
->> +++ b/arch/arm/boot/dts/exynos4x12.dtsi
->> @@ -31,6 +31,42 @@
->>                 mshc0 = &mshc_0;
->>         };
->>
->> +       cpus {
->> +               #address-cells = <1>;
->> +               #size-cells = <0>;
->> +               cpu@0 {
->> +                       device_type = "cpu";
->> +                       compatible = "arm,cortex-a9";
->> +                       reg = <0>;
->> +                       clocks = <&clock 12>;
->> +                       clock-names = "cpu";
->> +
->> +                       operating-points = <
->> +                               1500000 1350000
->> +                               1400000 1287500
->> +                               1300000 1250000
->> +                               1200000 1187500
->> +                               1100000 1137500
->> +                               1000000 1087500
->> +                                900000 1037500
->> +                                800000 1000000
->> +                                700000  987500
->> +                                600000  975000
->> +                                500000  950000
->> +                                400000  925000
->> +                                300000  900000
->> +                                200000  900000
->> +                       >;
->> +                       clock-latency = <200000>;
->> +                       boost-frequency = <1500000 1350000>;
->
-> This is confusing, 1350000 is not in the OPP frequency list or this is still
-> following old binding with voltage. Either case this needs to be fixed.
+> This is specific to the cpufreq-cpu0 driver. Other cpufreq drivers
+> might want to use other methods and additional constraints to
+> determine if boost has to be enabled.
 
-Yes, I missed that. Will fix it. Thanks for your review.
+struct cpufreq_driver::boost_supported is nothing CPU0 specifc - i am
+just saying that the same property "boost-frequency" parsed by in two
+places (dev_pm_opp_init_cpufreq_table and cpu0_cpufreq_probe) is a
+very bad idea.
+
+you could instead make
+int dev_pm_opp_init_cpufreq_table(struct device *dev,
+                           struct cpufreq_frequency_table **table)
+into:
+int dev_pm_opp_init_cpufreq_table(struct device *dev,
+                           struct cpufreq_frequency_table **table,
+bool *boost_supported);
+
+Then use boost_supported for anything of your driver's choice
+(including updating cpufreq_driver::boost_supported).
+
+That allows the property to be isolated into a single function, who
+can be modified without impacting other drivers at a later point in
+time.
 
 Regards,
-Thomas.
-
-
->
-> Regards,
-> Sudeep
->
+Nishanth Menon
