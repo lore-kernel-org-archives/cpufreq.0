@@ -1,37 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] MAINTAINERS: update Sudeep's email address
-Date: Thu, 13 Feb 2014 02:16:13 +0100
-Message-ID: <4024653.b1q1gerlip@vostro.rjw.lan>
-References: <1392118952-10804-1-git-send-email-sudeep.holla@arm.com> <5444651.iTiV0Exjik@vostro.rjw.lan> <52FA2CAE.1010702@arm.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52FA2CAE.1010702@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
+Date: Thu, 13 Feb 2014 12:20:15 +0530
+Message-ID: <cover.1392273722.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Sudeep Holla <Sudeep.Holla@arm.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tuesday, February 11, 2014 01:59:10 PM Sudeep Holla wrote:
-> Hi Rafael,
-> 
-> On 11/02/14 12:58, Rafael J. Wysocki wrote:
-> > On Tuesday, February 11, 2014 11:42:32 AM Sudeep Holla wrote:
-> >> From: Sudeep Holla <sudeep.holla@arm.com>
-> >>
-> >> Though my old email address continues to work as alias, updating
-> >> to the new address as it's shorterm, easier and more appropriate.
-> > 
-> > OK
-> > 
-> > I guess I'm supposed to take this?
-> > 
-> I just noticed I have made a spell mistake which probably confused you.
-> s/shorterm/shorter (extra trailing m by mistake)
+This patchset creates/calls cpufreq suspend/resume callbacks from dpm_{suspend|resume}()
+for handling suspend/resume of cpufreq governors and core.
 
-Applied, thanks!
+There are multiple problems that are fixed by this patch:
+- Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
+  wasn't working well with suspend/resume as calls for removing non-boot CPUs
+  was turning out into a call to drivers ->target() which then tries to play
+  with regulators. But regulators and their I2C bus were already suspended and
+  this resulted in a failure. Many platforms have such problems, samsung, tegra,
+  etc.. They solved it with driver specific PM notifiers where they used to
+  disable their driver's ->target() routine.
+- Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found an issue where tunables
+  configuration for clusters/sockets with non-boot CPUs was getting lost after
+  suspend/resume, as we were notifying governors with CPUFREQ_GOV_POLICY_EXIT on
+  removal of the last cpu for that policy and so deallocating memory for
+  tunables.  This is fixed by this patch as we don't allow any operation on
+  governors after device suspend and before device resume now.
+
+This is already tested by few people and so incorporating their Tested-by as
+well.
+
+I have tested this again on latest stuff on my thinkpad for several
+suspend/resume cycles.
+
+Viresh Kumar (7):
+  cpufreq: suspend governors on system suspend/hibernate
+  cpufreq: suspend governors from dpm_{suspend|resume}()
+  cpufreq: call driver's suspend/resume for each policy
+  cpufreq: Implement cpufreq_generic_suspend()
+  cpufreq: exynos: Use cpufreq_generic_suspend()
+  cpufreq: s5pv210: Use cpufreq_generic_suspend()
+  cpufreq: Tegra: Use cpufreq_generic_suspend()
+
+ drivers/base/power/main.c         |   5 ++
+ drivers/cpufreq/cpufreq.c         | 133 ++++++++++++++++++++++----------------
+ drivers/cpufreq/exynos-cpufreq.c  |  96 ++-------------------------
+ drivers/cpufreq/s5pv210-cpufreq.c |  49 +-------------
+ drivers/cpufreq/tegra-cpufreq.c   |  46 ++-----------
+ include/linux/cpufreq.h           |  11 ++++
+ 6 files changed, 108 insertions(+), 232 deletions(-)
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.12.rc2.18.g61b472e
+
