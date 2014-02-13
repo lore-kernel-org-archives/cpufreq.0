@@ -1,126 +1,80 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
+From: Tomasz Figa <t.figa@samsung.com>
 Subject: Re: [PATCH v3 1/7] cpufreq: cpufreq-cpu0: allow use of optional boost
  mode frequencies
-Date: Thu, 13 Feb 2014 13:32:31 +0530
-Message-ID: <CAJuA9agoK4vO+1mTktgc6BoHLO8qR2482uizP1LbG5zgy9Q4kA@mail.gmail.com>
+Date: Thu, 13 Feb 2014 12:08:08 +0100
+Message-ID: <52FCA798.407@samsung.com>
 References: <1391788548-13056-1-git-send-email-thomas.ab@samsung.com>
-	<1391788548-13056-2-git-send-email-thomas.ab@samsung.com>
-	<52FB8C23.30003@samsung.com>
+ <1391788548-13056-2-git-send-email-thomas.ab@samsung.com>
+ <52FB8C23.30003@samsung.com>
+ <CAJuA9agoK4vO+1mTktgc6BoHLO8qR2482uizP1LbG5zgy9Q4kA@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=wU9nuMg+3xL4c4D5yaH+jPaw6eLlXNj8jGrUugSEnCQ=;
-        b=kzvqBKzMaISJ8Sky49eIDZyqZHbc6EaEpaR7f33pCEtJ+PmxMqxPP3q1tuB6GRQPUI
-         fZofVtFoeAjwP+4wiwTlAVKds1zh2ZY8E+uXJcdo8dS0lj1P5yDKjTVOL2p0V+uJmYU3
-         eTEiP0Z5K2hH0Ht/ZJAQx507z+DYmNFEskrH28BCuuESA6iCOan2dQltv56gnZFMuijh
-         Msk8yZppv1yNVOaR83IGH9dCS19xzqyghmowuIsIztYyfRcjmELbzExk3TayWktSbcb3
-         BSszEdzudQlZez3FWWXgp0tMMXgzOI4f+bzhvNCqWWIumDBrWJXC+nM1jz+x+EI6Zjpw
-         BkGw==
-In-Reply-To: <52FB8C23.30003@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomasz Figa <t.figa@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CAJuA9agoK4vO+1mTktgc6BoHLO8qR2482uizP1LbG5zgy9Q4kA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Thomas Abraham <ta.omasab@gmail.com>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, =?ISO-8859-1?Q?Heiko_St=FCbner?= <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Wed, Feb 12, 2014 at 8:28 PM, Tomasz Figa <t.figa@samsung.com> wrote:
-> Hi Thomas,
->
->
-> On 07.02.2014 16:55, Thomas Abraham wrote:
+On 13.02.2014 09:02, Thomas Abraham wrote:
+> On Wed, Feb 12, 2014 at 8:28 PM, Tomasz Figa <t.figa@samsung.com> wrote:
+>> Hi Thomas,
 >>
->> From: Thomas Abraham <thomas.ab@samsung.com>
 >>
->> Lookup for the optional boost-frequency property in cpu0 node and if
->> available, enable support for boost mode frequencies. The frequencies
->> usable in boost mode are determined while preparing the cpufreq table
->> from the list of operating points available.
->>
->> In addition to this, enable the CPU_FREQ_BOOST_SW config option for
->> this driver by default. On platforms that do not support boost mode,
->> the boost mode frequencies will not be specified in cpu0 node and
->> hence the boost mode support will not be enabled. Since this driver
->> anyways depends on THERMAL config option, it is safe to enable
->> CPU_FREQ_BOOST_SW config option as default.
->>
->> Cc: Shawn Guo <shawn.guo@linaro.org>
->> Cc: Lukasz Majewski <l.majewski@samsung.com>
->> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->> ---
->>   Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt |    2 ++
->>   drivers/cpufreq/Kconfig                                    |    1 +
->>   drivers/cpufreq/cpufreq-cpu0.c                             |    3 +++
->>   3 files changed, 6 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
->> b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
->> index f055515..60f321a 100644
->> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
->> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
->> @@ -19,6 +19,8 @@ Optional properties:
->>   - cooling-min-level:
->>   - cooling-max-level:
->>        Please refer to
->> Documentation/devicetree/bindings/thermal/thermal.txt.
->> +- boost-frequency:
->> +     Please refer to
->> Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
->>
->>   Examples:
->>
->> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
->> index 4b029c0..52cc704 100644
->> --- a/drivers/cpufreq/Kconfig
->> +++ b/drivers/cpufreq/Kconfig
->> @@ -187,6 +187,7 @@ config GENERIC_CPUFREQ_CPU0
->>         tristate "Generic CPU0 cpufreq driver"
->>         depends on HAVE_CLK && REGULATOR && OF && THERMAL && CPU_THERMAL
->>         select PM_OPP
->> +       select CPU_FREQ_BOOST_SW
->>         help
->>           This adds a generic cpufreq driver for CPU0 frequency
->> management.
->>           It supports both uniprocessor (UP) and symmetric multiprocessor
->> (SMP)
->> diff --git a/drivers/cpufreq/cpufreq-cpu0.c
->> b/drivers/cpufreq/cpufreq-cpu0.c
->> index 0c12ffc..06539eb 100644
->> --- a/drivers/cpufreq/cpufreq-cpu0.c
->> +++ b/drivers/cpufreq/cpufreq-cpu0.c
->> @@ -195,6 +195,9 @@ static int cpu0_cpufreq_probe(struct platform_device
->> *pdev)
->>                         transition_latency += ret * 1000;
->>         }
->>
->> +       if (of_find_property(cpu_dev->of_node, "boost-frequency", NULL))
->> +               cpu0_cpufreq_driver.boost_supported = true;
->> +
->>         ret = cpufreq_register_driver(&cpu0_cpufreq_driver);
->>         if (ret) {
->>                 pr_err("failed register driver: %d\n", ret);
->>
->
-> I'd say that boost should be enabled depending on user's preference, as done
-> before in Exynos cpufreq driver. So both presence of boost-frequency
-> property and state of CPU_FREQ_BOOST_SW should be considered.
->
-> As for CPU_FREQ_BOOST_SW, I don't think it should be always selected, but
-> ather, either converted to a user-selectable bool entry or made selectable
-> by other entry, like current ARM_EXYNOS_CPU_FREQ_BOOST_SW.
+>> On 07.02.2014 16:55, Thomas Abraham wrote:
 
-We still will have the same problem on Exynos multi-platform kernel
-where one Exynos platform needs it and others don't. Same with just
-using the CPU_FREQ_BOOST_SW config option. So that was the reason to
-just fallback on presence of boost property.
+[snip]
 
-Thanks,
-Thomas.
-
-
+>>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c
+>>> b/drivers/cpufreq/cpufreq-cpu0.c
+>>> index 0c12ffc..06539eb 100644
+>>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>>> @@ -195,6 +195,9 @@ static int cpu0_cpufreq_probe(struct platform_device
+>>> *pdev)
+>>>                          transition_latency += ret * 1000;
+>>>          }
+>>>
+>>> +       if (of_find_property(cpu_dev->of_node, "boost-frequency", NULL))
+>>> +               cpu0_cpufreq_driver.boost_supported = true;
+>>> +
+>>>          ret = cpufreq_register_driver(&cpu0_cpufreq_driver);
+>>>          if (ret) {
+>>>                  pr_err("failed register driver: %d\n", ret);
+>>>
+>>
+>> I'd say that boost should be enabled depending on user's preference, as done
+>> before in Exynos cpufreq driver. So both presence of boost-frequency
+>> property and state of CPU_FREQ_BOOST_SW should be considered.
+>>
+>> As for CPU_FREQ_BOOST_SW, I don't think it should be always selected, but
+>> ather, either converted to a user-selectable bool entry or made selectable
+>> by other entry, like current ARM_EXYNOS_CPU_FREQ_BOOST_SW.
 >
-> Best regards,
-> Tomasz
+> We still will have the same problem on Exynos multi-platform kernel
+> where one Exynos platform needs it and others don't. Same with just
+> using the CPU_FREQ_BOOST_SW config option. So that was the reason to
+> just fallback on presence of boost property.
+
+I don't think we really have a problem here, because we have well 
+defined semantics for particular enable methods:
+
+  - Kconfig is supposed to be a global enable - if an option is 
+disabled, it is not even built into the kernel and can be used in any 
+way - this is per-user choice, regardless of platform the image is going 
+to be running on,
+
+  - device tree is supposed to be telling us whether the hardware we are 
+running on supports given feature and all the required data to enable 
+it, if yes,
+
+  - then, for per system configuration, you should be able to 
+enable/disable given feature by a command line parameter, e.g. 
+cpufreq.boost_disable.
+
+If you follow the above description, you should be able to get any 
+configuration you want on any system, as long as it's supported by hardware.
+
+Best regards,
+Tomasz
