@@ -1,84 +1,52 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 37/52] acpi-cpufreq: Fix CPU hotplug callback registration
-Date: Fri, 14 Feb 2014 13:27:37 +0530
-Message-ID: <20140214075736.22701.78024.stgit@srivatsabhat.in.ibm.com>
-References: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Fri, 14 Feb 2014 16:30:40 +0530
+Message-ID: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
-Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, pierre-list@ossman.eu, Viresh Kumar <viresh.kumar@linaro.org>
 
-Subsystems that want to register CPU hotplug callbacks, as well as perform
-initialization for the CPUs that are already online, often do it as shown
-below:
+cpufreq_update_policy() calls cpufreq_driver->get() to get current frequency of
+a CPU and it is not supposed to fail or return zero. Return error in case that
+happens.
 
-	get_online_cpus();
-
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
-
-	register_cpu_notifier(&foobar_cpu_notifier);
-
-	put_online_cpus();
-
-This is wrong, since it is prone to ABBA deadlocks involving the
-cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
-with CPU hotplug operations).
-
-Instead, the correct and race-free way of performing the callback
-registration is:
-
-	cpu_notifier_register_begin();
-
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
-
-	/* Note the use of the double underscored version of the API */
-	__register_cpu_notifier(&foobar_cpu_notifier);
-
-	cpu_notifier_register_done();
-
-
-Fix the acpi-cpufreq code by using this latter form of callback registration.
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
+Pierre,
 
- drivers/cpufreq/acpi-cpufreq.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+I don't think this will fix the issue you were facing but might supress it :)..
+And so you need to understand what causes your ->get() to return zero.
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 18448a7..245ae078e 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -907,15 +907,16 @@ static void __init acpi_cpufreq_boost_init(void)
- 
- 		acpi_cpufreq_driver.boost_supported = true;
- 		acpi_cpufreq_driver.boost_enabled = boost_state(0);
--		get_online_cpus();
+@Rafael: I got to these patches while looking at code recently after Pierre
+complained about. Came to this conclusion after having discussions with Srivatsa
+over IRC..
+
+ drivers/cpufreq/cpufreq.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 08ca8c9..383362b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2151,6 +2151,13 @@ int cpufreq_update_policy(unsigned int cpu)
+ 	 */
+ 	if (cpufreq_driver->get) {
+ 		new_policy.cur = cpufreq_driver->get(cpu);
 +
-+		cpu_notifier_register_begin();
- 
- 		/* Force all MSRs to the same value */
- 		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
- 			       cpu_online_mask);
- 
--		register_cpu_notifier(&boost_nb);
-+		__register_cpu_notifier(&boost_nb);
- 
--		put_online_cpus();
-+		cpu_notifier_register_done();
- 	}
- }
- 
++		if (!new_policy.cur) {
++			pr_err("%s: ->get() returned 0 KHz\n", __func__);
++			ret = -EINVAL;
++			goto no_policy;
++		}
++
+ 		if (!policy->cur) {
+ 			pr_debug("Driver did not initialize current freq");
+ 			policy->cur = new_policy.cur;
+-- 
+1.7.12.rc2.18.g61b472e
 
