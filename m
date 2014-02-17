@@ -1,52 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Mon, 17 Feb 2014 11:38:53 +0530
-Message-ID: <CAKohpo=7Kbvh5UN9iZ6V3e=1ZY6y5_grQjxj6raEL_djHnMZrQ@mail.gmail.com>
-References: <cover.1392273722.git.viresh.kumar@linaro.org>
-	<52FE71BD.3020103@wwwdotorg.org>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Mon, 17 Feb 2014 13:49:17 +0530
+Message-ID: <5301C605.3030205@linux.vnet.ibm.com>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <4772234.6D4cUIJHX4@vostro.rjw.lan> <CAKohpo=uPbqMcDEHYEMahRF0rCO8KYscj2nocz81_OTKyU+Tfw@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <52FE71BD.3020103@wwwdotorg.org>
+In-Reply-To: <CAKohpo=uPbqMcDEHYEMahRF0rCO8KYscj2nocz81_OTKyU+Tfw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 
-On 15 February 2014 01:12, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 02/12/2014 11:50 PM, Viresh Kumar wrote:
->> This patchset creates/calls cpufreq suspend/resume callbacks from dpm_{suspend|resume}()
->> for handling suspend/resume of cpufreq governors and core.
->
-> Are these patches for 3.14 or 3.15?
+On 02/17/2014 10:44 AM, Viresh Kumar wrote:
+> On 17 February 2014 05:58, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Friday, February 14, 2014 04:30:40 PM Viresh Kumar wrote:
+> 
+>> Good to know that you chat with each other, but it really is not a useful piece
+>> of information until you say what *exactly* you were talking about.
+> 
+> All that is mentioned in commit logs of both the patches :) .. That's all we
+> discussed.
+> 
+>>>  drivers/cpufreq/cpufreq.c | 7 +++++++
+>>>  1 file changed, 7 insertions(+)
+>>>
+>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>> index 08ca8c9..383362b 100644
+>>> --- a/drivers/cpufreq/cpufreq.c
+>>> +++ b/drivers/cpufreq/cpufreq.c
+>>> @@ -2151,6 +2151,13 @@ int cpufreq_update_policy(unsigned int cpu)
+>>>        */
+>>>       if (cpufreq_driver->get) {
+>>>               new_policy.cur = cpufreq_driver->get(cpu);
+>>> +
+>>> +             if (!new_policy.cur) {
+>>> +                     pr_err("%s: ->get() returned 0 KHz\n", __func__);
+>>> +                     ret = -EINVAL;
+>>
+>> That isn't -EINVAL.  It may be -EIO or -ENODEV, but not -EINVAL.  Please.
+> 
+> Hmm.. Correct. I will use EIO then..
+> 
+>>> +                     goto no_policy;
+>>
+>> And is it unsafe to continue here?  Or can we continue regardless of getting 0?
+> 
+> We were supposed to set this frequency as the current frequency in policy->cur,
+> what else can we do now in this function when we aren't able to read current
+> freq? And so I thought that's all we can do here.
+> 
 
-3.15
+Quick question: Looking at cpufreq_update_policy() and cpufreq_out_of_sync(),
+I understand that if the cpufreq subsystem's notion of the current frequency
+does not match with the actual frequency of the CPU, it tries to adjust and
+notify everyone that the current frequency is so-and-so, as read from the
+hardware. Instead, why can't we simply set the frequency to the value that
+we _want_ it to be at? I mean, if cpufreq subsystem thinks it is X KHz and
+the actual frequency is Y KHz, we can as well fix the anomaly by setting the
+frequency immediately to X KHz right?
 
-> I ask because I just tested Linus's master from a few days back (some
-> point after v3.14-rc2; commit 9398a10cd964 Merge tag
-> 'regulator-v3.14-rc2'), and I see a lot of the following messages during
-> suspend and/or resume (about 2-7 times, perhaps more of them from the
-> resume path, but it's hard to tell):
->
-> cpufreq: __cpufreq_driver_target: Failed to change cpu frequency: -16
+The reason I ask this is that, if we follow this approach, then we can avoid
+ambiguities in dealing with the out-of-sync situation. That is, it becomes
+very straightforward to decide _what_ to do, when we detect scenarios where
+the frequency goes out of sync.
 
-That's because you return -EBUSY from your tegra_cpu_init() once
-suspend/resume has started. Probably the print message is new here,
-and so you are able to see it failing.. Nothing else should have changed
-otherwise.
+Thoughts?
 
-> This series does appear to solve those, so I think at least part of it
-> needs to be applied for 3.14.
+Regards,
+Srivatsa S. Bhat
 
-Because we disallow calls to __cpufreq_driver_target() after suspend/
-resume have started.
+>>> +             }
+>>> +
+>>>               if (!policy->cur) {
+>>>                       pr_debug("Driver did not initialize current freq");
+>>>                       policy->cur = new_policy.cur;
+>>>
 
-> Also, I sometimes see the following during resume. I saw it twice with
-> Linus's tree, but then I did 10 more reboot+suspend+resume cycles and
-> couldn't repro it, and I saw it once with Linus's tree plus this series
-> applied, then couldn't reproduce it in 5 more tries.
 
-> Do you have any idea what the problem might be, and how to solve it?
-
-Not yet, will check..
