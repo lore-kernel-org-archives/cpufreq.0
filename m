@@ -1,175 +1,74 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V6 5/7] cpufreq: exynos: Use cpufreq_generic_suspend()
-Date: Mon, 17 Feb 2014 14:55:11 +0530
-Message-ID: <866a641574227b75b6c6b94740ca31b356fbe65f.1392629003.git.viresh.kumar@linaro.org>
-References: <cover.1392629003.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Mon, 17 Feb 2014 23:00:32 +0100
+Message-ID: <1489022.1IbaesBAQQ@vostro.rjw.lan>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com> <5301CE86.9020105@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1392629003.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1392629003.git.viresh.kumar@linaro.org>
-References: <cover.1392629003.git.viresh.kumar@linaro.org>
+In-Reply-To: <5301CE86.9020105@linux.vnet.ibm.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 
-Currently we have implemented PM notifiers to disable/enable ->target() routines
-functionality during suspend/resume.
+On Monday, February 17, 2014 02:25:34 PM Srivatsa S. Bhat wrote:
+> On 02/17/2014 02:09 PM, Viresh Kumar wrote:
+> > On 17 February 2014 13:49, Srivatsa S. Bhat
+> > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> >> Quick question: Looking at cpufreq_update_policy() and cpufreq_out_of_sync(),
+> >> I understand that if the cpufreq subsystem's notion of the current frequency
+> >> does not match with the actual frequency of the CPU, it tries to adjust and
+> >> notify everyone that the current frequency is so-and-so, as read from the
+> >> hardware. Instead, why can't we simply set the frequency to the value that
+> >> we _want_ it to be at? I mean, if cpufreq subsystem thinks it is X KHz and
+> >> the actual frequency is Y KHz, we can as well fix the anomaly by setting the
+> >> frequency immediately to X KHz right?
+> >>
+> >> The reason I ask this is that, if we follow this approach, then we can avoid
+> >> ambiguities in dealing with the out-of-sync situation. That is, it becomes
+> >> very straightforward to decide _what_ to do, when we detect scenarios where
+> >> the frequency goes out of sync.
+> > 
+> > Hmm, it is just about doing all that stuff in a single line, like:
+> > __cpufreq_driver_target(...) ??
+> > 
+> > There are few problems here:
+> > - If we simply call above routine with X, then it will simply return as
+> > X == policy->cur. And I don't want to hack this code in a bad way now :)
+> > 
+> > - So, probably the way it is implemented is right, as we do that the most
+> > efficient way. We just broadcast the new freq in case there is a difference
+> > otherwise nothing.
+> 
+> Specifically, I'm referring to the problem where there _is_ a difference,
+> but the ->get() is not reporting it properly, like returning a 0 for example.
+> In such a case, instead of erroring out (and thereby perhaps opening the doors
+> to more problems down the line), won't it be better to simply set the CPU's
+> frequency to what we want it to be?
+> 
+> That is, I'm concerned about this part of your patch:
+> 
+>  	if (cpufreq_driver->get) {
+>  		new_policy.cur = cpufreq_driver->get(cpu);
+> +
+> +		if (!new_policy.cur) {
+> +			pr_err("%s: ->get() returned 0 KHz\n", __func__);
+> +			ret = -EINVAL;
+> +			goto no_policy;
+> +		}
+> +
+> 
+> Why go to no_policy when we can actually set things right?
+> 
+> Anyway, I am not arguing against this strongly. I just wanted to share my
+> thoughts, since this is the approach that made more sense to me.
 
-Now we have support present in cpufreq core, lets use it.
+And I agree with that.  In particular, since we're going to set the new
+policy *anyway* at this point, we can adjust the current frequency just fine
+in the process, can't we?
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/exynos-cpufreq.c | 96 +++-------------------------------------
- 1 file changed, 7 insertions(+), 89 deletions(-)
-
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index fcd2914..307f02e 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -16,7 +16,6 @@
- #include <linux/slab.h>
- #include <linux/regulator/consumer.h>
- #include <linux/cpufreq.h>
--#include <linux/suspend.h>
- #include <linux/platform_device.h>
- 
- #include <plat/cpu.h>
-@@ -24,12 +23,8 @@
- #include "exynos-cpufreq.h"
- 
- static struct exynos_dvfs_info *exynos_info;
--
- static struct regulator *arm_regulator;
--
- static unsigned int locking_frequency;
--static bool frequency_locked;
--static DEFINE_MUTEX(cpufreq_lock);
- 
- static int exynos_cpufreq_get_index(unsigned int freq)
- {
-@@ -134,83 +129,13 @@ out:
- 
- static int exynos_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
--	int ret = 0;
--
--	mutex_lock(&cpufreq_lock);
--
--	if (frequency_locked)
--		goto out;
--
--	ret = exynos_cpufreq_scale(freq_table[index].frequency);
--
--out:
--	mutex_unlock(&cpufreq_lock);
--
--	return ret;
--}
--
--#ifdef CONFIG_PM
--static int exynos_cpufreq_suspend(struct cpufreq_policy *policy)
--{
--	return 0;
--}
--
--static int exynos_cpufreq_resume(struct cpufreq_policy *policy)
--{
--	return 0;
--}
--#endif
--
--/**
-- * exynos_cpufreq_pm_notifier - block CPUFREQ's activities in suspend-resume
-- *			context
-- * @notifier
-- * @pm_event
-- * @v
-- *
-- * While frequency_locked == true, target() ignores every frequency but
-- * locking_frequency. The locking_frequency value is the initial frequency,
-- * which is set by the bootloader. In order to eliminate possible
-- * inconsistency in clock values, we save and restore frequencies during
-- * suspend and resume and block CPUFREQ activities. Note that the standard
-- * suspend/resume cannot be used as they are too deep (syscore_ops) for
-- * regulator actions.
-- */
--static int exynos_cpufreq_pm_notifier(struct notifier_block *notifier,
--				       unsigned long pm_event, void *v)
--{
--	int ret;
--
--	switch (pm_event) {
--	case PM_SUSPEND_PREPARE:
--		mutex_lock(&cpufreq_lock);
--		frequency_locked = true;
--		mutex_unlock(&cpufreq_lock);
--
--		ret = exynos_cpufreq_scale(locking_frequency);
--		if (ret < 0)
--			return NOTIFY_BAD;
--
--		break;
--
--	case PM_POST_SUSPEND:
--		mutex_lock(&cpufreq_lock);
--		frequency_locked = false;
--		mutex_unlock(&cpufreq_lock);
--		break;
--	}
--
--	return NOTIFY_OK;
-+	return exynos_cpufreq_scale(exynos_info->freq_table[index].frequency);
- }
- 
--static struct notifier_block exynos_cpufreq_nb = {
--	.notifier_call = exynos_cpufreq_pm_notifier,
--};
--
- static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	policy->clk = exynos_info->cpu_clk;
-+	policy->suspend_freq = locking_frequency;
- 	return cpufreq_generic_init(policy, exynos_info->freq_table, 100000);
- }
- 
-@@ -227,8 +152,7 @@ static struct cpufreq_driver exynos_driver = {
- 	.boost_supported = true,
- #endif
- #ifdef CONFIG_PM
--	.suspend	= exynos_cpufreq_suspend,
--	.resume		= exynos_cpufreq_resume,
-+	.suspend	= cpufreq_generic_suspend,
- #endif
- };
- 
-@@ -263,19 +187,13 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 		goto err_vdd_arm;
- 	}
- 
-+	/* Done here as we want to capture boot frequency */
- 	locking_frequency = clk_get_rate(exynos_info->cpu_clk) / 1000;
- 
--	register_pm_notifier(&exynos_cpufreq_nb);
--
--	if (cpufreq_register_driver(&exynos_driver)) {
--		pr_err("%s: failed to register cpufreq driver\n", __func__);
--		goto err_cpufreq;
--	}
--
--	return 0;
--err_cpufreq:
--	unregister_pm_notifier(&exynos_cpufreq_nb);
-+	if (!cpufreq_register_driver(&exynos_driver))
-+		return 0;
- 
-+	pr_err("%s: failed to register cpufreq driver\n", __func__);
- 	regulator_put(arm_regulator);
- err_vdd_arm:
- 	kfree(exynos_info);
 -- 
-1.7.12.rc2.18.g61b472e
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
