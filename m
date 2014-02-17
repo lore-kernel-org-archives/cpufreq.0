@@ -1,73 +1,83 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
-Date: Mon, 17 Feb 2014 23:00:32 +0100
-Message-ID: <1489022.1IbaesBAQQ@vostro.rjw.lan>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com> <5301CE86.9020105@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: remove sysfs link when a cpu != policy->cpu, is removed
+Date: Mon, 17 Feb 2014 23:03:27 +0100
+Message-ID: <1848612.IZFZXgfmHj@vostro.rjw.lan>
+References: <324f43fc664f51eec355b08b6c2d4cedd2140b4c.1392628861.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5301CE86.9020105@linux.vnet.ibm.com>
+In-Reply-To: <324f43fc664f51eec355b08b6c2d4cedd2140b4c.1392628861.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: swarren@nvidia.com, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, February 17, 2014 02:25:34 PM Srivatsa S. Bhat wrote:
-> On 02/17/2014 02:09 PM, Viresh Kumar wrote:
-> > On 17 February 2014 13:49, Srivatsa S. Bhat
-> > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> >> Quick question: Looking at cpufreq_update_policy() and cpufreq_out_of_sync(),
-> >> I understand that if the cpufreq subsystem's notion of the current frequency
-> >> does not match with the actual frequency of the CPU, it tries to adjust and
-> >> notify everyone that the current frequency is so-and-so, as read from the
-> >> hardware. Instead, why can't we simply set the frequency to the value that
-> >> we _want_ it to be at? I mean, if cpufreq subsystem thinks it is X KHz and
-> >> the actual frequency is Y KHz, we can as well fix the anomaly by setting the
-> >> frequency immediately to X KHz right?
-> >>
-> >> The reason I ask this is that, if we follow this approach, then we can avoid
-> >> ambiguities in dealing with the out-of-sync situation. That is, it becomes
-> >> very straightforward to decide _what_ to do, when we detect scenarios where
-> >> the frequency goes out of sync.
-> > 
-> > Hmm, it is just about doing all that stuff in a single line, like:
-> > __cpufreq_driver_target(...) ??
-> > 
-> > There are few problems here:
-> > - If we simply call above routine with X, then it will simply return as
-> > X == policy->cur. And I don't want to hack this code in a bad way now :)
-> > 
-> > - So, probably the way it is implemented is right, as we do that the most
-> > efficient way. We just broadcast the new freq in case there is a difference
-> > otherwise nothing.
+On Monday, February 17, 2014 02:52:11 PM Viresh Kumar wrote:
+> Earlier patch tried to do this but missed this piece of code to fix.
 > 
-> Specifically, I'm referring to the problem where there _is_ a difference,
-> but the ->get() is not reporting it properly, like returning a 0 for example.
-> In such a case, instead of erroring out (and thereby perhaps opening the doors
-> to more problems down the line), won't it be better to simply set the CPU's
-> frequency to what we want it to be?
+> 42f921a cpufreq: remove sysfs files for CPUs which failed to come back after
+> resume
 > 
-> That is, I'm concerned about this part of your patch:
+> Currently we are getting this on suspend/resume:
 > 
->  	if (cpufreq_driver->get) {
->  		new_policy.cur = cpufreq_driver->get(cpu);
-> +
-> +		if (!new_policy.cur) {
-> +			pr_err("%s: ->get() returned 0 KHz\n", __func__);
-> +			ret = -EINVAL;
-> +			goto no_policy;
-> +		}
-> +
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 877 at fs/sysfs/dir.c:52 sysfs_warn_dup+0x68/0x84()
+> sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
+> Modules linked in: brcmfmac brcmutil
+> CPU: 0 PID: 877 Comm: test-rtc-resume Not tainted 3.14.0-rc2-00259-g9398a10cd964 #12
+> [<c0015bac>] (unwind_backtrace) from [<c0011850>] (show_stack+0x10/0x14)
+> [<c0011850>] (show_stack) from [<c056e018>] (dump_stack+0x80/0xcc)
+> [<c056e018>] (dump_stack) from [<c0025e44>] (warn_slowpath_common+0x64/0x88)
+> [<c0025e44>] (warn_slowpath_common) from [<c0025efc>] (warn_slowpath_fmt+0x30/0x40)
+> [<c0025efc>] (warn_slowpath_fmt) from [<c012776c>] (sysfs_warn_dup+0x68/0x84)
+> [<c012776c>] (sysfs_warn_dup) from [<c0127a54>] (sysfs_do_create_link_sd+0xb0/0xb8)
+> [<c0127a54>] (sysfs_do_create_link_sd) from [<c038ef64>] (__cpufreq_add_dev.isra.27+0x2a8/0x814)
+> [<c038ef64>] (__cpufreq_add_dev.isra.27) from [<c038f548>] (cpufreq_cpu_callback+0x70/0x8c)
+> [<c038f548>] (cpufreq_cpu_callback) from [<c0043864>] (notifier_call_chain+0x44/0x84)
+> [<c0043864>] (notifier_call_chain) from [<c0025f60>] (__cpu_notify+0x28/0x44)
+> [<c0025f60>] (__cpu_notify) from [<c00261e8>] (_cpu_up+0xf0/0x140)
+> [<c00261e8>] (_cpu_up) from [<c0569eb8>] (enable_nonboot_cpus+0x68/0xb0)
+> [<c0569eb8>] (enable_nonboot_cpus) from [<c006339c>] (suspend_devices_and_enter+0x198/0x2dc)
+> [<c006339c>] (suspend_devices_and_enter) from [<c0063654>] (pm_suspend+0x174/0x1e8)
+> [<c0063654>] (pm_suspend) from [<c00624e0>] (state_store+0x6c/0xbc)
+> [<c00624e0>] (state_store) from [<c01fc200>] (kobj_attr_store+0x14/0x20)
+> [<c01fc200>] (kobj_attr_store) from [<c0126e50>] (sysfs_kf_write+0x44/0x48)
+> [<c0126e50>] (sysfs_kf_write) from [<c012a274>] (kernfs_fop_write+0xb4/0x14c)
+> [<c012a274>] (kernfs_fop_write) from [<c00d4818>] (vfs_write+0xa8/0x180)
+> [<c00d4818>] (vfs_write) from [<c00d4bb8>] (SyS_write+0x3c/0x70)
+> [<c00d4bb8>] (SyS_write) from [<c000e620>] (ret_fast_syscall+0x0/0x30)
+> ---[ end trace 76969904b614c18f ]---
 > 
-> Why go to no_policy when we can actually set things right?
+> Fix this by removing sysfs link for cpufreq directory when cpu removed isn't
+> policy->cpu.
 > 
-> Anyway, I am not arguing against this strongly. I just wanted to share my
-> thoughts, since this is the approach that made more sense to me.
+> Reported-by: Stephen Warren <swarren@nvidia.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> 
+> Fix for 3.14 only.
 
-And I agree with that.  In particular, since we're going to set the new
-policy *anyway* at this point, we can adjust the current frequency just fine
-in the process, can't we?
+Queued up for 3.14, thanks!
+
+>  drivers/cpufreq/cpufreq.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 08ca8c9..cb003a6 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1323,8 +1323,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>  	up_read(&policy->rwsem);
+>  
+>  	if (cpu != policy->cpu) {
+> -		if (!frozen)
+> -			sysfs_remove_link(&dev->kobj, "cpufreq");
+> +		sysfs_remove_link(&dev->kobj, "cpufreq");
+>  	} else if (cpus > 1) {
+>  		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu);
+>  		if (new_cpu >= 0) {
+> 
 
 -- 
 I speak only for myself.
