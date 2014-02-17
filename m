@@ -1,68 +1,64 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] cpufreq: don't call cpufreq_update_policy() on CPU
- addition
-Date: Mon, 17 Feb 2014 14:13:26 +0530
-Message-ID: <5301CBAE.3000102@linux.vnet.ibm.com>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <8f2fc4d6240b567fdb69a0b47f073d174b7ef9b2.1392375504.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: don't call cpufreq_update_policy() on CPU addition
+Date: Mon, 17 Feb 2014 14:24:43 +0530
+Message-ID: <CAKohpom1DUOMBt6iAVcoQ5+DAXUgjSPGWaqpp6Jm=Vo+YExCFA@mail.gmail.com>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+	<8f2fc4d6240b567fdb69a0b47f073d174b7ef9b2.1392375504.git.viresh.kumar@linaro.org>
+	<5301CBAE.3000102@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <8f2fc4d6240b567fdb69a0b47f073d174b7ef9b2.1392375504.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5301CBAE.3000102@linux.vnet.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, pierre-list@ossman.eu
+Content-Transfer-Encoding: 7bit
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 
-On 02/14/2014 04:30 PM, Viresh Kumar wrote:
-> cpufreq_update_policy() is called from two places currently. From a workqueue
-> handled queued from cpufreq_bp_resume() for boot CPU and from
-> cpufreq_cpu_callback() whenever a CPU is added.
-> 
-> The first one makes sure that boot CPU is running on the frequency present in
-> policy->cpu. But we don't really need a call from cpufreq_cpu_callback(),
-> because we always call cpufreq_driver->init() (which will set policy->cur
-> correctly) whenever first CPU of any policy is added back. And so every policy
-> structure is guaranteed to have the right frequency in policy->cur.
+On 17 February 2014 14:13, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> On 02/14/2014 04:30 PM, Viresh Kumar wrote:
+>> cpufreq_update_policy() is called from two places currently. From a workqueue
+>> handled queued from cpufreq_bp_resume() for boot CPU and from
+>> cpufreq_cpu_callback() whenever a CPU is added.
+>>
+>> The first one makes sure that boot CPU is running on the frequency present in
+>> policy->cpu. But we don't really need a call from cpufreq_cpu_callback(),
+>> because we always call cpufreq_driver->init() (which will set policy->cur
+>> correctly) whenever first CPU of any policy is added back. And so every policy
+>> structure is guaranteed to have the right frequency in policy->cur.
+>>
 >
+> This wording is slightly inaccurate. ->init() may or may not set policy->cur
+> (for example, powernowk8 driver doesn't set it in the init routine)..
 
-This wording is slightly inaccurate. ->init() may or may not set policy->cur
-(for example, powernowk8 driver doesn't set it in the init routine)..
-But we set it for sure in __cpufreq_add_dev():
+Its not the wording that is wrong but this particular driver then :)
+This is what Documentation/cpu-drivers.txt says:
 
-1117         if (cpufreq_driver->get) {
-1118                 policy->cur = cpufreq_driver->get(policy->cpu);
-1119                 if (!policy->cur) {
-1120                         pr_err("%s: ->get() failed\n", __func__);
-1121                         goto err_get_freq;
-1122                 }
-1123         }
+1.2 Per-CPU Initialization
+Then, the driver must fill in the following values:
 
- 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+policy->cur The current operating frequency of
+this CPU (if appropriate)
 
-The reasoning and the code looks good to me.
+And so it is supposed to do it.
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> But we set it for sure in __cpufreq_add_dev():
+>
+> 1117         if (cpufreq_driver->get) {
+> 1118                 policy->cur = cpufreq_driver->get(policy->cpu);
+> 1119                 if (!policy->cur) {
+> 1120                         pr_err("%s: ->get() failed\n", __func__);
+> 1121                         goto err_get_freq;
+> 1122                 }
+> 1123         }
 
-Regards,
-Srivatsa S. Bhat
+Its just about removing that from drivers and doing it once in core :)
 
-> ---
->  drivers/cpufreq/cpufreq.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 383362b..b6eb4ed 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2194,7 +2194,6 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
->  		switch (action & ~CPU_TASKS_FROZEN) {
->  		case CPU_ONLINE:
->  			__cpufreq_add_dev(dev, NULL, frozen);
-> -			cpufreq_update_policy(cpu);
->  			break;
-> 
->  		case CPU_DOWN_PREPARE:
-> 
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> The reasoning and the code looks good to me.
+>
+> Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
+Thanks.
