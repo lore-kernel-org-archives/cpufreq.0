@@ -1,43 +1,32 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
-Date: Tue, 18 Feb 2014 07:49:58 +0530
-Message-ID: <CAKohpokGtcJbdzt0FPZnKjSFi54Np+Ss7--Z83UEZp8FMY94pQ@mail.gmail.com>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
-	<CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com>
-	<5301CE86.9020105@linux.vnet.ibm.com>
-	<1489022.1IbaesBAQQ@vostro.rjw.lan>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH] cpufreq: remove sysfs link when a cpu != policy->cpu,
+ is removed
+Date: Tue, 18 Feb 2014 13:05:59 -0700
+Message-ID: <5303BD27.4000905@wwwdotorg.org>
+References: <324f43fc664f51eec355b08b6c2d4cedd2140b4c.1392628861.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1489022.1IbaesBAQQ@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <324f43fc664f51eec355b08b6c2d4cedd2140b4c.1392628861.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, swarren@nvidia.com
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 18 February 2014 03:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, February 17, 2014 02:25:34 PM Srivatsa S. Bhat wrote:
->> Why go to no_policy when we can actually set things right?
->>
->> Anyway, I am not arguing against this strongly. I just wanted to share my
->> thoughts, since this is the approach that made more sense to me.
->
-> And I agree with that.  In particular, since we're going to set the new
-> policy *anyway* at this point, we can adjust the current frequency just fine
-> in the process, can't we?
+On 02/17/2014 02:22 AM, Viresh Kumar wrote:
+> Earlier patch tried to do this but missed this piece of code to fix.
+> 
+> 42f921a cpufreq: remove sysfs files for CPUs which failed to come back after
+> resume
+> 
+> Currently we are getting this on suspend/resume:
+> 
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 877 at fs/sysfs/dir.c:52 sysfs_warn_dup+0x68/0x84()
+> sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
+...
+> Fix this by removing sysfs link for cpufreq directory when cpu removed isn't
+> policy->cpu.
 
-Though I still feel that it wouldn't be the right thing to do as get()
-just can't
-return zero. Actually I was planning to place a WARN() over its return value
-of zero.
-
-Anyway, as two of the three are in favor of this we can get that in.. But how
-would that work?
-
-- What frequency should we call cpufreq_driver_target ?
-- Remember that it wouldn't do anything if policy->cur is same as new freq.
-- Also remember that drivers need special attention if new freq is > old
-freq or vice versa. As they will change voltage before or after change here.
-And because we actually don't know what frequency we are at currently, how
-will we decide that?
+Tested-by: Stephen Warren <swarren@nvidia.com>
