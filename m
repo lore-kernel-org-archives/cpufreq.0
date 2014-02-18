@@ -1,42 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] cpufreq: don't call cpufreq_update_policy() on CPU addition
-Date: Mon, 17 Feb 2014 23:22:07 +0100
-Message-ID: <3201988.ZpLiSN5z6s@vostro.rjw.lan>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <1725957.nHPERWcMfN@vostro.rjw.lan> <CAKohpo=57bYHsx+m5wevuB0_4fhTK813T5TXnUYZh64gQ1YdWA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Tue, 18 Feb 2014 07:49:58 +0530
+Message-ID: <CAKohpokGtcJbdzt0FPZnKjSFi54Np+Ss7--Z83UEZp8FMY94pQ@mail.gmail.com>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+	<CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com>
+	<5301CE86.9020105@linux.vnet.ibm.com>
+	<1489022.1IbaesBAQQ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=57bYHsx+m5wevuB0_4fhTK813T5TXnUYZh64gQ1YdWA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1489022.1IbaesBAQQ@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 
-On Monday, February 17, 2014 10:45:41 AM Viresh Kumar wrote:
-> On 17 February 2014 05:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Friday, February 14, 2014 04:30:41 PM Viresh Kumar wrote:
-> >> cpufreq_update_policy() is called from two places currently. From a workqueue
-> >> handled queued from cpufreq_bp_resume() for boot CPU and from
-> >> cpufreq_cpu_callback() whenever a CPU is added.
-> >>
-> >> The first one makes sure that boot CPU is running on the frequency present in
-> >> policy->cpu. But we don't really need a call from cpufreq_cpu_callback(),
-> >> because we always call cpufreq_driver->init() (which will set policy->cur
-> >> correctly) whenever first CPU of any policy is added back. And so every policy
-> >> structure is guaranteed to have the right frequency in policy->cur.
-> >
-> > That sounds good, but doing the extra cpufreq_update_policy() shouldn't actually
-> > hurt, should it?
-> 
-> Yeah, it shouldn't hurt badly..
-> 
-> > So, that would be a cleanup rather than a fix, right?
-> 
-> Hmm, yeah..
+On 18 February 2014 03:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, February 17, 2014 02:25:34 PM Srivatsa S. Bhat wrote:
+>> Why go to no_policy when we can actually set things right?
+>>
+>> Anyway, I am not arguing against this strongly. I just wanted to share my
+>> thoughts, since this is the approach that made more sense to me.
+>
+> And I agree with that.  In particular, since we're going to set the new
+> policy *anyway* at this point, we can adjust the current frequency just fine
+> in the process, can't we?
 
-I've queued this up for 3.15, then.  Thanks!
+Though I still feel that it wouldn't be the right thing to do as get()
+just can't
+return zero. Actually I was planning to place a WARN() over its return value
+of zero.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Anyway, as two of the three are in favor of this we can get that in.. But how
+would that work?
+
+- What frequency should we call cpufreq_driver_target ?
+- Remember that it wouldn't do anything if policy->cur is same as new freq.
+- Also remember that drivers need special attention if new freq is > old
+freq or vice versa. As they will change voltage before or after change here.
+And because we actually don't know what frequency we are at currently, how
+will we decide that?
