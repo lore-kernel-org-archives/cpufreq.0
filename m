@@ -1,53 +1,63 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 65671] hibernation - IO errors writing to swap, crashing apps,
- 3,11.8 worked
-Date: Mon, 24 Feb 2014 03:17:21 +0000
-Message-ID: <bug-65671-12968-KxUKvKyOLO@https.bugzilla.kernel.org/>
-References: <bug-65671-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Mark Brown <broonie@kernel.org>
+Subject: [PATCH] cpufreq: enable ARM drivers on arm64
+Date: Mon, 24 Feb 2014 11:27:57 +0900
+Message-ID: <1393208877-15797-1-git-send-email-broonie@kernel.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-65671-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=65671
+From: Rob Herring <rob.herring@calxeda.com>
 
---- Comment #12 from higuita <higuita@gmx.net> ---
-Ok, i have a little more information:
+Enable cpufreq and power kconfig menus on arm64 along with arm cpufreq
+drivers. The power menu is needed for OPP support. At least on Calxeda
+systems, the same cpufreq driver is used for arm and arm64 based
+systems.
 
+Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Mark Brown <broonie@linaro.org>
+---
+ arch/arm64/Kconfig      | 8 ++++++++
+ drivers/cpufreq/Kconfig | 2 +-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-i found that ondemand still causes problems and after the upgrade to 3.13.3, it
-also lock up, just like the conservative governor. I then change my hibernate
-script to include this before the hibernation
-
-cpufreq-set -g  performance
-rmmod powernow_k8
-
-and after the hibernation i revert that:
-
-modprobe powernow_k8
-cpufreq-set -g  ondemand
-
-All seems to be working fine, i'm getting higher uptimes, many hibernations
-cycles without problems and zero Filesystem corruption.
-
-i have seen this on the dmesg, after waking from hibernation:
-
-[ 8379.324747] [Firmware Bug]: powernow-k8: No compatible ACPI _PSS objects
-found.
-[ 8379.324747] [Firmware Bug]: powernow-k8: First, make sure Cool'N'Quiet is
-enabled in the BIOS.
-[ 8379.324747] [Firmware Bug]: powernow-k8: If that doesn't help, try upgrading
-your BIOS.
-[ 8379.324858] powernow-k8: Found 1 Dual Core AMD Opteron(tm) Processor 175 (2
-cpu cores) (version 2.20.00)
-
-This motherboard (asus A8V deluxe) don't have ACPI cpufreq, but the
-cool'n'quiet is enabled in the bios.
-
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index fea7b47..939e95a 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -327,6 +327,14 @@ source "drivers/cpuidle/Kconfig"
+ 
+ endmenu
+ 
++menu "Power management options"
++
++source "kernel/power/Kconfig"
++
++source "drivers/cpufreq/Kconfig"
++
++endmenu
++
+ source "net/Kconfig"
+ 
+ source "drivers/Kconfig"
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 4b029c0..1fbe11f 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -200,7 +200,7 @@ source "drivers/cpufreq/Kconfig.x86"
+ endmenu
+ 
+ menu "ARM CPU frequency scaling drivers"
+-depends on ARM
++depends on ARM || ARM64
+ source "drivers/cpufreq/Kconfig.arm"
+ endmenu
+ 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.9.0.rc3
+
