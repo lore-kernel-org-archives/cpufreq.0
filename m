@@ -1,112 +1,36 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH 3/6] PM / Voltagedomain: introduce voltage domain
- driver support
-Date: Mon, 24 Feb 2014 08:38:07 -0600
-Message-ID: <530B594F.2030500@ti.com>
-References: <1392755543-28335-1-git-send-email-nm@ti.com>
- <1392755543-28335-4-git-send-email-nm@ti.com>
- <20140224015826.GU25940@sirena.org.uk>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
+Date: Mon, 24 Feb 2014 10:17:35 -0700
+Message-ID: <530B7EAF.9060502@wwwdotorg.org>
+References: <cover.1392273722.git.viresh.kumar@linaro.org>	<52FE71BD.3020103@wwwdotorg.org>	<2869027.iYHxWOSS2C@vostro.rjw.lan>	<52FEAECA.5080905@wwwdotorg.org>	<CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com>	<5303C018.1020707@wwwdotorg.org>	<CAKohponF7ag-tfv77JK0pDVukS6v3QeSY+G_br3FJGskMDCvVw@mail.gmail.com>	<5304E93C.9000104@wwwdotorg.org>	<90EA67AE-7F57-4F43-8967-642903AD72AC@linaro.org>	<BEC64F5C-76E8-40C3-81BE-59096C3838F3@linaro.org>	<53063E01.5030808@wwwdotorg.org> <CAKohpok3Y9H96rSFkUL=v3pMwRd9=YyVDfuY7SSSq6FevF1Snw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140224015826.GU25940@sirena.org.uk>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mark Brown <broonie@kernel.org>
-Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, linux-doc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok3Y9H96rSFkUL=v3pMwRd9=YyVDfuY7SSSq6FevF1Snw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, "jinchoi@broadcom.com" <jinchoi@broadcom.com>, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 
-On 02/23/2014 07:58 PM, Mark Brown wrote:
-> On Tue, Feb 18, 2014 at 02:32:20PM -0600, Nishanth Menon wrote:
+On 02/23/2014 11:43 PM, Viresh Kumar wrote:
+> On 20 February 2014 23:10, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> Well, except that still leaves a bunch of errors in the kernel log, and
+>> I have to remember to ignore them:-/
 > 
->> The current regulator model provides the basic building blocks for the
->> transitions, however SoC drivers specific to each of these devices, be
->> it cpufreq/devfreq have to replicate the logic for functionality.
+> Just for few releases, before this patchset goes in.
 > 
->> To simply the logic, we can hence introduce a layer that takes care
->> of the mundane transition logic, registration mechanisms to provide
->> the "user drivers" such as cpufreq/devfreq a generic interface, whose
->> details are abstracted by the device tree description for the SoC on
->> which the driver operates on.
+>> It'd be nice if the cpufreq core didn't keep changing its behaviour and
+>> adding new error prints. It really should be up to the cpufreq drivers
+>> to log the errors if they experience any.
 > 
-> This doesn't really provide a picture of what the generic interface
-> that's being offered is and...
-I should have probably picked up part of the cover letter[1] and
-elaborated further in the commit message here.
+> Hmm... not sure.. Its better to do error prints at a single place, i.e. cpufreq
+> core on behalf of all drivers. If there is a error being returned from some
+> routine, we better print a message for that. Rather than living in the illusion
+> that everything is fine :)
 
-Intent here is to allow drivers such as cpufreq-cpu0 to be reused on
-platforms such as TI's OMAP derivatives, and other SoCs which differ
-only by the sequence involved in voltage scale operations. So, this
-patch provides a framework for registering the underlying
-implementation of the SoC specific voltage change methodology.
+As a general rule, I think it's better to report the error right where
+it happened. That's the only place where the code knows exactly what the
+error was. Further up the call stack, we have to guess why there was an
+error from the return code, which isn't very much information.
 
-Overall the sequence takes place after this patch is as follows:
-a) voltage domain drivers such as those of TI or others register with
-voltage domain with devm_voltdm_register.
-b) cpufreq-cpu0/devfreq drivers:
-of_pm_voltdm_notifier_register(introduced as part of patch #1) to
-register notifiers around clk of interest. This request is linked to
-the specific voltage domain using phandle in device tree.
-c) when cpufreq-cpu0/devfreq does a clk_set_rate, the common clock
-framework triggers notifiers in voltage domain core which in turn,
-invokes the corresponding handlers for the voltage domain driver
-ensuring the right dvfs sequence specific to the SoC is triggered.
-
-With this patch, the logic for a SoC specific voltage domain
-intricacies can now be abstracted out to the voltage domain layer.
-This allows reuse of the logic by multiple drivers such as
-devfreq/cpufreq and allows these to remain consistent with very
-minimal SoC(if any at all) specific implementations in them.
-
-Among the other obvious alternatives to this approach are:
-a) To duplicate the logic multiple times for various drivers such as
-devfreq/cpufreq and try to ensure the logic sequences are proper.
-basically, create cpufreq-abb-omap, cpufreq-avs-omap,
-devfreq-abb-omap, devfreq-avs-omap etc..
-b) introduce a specific API for voltage change (something like
-pm_dev_scale_opp_frequency or the equivalent).
-
-
-> 
->>  drivers/power/voltdm/Kconfig                  |    5 +
->>  drivers/power/voltdm/Makefile                 |    3 +
->>  drivers/power/voltdm/core.c                   |  347 +++++++++++++++++++++++--
->>  drivers/power/voltdm/voltage_domain_private.h |   86 ++++++
->>  4 files changed, 424 insertions(+), 17 deletions(-)
-> 
-> ...the diffstat doesn't make it obvious what the external interface is
-> either.  It would be much easier to review this with a clearer picture
-> of what it's aiming to implement.
-
-The drivers such as cpufreq/devfreq has the same interface introduced
-by patch #1 in this series of_pm_voltdm_notifier_register/unregister
-which is exposed by include/linux/pm_voltage_domain.h
-
-Underlying implementation of the SoC specific voltage change
-methodology can now be isolated by voltage domain driver using
-voltage_domain_private.h and services provided by core.c
-
-> 
->> +	voltdm_np = of_parse_phandle(np, prop_name, 0);
->> +	if (voltdm_np) {
->> +		ret = of_parse_phandle_with_args(np, prop_name, "#voltdm-cells",
->> +						 0, args);
->> +		if (ret)
->> +			return ERR_PTR(ret);
-> 
-> There seems to be some DT stuff going on here, is the interface DT only?
-> 
-yes. i will make that clear in the documentation.
-
-[1] http://marc.info/?l=linux-kernel&m=139275560531711&w=2
--- 
-Regards,
-Nishanth Menon
