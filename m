@@ -1,36 +1,129 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Mon, 24 Feb 2014 10:17:35 -0700
-Message-ID: <530B7EAF.9060502@wwwdotorg.org>
-References: <cover.1392273722.git.viresh.kumar@linaro.org>	<52FE71BD.3020103@wwwdotorg.org>	<2869027.iYHxWOSS2C@vostro.rjw.lan>	<52FEAECA.5080905@wwwdotorg.org>	<CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com>	<5303C018.1020707@wwwdotorg.org>	<CAKohponF7ag-tfv77JK0pDVukS6v3QeSY+G_br3FJGskMDCvVw@mail.gmail.com>	<5304E93C.9000104@wwwdotorg.org>	<90EA67AE-7F57-4F43-8967-642903AD72AC@linaro.org>	<BEC64F5C-76E8-40C3-81BE-59096C3838F3@linaro.org>	<53063E01.5030808@wwwdotorg.org> <CAKohpok3Y9H96rSFkUL=v3pMwRd9=YyVDfuY7SSSq6FevF1Snw@mail.gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: Commit fcb6a15c2e7e (intel_pstate: Take core C0 time into
+ account for core busy calculation) sucks rocks
+Date: Mon, 24 Feb 2014 14:37:45 -0800
+Message-ID: <20140224223745.GA26619@kroah.com>
+References: <20140219224752.GA370@kroah.com>
+ <5305465C.7060806@gmail.com>
+ <20140220003537.GA4671@kroah.com>
+ <20140220005148.GA15760@kroah.com>
+ <53061798.6010703@gmail.com>
+ <20140220181046.GA860@kroah.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok3Y9H96rSFkUL=v3pMwRd9=YyVDfuY7SSSq6FevF1Snw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20140220181046.GA860@kroah.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, "jinchoi@broadcom.com" <jinchoi@broadcom.com>, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+Content-Transfer-Encoding: 7bit
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 02/23/2014 11:43 PM, Viresh Kumar wrote:
-> On 20 February 2014 23:10, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> Well, except that still leaves a bunch of errors in the kernel log, and
->> I have to remember to ignore them:-/
+On Thu, Feb 20, 2014 at 10:10:46AM -0800, Greg KH wrote:
+> On Thu, Feb 20, 2014 at 06:56:24AM -0800, Dirk Brandewie wrote:
+> > On 02/19/2014 04:51 PM, Greg KH wrote:
+> > >On Wed, Feb 19, 2014 at 04:35:37PM -0800, Greg KH wrote:
+> > >>On Wed, Feb 19, 2014 at 04:03:40PM -0800, Dirk Brandewie wrote:
+> > >>>On 02/19/2014 02:47 PM, Greg KH wrote:
+> > >>>>Hi Dirk,
+> > >>>>
+> > >>>>I've been having some huge slowdowns on my box building kernels, and I
+> > >>>>took the time to bisect it down to commit
+> > >>>>fcb6a15c2e7e76d493e6f91ea889ab40e1c643a4 (intel_pstate: Take core C0
+> > >>>>time into account for core busy calculation).  With that patch reverted
+> > >>>>on Linus's current tree, my build speeds are back up to the normal rate.
+> > >>>>
+> > >>>>The difference is huge, 2 minutes to do a kernel build with that patch
+> > >>>>reverted, 8-10 minutes with it applied!  With all of the stable kernel
+> > >>>>builds and other trees, this is a huge problem for my workload (all I do
+> > >>>>is kernel builds it seems...)
+> > >>>>
+> > >>>>I see some patches you marked as "fixes" that you sent to Rafael, do you
+> > >>>>want me to test any of those?  How am I the only one seeing this
+> > >>>>problem, do you need my cpu information or anything else?
+> > >>>
+> > >>>Can you give me a description of you build system?  CPU, number of sockets,
+> > >>
+> > >>The last processor in /proc/cpuinfo:
+> > >>
+> > >>processor       : 7
+> > >>vendor_id       : GenuineIntel
+> > >>cpu family      : 6
+> > >>model           : 60
+> > >>model name      : Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz
+> > >>stepping        : 3
+> > >>microcode       : 0x9
+> > >>cpu MHz         : 3556.464
+> > >>cache size      : 8192 KB
+> > >>physical id     : 0
+> > >>siblings        : 8
+> > >>core id         : 3
+> > >>cpu cores       : 4
+> > >>apicid          : 7
+> > >>initial apicid  : 7
+> > >>fpu             : yes
+> > >>fpu_exception   : yes
+> > >>cpuid level     : 13
+> > >>wp              : yes
+> > >>flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid
+> > >>bogomips        : 7000.78
+> > >>clflush size    : 64
+> > >>cache_alignment : 64
+> > >>address sizes   : 39 bits physical, 48 bits virtual
+> > >>
+> > >>>building from/to local media.  Any special setup I should use here for my test?
+> > >>
+> > >>I build on a SSD-like disk (flash media on PCI Express slot), so I
+> > >>should have almost no i/o time.
+> > >>
+> > >>I build with 'make -j16'
+> > >>
+> > >>>If you have time having the output of turbostat for a build with and
+> > >>>without would be very useful.
+> > >>
+> > >>  $ ./turbostat
+> > >>  turbostat: no /dev/cpu/0/msr
+> > >>  Try "# modprobe msr": No such file or directory
+> > >>
+> > >>Bah, I'll rebuild with msr and get you that info...
+> > >
+> > >Attached is two files, "fast_build.txt" is when your patch is reverted,
+> > >and building a kernel takes only 2 minutes.  "slow_build.txt" is when
+> > >the patch is not reverted, using Linus's latest tree, and I stopped it
+> > >after a while because I got bored :)
+> > >
+> > >I think the numbers in these two files shows the real problem that is
+> > >happening...
+> > 
+> > For some reason intel_pstate is deciding you have no load and no increasing
+> > the P state :-(
+> > >
+> > >If there's anything else you need me to test, please let me know.
+> > 
+> > I are running on Linus's tree could you run the following script with the patch
+> > applied and send the output of "perf script".
+> > 
+> > #! /bin/sh
+> > 
+> > sudo perf record -C 5  -c 1 -e power:pstate_sample&
+> > sleep .5
+> > foo=$!
+> > taskset -c 5 cat /dev/zero > /dev/null&
+> > bar=$!
+> > sleep 1
+> > kill $bar
+> > sleep .5
+> > sudo kill $foo
 > 
-> Just for few releases, before this patchset goes in.
+> The output of this is attached below as "bad.perf", and for comparison,
+> I ran this with the patch reverted, which is the result in the
+> "good.perf" file below.
 > 
->> It'd be nice if the cpufreq core didn't keep changing its behaviour and
->> adding new error prints. It really should be up to the cpufreq drivers
->> to log the errors if they experience any.
-> 
-> Hmm... not sure.. Its better to do error prints at a single place, i.e. cpufreq
-> core on behalf of all drivers. If there is a error being returned from some
-> routine, we better print a message for that. Rather than living in the illusion
-> that everything is fine :)
+> Anything else I can test?
 
-As a general rule, I think it's better to report the error right where
-it happened. That's the only place where the code knows exactly what the
-error was. Further up the call stack, we have to guess why there was an
-error from the return code, which isn't very much information.
+Any progress on this?
 
+thanks,
+
+greg k-h
