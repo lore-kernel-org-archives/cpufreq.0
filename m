@@ -1,45 +1,39 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
-Date: Tue, 25 Feb 2014 14:29:44 +0530
-Message-ID: <79539d6c5c04165da855863c4015f90b278d86d1.1393318725.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Tue, 25 Feb 2014 14:10:23 +0100
+Message-ID: <3894986.dK3STNSG71@vostro.rjw.lan>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <530C2FD7.4000105@linux.vnet.ibm.com> <CAKohponr5b8nBaV9TFiiFkvyg8Qb6qz_0UXbYCaFRPG=XP28rA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponr5b8nBaV9TFiiFkvyg8Qb6qz_0UXbYCaFRPG=XP28rA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 
-cpufreq_update_policy() calls cpufreq_driver->get() to get current frequency of
-a CPU and it is not supposed to fail or return zero. Return error in case that
-happens.
+On Tuesday, February 25, 2014 11:38:14 AM Viresh Kumar wrote:
+> On 25 February 2014 11:23, Srivatsa S. Bhat
+> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> > Hmm, that's a good point. However, lets first think about the simple scenario
+> > that the driver _is_ able to detect the current frequency from the hardware
+> > (a non-zero, sane value) say X KHz, and that frequency is different from what
+> > the cpufreq subsystem thinks it is (Y KHz).
+> >
+> > In the current code, when we observe this, we send out a notification and try
+> > to adjust to X KHz. Instead, what I'm suggesting is to invoke the driver to
+> > set the frequency to Y KHz, since that's what the cpufreq subsystems wants the
+> > frequency to be at.
+> 
+> Actually we don't know at this point what cpufreq wants :)
+> Governor will decide what frequency to run CPU at and lets leave it to
+> that point.
+> As the transition that we might end up doing here would be simply overridden
+> very soon. And to be honest this decision must be taken by governor and not
+> core. We just want to make sure core is in sync with hardware.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1->V2:
-- Fixed return error to EIO instead of EINVAL
-- Added WARN_ON() to flag get() failing and hence removed the print message as
-  well which was earlier printed during errors.
- drivers/cpufreq/cpufreq.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Well, why exactly does the core need to operate "current frequency" at all?
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c755b5f..bf80502 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2139,6 +2139,11 @@ int cpufreq_update_policy(unsigned int cpu)
- 	 */
- 	if (cpufreq_driver->get) {
- 		new_policy.cur = cpufreq_driver->get(cpu);
-+		if (WARN_ON(!new_policy.cur)) {
-+			ret = -EIO;
-+			goto no_policy;
-+		}
-+
- 		if (!policy->cur) {
- 			pr_debug("Driver did not initialize current freq");
- 			policy->cur = new_policy.cur;
--- 
-1.7.12.rc2.18.g61b472e
+Rafael
 
