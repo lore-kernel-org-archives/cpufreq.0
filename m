@@ -1,39 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
-Date: Tue, 25 Feb 2014 14:10:23 +0100
-Message-ID: <3894986.dK3STNSG71@vostro.rjw.lan>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <530C2FD7.4000105@linux.vnet.ibm.com> <CAKohponr5b8nBaV9TFiiFkvyg8Qb6qz_0UXbYCaFRPG=XP28rA@mail.gmail.com>
+Date: Tue, 25 Feb 2014 20:12:52 +0530
+Message-ID: <CAKohpom+RUAi0jZBVWUEWZh36O4QgoJcK-YrCq6eDnfMVf+GCg@mail.gmail.com>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+	<530C2FD7.4000105@linux.vnet.ibm.com>
+	<CAKohponr5b8nBaV9TFiiFkvyg8Qb6qz_0UXbYCaFRPG=XP28rA@mail.gmail.com>
+	<3894986.dK3STNSG71@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponr5b8nBaV9TFiiFkvyg8Qb6qz_0UXbYCaFRPG=XP28rA@mail.gmail.com>
+In-Reply-To: <3894986.dK3STNSG71@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 
-On Tuesday, February 25, 2014 11:38:14 AM Viresh Kumar wrote:
-> On 25 February 2014 11:23, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> > Hmm, that's a good point. However, lets first think about the simple scenario
-> > that the driver _is_ able to detect the current frequency from the hardware
-> > (a non-zero, sane value) say X KHz, and that frequency is different from what
-> > the cpufreq subsystem thinks it is (Y KHz).
-> >
-> > In the current code, when we observe this, we send out a notification and try
-> > to adjust to X KHz. Instead, what I'm suggesting is to invoke the driver to
-> > set the frequency to Y KHz, since that's what the cpufreq subsystems wants the
-> > frequency to be at.
-> 
-> Actually we don't know at this point what cpufreq wants :)
-> Governor will decide what frequency to run CPU at and lets leave it to
-> that point.
-> As the transition that we might end up doing here would be simply overridden
-> very soon. And to be honest this decision must be taken by governor and not
-> core. We just want to make sure core is in sync with hardware.
+On 25 February 2014 18:40, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> Well, why exactly does the core need to operate "current frequency" at all?
 
-Well, why exactly does the core need to operate "current frequency" at all?
-
-Rafael
-
+I don't think I understood what you meant here. Do you mean why should
+we maintain policy->cur?
