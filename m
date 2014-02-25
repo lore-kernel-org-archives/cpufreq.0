@@ -1,84 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/3] cpufreq: initialize governor for a new policy under policy->rwsem
-Date: Tue, 25 Feb 2014 14:20:11 +0530
-Message-ID: <3305df5abda26f22c501e5fa27ee7e2c8845b024.1393318100.git.viresh.kumar@linaro.org>
-References: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Tue, 25 Feb 2014 14:29:44 +0530
+Message-ID: <79539d6c5c04165da855863c4015f90b278d86d1.1393318725.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
-In-Reply-To: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
-References: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net, skannan@codeaurora.org
+To: rjw@rjwysocki.net
 Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-policy->rwsem is used to lock access to all parts of code modifying struct
-cpufreq_policy but wasn't used on a new policy created from __cpufreq_add_dev().
+cpufreq_update_policy() calls cpufreq_driver->get() to get current frequency of
+a CPU and it is not supposed to fail or return zero. Return error in case that
+happens.
 
-Because of which if we call cpufreq_update_policy() repeatedly on one CPU and do
-offline/online of another CPU then we might see these crashes:
-
-Unable to handle kernel NULL pointer dereference at virtual address 00000020
-pgd = c0003000
-[00000020] *pgd=80000000004003, *pmd=00000000
-Internal error: Oops: 206 [#1] PREEMPT SMP ARM
-
-PC is at __cpufreq_governor+0x10/0x1ac
-LR is at cpufreq_update_policy+0x114/0x150
-
----[ end trace f23a8defea6cd706 ]---
-Kernel panic - not syncing: Fatal exception
-CPU0: stopping
-CPU: 0 PID: 7136 Comm: mpdecision Tainted: G      D W    3.10.0-gd727407-00074-g979ede8 #396
-
-[<c0afe180>] (notifier_call_chain+0x40/0x68) from [<c02a23ac>] (__blocking_notifier_call_chain+0x40/0x58)
-[<c02a23ac>] (__blocking_notifier_call_chain+0x40/0x58) from [<c02a23d8>] (blocking_notifier_call_chain+0x14/0x1c)
-[<c02a23d8>] (blocking_notifier_call_chain+0x14/0x1c) from [<c0803c68>] (cpufreq_set_policy+0xd4/0x2b8)
-[<c0803c68>] (cpufreq_set_policy+0xd4/0x2b8) from [<c0803e7c>] (cpufreq_init_policy+0x30/0x98)
-[<c0803e7c>] (cpufreq_init_policy+0x30/0x98) from [<c0805a18>] (__cpufreq_add_dev.isra.17+0x4dc/0x7a4)
-[<c0805a18>] (__cpufreq_add_dev.isra.17+0x4dc/0x7a4) from [<c0805d38>] (cpufreq_cpu_callback+0x58/0x84)
-[<c0805d38>] (cpufreq_cpu_callback+0x58/0x84) from [<c0afe180>] (notifier_call_chain+0x40/0x68)
-[<c0afe180>] (notifier_call_chain+0x40/0x68) from [<c02812dc>] (__cpu_notify+0x28/0x44)
-[<c02812dc>] (__cpu_notify+0x28/0x44) from [<c0aeed90>] (_cpu_up+0xf4/0x1dc)
-[<c0aeed90>] (_cpu_up+0xf4/0x1dc) from [<c0aeeed4>] (cpu_up+0x5c/0x78)
-[<c0aeeed4>] (cpu_up+0x5c/0x78) from [<c0aec808>] (store_online+0x44/0x74)
-[<c0aec808>] (store_online+0x44/0x74) from [<c03a40f4>] (sysfs_write_file+0x108/0x14c)
-[<c03a40f4>] (sysfs_write_file+0x108/0x14c) from [<c03517d4>] (vfs_write+0xd0/0x180)
-[<c03517d4>] (vfs_write+0xd0/0x180) from [<c0351ca8>] (SyS_write+0x38/0x68)
-[<c0351ca8>] (SyS_write+0x38/0x68) from [<c0205de0>] (ret_fast_syscall+0x0/0x30)
-
-Fix these by taking locks at appropriate places in __cpufreq_add_dev() as well.
-
-Reported-by: Saravana Kannan <skannan@codeaurora.org>
-Suggested-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 2 ++
- 1 file changed, 2 insertions(+)
+V1->V2:
+- Fixed return error to EIO instead of EINVAL
+- Added WARN_ON() to flag get() failing and hence removed the print message as
+  well which was earlier printed during errors.
+ drivers/cpufreq/cpufreq.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 110c0cd..513d1d4 100644
+index c755b5f..bf80502 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1130,6 +1130,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		policy->user_policy.max = policy->max;
- 	}
- 
-+	down_write(&policy->rwsem);
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus)
- 		per_cpu(cpufreq_cpu_data, j) = policy;
-@@ -1204,6 +1205,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		policy->user_policy.policy = policy->policy;
- 		policy->user_policy.governor = policy->governor;
- 	}
-+	up_write(&policy->rwsem);
- 
- 	kobject_uevent(&policy->kobj, KOBJ_ADD);
- 	up_read(&cpufreq_rwsem);
+@@ -2139,6 +2139,11 @@ int cpufreq_update_policy(unsigned int cpu)
+ 	 */
+ 	if (cpufreq_driver->get) {
+ 		new_policy.cur = cpufreq_driver->get(cpu);
++		if (WARN_ON(!new_policy.cur)) {
++			ret = -EIO;
++			goto no_policy;
++		}
++
+ 		if (!policy->cur) {
+ 			pr_debug("Driver did not initialize current freq");
+ 			policy->cur = new_policy.cur;
 -- 
 1.7.12.rc2.18.g61b472e
 
