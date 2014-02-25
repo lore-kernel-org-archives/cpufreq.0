@@ -1,46 +1,123 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
-Date: Tue, 25 Feb 2014 11:38:14 +0530
-Message-ID: <CAKohponr5b8nBaV9TFiiFkvyg8Qb6qz_0UXbYCaFRPG=XP28rA@mail.gmail.com>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
-	<CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com>
-	<5301CE86.9020105@linux.vnet.ibm.com>
-	<1489022.1IbaesBAQQ@vostro.rjw.lan>
-	<CAKohpokGtcJbdzt0FPZnKjSFi54Np+Ss7--Z83UEZp8FMY94pQ@mail.gmail.com>
-	<CAKohpokk5-6vGV93fZDob8Q=xZXsd7E4OkMUAC1M6Z71G=d1Ow@mail.gmail.com>
-	<530C2FD7.4000105@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <530C2FD7.4000105@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH 1/3] cpufreq: move call to __find_governor() to cpufreq_init_policy()
+Date: Tue, 25 Feb 2014 14:20:09 +0530
+Message-ID: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
+To: rjw@rjwysocki.net, skannan@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 25 February 2014 11:23, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Hmm, that's a good point. However, lets first think about the simple scenario
-> that the driver _is_ able to detect the current frequency from the hardware
-> (a non-zero, sane value) say X KHz, and that frequency is different from what
-> the cpufreq subsystem thinks it is (Y KHz).
->
-> In the current code, when we observe this, we send out a notification and try
-> to adjust to X KHz. Instead, what I'm suggesting is to invoke the driver to
-> set the frequency to Y KHz, since that's what the cpufreq subsystems wants the
-> frequency to be at.
+We call __find_governor() during addition of first CPU of every policy to find
+the last governor used for this CPU before it was hotplugged-out.
 
-Actually we don't know at this point what cpufreq wants :)
-Governor will decide what frequency to run CPU at and lets leave it to
-that point.
-As the transition that we might end up doing here would be simply overridden
-very soon. And to be honest this decision must be taken by governor and not
-core. We just want to make sure core is in sync with hardware.
+After that we call cpufreq_parse_governor() in cpufreq_init_policy() either with
+this governor or default governor. And right after that policy->governor is set
+to NULL.
 
-> As for the case where the driver reports the frequency to be 0 KHz, we can
-> print a WARN() and try to force set the frequency to Y KHz. But if that turns
-> out to be too tricky to handle, we can just put a WARN() and error out, as you
-> proposed earlier.
+So, instead of doing this move the relevant parts to cpufreq_init_policy()
+policy only and initialize policy->governor to NULL at the beginning.
 
-Ok..
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+
+Hi Saravana,
+
+I hope only the first two patches would fix things for you but probably you can
+test all three.
+
+@Rafael: We might need to get these in next rc only as these are more or less
+fixes.
+
+ drivers/cpufreq/cpufreq.c | 34 ++++++++++++++++------------------
+ 1 file changed, 16 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index c755b5f..cc4f244 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -879,18 +879,27 @@ err_out_kobj_put:
+ 
+ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ {
++	struct cpufreq_governor *gov = NULL;
+ 	struct cpufreq_policy new_policy;
+ 	int ret = 0;
+ 
+ 	memcpy(&new_policy, policy, sizeof(*policy));
+ 
++	/* Update governor of new_policy to the governor used before hotplug */
++#ifdef CONFIG_HOTPLUG_CPU
++	gov = __find_governor(per_cpu(cpufreq_cpu_governor, policy->cpu));
++#endif
++	if (gov)
++		pr_debug("Restoring governor %s for cpu %d\n",
++				policy->governor->name, policy->cpu);
++	else
++		gov = CPUFREQ_DEFAULT_GOVERNOR;
++
++	new_policy.governor = gov;
++
+ 	/* Use the default policy if its valid. */
+ 	if (cpufreq_driver->setpolicy)
+-		cpufreq_parse_governor(policy->governor->name,
+-					&new_policy.policy, NULL);
+-
+-	/* assure that the starting sequence is run in cpufreq_set_policy */
+-	policy->governor = NULL;
++		cpufreq_parse_governor(gov->name, &new_policy.policy, NULL);
+ 
+ 	/* set default policy */
+ 	ret = cpufreq_set_policy(policy, &new_policy);
+@@ -944,11 +953,11 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
+ 	unsigned long flags;
+ 
+ 	read_lock_irqsave(&cpufreq_driver_lock, flags);
+-
+ 	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
+-
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
++	policy->governor = NULL;
++
+ 	return policy;
+ }
+ 
+@@ -1036,7 +1045,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 	unsigned long flags;
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	struct cpufreq_policy *tpolicy;
+-	struct cpufreq_governor *gov;
+ #endif
+ 
+ 	if (cpu_is_offline(cpu))
+@@ -1094,7 +1102,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 	else
+ 		policy->cpu = cpu;
+ 
+-	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+ 
+ 	init_completion(&policy->kobj_unregister);
+@@ -1179,15 +1186,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 				     CPUFREQ_START, policy);
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-	gov = __find_governor(per_cpu(cpufreq_cpu_governor, cpu));
+-	if (gov) {
+-		policy->governor = gov;
+-		pr_debug("Restoring governor %s for cpu %d\n",
+-		       policy->governor->name, cpu);
+-	}
+-#endif
+-
+ 	if (!frozen) {
+ 		ret = cpufreq_add_dev_interface(policy, dev);
+ 		if (ret)
+-- 
+1.7.12.rc2.18.g61b472e
+
