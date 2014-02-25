@@ -1,232 +1,47 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: Commit fcb6a15c2e7e (intel_pstate: Take core C0 time into account
- for core busy calculation) sucks rocks
-Date: Mon, 24 Feb 2014 15:03:19 -0800
-Message-ID: <530BCFB7.6010707@gmail.com>
-References: <20140219224752.GA370@kroah.com> <5305465C.7060806@gmail.com> <20140220003537.GA4671@kroah.com> <20140220005148.GA15760@kroah.com> <53061798.6010703@gmail.com> <20140220181046.GA860@kroah.com> <20140224223745.GA26619@kroah.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Tue, 25 Feb 2014 10:11:41 +0530
+Message-ID: <CAKohpokk5-6vGV93fZDob8Q=xZXsd7E4OkMUAC1M6Z71G=d1Ow@mail.gmail.com>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+	<CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com>
+	<5301CE86.9020105@linux.vnet.ibm.com>
+	<1489022.1IbaesBAQQ@vostro.rjw.lan>
+	<CAKohpokGtcJbdzt0FPZnKjSFi54Np+Ss7--Z83UEZp8FMY94pQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=A/6orDqQTw27QLzfb0QqoIyCmAEQYl+GzwRGPJCHu0I=;
-        b=Vt6nIr3mzi9JJMj2orPvQpkDzIdnzw9wRamc/lTkvy+oPYYTpiy5xjIsUYPCdAuMgu
-         YQqvwNUNXxhzj3BaYz3sJWB9guNcvIMbTUhBSuqIL42p+VuXItDmblpE8Jreu93jtQ6c
-         Qnskfw+6dxJOkROQHTXKS/V0t8qXu1r0AtYNveJiEIbHbHe+GjTz5q4f7pBpr1Pcw3Z9
-         sevRfj08jIv+RjIaU5NAIs7rI75UwqjWLmG2KcFVjhnAK54vU/UJg4aGurazBBhzJXs7
-         oVLIYegmdEStqA3jGEVX1dZ6cq32jhdime4A9OFZ2rHzrz3JsupR/psHzKs5O7RlncDO
-         NPsQ==
-In-Reply-To: <20140224223745.GA26619@kroah.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokGtcJbdzt0FPZnKjSFi54Np+Ss7--Z83UEZp8FMY94pQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: dirk.brandewie@gmail.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 
-On 02/24/2014 02:37 PM, Greg KH wrote:
-> On Thu, Feb 20, 2014 at 10:10:46AM -0800, Greg KH wrote:
->> On Thu, Feb 20, 2014 at 06:56:24AM -0800, Dirk Brandewie wrote:
->>> On 02/19/2014 04:51 PM, Greg KH wrote:
->>>> On Wed, Feb 19, 2014 at 04:35:37PM -0800, Greg KH wrote:
->>>>> On Wed, Feb 19, 2014 at 04:03:40PM -0800, Dirk Brandewie wrote:
->>>>>> On 02/19/2014 02:47 PM, Greg KH wrote:
->>>>>>> Hi Dirk,
->>>>>>>
->>>>>>> I've been having some huge slowdowns on my box building kernels, and I
->>>>>>> took the time to bisect it down to commit
->>>>>>> fcb6a15c2e7e76d493e6f91ea889ab40e1c643a4 (intel_pstate: Take core C0
->>>>>>> time into account for core busy calculation).  With that patch reverted
->>>>>>> on Linus's current tree, my build speeds are back up to the normal rate.
->>>>>>>
->>>>>>> The difference is huge, 2 minutes to do a kernel build with that patch
->>>>>>> reverted, 8-10 minutes with it applied!  With all of the stable kernel
->>>>>>> builds and other trees, this is a huge problem for my workload (all I do
->>>>>>> is kernel builds it seems...)
->>>>>>>
->>>>>>> I see some patches you marked as "fixes" that you sent to Rafael, do you
->>>>>>> want me to test any of those?  How am I the only one seeing this
->>>>>>> problem, do you need my cpu information or anything else?
->>>>>>
->>>>>> Can you give me a description of you build system?  CPU, number of sockets,
->>>>>
->>>>> The last processor in /proc/cpuinfo:
->>>>>
->>>>> processor       : 7
->>>>> vendor_id       : GenuineIntel
->>>>> cpu family      : 6
->>>>> model           : 60
->>>>> model name      : Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz
->>>>> stepping        : 3
->>>>> microcode       : 0x9
->>>>> cpu MHz         : 3556.464
->>>>> cache size      : 8192 KB
->>>>> physical id     : 0
->>>>> siblings        : 8
->>>>> core id         : 3
->>>>> cpu cores       : 4
->>>>> apicid          : 7
->>>>> initial apicid  : 7
->>>>> fpu             : yes
->>>>> fpu_exception   : yes
->>>>> cpuid level     : 13
->>>>> wp              : yes
->>>>> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid
->>>>> bogomips        : 7000.78
->>>>> clflush size    : 64
->>>>> cache_alignment : 64
->>>>> address sizes   : 39 bits physical, 48 bits virtual
->>>>>
->>>>>> building from/to local media.  Any special setup I should use here for my test?
->>>>>
->>>>> I build on a SSD-like disk (flash media on PCI Express slot), so I
->>>>> should have almost no i/o time.
->>>>>
->>>>> I build with 'make -j16'
->>>>>
->>>>>> If you have time having the output of turbostat for a build with and
->>>>>> without would be very useful.
->>>>>
->>>>>   $ ./turbostat
->>>>>   turbostat: no /dev/cpu/0/msr
->>>>>   Try "# modprobe msr": No such file or directory
->>>>>
->>>>> Bah, I'll rebuild with msr and get you that info...
->>>>
->>>> Attached is two files, "fast_build.txt" is when your patch is reverted,
->>>> and building a kernel takes only 2 minutes.  "slow_build.txt" is when
->>>> the patch is not reverted, using Linus's latest tree, and I stopped it
->>>> after a while because I got bored :)
->>>>
->>>> I think the numbers in these two files shows the real problem that is
->>>> happening...
+On 18 February 2014 07:49, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 18 February 2014 03:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Monday, February 17, 2014 02:25:34 PM Srivatsa S. Bhat wrote:
+>>> Why go to no_policy when we can actually set things right?
 >>>
->>> For some reason intel_pstate is deciding you have no load and no increasing
->>> the P state :-(
->>>>
->>>> If there's anything else you need me to test, please let me know.
->>>
->>> I are running on Linus's tree could you run the following script with the patch
->>> applied and send the output of "perf script".
->>>
->>> #! /bin/sh
->>>
->>> sudo perf record -C 5  -c 1 -e power:pstate_sample&
->>> sleep .5
->>> foo=$!
->>> taskset -c 5 cat /dev/zero > /dev/null&
->>> bar=$!
->>> sleep 1
->>> kill $bar
->>> sleep .5
->>> sudo kill $foo
+>>> Anyway, I am not arguing against this strongly. I just wanted to share my
+>>> thoughts, since this is the approach that made more sense to me.
 >>
->> The output of this is attached below as "bad.perf", and for comparison,
->> I ran this with the patch reverted, which is the result in the
->> "good.perf" file below.
->>
->> Anything else I can test?
+>> And I agree with that.  In particular, since we're going to set the new
+>> policy *anyway* at this point, we can adjust the current frequency just fine
+>> in the process, can't we?
 >
-> Any progress on this?
+> Though I still feel that it wouldn't be the right thing to do as get()
+> just can't
+> return zero. Actually I was planning to place a WARN() over its return value
+> of zero.
 >
+> Anyway, as two of the three are in favor of this we can get that in.. But how
+> would that work?
+>
+> - What frequency should we call cpufreq_driver_target ?
+> - Remember that it wouldn't do anything if policy->cur is same as new freq.
+> - Also remember that drivers need special attention if new freq is > old
+> freq or vice versa. As they will change voltage before or after change here.
+> And because we actually don't know what frequency we are at currently, how
+> will we decide that?
 
-Here is the patch I have ATM it has been tested with i7-4770K, i7-2600,
-i5-3230M.
-I am still waiting for results from the people with Baytrail that were
-affected before sending to Rafael.
-
-
-commit 3eed2b5e48543fa9837a77c067986b4831f8f00f
-Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
-Date:   Mon Feb 24 09:11:23 2014 -0800
-
-     intel_pstate: Change busy calculation to use fixed point math.
-
-     Commit fcb6a15c2e Take core C0 time into account for core busy calculation.
-
-     Introduced a regression on some processor SKUs supported by
-     intel_pstate. This was caused by the truncation caused by using
-     integer math to calculate core busy and C0 percentages.
-
-
-
-     References:
-        https://lkml.org/lkml/2014/2/19/626
-        https://bugzilla.kernel.org/show_bug.cgi?id=70941
-
-     Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
-  drivers/cpufreq/intel_pstate.c | 28 ++++++++++++++++++----------
-  1 file changed, 18 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index e908161..2cd36b9 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -39,9 +39,10 @@
-  #define BYT_TURBO_RATIOS	0x66c
-
-
--#define FRAC_BITS 8
-+#define FRAC_BITS 6
-  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
-  #define fp_toint(X) ((X) >> FRAC_BITS)
-+#define FP_ROUNDUP(X) ((X) += 1 << FRAC_BITS)
-
-  static inline int32_t mul_fp(int32_t x, int32_t y)
-  {
-@@ -556,18 +557,20 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
-  static inline void intel_pstate_calc_busy(struct cpudata *cpu,
-  					struct sample *sample)
-  {
--	u64 core_pct;
--	u64 c0_pct;
-+	int32_t core_pct;
-+	int32_t c0_pct;
-
--	core_pct = div64_u64(sample->aperf * 100, sample->mperf);
-+	core_pct = div_fp(int_tofp((sample->aperf)),
-+			int_tofp((sample->mperf)));
-+	core_pct = mul_fp(core_pct, int_tofp(100));
-+	FP_ROUNDUP(core_pct);
-+
-+	c0_pct = div_fp(int_tofp(sample->mperf), int_tofp(sample->tsc));
-
--	c0_pct = div64_u64(sample->mperf * 100, sample->tsc);
-  	sample->freq = fp_toint(
--		mul_fp(int_tofp(cpu->pstate.max_pstate),
--			int_tofp(core_pct * 1000)));
-+		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
-
--	sample->core_pct_busy = mul_fp(int_tofp(core_pct),
--				div_fp(int_tofp(c0_pct + 1), int_tofp(100)));
-+	sample->core_pct_busy = mul_fp(core_pct, c0_pct);
-  }
-
-  static inline void intel_pstate_sample(struct cpudata *cpu)
-@@ -579,6 +582,10 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
-  	rdmsrl(MSR_IA32_MPERF, mperf);
-  	tsc = native_read_tsc();
-
-+	aperf = aperf >> FRAC_BITS;
-+	mperf = mperf >> FRAC_BITS;
-+	tsc = tsc >> FRAC_BITS;
-+
-  	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
-  	cpu->samples[cpu->sample_ptr].aperf = aperf;
-  	cpu->samples[cpu->sample_ptr].mperf = mperf;
-@@ -610,7 +617,8 @@ static inline int32_t intel_pstate_get_scaled_busy(struct 
-cpudata *cpu)
-  	core_busy = cpu->samples[cpu->sample_ptr].core_pct_busy;
-  	max_pstate = int_tofp(cpu->pstate.max_pstate);
-  	current_pstate = int_tofp(cpu->pstate.current_pstate);
--	return mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-+	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-+	return FP_ROUNDUP(core_busy);
-  }
-
-  static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
-
-
-
+@Rafael/Srivatsa: Ping!!
