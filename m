@@ -1,97 +1,27 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH 1/6] PM / Voltagedomain: Add generic clk notifier
- handler for regulator based dynamic voltage scaling
-Date: Tue, 25 Feb 2014 14:56:52 -0600
-Message-ID: <530D0394.4020208@ti.com>
-References: <1392755543-28335-1-git-send-email-nm@ti.com>
- <1392755543-28335-2-git-send-email-nm@ti.com>
- <20140225055142.22529.21814@quantum>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Tue, 25 Feb 2014 23:29:28 +0100
+Message-ID: <1456811.7asrQYHEt1@vostro.rjw.lan>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <3894986.dK3STNSG71@vostro.rjw.lan> <CAKohpom+RUAi0jZBVWUEWZh36O4QgoJcK-YrCq6eDnfMVf+GCg@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpom+RUAi0jZBVWUEWZh36O4QgoJcK-YrCq6eDnfMVf+GCg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140225055142.22529.21814@quantum>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Mark Brown <broonie@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 
-Hi Mike,
-On 02/24/2014 11:51 PM, Mike Turquette wrote:
-> Quoting Nishanth Menon (2014-02-18 12:32:18)
->> From: Mike Turquette <mturquette@linaro.org>
->>
->> This patch provides helper functions for drivers that wish to scale
->> voltage through the clock rate-change notifiers. The approach taken
->> is that the user-driver(cpufreq/devfreq) do not care about the
->> details of the OPP table, nor does it care about handling the voltage
->> regulator directly.
->>
->> By using the clk notifier flags, we are able to sequence the operations
->> in the right order. The current logic is heavily influenced by
->> implementation done in cpufreq-cpu0.
->>
->> [nm@ti.com: Fixes in logic, and broken out from clk to allow building
->> a generic voltagedomain solution independent of cpufreq]
->> Signed-off-by: Nishanth Menon <nm@ti.com>
->> Signed-off-by: Mike Turquette <mturquette@linaro.org>
+On Tuesday, February 25, 2014 08:12:52 PM Viresh Kumar wrote:
+> On 25 February 2014 18:40, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > Well, why exactly does the core need to operate "current frequency" at all?
 > 
-> Not-signed-off-by: Mike Turquette <mturquette@linaro.org>
-> 
-> I haven't reviewed this series and it is a pretty big deviation from my
-> original RFC. You can have authorship of the patches if you want.
+> I don't think I understood what you meant here. Do you mean why should
+> we maintain policy->cur?
 
-Sure, I had send a private note requesting clarification about the
-authorship, but I guess I can take this as the response :).
-
-> 
-> I'm not sure about trying to capture the "voltdm" as a core concept. It
-> feels a bit unwieldy to me.
-
-Considering it is a simple collation of regulators and SoC specific
-"magic" which have to be operated in tandem to clock operation, Why
-does it seem unwieldy? Usage of multiple voltage planes in a single
-voltage domain concept does not seem unique to TI processors either:
-For example, imx6q-cpufreq.c uses 3 regulators (arm, pu, soc),
-s5pv210-cpufreq.c uses two regulators (vddarm, vddint), ideally OMAP
-implementation would use two (vdd_mpu, vbb_mpu).
-
-> I have wondered about making an abstract
-> "performance domain" which is the dvfs analogue to generic power
-> domains. This a reasonable split since gpd are good for idle power
-> savings (e.g. clock gate, power gate, sleep state, etc) and "perf
-> domains" would be good for active power savings (dvfs).
-> 
-> Having a generic container for performance domains might make a good
-> place to stuff all of this glue logic that we keep running into (e.g.
-> CPU and GPU max frequencies that are related), and it might make another
-> nice knob for the thermal folks to use.
-
-This sounds like one level higher abstraction that we are speaking of
-here? I was'nt intending to solve the bigger picture problem here -
-just an abstraction level that might allow reusablity for multiple
-SoCs. In fact, having an abstraction away for voltage domain(which may
-consist of multiple regulators and any SoC specific magic) purely
-allows us to move towards a direction you mention here.
-
-> 
-> For the case of the OMAP voltage domains, it would be a place to stuff
-> all of the VC/VP -> ABB -> Smart Reflex AVS stuff.
-> 
-
-Unfortunately, I dont completely comprehend objection we have to this
-approach (other than an higher level abstraction is needed) and if we
-do have an objection, what is the alternate approach should be for
-representing hardware which this series attempts to present.
+Yes, what exactly do we need it for in the core?
 
 -- 
-Regards,
-Nishanth Menon
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
