@@ -1,29 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
-Date: Wed, 26 Feb 2014 10:45:32 +0530
-Message-ID: <CAKohpokKJUt4UhC5_dJAhU3LCBwht4pfDWT5Lqo0T1-y_M31=A@mail.gmail.com>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
-	<3894986.dK3STNSG71@vostro.rjw.lan>
-	<CAKohpom+RUAi0jZBVWUEWZh36O4QgoJcK-YrCq6eDnfMVf+GCg@mail.gmail.com>
-	<1456811.7asrQYHEt1@vostro.rjw.lan>
+From: Rashika Kheria <rashika.kheria@gmail.com>
+Subject: [PATCH] drivers: cpufreq: Remove unused function in cpufreq.c
+Date: Wed, 26 Feb 2014 21:16:25 +0530
+Message-ID: <20140226154625.GA10701@rashika>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1456811.7asrQYHEt1@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:content-transfer-encoding:user-agent;
+        bh=2V7aQWWiBs6aXdeYjmQVQnfvaAefq829rFzpDXAtK9A=;
+        b=0zg3Yjbl57xExduL2dXkc8rtTAO+hmklqiKIcq9+2o4koqWk8WAEI7EvWvFLhoWngS
+         Lp6Wpo9k+hgY81mH/QQVHo0soLgqkXVouJMcfw+G1EsV5wMnzIeTgcB2mRytk0/X5Gxe
+         dHhuT46bjfRNSgXD8YdainsUh80iYP5SLBkY9ood2Vt8DIFReFFe284rDqHwRq82Ny/N
+         jujmwjWg4xPyNNm3w1mi2TYguqP1qnFErYwI/4NSxlHeZ0bp/RXGHUqwTB7rERdXRoE4
+         yuSQ4sxh+3dXQDpAzt5Q0rsGhZAjmNG9YwEYLQA49mKtuzsrw2udkRCLcs2ZF2y4t0EC
+         uIEQ==
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
+Content-Type: text/plain; charset="utf-8"
+To: linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, josh@joshtriplett.org
 
-On 26 February 2014 03:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Yes, what exactly do we need it for in the core?
+Remove unused function show_boost() in drivers/cpufreq/cpufreq.c.
 
-Its probably there to make things faster. We cache the value so that we
-don't go to the hardware to read/calculate that again. Isn't it?
+This eliminates the following warning in drivers/cpufreq/cpufreq.c:
+drivers/cpufreq/cpufreq.c:355:9: warning: no previous prototype for =E2=
+=80=98show_boost=E2=80=99 [-Wmissing-prototypes]
 
-And we need to know current freq on many occasions. One of that is that
-many drivers need to know the relation between current and new freq before
-they can make the change. As they might need to play with volt regulators
-before or after the freq change. Also it is used mainly in our loops_per_jiffiy
-calculations.
+Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
+---
+ drivers/cpufreq/cpufreq.c |    6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 08ca8c9..6dce474 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -352,12 +352,6 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
+ /*********************************************************************
+  *                          SYSFS INTERFACE                          *
+  *********************************************************************=
+/
+-ssize_t show_boost(struct kobject *kobj,
+-				 struct attribute *attr, char *buf)
+-{
+-	return sprintf(buf, "%d\n", cpufreq_driver->boost_enabled);
+-}
+-
+ static ssize_t store_boost(struct kobject *kobj, struct attribute *att=
+r,
+ 				  const char *buf, size_t count)
+ {
+--=20
+1.7.9.5
