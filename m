@@ -1,92 +1,58 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: [PATCH 3/3] cpufreq: stats: Refactor common code into __cpufreq_stats_create_table()
-Date: Wed, 26 Feb 2014 12:17:38 -0800
-Message-ID: <1393445858-7062-3-git-send-email-skannan@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3] drivers: cpufreq: Mark function as static in cpufreq.c
+Date: Wed, 26 Feb 2014 22:56:45 +0100
+Message-ID: <16591432.HQVTHU5NYJ@vostro.rjw.lan>
+References: <20140226154625.GA10701@rashika> <1393432962-3647-1-git-send-email-rashika.kheria@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1393432962-3647-1-git-send-email-rashika.kheria@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Saravana Kannan <skannan@codeaurora.org>
+Content-Type: text/plain; charset="utf-8"
+To: Rashika Kheria <rashika.kheria@gmail.com>
+Cc: josh@joshtriplett.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-cpufreq_frequency_get_table() is called from all callers of
-__cpufreq_stats_create_table(). So, move it inside.
+On Wednesday, February 26, 2014 10:12:42 PM Rashika Kheria wrote:
+> Mark function as static in cpufreq.c because it is not
+> used outside this file.
+>=20
+> This eliminates the following warning in cpufreq.c:
+> drivers/cpufreq/cpufreq.c:355:9: warning: no previous prototype for =E2=
+=80=98show_boost=E2=80=99 [-Wmissing-prototypes]
+>=20
+> Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
 
-Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
----
- drivers/cpufreq/cpufreq_stats.c | 22 +++++++++-------------
- 1 file changed, 9 insertions(+), 13 deletions(-)
+v2 has been Reviewed-by: Josh already, right?
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index c52b440..9d9e366 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -180,13 +180,18 @@ static void cpufreq_stats_free_table(unsigned int cpu)
- 	cpufreq_cpu_put(policy);
- }
- 
--static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
--		struct cpufreq_frequency_table *table)
-+static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
- {
- 	unsigned int i, j, count = 0, ret = 0;
- 	struct cpufreq_stats *stat;
- 	unsigned int alloc_size;
- 	unsigned int cpu = policy->cpu;
-+	struct cpufreq_frequency_table *table;
-+
-+	table = cpufreq_frequency_get_table(policy->cpu);
-+	if (unlikely(!table))
-+		return 0;
-+
- 	if (per_cpu(cpufreq_stats_table, cpu))
- 		return -EBUSY;
- 	stat = kzalloc(sizeof(*stat), GFP_KERNEL);
-@@ -248,7 +253,6 @@ error_out:
- static void cpufreq_stats_create_table(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy;
--	struct cpufreq_frequency_table *table;
- 
- 	/*
- 	 * "likely(!policy)" because normally cpufreq_stats will be registered
-@@ -258,9 +262,7 @@ static void cpufreq_stats_create_table(unsigned int cpu)
- 	if (likely(!policy))
- 		return;
- 
--	table = cpufreq_frequency_get_table(policy->cpu);
--	if (likely(table))
--		__cpufreq_stats_create_table(policy, table);
-+	__cpufreq_stats_create_table(policy);
- 
- 	cpufreq_cpu_put(policy);
- }
-@@ -283,20 +285,14 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
- {
- 	int ret = 0;
- 	struct cpufreq_policy *policy = data;
--	struct cpufreq_frequency_table *table;
--	unsigned int cpu = policy->cpu;
- 
- 	if (val == CPUFREQ_UPDATE_POLICY_CPU) {
- 		cpufreq_stats_update_policy_cpu(policy);
- 		return 0;
- 	}
- 
--	table = cpufreq_frequency_get_table(cpu);
--	if (!table)
--		return 0;
--
- 	if (val == CPUFREQ_CREATE_POLICY)
--		ret = __cpufreq_stats_create_table(policy, table);
-+		ret = __cpufreq_stats_create_table(policy);
- 	else if (val == CPUFREQ_REMOVE_POLICY)
- 		__cpufreq_stats_free_table(policy);
- 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+> ---
+> Changes since v1:
+> Incorrect Fix
+> Changes since v2:
+> Show Changelog
+>=20
+>  drivers/cpufreq/cpufreq.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 08ca8c9..54fd670 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -352,7 +352,7 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition)=
+;
+>  /*******************************************************************=
+**
+>   *                          SYSFS INTERFACE                         =
+ *
+>   *******************************************************************=
+**/
+> -ssize_t show_boost(struct kobject *kobj,
+> +static ssize_t show_boost(struct kobject *kobj,
+>  				 struct attribute *attr, char *buf)
+>  {
+>  	return sprintf(buf, "%d\n", cpufreq_driver->boost_enabled);
+>=20
 
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
