@@ -1,69 +1,65 @@
-From: Josh Triplett <josh@joshtriplett.org>
-Subject: Re: [PATCH v2] drivers: cpufreq: Mark function as static in cpufreq.c
-Date: Wed, 26 Feb 2014 09:08:47 -0800
-Message-ID: <20140226170847.GA18427@thin>
-References: <1393432706-25708-1-git-send-email-rashika.kheria@gmail.com>
- <20140226164142.GA18079@thin>
- <CAMpEsFFjR2e_kDn9-QuKcS3RjsSmru9XGjXqXXdO7sYeWdh9dw@mail.gmail.com>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMpEsFFjR2e_kDn9-QuKcS3RjsSmru9XGjXqXXdO7sYeWdh9dw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: [PATCH 1/3] cpufreq: stats: Remove redundant cpufreq_cpu_get() call
+Date: Wed, 26 Feb 2014 12:17:36 -0800
+Message-ID: <1393445858-7062-1-git-send-email-skannan@codeaurora.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rashika Kheria <rashika.kheria@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Saravana Kannan <skannan@codeaurora.org>
 
-On Wed, Feb 26, 2014 at 10:15:57PM +0530, Rashika Kheria wrote:
-> On Wed, Feb 26, 2014 at 10:11 PM, Josh Triplett <josh@joshtriplett.org> wrote:
-> > On Wed, Feb 26, 2014 at 10:08:26PM +0530, Rashika Kheria wrote:
-> >> Mark function as static in cpufreq.c because it is not
-> >> used outside this file.
-> >>
-> >> This eliminates the following warning in cpufreq.c:
-> >> drivers/cpufreq/cpufreq.c:355:9: warning: no previous prototype for 'show_boost' [-Wmissing-prototypes]
-> >>
-> >> Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
-> >
-> > I don't see any uses of this function in cpufreq.c; have uses appeared
-> > in a development branch?
-> >
-> 
-> It isn't used directly but through "define_one_global_rw(boost);".
-> 
-> The "define_one_global_rw()" is defined in include/linux/cpufreq.h. It
-> therefore, need the definition of the function.
+__cpufreq_stats_create_table always gets pass the valid and real policy
+struct. So, there's no need to call cpufreq_cpu_get() to get the policy
+again.
 
-Ah, that's quite non-obvious.  Hiding the "show_" makes that hard to
-grep for.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+---
+ drivers/cpufreq/cpufreq_stats.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-Reviewed-by: Josh Triplett <josh@joshtriplett.org>
-
-> >>  drivers/cpufreq/cpufreq.c |    2 +-
-> >>  1 file changed, 1 insertion(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> >> index 08ca8c9..54fd670 100644
-> >> --- a/drivers/cpufreq/cpufreq.c
-> >> +++ b/drivers/cpufreq/cpufreq.c
-> >> @@ -352,7 +352,7 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
-> >>  /*********************************************************************
-> >>   *                          SYSFS INTERFACE                          *
-> >>   *********************************************************************/
-> >> -ssize_t show_boost(struct kobject *kobj,
-> >> +static ssize_t show_boost(struct kobject *kobj,
-> >>                                struct attribute *attr, char *buf)
-> >>  {
-> >>       return sprintf(buf, "%d\n", cpufreq_driver->boost_enabled);
-> >> --
-> >> 1.7.9.5
-> >>
-> 
-> 
-> 
-> -- 
-> Rashika Kheria
-> B.Tech CSE
-> IIIT Hyderabad
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 5793e14..e4bd27f 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -185,7 +185,6 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ {
+ 	unsigned int i, j, count = 0, ret = 0;
+ 	struct cpufreq_stats *stat;
+-	struct cpufreq_policy *current_policy;
+ 	unsigned int alloc_size;
+ 	unsigned int cpu = policy->cpu;
+ 	if (per_cpu(cpufreq_stats_table, cpu))
+@@ -194,13 +193,7 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 	if ((stat) == NULL)
+ 		return -ENOMEM;
+ 
+-	current_policy = cpufreq_cpu_get(cpu);
+-	if (current_policy == NULL) {
+-		ret = -EINVAL;
+-		goto error_get_fail;
+-	}
+-
+-	ret = sysfs_create_group(&current_policy->kobj, &stats_attr_group);
++	ret = sysfs_create_group(&policy->kobj, &stats_attr_group);
+ 	if (ret)
+ 		goto error_out;
+ 
+@@ -243,11 +236,8 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 	stat->last_time = get_jiffies_64();
+ 	stat->last_index = freq_table_get_index(stat, policy->cur);
+ 	spin_unlock(&cpufreq_stats_lock);
+-	cpufreq_cpu_put(current_policy);
+ 	return 0;
+ error_out:
+-	cpufreq_cpu_put(current_policy);
+-error_get_fail:
+ 	kfree(stat);
+ 	per_cpu(cpufreq_stats_table, cpu) = NULL;
+ 	return ret;
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
