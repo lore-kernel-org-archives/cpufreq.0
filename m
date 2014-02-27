@@ -1,51 +1,57 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] drivers: cpufreq: Mark function as static in cpufreq.c
-Date: Thu, 27 Feb 2014 10:55:18 +0530
-Message-ID: <CAKohpomqu22Pt5_wYV3u2uC36AgfmrkvxLtJCGakdodEQFE-jQ@mail.gmail.com>
-References: <1393432706-25708-1-git-send-email-rashika.kheria@gmail.com>
-	<20140226164142.GA18079@thin>
-	<CAMpEsFFjR2e_kDn9-QuKcS3RjsSmru9XGjXqXXdO7sYeWdh9dw@mail.gmail.com>
-	<20140226170847.GA18427@thin>
+Subject: Re: [PATCH 3/3] cpufreq: stats: Refactor common code into
+ __cpufreq_stats_create_table()
+Date: Thu, 27 Feb 2014 11:09:45 +0530
+Message-ID: <CAKohpo=Xf+5OxjAuYkh_jCJ92MPuutgpHXL8fxOLq_3B18cSEA@mail.gmail.com>
+References: <1393445858-7062-3-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140226170847.GA18427@thin>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rashika Kheria <rashika.kheria@gmail.com>
-Cc: josh@joshtriplett.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1393445858-7062-3-git-send-email-skannan@codeaurora.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Rashika,
-
-On 26 February 2014 22:08, Rashika Kheria <rashika.kheria@gmail.com> wrote:
-> Mark function as static in cpufreq.c because it is not
-> used outside this file.
+On 27 February 2014 01:47, Saravana Kannan <skannan@codeaurora.org> wrote:
+> cpufreq_frequency_get_table() is called from all callers of
+> __cpufreq_stats_create_table(). So, move it inside.
 >
-> This eliminates the following warning in cpufreq.c:
-> drivers/cpufreq/cpufreq.c:355:9: warning: no previous prototype for 'show_boost' [-Wmissing-prototypes]
-
-Can you please elaborate how this warning is related to
-the non-static definition of this function?
-
-> Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
+> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
 > ---
->  drivers/cpufreq/cpufreq.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/cpufreq/cpufreq_stats.c | 22 +++++++++-------------
+>  1 file changed, 9 insertions(+), 13 deletions(-)
 >
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 08ca8c9..54fd670 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -352,7 +352,7 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
->  /*********************************************************************
->   *                          SYSFS INTERFACE                          *
->   *********************************************************************/
-> -ssize_t show_boost(struct kobject *kobj,
-> +static ssize_t show_boost(struct kobject *kobj,
->                                  struct attribute *attr, char *buf)
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index c52b440..9d9e366 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -180,13 +180,18 @@ static void cpufreq_stats_free_table(unsigned int cpu)
+>         cpufreq_cpu_put(policy);
+>  }
+>
+> -static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
+> -               struct cpufreq_frequency_table *table)
+> +static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
 >  {
->         return sprintf(buf, "%d\n", cpufreq_driver->boost_enabled);
-> --
-> 1.7.9.5
->
+>         unsigned int i, j, count = 0, ret = 0;
+>         struct cpufreq_stats *stat;
+>         unsigned int alloc_size;
+>         unsigned int cpu = policy->cpu;
+> +       struct cpufreq_frequency_table *table;
+> +
+> +       table = cpufreq_frequency_get_table(policy->cpu);
+
+s/policy->cpu/cpu
+
+Otherwise, Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
