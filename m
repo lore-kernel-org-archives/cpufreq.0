@@ -1,57 +1,160 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: stats: Refactor common code into
- __cpufreq_stats_create_table()
-Date: Thu, 27 Feb 2014 11:09:45 +0530
-Message-ID: <CAKohpo=Xf+5OxjAuYkh_jCJ92MPuutgpHXL8fxOLq_3B18cSEA@mail.gmail.com>
-References: <1393445858-7062-3-git-send-email-skannan@codeaurora.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH 1/6] PM / Voltagedomain: Add generic clk notifier
+ handler for regulator based dynamic voltage scaling
+Date: Thu, 27 Feb 2014 08:42:53 -0600
+Message-ID: <530F4EED.9050207@ti.com>
+References: <1392755543-28335-1-git-send-email-nm@ti.com> <1392755543-28335-2-git-send-email-nm@ti.com> <20140225055142.22529.21814@quantum> <530D0394.4020208@ti.com> <20140227023455.GA15712@kahuna> <20140227050043.12081.54173@quantum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1393445858-7062-3-git-send-email-skannan@codeaurora.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20140227050043.12081.54173@quantum>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Mark Brown <broonie@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
 
-On 27 February 2014 01:47, Saravana Kannan <skannan@codeaurora.org> wrote:
-> cpufreq_frequency_get_table() is called from all callers of
-> __cpufreq_stats_create_table(). So, move it inside.
->
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> ---
->  drivers/cpufreq/cpufreq_stats.c | 22 +++++++++-------------
->  1 file changed, 9 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index c52b440..9d9e366 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -180,13 +180,18 @@ static void cpufreq_stats_free_table(unsigned int cpu)
->         cpufreq_cpu_put(policy);
->  }
->
-> -static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
-> -               struct cpufreq_frequency_table *table)
-> +static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
->  {
->         unsigned int i, j, count = 0, ret = 0;
->         struct cpufreq_stats *stat;
->         unsigned int alloc_size;
->         unsigned int cpu = policy->cpu;
-> +       struct cpufreq_frequency_table *table;
-> +
-> +       table = cpufreq_frequency_get_table(policy->cpu);
+On 02/26/2014 11:00 PM, Mike Turquette wrote:
+> Quoting Nishanth Menon (2014-02-26 18:34:55)
+>> +/**
+>> + * pm_runtime_get_rate() - Returns the device operational frequency
+>> + * @dev:       Device to handle
+>> + * @rate:      Returns rate in Hz.
+>> + *
+>> + * Returns appropriate error value in case of error conditions, else
+>> + * returns 0 and rate is updated. The pm_domain logic does all the necessary
+>> + * operation (which may consider magic hardware stuff) to provide the rate.
+>> + *
+>> + * NOTE: the rate returned is a snapshot and in many cases just a bypass
+>> + * to clk api to set the rate.
+>> + */
+>> +int pm_runtime_get_rate(struct device *dev, unsigned long *rate)
+> 
+> Instead of "rate", how about we use "level" and leave it undefined as to
+> what that means? It would be equally valid for level to represent a
+> clock rate, or an opp from a table of opp's, or a p-state, or some value
+> passed to a PM microcontroller.
 
-s/policy->cpu/cpu
+IMHO, from a driver which already exists for multiple SoCs/
+architectures, we cannot have variant definitions that a generic
+driver will be unable to depend upon. what should such a driver
+expect? level == rate OR level == index to p-state or magic PM
+controller value?
 
-Otherwise, Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Today the definitions are very clear to such a driver, pm_runtime APIs
+are used for device specific idle management, but for active
+management, use clk and regulator code as needed - ofcourse, that
+machine specificity triggers the need for the 50 odd cpufreq drivers
+we have today - intent was to be able to abstract it enough for a
+generic logic to exist.
+
+> 
+> Code that is tightly coupled to the hardware would simply know what
+> value to use with no extra sugar.
+
+agreed on the machine specific implementation, but the logic at driver
+level will then get tied down to machine specific implementation as well
+
+> 
+> Generic code would need to get the various supported "levels" populated
+> at run time, but a DT binding could do that, or a query to the ACPI
+> tables, or whatever.
+
+then we'd also have to introduce a translator API for drivers that
+need frequency -> we go back to the old world of having specific
+functions depending on usage in the frequency world, ACPI world, PM
+controller world.
+
+That completely breaks the concept of having a higher level function,
+right?
+
+> 
+>> +{
+>> +       unsigned long flags;
+>> +       int error = -ENOSYS;
+>> +
+>> +       if (!rate || !dev)
+>> +               return -EINVAL;
+>> +
+>> +       spin_lock_irqsave(&dev->power.lock, flags);
+>> +       if (!pm_runtime_active(dev)) {
+>> +               error = -EINVAL;
+>> +               goto out;
+>> +       }
+>> +
+>> +       if (dev->pm_domain && dev->pm_domain->active_ops.get_rate)
+>> +               error = dev->pm_domain->active_ops.get_rate(dev, rate);
+>> +out:
+>> +       spin_unlock_irqrestore(&dev->power.lock, flags);
+>> +
+>> +       return error;
+>> +}
+>> +
+>> +/**
+>> + * pm_runtime_set_rate() - Set a specific rate for the device operation
+>> + * @dev:       Device to handle
+>> + * @rate:      Rate to set in Hz
+>> + *
+>> + * Returns appropriate error value in case of error conditions, else
+>> + * returns 0. The pm_domain logic does all the necessary operation (which
+>> + * may include voltage scale operations or other magic hardware stuff) to
+>> + * achieve the operation. It is guarenteed that the requested rate is achieved
+>> + * on returning from this function if return value is 0.
+>> + */
+>> +int pm_runtime_set_rate(struct device *dev, unsigned long rate)
+> 
+> Additionally I wonder if the function signature should include a way to
+> specify the sub-unit of a device that we are operating on? This is a way
+> to tackle the issues you raised regarding multiple clocks per device,
+> etc. Two approaches come to mind:
+> 
+> int pm_runtime_set_rate(struct device *dev, int index,
+> 				unsigned long rate);
+> 
+> Where index is a sub-unit of struct device *dev.
+
+Here the problem is trying to define what that index is. should it be
+clk index? how again would a generic driver be able to consistently
+function? lets, for a moment replace that with a string - "clk_name"
+to uniquely identify the clk -> but then, it still, in concept makes
+it no better than a clk_set_rate since we are uniquely identifying the
+clk to operate upon -> and we can definitely add "magic dvfs" stuff on
+existing clock framework without a need for additional wrappers (which
+what the original $subject series does).
+
+
+>The second approach is
+> to create a publicly declared structure representing the sub-unit. Some
+> variations on that theme:
+> 
+> int pm_runtime_set_rate(struct perf_domain *perfdm, unsigned long rate);
+> 
+> or,
+> 
+> int pm_runtime_set_rate(struct generic_power_domain *gpd,
+> 				unsigned long rate);
+> 
+> or whatever that sub-unit looks like. The gpd thing might be a total
+> layering violation, I don't know. Or perhaps it's a decent idea but it
+> shouldn't be as a PM runtime call. Again, I dunno.
+
+Again, we goes back to the same question, right? which clock in a
+power_domain/perf_domain are we intending with the rate? a device
+belongs to a perf domain -> Taking drivers/cpufreq/imx6q-cpufreq.c as
+an example.
+Clocks needed: arm_clk, pll1_sys_clk, pll1_sw_clk, step_clk,
+pll2_pfd2_396m_clk.
+regulators needed: arm_reg, pu_reg, soc_reg.
+
+The device we want to set a frequency is the ARM processor. by
+describing "perf_domain" or "generic power domain" as a single clock
+entity, we might as well use clk_set_rate instead to be specific,
+instead of writing one wrapper on top of the entire thing.
+
+
+I apologize, more I think in this angle, less I think such a generic
+api seems feasible.
+
+-- 
+Regards,
+Nishanth Menon
