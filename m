@@ -1,80 +1,77 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] cpufreq: Initialize policy before making it available for others to use
-Date: Sat, 01 Mar 2014 02:14:35 +0100
-Message-ID: <278741659.0r4LI3yGJ4@vostro.rjw.lan>
-References: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org> <57b8ab66ba21f42c91311641319cec16d2c8923d.1393318100.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH V6 2/7] cpufreq: suspend governors from dpm_{suspend|resume}()
+Date: Sun, 02 Mar 2014 01:01:03 +0100
+Message-ID: <3426517.B7CbpxFO4d@vostro.rjw.lan>
+References: <cover.1392629003.git.viresh.kumar@linaro.org> <5b79cd9aa706d988d242d80d73cfe67c0e6c5b3d.1392629003.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <57b8ab66ba21f42c91311641319cec16d2c8923d.1393318100.git.viresh.kumar@linaro.org>
+In-Reply-To: <5b79cd9aa706d988d242d80d73cfe67c0e6c5b3d.1392629003.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: skannan@codeaurora.org, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com
 
-On Tuesday, February 25, 2014 02:20:10 PM Viresh Kumar wrote:
-> Policy must be fully initialized before it is being made available for use by
-> others.
+On Monday, February 17, 2014 02:55:08 PM Viresh Kumar wrote:
+> Previous patch added support for suspending governors, with callbacks being
+> called from dpm_{suspend|resume}_noirq(). The problem here is that most of the
+> devices (i.e. devices with ->suspend() callbacks) have already been suspended by
+> now and so if drivers want to change frequency before suspending, then it might
+> not be possible for many platforms (which depend on other peripherals like i2c,
+> regulators, etc).
+> 
+> So, we actually need to do this from dpm_{suspend|resume}() instead. This patch
+> does it.
 
-True enough.  And the problem is?
+Please fold this into [1/7].
 
-> This patch moves some initialization code before making policy available
-> for others.
-
-So why/how exactly does this fix the problem?
-
+> Tested-by: Lan Tianyu <tianyu.lan@intel.com>
+> Tested-by: Nishanth Menon <nm@ti.com>
+> Tested-by: Stephen Warren <swarren@nvidia.com>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/cpufreq/cpufreq.c | 28 ++++++++++++++--------------
->  1 file changed, 14 insertions(+), 14 deletions(-)
+>  drivers/base/power/main.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index cc4f244..110c0cd 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1116,6 +1116,20 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
->  		goto err_set_policy_cpu;
->  	}
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index da49882..0f82012 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -582,7 +582,6 @@ static void dpm_resume_noirq(pm_message_t state)
+>  	dpm_show_time(starttime, state, "noirq");
+>  	resume_device_irqs();
+>  	cpuidle_resume();
+> -	cpufreq_resume();
+>  }
 >  
-> +	/* related cpus should atleast have policy->cpus */
-> +	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+>  /**
+> @@ -858,6 +857,8 @@ void dpm_resume(pm_message_t state)
+>  	mutex_unlock(&dpm_list_mtx);
+>  	async_synchronize_full();
+>  	dpm_show_time(starttime, state, NULL);
 > +
-> +	/*
-> +	 * affected cpus must always be the one, which are online. We aren't
-> +	 * managing offline cpus here.
-> +	 */
-> +	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
-> +
-> +	if (!frozen) {
-> +		policy->user_policy.min = policy->min;
-> +		policy->user_policy.max = policy->max;
-> +	}
-> +
->  	write_lock_irqsave(&cpufreq_driver_lock, flags);
->  	for_each_cpu(j, policy->cpus)
->  		per_cpu(cpufreq_cpu_data, j) = policy;
-> @@ -1169,20 +1183,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
->  		}
->  	}
+> +	cpufreq_resume();
+>  }
 >  
-> -	/* related cpus should atleast have policy->cpus */
-> -	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
-> -
-> -	/*
-> -	 * affected cpus must always be the one, which are online. We aren't
-> -	 * managing offline cpus here.
-> -	 */
-> -	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
-> -
-> -	if (!frozen) {
-> -		policy->user_policy.min = policy->min;
-> -		policy->user_policy.max = policy->max;
-> -	}
-> -
->  	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
->  				     CPUFREQ_START, policy);
+>  /**
+> @@ -1063,7 +1064,6 @@ static int dpm_suspend_noirq(pm_message_t state)
+>  	ktime_t starttime = ktime_get();
+>  	int error = 0;
 >  
+> -	cpufreq_suspend();
+>  	cpuidle_pause();
+>  	suspend_device_irqs();
+>  	mutex_lock(&dpm_list_mtx);
+> @@ -1415,6 +1415,8 @@ int dpm_suspend(pm_message_t state)
+>  
+>  	might_sleep();
+>  
+> +	cpufreq_suspend();
+> +
+>  	mutex_lock(&dpm_list_mtx);
+>  	pm_transition = state;
+>  	async_error = 0;
 > 
 
 -- 
