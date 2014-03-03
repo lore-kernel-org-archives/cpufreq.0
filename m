@@ -1,71 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: enable ARM drivers on arm64
-Date: Sun, 02 Mar 2014 01:03:25 +0100
-Message-ID: <1789818.fd7lIbF9Ps@vostro.rjw.lan>
-References: <1393208877-15797-1-git-send-email-broonie@kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] drivers: cpufreq: Mark function as static in cpufreq.c
+Date: Mon, 3 Mar 2014 05:59:13 +0530
+Message-ID: <CAKohpont=VTHJdUz4UFtrZtRnkFfUGRrnq3zgvm5sW6ukTRLiQ@mail.gmail.com>
+References: <1393432706-25708-1-git-send-email-rashika.kheria@gmail.com>
+	<20140226164142.GA18079@thin>
+	<CAMpEsFFjR2e_kDn9-QuKcS3RjsSmru9XGjXqXXdO7sYeWdh9dw@mail.gmail.com>
+	<20140226170847.GA18427@thin>
+	<CAKohpomqu22Pt5_wYV3u2uC36AgfmrkvxLtJCGakdodEQFE-jQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1393208877-15797-1-git-send-email-broonie@kernel.org>
+In-Reply-To: <CAKohpomqu22Pt5_wYV3u2uC36AgfmrkvxLtJCGakdodEQFE-jQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mark Brown <broonie@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: Rashika Kheria <rashika.kheria@gmail.com>
+Cc: josh@joshtriplett.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Monday, February 24, 2014 11:27:57 AM Mark Brown wrote:
-> From: Rob Herring <rob.herring@calxeda.com>
-> 
-> Enable cpufreq and power kconfig menus on arm64 along with arm cpufreq
-> drivers. The power menu is needed for OPP support. At least on Calxeda
-> systems, the same cpufreq driver is used for arm and arm64 based
-> systems.
-> 
-> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Mark Brown <broonie@linaro.org>
+On 27 February 2014 10:55, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Hi Rashika,
+>
+> On 26 February 2014 22:08, Rashika Kheria <rashika.kheria@gmail.com> wrote:
+>> Mark function as static in cpufreq.c because it is not
+>> used outside this file.
+>>
+>> This eliminates the following warning in cpufreq.c:
+>> drivers/cpufreq/cpufreq.c:355:9: warning: no previous prototype for 'show_boost' [-Wmissing-prototypes]
+>
+> Can you please elaborate how this warning is related to
+> the non-static definition of this function?
 
-Queued up for 3.15, thanks!
-
-> ---
->  arch/arm64/Kconfig      | 8 ++++++++
->  drivers/cpufreq/Kconfig | 2 +-
->  2 files changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index fea7b47..939e95a 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -327,6 +327,14 @@ source "drivers/cpuidle/Kconfig"
->  
->  endmenu
->  
-> +menu "Power management options"
-> +
-> +source "kernel/power/Kconfig"
-> +
-> +source "drivers/cpufreq/Kconfig"
-> +
-> +endmenu
-> +
->  source "net/Kconfig"
->  
->  source "drivers/Kconfig"
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 4b029c0..1fbe11f 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -200,7 +200,7 @@ source "drivers/cpufreq/Kconfig.x86"
->  endmenu
->  
->  menu "ARM CPU frequency scaling drivers"
-> -depends on ARM
-> +depends on ARM || ARM64
->  source "drivers/cpufreq/Kconfig.arm"
->  endmenu
->  
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Ping!!
