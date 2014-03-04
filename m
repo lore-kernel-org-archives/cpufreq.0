@@ -1,85 +1,83 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/3] cpufreq: initialize governor for a new policy under policy->rwsem
-Date: Tue,  4 Mar 2014 11:44:01 +0800
-Message-ID: <2f6efe0c9058f64212ee220a1b386e04ba415686.1393904428.git.viresh.kumar@linaro.org>
-References: <98b7ae22d936456bf830aa749556a115969cfa47.1393904428.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <98b7ae22d936456bf830aa749556a115969cfa47.1393904428.git.viresh.kumar@linaro.org>
-In-Reply-To: <98b7ae22d936456bf830aa749556a115969cfa47.1393904428.git.viresh.kumar@linaro.org>
-References: <98b7ae22d936456bf830aa749556a115969cfa47.1393904428.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [RFC v3 0/5] cpufreq:LAB: Support for LAB governor.
+Date: Tue, 04 Mar 2014 11:27:27 +0100
+Message-ID: <1393928852-22725-1-git-send-email-l.majewski@samsung.com>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net, skannan@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>, thomas.ab@samsung.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc@vger.kernel.org
 
-policy->rwsem is used to lock access to all parts of code modifying struct
-cpufreq_policy but wasn't used on a new policy created from __cpufreq_add_dev().
+Despite this patch set is working and applicable on top of 3.14-rc5, 
+please regard it solely as a pure RFC.
 
-Because of which if we call cpufreq_update_policy() repeatedly on one CPU and do
-offline/online of another CPU then we might see these crashes:
+This patch provides support for LAB governor build on top of ondemand.
+Previous version of LAB can be found here:
+http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
 
-Unable to handle kernel NULL pointer dereference at virtual address 00000020
-pgd = c0003000
-[00000020] *pgd=80000000004003, *pmd=00000000
-Internal error: Oops: 206 [#1] PREEMPT SMP ARM
+LAB short reminder:
 
-PC is at __cpufreq_governor+0x10/0x1ac
-LR is at cpufreq_update_policy+0x114/0x150
+LAB uses information about how many cores are in "idle" state (the core 
+idleness is represented as the value between 0 and 100) and the overall 
+load of the system (from 0 to 100) to decide about frequency to be set.
+It is extremely useful with SoCs like Exynos4412, which can set only one
+frequency for all cores.
 
----[ end trace f23a8defea6cd706 ]---
-Kernel panic - not syncing: Fatal exception
-CPU0: stopping
-CPU: 0 PID: 7136 Comm: mpdecision Tainted: G      D W    3.10.0-gd727407-00074-g979ede8 #396
+Important design decisions:
 
-[<c0afe180>] (notifier_call_chain+0x40/0x68) from [<c02a23ac>] (__blocking_notifier_call_chain+0x40/0x58)
-[<c02a23ac>] (__blocking_notifier_call_chain+0x40/0x58) from [<c02a23d8>] (blocking_notifier_call_chain+0x14/0x1c)
-[<c02a23d8>] (blocking_notifier_call_chain+0x14/0x1c) from [<c0803c68>] (cpufreq_set_policy+0xd4/0x2b8)
-[<c0803c68>] (cpufreq_set_policy+0xd4/0x2b8) from [<c0803e7c>] (cpufreq_init_policy+0x30/0x98)
-[<c0803e7c>] (cpufreq_init_policy+0x30/0x98) from [<c0805a18>] (__cpufreq_add_dev.isra.17+0x4dc/0x7a4)
-[<c0805a18>] (__cpufreq_add_dev.isra.17+0x4dc/0x7a4) from [<c0805d38>] (cpufreq_cpu_callback+0x58/0x84)
-[<c0805d38>] (cpufreq_cpu_callback+0x58/0x84) from [<c0afe180>] (notifier_call_chain+0x40/0x68)
-[<c0afe180>] (notifier_call_chain+0x40/0x68) from [<c02812dc>] (__cpu_notify+0x28/0x44)
-[<c02812dc>] (__cpu_notify+0x28/0x44) from [<c0aeed90>] (_cpu_up+0xf4/0x1dc)
-[<c0aeed90>] (_cpu_up+0xf4/0x1dc) from [<c0aeeed4>] (cpu_up+0x5c/0x78)
-[<c0aeeed4>] (cpu_up+0x5c/0x78) from [<c0aec808>] (store_online+0x44/0x74)
-[<c0aec808>] (store_online+0x44/0x74) from [<c03a40f4>] (sysfs_write_file+0x108/0x14c)
-[<c03a40f4>] (sysfs_write_file+0x108/0x14c) from [<c03517d4>] (vfs_write+0xd0/0x180)
-[<c03517d4>] (vfs_write+0xd0/0x180) from [<c0351ca8>] (SyS_write+0x38/0x68)
-[<c0351ca8>] (SyS_write+0x38/0x68) from [<c0205de0>] (ret_fast_syscall+0x0/0x30)
+- Reuse well established ondemand governor's internal code. To do this
+  I had to expose some previously static internal ondemand code. 
+  This allowed smaller LAB code when compared to previous version.
+	
+- LAB works on top of ondemand, which means that one via device tree
+  attributes can specify if and when e.g. BOOST shall be enabled or if 
+  any particular frequency shall be imposed. For situation NOT important 
+  from the power consumption reduction viewpoint the ondemand is used to 
+  set proper frequency.
 
-Fix these by taking locks at appropriate places in __cpufreq_add_dev() as well.
+- It is only possible to either compile in or not the LAB into the kernel. 
+  There is no "M" option for Kconfig. It is done on purpose, since ondemand 
+  itself can be also compiled as a module and then it would be possible to
+  remove ondemand when LAB is working on top of it.
 
-Reported-by: Saravana Kannan <skannan@codeaurora.org>
-Suggested-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1->V2: No change
+- The LAB operation is specified (and thereof extendable) via device tree
+  lab-ctrl-freq attribute defined at /cpus/cpu0.
 
- drivers/cpufreq/cpufreq.c | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 3c6f9a5..e2a1e67 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1128,6 +1128,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		policy->user_policy.max = policy->max;
- 	}
- 
-+	down_write(&policy->rwsem);
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus)
- 		per_cpu(cpufreq_cpu_data, j) = policy;
-@@ -1202,6 +1203,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		policy->user_policy.policy = policy->policy;
- 		policy->user_policy.governor = policy->governor;
- 	}
-+	up_write(&policy->rwsem);
- 
- 	kobject_uevent(&policy->kobj, KOBJ_ADD);
- 	up_read(&cpufreq_rwsem);
+Problems:
+- How the governor will work for big.LITTLE systems (especially Global Task
+  Scheduling).
+- Will there be agreement to expose internal ondemand code to be reused for
+  more specialized governors.
+
+Test HW:
+	Exynos4412 - Trats2 board.
+Above patches were posted on top of Linux 3.14-rc5
+(SHA1: 3f9590c281c66162bf8ae9b7b2d987f0a89043c6)
+
+Lukasz Majewski (5):
+  cpufreq:LAB:ondemand Adjust ondemand to be able to reuse its methods
+  cpufreq:LAB:cpufreq_governor Adjust cpufreq_governor.[h|c] to support
+    LAB
+  cpufreq:LAB:lab Add LAB governor code
+  cpufreq:LAB:Kconfig Add LAB definitions to Kconfig
+  cpufreq:LAB:dts:trats2: Add DTS nodes for LAB governor
+
+ arch/arm/boot/dts/exynos4412-trats2.dts |   29 ++
+ drivers/cpufreq/Kconfig                 |   28 ++
+ drivers/cpufreq/Makefile                |    1 +
+ drivers/cpufreq/cpufreq_governor.c      |    7 +
+ drivers/cpufreq/cpufreq_governor.h      |   12 +
+ drivers/cpufreq/cpufreq_lab.c           |  457 +++++++++++++++++++++++++++++++
+ drivers/cpufreq/cpufreq_ondemand.c      |   24 +-
+ 7 files changed, 550 insertions(+), 8 deletions(-)
+ create mode 100644 drivers/cpufreq/cpufreq_lab.c
+
 -- 
-1.7.12.rc2.18.g61b472e
+1.7.10.4
+
