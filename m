@@ -1,70 +1,69 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [RFC v3 2/5] cpufreq:LAB:cpufreq_governor Adjust
- cpufreq_governor.[h|c] to support LAB
-Date: Tue, 04 Mar 2014 11:27:29 +0100
-Message-ID: <1393928852-22725-3-git-send-email-l.majewski@samsung.com>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
- <1393928852-22725-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1393928852-22725-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+From: Aaron Plattner <aplattner@nvidia.com>
+Subject: [PATCH] cpufreq: use cpufreq_cpu_get to avoid cpufreq_get race conditions
+Date: Tue, 4 Mar 2014 12:42:15 -0800
+Message-ID: <1393965735-15610-1-git-send-email-aplattner@nvidia.com>
+Mime-Version: 1.0
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>, thomas.ab@samsung.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Aaron Plattner <aplattner@nvidia.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Some minor adjustments were needed to support LAB operation in the
-cpufreq_governor.[h|c] files.
+If a module calls cpufreq_get while cpufreq is initializing, it's possible for
+it to be called after cpufreq_driver is set but before cpufreq_cpu_data is
+written during subsys_interface_register.  This happens because cpufreq_get
+doesn't take the cpufreq_driver_lock around its use of cpufreq_cpu_data.
 
-Most notably, code for proper estimation of the idle time for each CPU is
-added here.
+Fix this by using cpufreq_cpu_get(cpu) to look up the policy rather than reading
+it out of cpufreq_cpu_data directly.  cpufreq_cpu_get takes the appropriate
+locks to prevent this race from happening.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Since it's possible for policy to be NULL if the caller passes in an invalid CPU
+number or calls the function before cpufreq is initialized, delete the
+BUG_ON(!policy) and simply return 0.  Don't try to return -ENOENT because that's
+negative and the function returns an unsigned integer.
+
+Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
 ---
- drivers/cpufreq/cpufreq_governor.c |    7 +++++++
- drivers/cpufreq/cpufreq_governor.h |    2 ++
- 2 files changed, 9 insertions(+)
+ drivers/cpufreq/cpufreq.c | 21 +++++++--------------
+ 1 file changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index ba43991..99fc3e8 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -98,6 +98,13 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8d19f7c..158d0b5 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1447,23 +1447,16 @@ static unsigned int __cpufreq_get(unsigned int cpu)
+  */
+ unsigned int cpufreq_get(unsigned int cpu)
+ {
+-	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
++	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+ 	unsigned int ret_freq = 0;
  
- 		load = 100 * (wall_time - idle_time) / wall_time;
+-	if (cpufreq_disabled() || !cpufreq_driver)
+-		return -ENOENT;
+-
+-	BUG_ON(!policy);
+-
+-	if (!down_read_trylock(&cpufreq_rwsem))
+-		return 0;
+-
+-	down_read(&policy->rwsem);
+-
+-	ret_freq = __cpufreq_get(cpu);
++	if (policy) {
++		down_read(&policy->rwsem);
++		ret_freq = __cpufreq_get(cpu);
++		up_read(&policy->rwsem);
  
-+		if (dbs_data->cdata->governor == GOV_LAB) {
-+			struct od_cpu_dbs_info_s *od_dbs_info =
-+				dbs_data->cdata->get_cpu_dbs_info_s(j);
-+
-+			od_dbs_info->idle_time = (100 * idle_time) / wall_time;
-+		}
-+
- 		if (load > max_load)
- 			max_load = load;
- 	}
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 34b1cf2..82a519f 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -152,6 +152,7 @@ struct od_cpu_dbs_info_s {
- 	unsigned int freq_lo_jiffies;
- 	unsigned int freq_hi_jiffies;
- 	unsigned int rate_mult;
-+	unsigned int idle_time;
- 	unsigned int sample_type:1;
- };
+-	up_read(&policy->rwsem);
+-	up_read(&cpufreq_rwsem);
++		cpufreq_cpu_put(policy);
++	}
  
-@@ -187,6 +188,7 @@ struct common_dbs_data {
- 	/* Common across governors */
- 	#define GOV_ONDEMAND		0
- 	#define GOV_CONSERVATIVE	1
-+	#define GOV_LAB                 2
- 	int governor;
- 	struct attribute_group *attr_group_gov_sys; /* one governor - system */
- 	struct attribute_group *attr_group_gov_pol; /* one governor - policy */
+ 	return ret_freq;
+ }
 -- 
-1.7.10.4
+1.9.0
