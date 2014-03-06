@@ -1,31 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 3/3] cpufreq: initialize governor for a new policy under policy->rwsem
-Date: Thu, 06 Mar 2014 13:34:43 +0100
-Message-ID: <4694302.3z6tDHSNGj@vostro.rjw.lan>
-References: <98b7ae22d936456bf830aa749556a115969cfa47.1393904428.git.viresh.kumar@linaro.org> <1892466.Txf61ZRumM@vostro.rjw.lan> <CAKohponJrsrFiugxALugZu3AKtD2i-Tk3NjeFM3KhXSoKgtLXg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+From: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Subject: [PATCH] cpufreq: Reformat printk() statement
+Date: Thu,  6 Mar 2014 09:34:39 -0800
+Message-ID: <1394127279-29871-1-git-send-email-soren.brinkmann@xilinx.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponJrsrFiugxALugZu3AKtD2i-Tk3NjeFM3KhXSoKgtLXg@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=sender:from:to:cc:subject:date:message-id;
+        bh=wsseLKaOraJNV96uVerQ3G6fSAWvrcWVuUzMlugJv3k=;
+        b=1DLSH43sjSSnESJA/7c3bnCkWTkAqw5mK9NQ93Xsqcyfrsfo3QO3lv+1fBEZPiobTg
+         67fB+5NIC4Gmigv9/Q+hzK2EbqW3k95Z2/3BaUICrGS4i88nZWNl5MDkuHnRhr9zUTId
+         7HtBeGWvzggCKEqnj4ItbMkhXSYAs3OU7sY5gHsLwFpjE4LvWauX3kg91a+2mX3XE2yU
+         qFCVMDY7BBXMAqtxdYpgm38++9t5f03uzGEgaceqInu8uC/WnCAoOlAK7cLxYFkqncu/
+         3uQHq+0quRBbN1UrYMG2caeGaN4iAOwY8dBnKTsC7Muhm8ElDuiAAD/XUZNIVH+vN9kD
+         gW/Q==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Soren Brinkmann <soren.brinkmann@xilinx.com>
 
-On Thursday, March 06, 2014 10:24:38 AM Viresh Kumar wrote:
-> On 6 March 2014 09:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > I've rebased this one on top of 3.14-rc5 and queued it up for 3.14-rc6.
-> >
-> > Please check the bleeding-edge branch for the result.
-> 
-> Yeah, it looks fine. And I assume that you are planning to take 1/3 in 3.15?
-> Or going to drop it?
+Reformat a printk statement to:
+ - use pr_warn
+ - bring the whole string into a single line in favor of being able to
+   grep for the message (ignoring the 80 char limit)
 
-I'm going to queue it up for 3.15.
+Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+---
+ drivers/cpufreq/cpufreq.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-Thanks!
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index cb003a6b72c8..534c2df608ed 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1874,11 +1874,8 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 		if (!gov)
+ 			return -EINVAL;
+ 		else {
+-			printk(KERN_WARNING "%s governor failed, too long"
+-			       " transition latency of HW, fallback"
+-			       " to %s governor\n",
+-			       policy->governor->name,
+-			       gov->name);
++			pr_warn("%s governor failed, too long transition latency of HW, fallback to %s governor\n",
++					policy->governor->name, gov->name);
+ 			policy->governor = gov;
+ 		}
+ 	}
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.9.0.1.g4196000
+
