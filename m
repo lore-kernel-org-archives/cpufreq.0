@@ -1,58 +1,83 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH 3/6] PM / Voltagedomain: introduce voltage domain
- driver support
-Date: Mon, 10 Mar 2014 14:25:43 -0500
-Message-ID: <531E11B7.6080109@ti.com>
-References: <1392755543-28335-1-git-send-email-nm@ti.com>
- <1392755543-28335-4-git-send-email-nm@ti.com>
- <20140224015826.GU25940@sirena.org.uk> <530B594F.2030500@ti.com>
- <20140303035426.GC2411@sirena.org.uk> <531DF250.5060100@ti.com>
- <20140310172221.GT28112@sirena.org.uk> <531DF931.1060108@ti.com>
- <20140310180131.GZ28112@sirena.org.uk>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v3 37/52] acpi-cpufreq: Fix CPU hotplug callback registration
+Date: Tue, 11 Mar 2014 02:10:06 +0530
+Message-ID: <20140310204005.10746.58112.stgit@srivatsabhat.in.ibm.com>
+References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140310180131.GZ28112@sirena.org.uk>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mark Brown <broonie@kernel.org>, Mike Turquette <mturquette@linaro.org>
-Cc: devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
+Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org, srivatsa.bhat@linux.vnet.ibm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On 03/10/2014 01:01 PM, Mark Brown wrote:
-> On Mon, Mar 10, 2014 at 12:41:05PM -0500, Nishanth Menon wrote:
-> 
->> The only other options are:
->> a) Abstract it at a higher level at "user drivers", since they are
->> aware of the sequencing needs - but this partially defeats the
->> purpose, unless ofcourse, we do a tricky implementation such as:
->> clk a, b, c -> prenotifiers in a, postnotifiers in c (which as you
->> mentioned is a little trickier to get right).
->> b) introduce a higher level generic dvfs function[1] which does not
->> seem very attractive either.
-> 
->> Any other suggestions other than limiting the usage(and documenting it
->> so) and hoping for a future evolution to take this into consideration?
-> 
-> Something might be doable with telling the clock API about maintianing
-> ratios between clocks?  I do think we should have an idea where we'd go
-> with such requirements, even if we don't currently handle it, so that we
-> can hopefully avoid another round of refactoring everything but it
-> doesn't seem 100% essential, just very nice to have.
-> 
-Mike,
-Any suggestions about the above? could we use composite clocks in some
-manner here(even though I think the original intent of the same was
-not the same)?
+Subsystems that want to register CPU hotplug callbacks, as well as perform
+initialization for the CPUs that are already online, often do it as shown
+below:
 
--- 
-Regards,
-Nishanth Menon
+	get_online_cpus();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	register_cpu_notifier(&foobar_cpu_notifier);
+
+	put_online_cpus();
+
+This is wrong, since it is prone to ABBA deadlocks involving the
+cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+with CPU hotplug operations).
+
+Instead, the correct and race-free way of performing the callback
+registration is:
+
+	cpu_notifier_register_begin();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	/* Note the use of the double underscored version of the API */
+	__register_cpu_notifier(&foobar_cpu_notifier);
+
+	cpu_notifier_register_done();
+
+
+Fix the acpi-cpufreq code by using this latter form of callback registration.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+---
+
+ drivers/cpufreq/acpi-cpufreq.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 18448a7..245ae078e 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -907,15 +907,16 @@ static void __init acpi_cpufreq_boost_init(void)
+ 
+ 		acpi_cpufreq_driver.boost_supported = true;
+ 		acpi_cpufreq_driver.boost_enabled = boost_state(0);
+-		get_online_cpus();
++
++		cpu_notifier_register_begin();
+ 
+ 		/* Force all MSRs to the same value */
+ 		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
+ 			       cpu_online_mask);
+ 
+-		register_cpu_notifier(&boost_nb);
++		__register_cpu_notifier(&boost_nb);
+ 
+-		put_online_cpus();
++		cpu_notifier_register_done();
+ 	}
+ }
+ 
