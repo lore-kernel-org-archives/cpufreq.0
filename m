@@ -1,20 +1,20 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: v3.13.5 intel_pstate: cpufreq: __cpufreq_add_dev: ->get() failed
-Date: Tue, 11 Mar 2014 21:45:55 +0100
-Message-ID: <5816446.yUhRpAmUIa@vostro.rjw.lan>
-References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com> <3356262.4cDuororSJ@vostro.rjw.lan> <531F6D2D.7070306@gmail.com>
+Date: Tue, 11 Mar 2014 21:52:42 +0100
+Message-ID: <27921269.0Ejuc8iDoo@vostro.rjw.lan>
+References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com> <2958980.RxOmpAlXYA@vostro.rjw.lan> <531F6F50.1040209@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <531F6D2D.7070306@gmail.com>
+In-Reply-To: <531F6F50.1040209@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Patrik Lundquist <patrik.lundquist@gmail.com>, cpufreq@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Patrik Lundquist <patrik.lundquist@gmail.com>, cpufreq@vger.kernel.org
 
-On Tuesday, March 11, 2014 01:08:13 PM Dirk Brandewie wrote:
-> On 03/11/2014 12:50 PM, Rafael J. Wysocki wrote:
+On Tuesday, March 11, 2014 01:17:20 PM Dirk Brandewie wrote:
+> On 03/11/2014 01:20 PM, Rafael J. Wysocki wrote:
 > > On Tuesday, March 11, 2014 10:58:59 AM Dirk Brandewie wrote:
 > >> Hi Patrick,
 > >>
@@ -58,25 +58,24 @@ On Tuesday, March 11, 2014 01:08:13 PM Dirk Brandewie wrote:
 > >>
 > >> This is a regression introduced by commit
 > >> da60ce9f2fa cpufreq: call cpufreq_driver->get() after calling ->init()
-> >>
-> >>
-> >> A return of zero from cpufreq_driver->get() is a warning at best for
-> >> intel_pstate at init time.  In fact zero is a valid return value AFAICT.
 > >
-> > Well, is it?  So what is the 0 supposed to mean?
+> > So the problem is that ->get() may return 0 in intel_pstate and that causes
+> > the core's _add function to abort?  That would mean sample->freq equal to 0,
+> > which shouldn't happen after intel_pstate_sample() called by intel_pstate_init_cpu().
+> >
+> > Or am I missing anything?
+> >
 > 
-> Zero frequency the core is not running.  I said it is a valid answer not that I 
-> should be returning it.  There is nothing in the docs or headers that I can
-> find that says Zero is a failure value.
+> The problem is that the core has been running less than 1% of the time based on 
+> the absolute values of aperf/mperf and the second sample has not been taken to
+> get a more precise delta.
 > 
-> In this case the the error should be a warning maybe __cpufreq_add_dev() the 
-> only use of policy->cur is the bootloader workaround.
+> I thought about running sample twice during init but didn't want to propose it
+> until I made sure I was not going to break anything else.
 
-There's another check in cpufreq_update_policy() that also fails if 0 is
-returned from ->get().
-
-Definitely, 0 is not the right answer to the "What frequency is the CPU running at?"
-question.  It doesn't have a defined meaning either.
+Well, ->setpolicy drivers are a special case anyway, so we can simply skip the
+current frequency updates in __cpufreq_add_dev() and cpufreq_update_policy()
+for them.
 
 Rafael
 
