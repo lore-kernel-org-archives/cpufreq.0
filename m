@@ -1,37 +1,67 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: Reformat printk() statements
-Date: Tue, 11 Mar 2014 20:51:33 +0100
-Message-ID: <1452420.WyeUVX7CeH@vostro.rjw.lan>
-References: <1394557380-15054-1-git-send-email-soren.brinkmann@xilinx.com> <16243824.d7jua8nUso@vostro.rjw.lan> <531F60B8.4020007@gmail.com>
+Subject: Re: v3.13.5 intel_pstate: cpufreq: __cpufreq_add_dev: ->get() failed
+Date: Tue, 11 Mar 2014 21:20:53 +0100
+Message-ID: <2958980.RxOmpAlXYA@vostro.rjw.lan>
+References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com> <531F4EE3.4080701@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <531F60B8.4020007@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <531F4EE3.4080701@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Soren Brinkmann <soren.brinkmann@xilinx.com>, Viresh Kumar <viresh.kumar@linaro.org>, Joe Perches <joe@perches.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Patrik Lundquist <patrik.lundquist@gmail.com>, cpufreq@vger.kernel.org
 
-On Tuesday, March 11, 2014 12:15:04 PM Dirk Brandewie wrote:
-> On 03/11/2014 12:29 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, March 11, 2014 10:13:00 AM Dirk Brandewie wrote:
-> >> On 03/11/2014 10:03 AM, Soren Brinkmann wrote:
-> >>> From: Joe Perches <joe@perches.com>
-> >>>
-> >>>    - Add missing newlines
-> >>>    - Coalesce format fragments
-> >>>    - Convert printks to pr_<level>
-> >>>    - Align arguments
-> >>>
-> >>
-> >> This introduces a bunch of lines over 80 charaters long.
-> >
-> > Do you mean code lines or output lines?
+On Tuesday, March 11, 2014 10:58:59 AM Dirk Brandewie wrote:
+> Hi Patrick,
 > 
-> Code lines.
+> Sorry for the slow response you caught me taking a few days off :-)
+> 
+> On 03/07/2014 07:49 AM, Patrik Lundquist wrote:
+> > Hi,
+> >
+> > booting 3.13.5 on a dual socket Ivy Bridge-EP resulted in this error:
+> >
+> > [    0.194139] smpboot: CPU0: Intel(R) Xeon(R) CPU E5-2687W v2 @
+> > 3.40GHz (fam: 06, model: 3e, stepping: 04)
+> > ...
+> > [    0.246755] x86: Booting SMP configuration:
+> > [    0.250935] .... node  #0, CPUs:        #1  #2  #3  #4  #5  #6  #7
+> > [    0.357648] .... node  #1, CPUs:    #8  #9 #10 #11 #12 #13 #14 #15
+> > [    0.553293] x86: Booted up 2 nodes, 16 CPUs
+> > [    0.557666] smpboot: Total of 16 processors activated (108850.19 BogoMIPS)
+> > ...
+> > [    5.210204] Intel P-state driver initializing.
+> > [    5.232407] Intel pstate controlling: cpu 0
+> > [    5.253628] Intel pstate controlling: cpu 1
+> > [    5.274899] cpufreq: __cpufreq_add_dev: ->get() failed
+> > [    5.294856] Intel pstate controlling: cpu 2
+> > [    5.313553] Intel pstate controlling: cpu 3
+> > [    5.332526] Intel pstate controlling: cpu 4
+> > [    5.352347] Intel pstate controlling: cpu 5
+> > [    5.372112] Intel pstate controlling: cpu 6
+> > [    5.391097] Intel pstate controlling: cpu 7
+> > [    5.410272] Intel pstate controlling: cpu 8
+> > [    5.429092] Intel pstate controlling: cpu 9
+> > [    5.447714] Intel pstate controlling: cpu 10
+> > [    5.465872] Intel pstate controlling: cpu 11
+> > [    5.482942] Intel pstate controlling: cpu 12
+> > [    5.498414] Intel pstate controlling: cpu 13
+> > [    5.513586] Intel pstate controlling: cpu 14
+> > [    5.529200] Intel pstate controlling: cpu 15
+> >
+> > CPU 1 is alive and well but missing the cpufreq driver. The system is
+> > running fine otherwise.
+> 
+> This is a regression introduced by commit
+> da60ce9f2fa cpufreq: call cpufreq_driver->get() after calling ->init()
 
-That doesn't really matter so long as they are not outrageously long. :-)
+So the problem is that ->get() may return 0 in intel_pstate and that causes
+the core's _add function to abort?  That would mean sample->freq equal to 0,
+which shouldn't happen after intel_pstate_sample() called by intel_pstate_init_cpu().
+
+Or am I missing anything?
 
 Rafael
 
