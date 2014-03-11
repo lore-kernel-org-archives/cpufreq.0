@@ -1,8 +1,8 @@
 From: Dirk Brandewie <dirk.brandewie@gmail.com>
 Subject: Re: v3.13.5 intel_pstate: cpufreq: __cpufreq_add_dev: ->get() failed
-Date: Tue, 11 Mar 2014 13:08:13 -0700
-Message-ID: <531F6D2D.7070306@gmail.com>
-References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com> <531F4EE3.4080701@gmail.com> <3356262.4cDuororSJ@vostro.rjw.lan>
+Date: Tue, 11 Mar 2014 13:17:20 -0700
+Message-ID: <531F6F50.1040209@gmail.com>
+References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com> <531F4EE3.4080701@gmail.com> <2958980.RxOmpAlXYA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -10,21 +10,21 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=2VHjxFfjCFn7ZWTJ0mACSjUio5ehtDS5p0wEtElsn+k=;
-        b=gvkzhy5uezgp6xha2MENEYMzaR+YTBAAkxdLigQUtFSiW6X+QLIwOiUE8Fhc9RBZxP
-         NlpeBcLGBpBZJZm8TGDrqFP9ZCFvUNlEd07ZiuKcYljI3tUr7GZQ3X0WjEWppDQVXft4
-         7oa4CULn5HPHD3YT3OVff5V/B6pagHNfDxnnC/3mkjy2xXIoPHaYzfMiswvkriDqEXcY
-         /3Ae8AhKbr6p9v9MdCcBjbem8aYQmaY6rAraWgNAoDRWfgYYe5VdhOMwVdGPn1hUC+Nb
-         hpaWS/UV2Z2rXwyXCy/FTifjVZE/kohrOs39DtIjtj3CZ5kOjR0eAS2iRDhFZLlgbwjY
-         7WEA==
-In-Reply-To: <3356262.4cDuororSJ@vostro.rjw.lan>
+        bh=9NQaatjocTcJJKQKExDsuNDurWNJc2w3PSh+zkRz7eY=;
+        b=aqXiuQozxugWYPuESzHu+tinD5mE1YgKXIxbh9poY7uxyf1vz8yga+2cZ9mWjy0WQ7
+         P+mIS5xMKOP/vvZ5LqUBRnn4MBGxG7X7gL1XLE/tM03xAl+7tB9F5tX2iqnOEN2nMh57
+         edZXM7f3uhCOReC48T8ky6j1tj1y1FGdQION87ly5V+jUrTnyisUmwPXhnfZSNiqUHPS
+         /MJWbXHxDM91OmWjrmrLExW0ZlyOqt4W7MxB6qsmH35u2LcJ2YlgRLBQi41d1oq1N43/
+         DJsTYNn53qb+7f29IsVKki+qr+zoCm8shi1O/jPsoljoIiMPJs9tbWTI8M/EuqzGCF9A
+         6w8g==
+In-Reply-To: <2958980.RxOmpAlXYA@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: dirk.brandewie@gmail.com, Patrik Lundquist <patrik.lundquist@gmail.com>, cpufreq@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: dirk.brandewie@gmail.com, Patrik Lundquist <patrik.lundquist@gmail.com>, cpufreq@vger.kernel.org
 
-On 03/11/2014 12:50 PM, Rafael J. Wysocki wrote:
+On 03/11/2014 01:20 PM, Rafael J. Wysocki wrote:
 > On Tuesday, March 11, 2014 10:58:59 AM Dirk Brandewie wrote:
 >> Hi Patrick,
 >>
@@ -68,22 +68,25 @@ On 03/11/2014 12:50 PM, Rafael J. Wysocki wrote:
 >>
 >> This is a regression introduced by commit
 >> da60ce9f2fa cpufreq: call cpufreq_driver->get() after calling ->init()
->>
->>
->> A return of zero from cpufreq_driver->get() is a warning at best for
->> intel_pstate at init time.  In fact zero is a valid return value AFAICT.
 >
-> Well, is it?  So what is the 0 supposed to mean?
-
-Zero frequency the core is not running.  I said it is a valid answer not that I 
-should be returning it.  There is nothing in the docs or headers that I can
-find that says Zero is a failure value.
-
-In this case the the error should be a warning maybe __cpufreq_add_dev() the 
-only use of policy->cur is the bootloader workaround.
-
-
+> So the problem is that ->get() may return 0 in intel_pstate and that causes
+> the core's _add function to abort?  That would mean sample->freq equal to 0,
+> which shouldn't happen after intel_pstate_sample() called by intel_pstate_init_cpu().
 >
+> Or am I missing anything?
+>
+
+The problem is that the core has been running less than 1% of the time based on 
+the absolute values of aperf/mperf and the second sample has not been taken to
+get a more precise delta.
+
+I thought about running sample twice during init but didn't want to propose it
+until I made sure I was not going to break anything else.
+
+
+
+
+second sample hasn't been taken
 > Rafael
 >
 
