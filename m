@@ -1,81 +1,82 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: v3.13.5 intel_pstate: cpufreq: __cpufreq_add_dev: ->get() failed
-Date: Tue, 11 Mar 2014 21:52:42 +0100
-Message-ID: <27921269.0Ejuc8iDoo@vostro.rjw.lan>
-References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com> <2958980.RxOmpAlXYA@vostro.rjw.lan> <531F6F50.1040209@gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 71931] New: intel_pstate: cpufreq: __cpufreq_add_dev: ->get()
+ failed
+Date: Tue, 11 Mar 2014 20:41:52 +0000
+Message-ID: <bug-71931-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <531F6F50.1040209@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Patrik Lundquist <patrik.lundquist@gmail.com>, cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On Tuesday, March 11, 2014 01:17:20 PM Dirk Brandewie wrote:
-> On 03/11/2014 01:20 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, March 11, 2014 10:58:59 AM Dirk Brandewie wrote:
-> >> Hi Patrick,
-> >>
-> >> Sorry for the slow response you caught me taking a few days off :-)
-> >>
-> >> On 03/07/2014 07:49 AM, Patrik Lundquist wrote:
-> >>> Hi,
-> >>>
-> >>> booting 3.13.5 on a dual socket Ivy Bridge-EP resulted in this error:
-> >>>
-> >>> [    0.194139] smpboot: CPU0: Intel(R) Xeon(R) CPU E5-2687W v2 @
-> >>> 3.40GHz (fam: 06, model: 3e, stepping: 04)
-> >>> ...
-> >>> [    0.246755] x86: Booting SMP configuration:
-> >>> [    0.250935] .... node  #0, CPUs:        #1  #2  #3  #4  #5  #6  #7
-> >>> [    0.357648] .... node  #1, CPUs:    #8  #9 #10 #11 #12 #13 #14 #15
-> >>> [    0.553293] x86: Booted up 2 nodes, 16 CPUs
-> >>> [    0.557666] smpboot: Total of 16 processors activated (108850.19 BogoMIPS)
-> >>> ...
-> >>> [    5.210204] Intel P-state driver initializing.
-> >>> [    5.232407] Intel pstate controlling: cpu 0
-> >>> [    5.253628] Intel pstate controlling: cpu 1
-> >>> [    5.274899] cpufreq: __cpufreq_add_dev: ->get() failed
-> >>> [    5.294856] Intel pstate controlling: cpu 2
-> >>> [    5.313553] Intel pstate controlling: cpu 3
-> >>> [    5.332526] Intel pstate controlling: cpu 4
-> >>> [    5.352347] Intel pstate controlling: cpu 5
-> >>> [    5.372112] Intel pstate controlling: cpu 6
-> >>> [    5.391097] Intel pstate controlling: cpu 7
-> >>> [    5.410272] Intel pstate controlling: cpu 8
-> >>> [    5.429092] Intel pstate controlling: cpu 9
-> >>> [    5.447714] Intel pstate controlling: cpu 10
-> >>> [    5.465872] Intel pstate controlling: cpu 11
-> >>> [    5.482942] Intel pstate controlling: cpu 12
-> >>> [    5.498414] Intel pstate controlling: cpu 13
-> >>> [    5.513586] Intel pstate controlling: cpu 14
-> >>> [    5.529200] Intel pstate controlling: cpu 15
-> >>>
-> >>> CPU 1 is alive and well but missing the cpufreq driver. The system is
-> >>> running fine otherwise.
-> >>
-> >> This is a regression introduced by commit
-> >> da60ce9f2fa cpufreq: call cpufreq_driver->get() after calling ->init()
-> >
-> > So the problem is that ->get() may return 0 in intel_pstate and that causes
-> > the core's _add function to abort?  That would mean sample->freq equal to 0,
-> > which shouldn't happen after intel_pstate_sample() called by intel_pstate_init_cpu().
-> >
-> > Or am I missing anything?
-> >
-> 
-> The problem is that the core has been running less than 1% of the time based on 
-> the absolute values of aperf/mperf and the second sample has not been taken to
-> get a more precise delta.
-> 
-> I thought about running sample twice during init but didn't want to propose it
-> until I made sure I was not going to break anything else.
+https://bugzilla.kernel.org/show_bug.cgi?id=71931
 
-Well, ->setpolicy drivers are a special case anyway, so we can simply skip the
-current frequency updates in __cpufreq_add_dev() and cpufreq_update_policy()
-for them.
+            Bug ID: 71931
+           Summary: intel_pstate: cpufreq: __cpufreq_add_dev: ->get()
+                    failed
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.13.5
+          Hardware: IA-32
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: patrik.lundquist@gmail.com
+                CC: dirk.brandewie@gmail.com
+        Regression: No
 
-Rafael
+Booting 3.13.5 on a dual socket Ivy Bridge-EP resulted in this error:
 
+[    0.194139] smpboot: CPU0: Intel(R) Xeon(R) CPU E5-2687W v2 @ 3.40GHz (fam:
+06, model: 3e, stepping: 04)
+...
+[    0.246755] x86: Booting SMP configuration:
+[    0.250935] .... node  #0, CPUs:        #1  #2  #3  #4  #5  #6  #7
+[    0.357648] .... node  #1, CPUs:    #8  #9 #10 #11 #12 #13 #14 #15
+[    0.553293] x86: Booted up 2 nodes, 16 CPUs
+[    0.557666] smpboot: Total of 16 processors activated (108850.19 BogoMIPS)
+...
+[    5.210204] Intel P-state driver initializing.
+[    5.232407] Intel pstate controlling: cpu 0
+[    5.253628] Intel pstate controlling: cpu 1
+[    5.274899] cpufreq: __cpufreq_add_dev: ->get() failed
+[    5.294856] Intel pstate controlling: cpu 2
+[    5.313553] Intel pstate controlling: cpu 3
+[    5.332526] Intel pstate controlling: cpu 4
+[    5.352347] Intel pstate controlling: cpu 5
+[    5.372112] Intel pstate controlling: cpu 6
+[    5.391097] Intel pstate controlling: cpu 7
+[    5.410272] Intel pstate controlling: cpu 8
+[    5.429092] Intel pstate controlling: cpu 9
+[    5.447714] Intel pstate controlling: cpu 10
+[    5.465872] Intel pstate controlling: cpu 11
+[    5.482942] Intel pstate controlling: cpu 12
+[    5.498414] Intel pstate controlling: cpu 13
+[    5.513586] Intel pstate controlling: cpu 14
+[    5.529200] Intel pstate controlling: cpu 15
+
+CPU 1 is alive and well but missing the cpufreq driver. The system is running
+fine otherwise.
+
+Looking closer at the problem gives that intel_pstate_init_cpu() is successful
+but intel_pstate_get(), which is called right after by cpufreq, fails.
+
+Since all_cpu_data[1] is initialized it gives that sample->freq must be zero.
+So the bug should be in intel_pstate_calc_busy() which calculates sample->freq
+to zero.
+
+core_pct is likely 0 due to truncation in
+intel_pstate.c:intel_pstate_calc_busy():
+
+    core_pct = div64_u64(int_tofp(sample->aperf * 100),
+                 sample->mperf);
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
