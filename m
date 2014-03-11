@@ -1,48 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: SPEAr: Instantiate as platform_driver
-Date: Tue, 11 Mar 2014 13:44:19 +0100
-Message-ID: <4163075.Inno6QAHAN@vostro.rjw.lan>
-References: <92837e0c0ed734bb82d3c7d78f58beb31b4e0c1f.1394446335.git.viresh.kumar@linaro.org> <3114708.oz7nbHtIzQ@vostro.rjw.lan> <CAKohpokSTM9tUYEK2ggSOwrgK=RfLmmKRdtzaRQ1q=d2jrUzWQ@mail.gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH] cpufreq: enable ARM drivers on arm64
+Date: Tue, 11 Mar 2014 12:53:51 +0000
+Message-ID: <20140311125351.GQ28112@sirena.org.uk>
+References: <1393208877-15797-1-git-send-email-broonie@kernel.org>
+ <531F0115.4000109@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="D/OsFc5Lho6vfD9M"
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokSTM9tUYEK2ggSOwrgK=RfLmmKRdtzaRQ1q=d2jrUzWQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <531F0115.4000109@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Josh Cartwright <joshc@codeaurora.org>, Rob Herring <robherring2@gmail.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Catalin Marinas <Catalin.Marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rob.herring@linaro.org" <rob.herring@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tuesday, March 11, 2014 11:46:22 AM Viresh Kumar wrote:
-> On 11 March 2014 09:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Monday, March 10, 2014 03:43:18 PM Viresh Kumar wrote:
-> >> As multiplatform build is being adopted by more and more ARM platforms, initcall
-> >> function should be used very carefully. For example, when SPEAr cpufreq driver
-> >> is enabled on a kernel booted on a non-SPEAr board, we will get following boot
-> >> time error:
-> >>
-> >>       spear_cpufreq: Invalid cpufreq_tbl
-> >>
-> >> To eliminate this undesired the effect, the patch changes SPEAr driver to have
-> >> it instantiated as a platform_driver. Then it will only run on platforms that
-> >> create the platform_device "spear-cpufreq".
-> >>
-> >> This patch also creates platform node for SPEAr13xx boards.
-> >>
-> >> Reported-by: Josh Cartwright <joshc@codeaurora.org>
-> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >
-> > Whoever maintains the SPEAr platform, I need an ACK from that person in order
-> > to take this patch.
-> 
-> Okay, here you go:
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> :)
 
-I see.  OK
+--D/OsFc5Lho6vfD9M
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+On Tue, Mar 11, 2014 at 12:27:01PM +0000, Sudeep Holla wrote:
+
+> Sorry for late response, looks like Rafael has pulled this change, but ...
+
+> >+menu "Power management options"
+> >+
+> >+source "kernel/power/Kconfig"
+> >+
+> >+source "drivers/cpufreq/Kconfig"
+> >+
+> >+endmenu
+
+> Is this patch based on recent kernels ? If so, either it should have caused
+> conflicts or silently duplicated the entries. "Power management options" are
+> already present.
+
+Yes, it was against -next.  It looks like either the original patch had
+the duplication or it crept in there during the rather lengthy time
+between submission and acceptance.
+
+> Also to be more consistent it with menu options, I would prefer this to be
+> placed under "CPU Power Management" like CPUIdle.
+
+I'll submit an incremental patch for this; in general the best thing to
+do once things have been applied is to send a patch.
+
+--D/OsFc5Lho6vfD9M
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTHwdbAAoJELSic+t+oim9vBwP/jXa6MXNlq+2E5iUHN6HfcMC
+wcUo4wPhIuthw9wqzK68ansYB/d8VBu0UkvRXQuyuL6iobIvAo8+nucxXgGOWVk1
+t6W66GzmRy6WedWuH+T6HLa7D5InEKBqZ7hc5DwidOFU0Cv46b+GF1BP7sPJRmFK
+sD5Adr9TyUx8tDcvNuHmgqhyAlcr37/KpbBhGgZrPJeOxNXRgLvSTsELjkmHaZPN
+QKqcT537aoyHKybP+XrpQK51V0hQJNbtuonn3OdpAQsVCn0zYuIVANnOvXdn7rSk
+fnpmCl1uenqfASql7q1GFXgIKD2YCRjMm94hCydmxi6q2eOuFgXdU+MlpHe2crR+
+ANdolQu9ZebyCe+3Hm45IE/x2+9jSwFNi/NrJHzDaKbE+oyqeRoHbIh6AX/LziEo
+kerSkRPdAYxSVd6Tbi1kT1aAcPb4DqugkJtWhPaJb+MbKjpffE2wqkEFt3NVAX+8
+j62cTtpRe4thd05fS/f8RUdKGQBSB2AGNfMMJg1Th/PxwAYUlBwwn53jzuvsfoUW
+d0nDtE9dFB00pUTbucwXDBxKNbhAki45D3G8GszS4iqjpZCDAU/O9YnweCRBpJAG
+kJ26qTUQoH9TlFMLUa9YJl+rhckzl1kKOfZCzYhGZgW91IOjqou+j3szxtJxWHbp
+fSfwFy4toC+id5Wslesk
+=+VaA
+-----END PGP SIGNATURE-----
+
+--D/OsFc5Lho6vfD9M--
