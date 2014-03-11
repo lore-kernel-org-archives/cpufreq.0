@@ -1,110 +1,42 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 58001] "ondemand" CPU governor never raises frequency (Dell XPS
- 12)
-Date: Tue, 11 Mar 2014 03:26:14 +0000
-Message-ID: <bug-58001-12968-dclWEokGkp@https.bugzilla.kernel.org/>
-References: <bug-58001-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: SPEAr: Instantiate as platform_driver
+Date: Tue, 11 Mar 2014 11:46:22 +0800
+Message-ID: <CAKohpokSTM9tUYEK2ggSOwrgK=RfLmmKRdtzaRQ1q=d2jrUzWQ@mail.gmail.com>
+References: <92837e0c0ed734bb82d3c7d78f58beb31b4e0c1f.1394446335.git.viresh.kumar@linaro.org>
+	<3114708.oz7nbHtIzQ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-58001-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <3114708.oz7nbHtIzQ@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Josh Cartwright <joshc@codeaurora.org>, Rob Herring <robherring2@gmail.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=58001
+On 11 March 2014 09:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, March 10, 2014 03:43:18 PM Viresh Kumar wrote:
+>> As multiplatform build is being adopted by more and more ARM platforms, initcall
+>> function should be used very carefully. For example, when SPEAr cpufreq driver
+>> is enabled on a kernel booted on a non-SPEAr board, we will get following boot
+>> time error:
+>>
+>>       spear_cpufreq: Invalid cpufreq_tbl
+>>
+>> To eliminate this undesired the effect, the patch changes SPEAr driver to have
+>> it instantiated as a platform_driver. Then it will only run on platforms that
+>> create the platform_device "spear-cpufreq".
+>>
+>> This patch also creates platform node for SPEAr13xx boards.
+>>
+>> Reported-by: Josh Cartwright <joshc@codeaurora.org>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Whoever maintains the SPEAr platform, I need an ACK from that person in order
+> to take this patch.
 
---- Comment #13 from Raymond Auge <rotty3000@gmail.com> ---
-Effectively, I have exactly the same issue as outlined above. The 'ondemand'
-governor never reacts to changes in system load, no matter what the system is
-doing.
+Okay, here you go:
 
-However, the other governors all work perfectly. I generally place my machine
-in 'conservative' and that seems to work fine. When I'm going a build and need
-more power I switch to performance.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-the output of cpufreq-info is:
-
-cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
-Report errors and bugs to cpufreq@vger.kernel.org, please.
-analyzing CPU 0:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 0
-  CPUs which need to have their frequency coordinated by software: 0
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 2.00 GHz
-  available frequency steps: 2.00 GHz, 2.00 GHz, 1.90 GHz, 1.80 GHz, 1.70 GHz,
-1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz,
-800 MHz
-  available cpufreq governors: conservative, ondemand, userspace, powersave,
-performance
-  current policy: frequency should be within 800 MHz and 2.00 GHz.
-                  The governor "conservative" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz.
-  cpufreq stats: 2.00 GHz:-nan%, 2.00 GHz:-nan%, 1.90 GHz:-nan%, 1.80
-GHz:-nan%, 1.70 GHz:-nan%, 1.60 GHz:-nan%, 1.50 GHz:-nan%, 1.40 GHz:-nan%, 1.30
-GHz:-nan%, 1.20 GHz:-nan%, 1.10 GHz:-nan%, 1000 MHz:-nan%, 900 MHz:-nan%, 800
-MHz:-nan%  (403)
-analyzing CPU 1:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 1
-  CPUs which need to have their frequency coordinated by software: 1
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 2.00 GHz
-  available frequency steps: 2.00 GHz, 2.00 GHz, 1.90 GHz, 1.80 GHz, 1.70 GHz,
-1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz,
-800 MHz
-  available cpufreq governors: conservative, ondemand, userspace, powersave,
-performance
-  current policy: frequency should be within 800 MHz and 2.00 GHz.
-                  The governor "conservative" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz.
-  cpufreq stats: 2.00 GHz:-nan%, 2.00 GHz:-nan%, 1.90 GHz:-nan%, 1.80
-GHz:-nan%, 1.70 GHz:-nan%, 1.60 GHz:-nan%, 1.50 GHz:-nan%, 1.40 GHz:-nan%, 1.30
-GHz:-nan%, 1.20 GHz:-nan%, 1.10 GHz:-nan%, 1000 MHz:-nan%, 900 MHz:-nan%, 800
-MHz:-nan%  (382)
-analyzing CPU 2:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 2
-  CPUs which need to have their frequency coordinated by software: 2
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 2.00 GHz
-  available frequency steps: 2.00 GHz, 2.00 GHz, 1.90 GHz, 1.80 GHz, 1.70 GHz,
-1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz,
-800 MHz
-  available cpufreq governors: conservative, ondemand, userspace, powersave,
-performance
-  current policy: frequency should be within 800 MHz and 2.00 GHz.
-                  The governor "conservative" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz.
-  cpufreq stats: 2.00 GHz:-nan%, 2.00 GHz:-nan%, 1.90 GHz:-nan%, 1.80
-GHz:-nan%, 1.70 GHz:-nan%, 1.60 GHz:-nan%, 1.50 GHz:-nan%, 1.40 GHz:-nan%, 1.30
-GHz:-nan%, 1.20 GHz:-nan%, 1.10 GHz:-nan%, 1000 MHz:-nan%, 900 MHz:-nan%, 800
-MHz:-nan%  (445)
-analyzing CPU 3:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 3
-  CPUs which need to have their frequency coordinated by software: 3
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 2.00 GHz
-  available frequency steps: 2.00 GHz, 2.00 GHz, 1.90 GHz, 1.80 GHz, 1.70 GHz,
-1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz,
-800 MHz
-  available cpufreq governors: conservative, ondemand, userspace, powersave,
-performance
-  current policy: frequency should be within 800 MHz and 2.00 GHz.
-                  The governor "conservative" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz.
-  cpufreq stats: 2.00 GHz:-nan%, 2.00 GHz:-nan%, 1.90 GHz:-nan%, 1.80
-GHz:-nan%, 1.70 GHz:-nan%, 1.60 GHz:-nan%, 1.50 GHz:-nan%, 1.40 GHz:-nan%, 1.30
-GHz:-nan%, 1.20 GHz:-nan%, 1.10 GHz:-nan%, 1000 MHz:-nan%, 900 MHz:-nan%, 800
-MHz:-nan%  (354)
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+:)
