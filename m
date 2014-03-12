@@ -1,55 +1,40 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: v3.13.5 intel_pstate: cpufreq: __cpufreq_add_dev: ->get() failed
-Date: Wed, 12 Mar 2014 13:22:54 +0800
-Message-ID: <CAKohpokONW5Q2GqrvmKBh+NLSVA1RSZ_Fg+jKZQnReDXianvUg@mail.gmail.com>
+Date: Wed, 12 Mar 2014 13:25:17 +0800
+Message-ID: <CAOh2x=mCs_C-g3fkeQic6g4hayaHyYMeAe7sXEFAhnL9gtyNEA@mail.gmail.com>
 References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com>
-	<3509059.VnUUJct98J@vostro.rjw.lan>
-	<3616342.xJi2LEuFEF@vostro.rjw.lan>
-	<4501120.an62ETExKs@vostro.rjw.lan>
+	<531F6F50.1040209@gmail.com>
+	<27921269.0Ejuc8iDoo@vostro.rjw.lan>
+	<1679162.yVRSrpzkOW@vostro.rjw.lan>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <4501120.an62ETExKs@vostro.rjw.lan>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type;
+        bh=3+jnrX3O+tZPcIxrNYDp6Peh009cfMeHVzCkoXP4SoI=;
+        b=O1Xc31xuOKDAJ9cBqU2l6f8ThwSjWpv+MOInMt9VI874vkaqe6TTCzHG2pKdfvbAq2
+         0ppOsjDk91KHUA6AYWT/i7+fZ7/+DmYO0Yg6+9avgHHLhW0cv1sljsgt++0aQ+aJN6Yz
+         DKfV49cLhcB/1hEORub/E0epTCNIo4pgB9KEVxoAuy0OMoK/p6b284Yfg4CedHyfF02E
+         Hb9dZwy5i/+nOZO8yrBEqB5sHOldDFS7QNIhU+GvCvHNoKaeudYn8e/8bi5gqjeyMobh
+         VgnzCjI0dHXGa5Ne7+vp587h6vXAe8rFZkesIcBLyllXVdKvgRbJhv+jQGHY/SLkc7G+
+         0vHQ==
+In-Reply-To: <1679162.yVRSrpzkOW@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Patrik Lundquist <patrik.lundquist@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Patrik Lundquist <patrik.lundquist@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On 12 March 2014 07:53, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> Is having ->target set mutually exclusive with having ->setpolicy set?
+On Wed, Mar 12, 2014 at 4:57 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> Well, ->setpolicy drivers are a special case anyway, so we can simply skip the
+>> current frequency updates in __cpufreq_add_dev() and cpufreq_update_policy()
+>> for them.
 >
-> It is quite clear that having ->setpolicy implies having ->target unset,
-> because both drivers with ->setpolicy (intel_pstate and longrun) don't
-> have ->target set.
->
-> Now, are there any *other* cpufreq drivers without ->target?
->
-> In either case, in my opinion we should just make cpufreq_register_driver()
-> fail for drivers having both ->set_policy and ->target set at the same time.
-> Like in the patch below.
->
-> Rafael
->
->
-> ---
->  drivers/cpufreq/cpufreq.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -2306,7 +2306,9 @@ int cpufreq_register_driver(struct cpufr
->
->         if (!driver_data || !driver_data->verify || !driver_data->init ||
->             !(driver_data->setpolicy || driver_data->target_index ||
-> -                   driver_data->target))
-> +                   driver_data->target) ||
-> +            (driver_data->setpolicy && (driver_data->target_index ||
-> +                   driver_data->target)))
->                 return -EINVAL;
->
->         pr_debug("trying to register driver %s\n", driver_data->name);
+> In other words, we can do something like in the patch below I suppose?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I don't think its a good idea to handle ->setpolicy specially here.
+Zero shouldn't
+be allowed as a return value of any online CPU. And doesn't matter at all with
+->setpolicy or ->target.
