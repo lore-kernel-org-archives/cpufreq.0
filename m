@@ -1,67 +1,170 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: arm_big_little: set 'physical_cluster' for each cpu
-Date: Fri, 14 Mar 2014 12:10:55 +0530
-Message-ID: <354da516ba1facd6764bfc416ef13a59f9681d1c.1394779110.git.viresh.kumar@linaro.org>
-References: <4689064c920e08d5667b38d7117620ab98150273.1394779110.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4689064c920e08d5667b38d7117620ab98150273.1394779110.git.viresh.kumar@linaro.org>
-In-Reply-To: <4689064c920e08d5667b38d7117620ab98150273.1394779110.git.viresh.kumar@linaro.org>
-References: <4689064c920e08d5667b38d7117620ab98150273.1394779110.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [RFC V2] cpufreq: make sure frequency transitions are serialized
+Date: Fri, 14 Mar 2014 13:13:44 +0530
+Message-ID: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xin.wang@arm.com, arvind.chauhan@arm.com, Sudeep.Holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-We have a per-cpu variable for managing which cluster does a CPU belong to.
-Currently physical_cluster is set only for the policy->cpu. And that results in
-following on some SoC's:
+Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
+POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
+shouldn't be called twice continuously. Following examples show why this is
+important:
 
-- There are two clusters:
-  - Cluster 0 has four ARM Cortex A7 CPUs (slower ones): 0,1,2,3
-  - Cluster 1 has four ARM Cortex A15 CPUs (faster ones): 4,5,6,7
-- CPUs are booted in order 0,1..7 and so initially policy->cpu for A7 cluster
-  would be 0 and for A15 cluster would be 4.
-- Now CPU4 (i.e. A15_0) is hotplugged out and so policy->cpu for A15 cluster
-  becomes 5 (i.e. A15_1).
-- But physical cluster is only set for CPU0 and CPU4 in ARM big LITTLE driver
-  and isn't updated.
-- Now freq change request comes for A15 cluster and we would try to update freq
-  of physical_cluster of CPU5, i.e. A15_1. And it is currently set to zero
-  (default value of uninitialized global variables).
-- And so we actually try to change freq of A7 cluster instead of A15.
-- This also results in kernel crash as sometimes we might request freq above
-  A7's limit and CPU may behave badly..
+Scenario 1:
+-----------
+One thread reading value of cpuinfo_cur_freq, which will call
+__cpufreq_cpu_get()->cpufreq_out_of_sync()->cpufreq_notify_transition()..
 
-Fix this by initializing physical_cluster for all CPUs of a policy.
+And ondemand governor trying to change freq of cpu at the same time and so
+sending notification via ->target()..
 
-(Adding signed-off by Xin as he reported this issue and provided this diff)
+Notifiers are not serialized and suppose this is what happened
+- PRECHANGE Notification for freq A (from cpuinfo_cur_freq)
+- PRECHANGE Notification for freq B (from target())
+- Freq changed by target() to B
+- POSTCHANGE Notification for freq B
+- POSTCHANGE Notification for freq A
 
-Signed-off-by: Xin Wang <xin.wang@arm.com>
+Now the last POSTCHANGE Notification happened for freq A and hardware is
+currently running at freq B :)
+
+Where would we break then?: adjust_jiffies() in cpufreq.c and cpufreq_callback()
+in arch/arm/kernel/smp.c (which is also adjusting jiffies).. All loops_per_jiffy
+based stuff is broken..
+
+Scenario 2:
+-----------
+Governor is changing freq and has called __cpufreq_driver_target(). At the same
+time we are changing scaling_{min|max}_freq from sysfs, which would eventually
+end up calling governor's: CPUFREQ_GOV_LIMITS notification, that will also call:
+__cpufreq_driver_target().. And hence concurrent calls to ->target()
+
+And Platform have something like this in their ->target() (Like: cpufreq-cpu0,
+omap, exynos, etc)
+
+A. If new freq is more than old: Increase voltage
+B. Change freq
+C. If new freq is less than old: decrease voltage
+
+Now, two concurrent calls to target are X and Y, where X is trying to increase
+freq and Y is trying to decrease it..
+
+And this is the sequence that followed due to races..
+
+X.A: voltage increased for larger freq
+Y.A: nothing happened here
+Y.B: freq decreased
+Y.C: voltage decreased
+X.B: freq increased
+X.C: nothing happened..
+
+We ended up setting a freq which is not supported by the voltage we have set..
+That will probably make clock to CPU unstable and system might not be workable
+anymore...
+
+This patch adds protection in cpufreq_notify_transition() to make transitions
+serialized. It runs WARN() if POSTCHANGE notification is sent when we are not in
+middle of a transition. And PRECHANGE notification is forced to wait while the
+current transition is in progress.
+
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/arm_big_little.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 3d87078..bad2ed3 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -446,9 +446,12 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+This was discussed earlier here:
+https://lkml.org/lkml/2013/9/25/402
+
+Where Rafael asked for better fix, as he called the V1 fixes: "quick and dirty".
+This is another approach, much simpler than previous one. Please see if this
+looks fine. There is a TODO note in there as I wanted some suggestions on how
+exactly should we wait for a transition to get over.
+
+ drivers/cpufreq/cpufreq.c | 39 +++++++++++++++++++++++++++++++++++++--
+ include/linux/cpufreq.h   |  2 ++
+ 2 files changed, 39 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 2677ff1..66bdfff 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -324,6 +324,13 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
  	}
+ }
  
- 	if (cur_cluster < MAX_CLUSTERS) {
-+		int cpu;
++static void notify_transition_for_each_cpu(struct cpufreq_policy *policy,
++		struct cpufreq_freqs *freqs, unsigned int state)
++{
++	for_each_cpu(freqs->cpu, policy->cpus)
++		__cpufreq_notify_transition(policy, freqs, state);
++}
 +
- 		cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
+ /**
+  * cpufreq_notify_transition - call notifier chain and adjust_jiffies
+  * on frequency transition.
+@@ -335,8 +342,35 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+ void cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 		struct cpufreq_freqs *freqs, unsigned int state)
+ {
+-	for_each_cpu(freqs->cpu, policy->cpus)
+-		__cpufreq_notify_transition(policy, freqs, state);
++	if ((state != CPUFREQ_PRECHANGE) && (state != CPUFREQ_POSTCHANGE))
++		return notify_transition_for_each_cpu(policy, freqs, state);
++
++	/* Serialize pre-post notifications */
++	mutex_lock(&policy->transition_lock);
++	if (unlikely(WARN_ON(!policy->transition_ongoing &&
++				(state == CPUFREQ_POSTCHANGE)))) {
++		mutex_unlock(&policy->transition_lock);
++		return;
++	}
++
++	if (state == CPUFREQ_PRECHANGE) {
++		while (policy->transition_ongoing) {
++			mutex_unlock(&policy->transition_lock);
++			/* TODO: Can we do something better here? */
++			cpu_relax();
++			mutex_lock(&policy->transition_lock);
++		}
++
++		policy->transition_ongoing = true;
++		mutex_unlock(&policy->transition_lock);
++	}
++
++	notify_transition_for_each_cpu(policy, freqs, state);
++
++	if (state == CPUFREQ_POSTCHANGE) {
++		policy->transition_ongoing = false;
++		mutex_unlock(&policy->transition_lock);
++	}
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
  
--		per_cpu(physical_cluster, policy->cpu) = cur_cluster;
-+		for_each_cpu(cpu, policy->cpus)
-+			per_cpu(physical_cluster, cpu) = cur_cluster;
- 	} else {
- 		/* Assumption: during init, we are always running on A15 */
- 		per_cpu(physical_cluster, policy->cpu) = A15_CLUSTER;
+@@ -983,6 +1017,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
+ 
+ 	INIT_LIST_HEAD(&policy->policy_list);
+ 	init_rwsem(&policy->rwsem);
++	mutex_init(&policy->transition_lock);
+ 
+ 	return policy;
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 31c431e..e5cebce 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -104,6 +104,8 @@ struct cpufreq_policy {
+ 	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+ 	 */
+ 	struct rw_semaphore	rwsem;
++	bool			transition_ongoing; /* Tracks transition status */
++	struct mutex		transition_lock;
+ };
+ 
+ /* Only for ACPI */
 -- 
 1.7.12.rc2.18.g61b472e
+
