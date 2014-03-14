@@ -1,74 +1,80 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [RFC] cpufreq-cpu0: allow OPP table supplied by platform
-Date: Thu, 13 Mar 2014 10:43:09 -0700
-Message-ID: <232645eb-183a-4a7c-997b-db3ab149d72b@TX2EHSMHS013.ehs.local>
-References: <20140313184859.7d6f6512@xhacker>
- <CAKohpokLv0m+Cky7nCUOgP-djTMrA6jyka_EZ07+_exCAexXXg@mail.gmail.com>
- <CAKohpoke1i8xmKProgF+ki7Q=Q+YxbPnewdtbyPqu7857DLLWA@mail.gmail.com>
- <20140313194424.122ec572@xhacker>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: arm_big_little: make vexpress driver dependent on bL core driver
+Date: Fri, 14 Mar 2014 12:10:54 +0530
+Message-ID: <4689064c920e08d5667b38d7117620ab98150273.1394779110.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140313194424.122ec572@xhacker>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Jisheng Zhang <jszhang@marvell.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xin.wang@arm.com, arvind.chauhan@arm.com, Sudeep.Holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thu, 2014-03-13 at 07:44PM +0800, Jisheng Zhang wrote:
-> Fixing lakml :)
->=20
-> sorry
->=20
-> On Thu, 13 Mar 2014 03:56:46 -0700
-> Viresh Kumar <viresh.kumar@linaro.org> wrote:
->=20
-> > Fixing Rafael's id.
-> >=20
-> > On 13 March 2014 16:25, Viresh Kumar <viresh.kumar@linaro.org> wrot=
-e:
-> > > On 13 March 2014 16:18, Jisheng Zhang <jszhang@marvell.com> wrote=
-:
-> > >> Hi all,
-> > >>
-> > >> cpufreq-cpu0 is suitable for Marvell Berlin SoC. But there's one=
- issue
-> > >> to address. The opp is different between chips even on the same =
-step
-> > >> SoC, BG2Q for example. we can calculate the OPP table from the v=
-alue of
-> > >> one OTP register. We have two solutions:
-> > >>
-> > >> 1. bootloader reads OTP register and calculate the OPP table the=
-n change
-> > >> dtb danamically
-> > >>
-> > >> 2. supply one driver in mach-berlin to initialize the OPP table;=
- and
-> > >> modify cpufreq-cpu0 to allow platform supply OPP table, fall bac=
-k to
-> > >> of_init_opp_table() if there's no OPP table.
-> > >>
-> > >> Which solution is better?
-> > >
-> > > I think we can go ahead with second option here. We can just chec=
-k if opp
-> > > tables are already initialized or not. In case they are, don't pr=
-obe from
-> > > dt..
-> > >
-> > > But lets see with others have to say here..
+Currently vexpress big LITTLE driver selects ARM_BIG_LITTLE_CPUFREQ and so if
+CONFIG_BIG_LITTLE isn't enabled and CONFIG_ARM_VEXPRESS_SPC_CPUFREQ is enabled
+we get below warnings while compiling:
 
-This might become useful for Zynq as well. We essentially allow to boot
-with all kind of different frequencies and depending on how the PLL, an=
-d clock
-registers get setup by the bootloader, certain frequencies may or may
-not become possible. Having a way to dynamically build an OPP table
-would probably be a nicer way than having to tell everybody to adjust
-the DT according to how the bootloader sets up the clocks.
+warning: (ARM_VEXPRESS_SPC_CPUFREQ) selects ARM_BIG_LITTLE_CPUFREQ which has
+unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && (ARM || ARM64) && ARM
+&& BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK)
 
-	S=C3=B6ren
+To fix this make ARM_VEXPRESS_SPC_CPUFREQ dependent on ARM_BIG_LITTLE_CPUFREQ
+instead of selecting it.
 
+This also moves entry for ARM_VEXPRESS_SPC_CPUFREQ along with other big LITTLE
+config entries.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Hi Rafael,
+
+Both of these are fixes, please see if they can make it to 3.14 only.
+
+Thanks.
+
+ drivers/cpufreq/Kconfig.arm | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 3129749..9fb6270 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -2,6 +2,7 @@
+ # ARM CPU Frequency scaling drivers
+ #
+ 
++# big LITTLE core layer and glue drivers
+ config ARM_BIG_LITTLE_CPUFREQ
+ 	tristate "Generic ARM big LITTLE CPUfreq driver"
+ 	depends on ARM && BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK
+@@ -16,6 +17,14 @@ config ARM_DT_BL_CPUFREQ
+ 	  This enables probing via DT for Generic CPUfreq driver for ARM
+ 	  big.LITTLE platform. This gets frequency tables from DT.
+ 
++config ARM_VEXPRESS_SPC_CPUFREQ
++        tristate "Versatile Express SPC based CPUfreq driver"
++	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
++        help
++          This add the CPUfreq driver support for Versatile Express
++	  big.LITTLE platforms using SPC for power management.
++
++
+ config ARM_EXYNOS_CPUFREQ
+ 	bool
+ 
+@@ -241,11 +250,3 @@ config ARM_TEGRA_CPUFREQ
+ 	default y
+ 	help
+ 	  This adds the CPUFreq driver support for TEGRA SOCs.
+-
+-config ARM_VEXPRESS_SPC_CPUFREQ
+-        tristate "Versatile Express SPC based CPUfreq driver"
+-        select ARM_BIG_LITTLE_CPUFREQ
+-        depends on ARCH_VEXPRESS_SPC
+-        help
+-          This add the CPUfreq driver support for Versatile Express
+-	  big.LITTLE platforms using SPC for power management.
+-- 
+1.7.12.rc2.18.g61b472e
 
