@@ -1,170 +1,100 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [RFC V2] cpufreq: make sure frequency transitions are serialized
-Date: Fri, 14 Mar 2014 13:13:44 +0530
-Message-ID: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2] cpufreq: arm_big_little: make vexpress driver dependent on bL core driver
+Date: Fri, 14 Mar 2014 13:34:09 +0100
+Message-ID: <2887258.3GWxA0iuUl@vostro.rjw.lan>
+References: <4689064c920e08d5667b38d7117620ab98150273.1394779110.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <4689064c920e08d5667b38d7117620ab98150273.1394779110.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xin.wang@arm.com, arvind.chauhan@arm.com, Sudeep.Holla@arm.com
 
-Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
-POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
-shouldn't be called twice continuously. Following examples show why this is
-important:
+On Friday, March 14, 2014 12:10:54 PM Viresh Kumar wrote:
+> Currently vexpress big LITTLE driver selects ARM_BIG_LITTLE_CPUFREQ and so if
+> CONFIG_BIG_LITTLE isn't enabled and CONFIG_ARM_VEXPRESS_SPC_CPUFREQ is enabled
+> we get below warnings while compiling:
+> 
+> warning: (ARM_VEXPRESS_SPC_CPUFREQ) selects ARM_BIG_LITTLE_CPUFREQ which has
+> unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && (ARM || ARM64) && ARM
+> && BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK)
+> 
+> To fix this make ARM_VEXPRESS_SPC_CPUFREQ dependent on ARM_BIG_LITTLE_CPUFREQ
+> instead of selecting it.
+> 
+> This also moves entry for ARM_VEXPRESS_SPC_CPUFREQ along with other big LITTLE
+> config entries.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Hi Rafael,
 
-Scenario 1:
------------
-One thread reading value of cpuinfo_cur_freq, which will call
-__cpufreq_cpu_get()->cpufreq_out_of_sync()->cpufreq_notify_transition()..
+Hi,
 
-And ondemand governor trying to change freq of cpu at the same time and so
-sending notification via ->target()..
+> Both of these are fixes, please see if they can make it to 3.14 only.
 
-Notifiers are not serialized and suppose this is what happened
-- PRECHANGE Notification for freq A (from cpuinfo_cur_freq)
-- PRECHANGE Notification for freq B (from target())
-- Freq changed by target() to B
-- POSTCHANGE Notification for freq B
-- POSTCHANGE Notification for freq A
+Quite frankly, I'm afraid they won't make it.
 
-Now the last POSTCHANGE Notification happened for freq A and hardware is
-currently running at freq B :)
+I'm sending a pull request for -rc7 in a while and I won't add anything to it
+without running it through linux-next at least for a day.
 
-Where would we break then?: adjust_jiffies() in cpufreq.c and cpufreq_callback()
-in arch/arm/kernel/smp.c (which is also adjusting jiffies).. All loops_per_jiffy
-based stuff is broken..
+And since I'm expecting no -rc8 in this cycle, I have no plans for any pull
+requests next week.  At least not for 3.14.
 
-Scenario 2:
------------
-Governor is changing freq and has called __cpufreq_driver_target(). At the same
-time we are changing scaling_{min|max}_freq from sysfs, which would eventually
-end up calling governor's: CPUFREQ_GOV_LIMITS notification, that will also call:
-__cpufreq_driver_target().. And hence concurrent calls to ->target()
+Also I'm going to travel during the last week of March, so probably I'll send
+my first pull request for the 3.15 merge window before departure.
 
-And Platform have something like this in their ->target() (Like: cpufreq-cpu0,
-omap, exynos, etc)
+Thanks,
+Rafael
 
-A. If new freq is more than old: Increase voltage
-B. Change freq
-C. If new freq is less than old: decrease voltage
 
-Now, two concurrent calls to target are X and Y, where X is trying to increase
-freq and Y is trying to decrease it..
+>  drivers/cpufreq/Kconfig.arm | 17 +++++++++--------
+>  1 file changed, 9 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 3129749..9fb6270 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -2,6 +2,7 @@
+>  # ARM CPU Frequency scaling drivers
+>  #
+>  
+> +# big LITTLE core layer and glue drivers
+>  config ARM_BIG_LITTLE_CPUFREQ
+>  	tristate "Generic ARM big LITTLE CPUfreq driver"
+>  	depends on ARM && BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK
+> @@ -16,6 +17,14 @@ config ARM_DT_BL_CPUFREQ
+>  	  This enables probing via DT for Generic CPUfreq driver for ARM
+>  	  big.LITTLE platform. This gets frequency tables from DT.
+>  
+> +config ARM_VEXPRESS_SPC_CPUFREQ
+> +        tristate "Versatile Express SPC based CPUfreq driver"
+> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
+> +        help
+> +          This add the CPUfreq driver support for Versatile Express
+> +	  big.LITTLE platforms using SPC for power management.
+> +
+> +
+>  config ARM_EXYNOS_CPUFREQ
+>  	bool
+>  
+> @@ -241,11 +250,3 @@ config ARM_TEGRA_CPUFREQ
+>  	default y
+>  	help
+>  	  This adds the CPUFreq driver support for TEGRA SOCs.
+> -
+> -config ARM_VEXPRESS_SPC_CPUFREQ
+> -        tristate "Versatile Express SPC based CPUfreq driver"
+> -        select ARM_BIG_LITTLE_CPUFREQ
+> -        depends on ARCH_VEXPRESS_SPC
+> -        help
+> -          This add the CPUfreq driver support for Versatile Express
+> -	  big.LITTLE platforms using SPC for power management.
+> 
 
-And this is the sequence that followed due to races..
-
-X.A: voltage increased for larger freq
-Y.A: nothing happened here
-Y.B: freq decreased
-Y.C: voltage decreased
-X.B: freq increased
-X.C: nothing happened..
-
-We ended up setting a freq which is not supported by the voltage we have set..
-That will probably make clock to CPU unstable and system might not be workable
-anymore...
-
-This patch adds protection in cpufreq_notify_transition() to make transitions
-serialized. It runs WARN() if POSTCHANGE notification is sent when we are not in
-middle of a transition. And PRECHANGE notification is forced to wait while the
-current transition is in progress.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-
-This was discussed earlier here:
-https://lkml.org/lkml/2013/9/25/402
-
-Where Rafael asked for better fix, as he called the V1 fixes: "quick and dirty".
-This is another approach, much simpler than previous one. Please see if this
-looks fine. There is a TODO note in there as I wanted some suggestions on how
-exactly should we wait for a transition to get over.
-
- drivers/cpufreq/cpufreq.c | 39 +++++++++++++++++++++++++++++++++++++--
- include/linux/cpufreq.h   |  2 ++
- 2 files changed, 39 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2677ff1..66bdfff 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -324,6 +324,13 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- 	}
- }
- 
-+static void notify_transition_for_each_cpu(struct cpufreq_policy *policy,
-+		struct cpufreq_freqs *freqs, unsigned int state)
-+{
-+	for_each_cpu(freqs->cpu, policy->cpus)
-+		__cpufreq_notify_transition(policy, freqs, state);
-+}
-+
- /**
-  * cpufreq_notify_transition - call notifier chain and adjust_jiffies
-  * on frequency transition.
-@@ -335,8 +342,35 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- void cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs, unsigned int state)
- {
--	for_each_cpu(freqs->cpu, policy->cpus)
--		__cpufreq_notify_transition(policy, freqs, state);
-+	if ((state != CPUFREQ_PRECHANGE) && (state != CPUFREQ_POSTCHANGE))
-+		return notify_transition_for_each_cpu(policy, freqs, state);
-+
-+	/* Serialize pre-post notifications */
-+	mutex_lock(&policy->transition_lock);
-+	if (unlikely(WARN_ON(!policy->transition_ongoing &&
-+				(state == CPUFREQ_POSTCHANGE)))) {
-+		mutex_unlock(&policy->transition_lock);
-+		return;
-+	}
-+
-+	if (state == CPUFREQ_PRECHANGE) {
-+		while (policy->transition_ongoing) {
-+			mutex_unlock(&policy->transition_lock);
-+			/* TODO: Can we do something better here? */
-+			cpu_relax();
-+			mutex_lock(&policy->transition_lock);
-+		}
-+
-+		policy->transition_ongoing = true;
-+		mutex_unlock(&policy->transition_lock);
-+	}
-+
-+	notify_transition_for_each_cpu(policy, freqs, state);
-+
-+	if (state == CPUFREQ_POSTCHANGE) {
-+		policy->transition_ongoing = false;
-+		mutex_unlock(&policy->transition_lock);
-+	}
- }
- EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
- 
-@@ -983,6 +1017,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
- 
- 	INIT_LIST_HEAD(&policy->policy_list);
- 	init_rwsem(&policy->rwsem);
-+	mutex_init(&policy->transition_lock);
- 
- 	return policy;
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 31c431e..e5cebce 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -104,6 +104,8 @@ struct cpufreq_policy {
- 	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
- 	 */
- 	struct rw_semaphore	rwsem;
-+	bool			transition_ongoing; /* Tracks transition status */
-+	struct mutex		transition_lock;
- };
- 
- /* Only for ACPI */
 -- 
-1.7.12.rc2.18.g61b472e
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
