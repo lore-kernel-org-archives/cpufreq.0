@@ -1,117 +1,96 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC 2/9] opp-modifier: Add opp-modifier-reg driver
-Date: Mon, 17 Mar 2014 09:30:40 -0500
-Message-ID: <53270710.4060206@ti.com>
-References: <1394825135-60110-1-git-send-email-d-gerlach@ti.com>	<1394825135-60110-3-git-send-email-d-gerlach@ti.com>
- <CAL_Jsq+BzJeaiPwJsH5bFmtsxCPOspEjnmMLdAVyLAriQTF+kw@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [RFC v3 0/5] cpufreq:LAB: Support for LAB governor.
+Date: Mon, 17 Mar 2014 16:38:24 +0100
+Message-ID: <20140317163824.3c5480b3@amdc2363>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+ <1393928852-22725-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAL_Jsq+BzJeaiPwJsH5bFmtsxCPOspEjnmMLdAVyLAriQTF+kw@mail.gmail.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robherring2@gmail.com>, Dave Gerlach <d-gerlach@ti.com>
-Cc: Jisheng Zhang <jszhang@marvell.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Anson Huang <Anson.Huang@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1393928852-22725-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>, thomas.ab@samsung.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc@vger.kernel.org
 
-On 03/14/2014 04:00 PM, Rob Herring wrote:
-> On Fri, Mar 14, 2014 at 2:25 PM, Dave Gerlach <d-gerlach@ti.com> wrote:
->> Driver to read from a register and depending on either set bits or
->> a specific known selectively enable or disable OPPs based on DT node.
->>
->> Can support opp-modifier-reg-bit where single bits within the register
->> determine the availability of an OPP or opp-modifier-reg-val where a
->> certain value inside the register or a portion of it determine what the
->> maximum allowed OPP is.
->>
->> The driver expects a device that has already has its OPPs loaded
->> and then will disable the OPPs not matching the criteria specified in
->> the opp-modifier table.
->>
->> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
->> ---
->>  .../devicetree/bindings/power/opp-modifier.txt     | 111 +++++++++
->>  drivers/power/opp/Makefile                         |   1 +
->>  drivers/power/opp/opp-modifier-reg.c               | 259 +++++++++++++++++++++
->>  3 files changed, 371 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/opp-modifier.txt
->>  create mode 100644 drivers/power/opp/opp-modifier-reg.c
->>
->> diff --git a/Documentation/devicetree/bindings/power/opp-modifier.txt b/Documentation/devicetree/bindings/power/opp-modifier.txt
->> new file mode 100644
->> index 0000000..af8a2e9
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/opp-modifier.txt
->> @@ -0,0 +1,111 @@
->> +* OPP-Modifier - opp modifier to selectively enable operating points
->> +
->> +Many SoCs that have selectively modifiable OPPs can specify
->> +all available OPPs in their operating-points listing and then define
->> +opp_modifiers to enable or disable the OPPs that are actually available
->> +on the specific hardware.
->> +
->> +* OPP Modifier Provider
+Dear all,
+
+> Despite this patch set is working and applicable on top of 3.14-rc5, 
+> please regard it solely as a pure RFC.
 > 
-> Uggg. Please stop designing around the current OPP binding which has
-> the problem that the OPP table is not extensible to add more data.
-> Define a new OPP binding that solves these problems. This is at least
-Generically, there are three different issues with current OPP bindings:
-a) ability to enable disable certain OPPs depending on SoC OTP/Efuse
-settings.
-b) ability to reuse OPPs defined for one device node for another (cpu1
-to reuse OPP definitions of cpu0)
-c) ability to add additional information per OPP. we can argue this is
-a superset of (a), but really, the problems are different.
-
-Previous proposals include making each OPP as a phandle, but there
-does not seem much traction in that direction either. - proposal here
-has nothing to do with (b) or (c).
-
-> the 3rd OPP related binding addition I've seen recently. But I
-> wouldn't spend a lot of effort on a new OPP binding just to add the
-> functionality you are adding here because I don't like the whole
-> concept in general. This might be a common way to determine valid OPPs
-> on TI chips, but I think it is too low level and I don't want to see
-
-Not just TI chips, but iMX, now, Marvell, Xilinx as well. potentially
-more as well. doing OTP/Efuse based decision on which OPPs are valid
-on a chip is not a TI specific thing. This was the reason for us to
-try to define something generic enough to be reused by more SoCs than
-just TI.
-
-> bindings for every different possible way. Just add platform code to
-> do the OPP setup you need.
-Errr.. adding platform code means the hardware description goes back
-to kernel. is'nt that giving up on device tree binding for describing
-hardware?
-
+> This patch provides support for LAB governor build on top of ondemand.
+> Previous version of LAB can be found here:
+> http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
 > 
-> Frankly, I prefer the bootloader/firmware fixup the OPP table approach
-> mentioned in the cpufreq-cpu0 thread. Somewhat less desirable, but the
-> kernel could do the fixups as well (via of_update_property).
+> LAB short reminder:
+> 
+> LAB uses information about how many cores are in "idle" state (the
+> core idleness is represented as the value between 0 and 100) and the
+> overall load of the system (from 0 to 100) to decide about frequency
+> to be set. It is extremely useful with SoCs like Exynos4412, which
+> can set only one frequency for all cores.
+> 
+> Important design decisions:
+> 
+> - Reuse well established ondemand governor's internal code. To do this
+>   I had to expose some previously static internal ondemand code. 
+>   This allowed smaller LAB code when compared to previous version.
+> 	
+> - LAB works on top of ondemand, which means that one via device tree
+>   attributes can specify if and when e.g. BOOST shall be enabled or
+> if any particular frequency shall be imposed. For situation NOT
+> important from the power consumption reduction viewpoint the ondemand
+> is used to set proper frequency.
+> 
+> - It is only possible to either compile in or not the LAB into the
+> kernel. There is no "M" option for Kconfig. It is done on purpose,
+> since ondemand itself can be also compiled as a module and then it
+> would be possible to remove ondemand when LAB is working on top of it.
+> 
+> - The LAB operation is specified (and thereof extendable) via device
+> tree lab-ctrl-freq attribute defined at /cpus/cpu0.
+> 
+> 
+> Problems:
+> - How the governor will work for big.LITTLE systems (especially
+> Global Task Scheduling).
+> - Will there be agreement to expose internal ondemand code to be
+> reused for more specialized governors.
+> 
+> Test HW:
+> 	Exynos4412 - Trats2 board.
+> Above patches were posted on top of Linux 3.14-rc5
+> (SHA1: 3f9590c281c66162bf8ae9b7b2d987f0a89043c6)
+> 
 
-a) Trying to move the hardware definition away from device tree seems
-to me a major step backwards.
-b) Allowing for definitions in platform code is a step backwards again
-for a generic solution that works for more than 1 vendor.
-c) moving the logic away to bootloader when it can easily be done in
-kernel again is adding burden to bootloader for data it does need to
-handle.
+Any comments about those patches?
 
-OPP is a hardware behavior, which OPPs are enabled are described in
-hardware on certain SoCs. the current proposal is to provide a generic
-solution for those devices that allow for dynamic definition of OPPs
-based on SoC efuse definition.
+> Lukasz Majewski (5):
+>   cpufreq:LAB:ondemand Adjust ondemand to be able to reuse its methods
+>   cpufreq:LAB:cpufreq_governor Adjust cpufreq_governor.[h|c] to
+> support LAB
+>   cpufreq:LAB:lab Add LAB governor code
+>   cpufreq:LAB:Kconfig Add LAB definitions to Kconfig
+>   cpufreq:LAB:dts:trats2: Add DTS nodes for LAB governor
+> 
+>  arch/arm/boot/dts/exynos4412-trats2.dts |   29 ++
+>  drivers/cpufreq/Kconfig                 |   28 ++
+>  drivers/cpufreq/Makefile                |    1 +
+>  drivers/cpufreq/cpufreq_governor.c      |    7 +
+>  drivers/cpufreq/cpufreq_governor.h      |   12 +
+>  drivers/cpufreq/cpufreq_lab.c           |  457
+> +++++++++++++++++++++++++++++++
+> drivers/cpufreq/cpufreq_ondemand.c      |   24 +- 7 files changed,
+> 550 insertions(+), 8 deletions(-) create mode 100644
+> drivers/cpufreq/cpufreq_lab.c
+> 
+
 
 
 -- 
-Regards,
-Nishanth Menon
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
