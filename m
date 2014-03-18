@@ -1,148 +1,215 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC V2] cpufreq: make sure frequency transitions are serialized
-Date: Tue, 18 Mar 2014 18:20:05 +0530
-Message-ID: <532840FD.308@linux.vnet.ibm.com>
-References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC 2/9] opp-modifier: Add opp-modifier-reg driver
+Date: Tue, 18 Mar 2014 10:36:45 -0500
+Message-ID: <5328680D.9050103@ti.com>
+References: <1394825135-60110-1-git-send-email-d-gerlach@ti.com>	<1394825135-60110-3-git-send-email-d-gerlach@ti.com>	<CAL_Jsq+BzJeaiPwJsH5bFmtsxCPOspEjnmMLdAVyLAriQTF+kw@mail.gmail.com>	<53270710.4060206@ti.com>
+ <CAL_JsqLSq+ZhwgOoH7uvh-Otod6iECWTkDMyEvO6MjmdnJ-3Kw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAL_JsqLSq+ZhwgOoH7uvh-Otod6iECWTkDMyEvO6MjmdnJ-3Kw@mail.gmail.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Jisheng Zhang <jszhang@marvell.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Anson Huang <Anson.Huang@freescale.com>, Dave Gerlach <d-gerlach@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 03/14/2014 01:13 PM, Viresh Kumar wrote:
-> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
-> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
-> shouldn't be called twice continuously. Following examples show why this is
-> important:
+On 03/17/2014 01:37 PM, Rob Herring wrote:
+> On Mon, Mar 17, 2014 at 9:30 AM, Nishanth Menon <nm@ti.com> wrote:
+>> On 03/14/2014 04:00 PM, Rob Herring wrote:
+>>> On Fri, Mar 14, 2014 at 2:25 PM, Dave Gerlach <d-gerlach@ti.com> wrote:
+>>>> Driver to read from a register and depending on either set bits or
+>>>> a specific known selectively enable or disable OPPs based on DT node.
+>>>>
+>>>> Can support opp-modifier-reg-bit where single bits within the register
+>>>> determine the availability of an OPP or opp-modifier-reg-val where a
+>>>> certain value inside the register or a portion of it determine what the
+>>>> maximum allowed OPP is.
+>>>>
+>>>> The driver expects a device that has already has its OPPs loaded
+>>>> and then will disable the OPPs not matching the criteria specified in
+>>>> the opp-modifier table.
+>>>>
+>>>> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+>>>> ---
+>>>>  .../devicetree/bindings/power/opp-modifier.txt     | 111 +++++++++
+>>>>  drivers/power/opp/Makefile                         |   1 +
+>>>>  drivers/power/opp/opp-modifier-reg.c               | 259 +++++++++++++++++++++
+>>>>  3 files changed, 371 insertions(+)
+>>>>  create mode 100644 Documentation/devicetree/bindings/power/opp-modifier.txt
+>>>>  create mode 100644 drivers/power/opp/opp-modifier-reg.c
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/power/opp-modifier.txt b/Documentation/devicetree/bindings/power/opp-modifier.txt
+>>>> new file mode 100644
+>>>> index 0000000..af8a2e9
+>>>> --- /dev/null
+>>>> +++ b/Documentation/devicetree/bindings/power/opp-modifier.txt
+>>>> @@ -0,0 +1,111 @@
+>>>> +* OPP-Modifier - opp modifier to selectively enable operating points
+>>>> +
+>>>> +Many SoCs that have selectively modifiable OPPs can specify
+>>>> +all available OPPs in their operating-points listing and then define
+>>>> +opp_modifiers to enable or disable the OPPs that are actually available
+>>>> +on the specific hardware.
+>>>> +
+>>>> +* OPP Modifier Provider
+>>>
+>>> Uggg. Please stop designing around the current OPP binding which has
+>>> the problem that the OPP table is not extensible to add more data.
+>>> Define a new OPP binding that solves these problems. This is at least
+>> Generically, there are three different issues with current OPP bindings:
+>> a) ability to enable disable certain OPPs depending on SoC OTP/Efuse
+>> settings.
 > 
-[...] 
-> This was discussed earlier here:
-> https://lkml.org/lkml/2013/9/25/402
+> More generically: ...depending on variety of factors.
+
+Agreed.
+
 > 
-> Where Rafael asked for better fix, as he called the V1 fixes: "quick and dirty".
-> This is another approach, much simpler than previous one. Please see if this
-> looks fine. There is a TODO note in there as I wanted some suggestions on how
-> exactly should we wait for a transition to get over.
+>> b) ability to reuse OPPs defined for one device node for another (cpu1
+>> to reuse OPP definitions of cpu0)
+>> c) ability to add additional information per OPP. we can argue this is
+>> a superset of (a), but really, the problems are different.
 > 
->  drivers/cpufreq/cpufreq.c | 39 +++++++++++++++++++++++++++++++++++++--
->  include/linux/cpufreq.h   |  2 ++
->  2 files changed, 39 insertions(+), 2 deletions(-)
+> It is all additional data per OPP. Additional different information is
+> of course for different problems. That doesn't mean we need different
+> solutions.
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 2677ff1..66bdfff 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -324,6 +324,13 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
->  	}
->  }
+>> Previous proposals include making each OPP as a phandle, but there
+>> does not seem much traction in that direction either. - proposal here
+>> has nothing to do with (b) or (c).
 > 
-> +static void notify_transition_for_each_cpu(struct cpufreq_policy *policy,
-> +		struct cpufreq_freqs *freqs, unsigned int state)
-> +{
-> +	for_each_cpu(freqs->cpu, policy->cpus)
-> +		__cpufreq_notify_transition(policy, freqs, state);
-> +}
-> +
->  /**
->   * cpufreq_notify_transition - call notifier chain and adjust_jiffies
->   * on frequency transition.
-> @@ -335,8 +342,35 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
->  void cpufreq_notify_transition(struct cpufreq_policy *policy,
->  		struct cpufreq_freqs *freqs, unsigned int state)
->  {
-> -	for_each_cpu(freqs->cpu, policy->cpus)
-> -		__cpufreq_notify_transition(policy, freqs, state);
-> +	if ((state != CPUFREQ_PRECHANGE) && (state != CPUFREQ_POSTCHANGE))
+> They may have nothing to do with each other, but they all have to do
+> with the OPP binding. If we're going to change/extend the binding,
+> then all issues need to be taken into account.
 
-Wait a min, when is this condition ever true? I mean, what else can
-'state' ever be, apart from CPUFREQ_PRECHANGE and POSTCHANGE?
+We aren't extending the existing binding in this series. We are just
+defining how hardware description of which OPPs are valid here.
 
-> +		return notify_transition_for_each_cpu(policy, freqs, state);
-> +
-> +	/* Serialize pre-post notifications */
-> +	mutex_lock(&policy->transition_lock);
+>>> the 3rd OPP related binding addition I've seen recently. But I
+>>> wouldn't spend a lot of effort on a new OPP binding just to add the
+>>> functionality you are adding here because I don't like the whole
+>>> concept in general. This might be a common way to determine valid OPPs
+>>> on TI chips, but I think it is too low level and I don't want to see
+>>
+>> Not just TI chips, but iMX, now, Marvell, Xilinx as well. potentially
+>> more as well. doing OTP/Efuse based decision on which OPPs are valid
+>> on a chip is not a TI specific thing. This was the reason for us to
+>> try to define something generic enough to be reused by more SoCs than
+>> just TI.
+> 
+> Agreed, but I'm not convinced how different SOCs determine valid OPPs
+> is common enough. Certainly how to mark an entry disabled is common
+> though.
 
-Nope, this is definitely not the way to go, IMHO. We should enforce that
-the *callers* serialize the transitions, something like this:
+Fair enough, without procuring NDA documents for all the SoCs, I
+cannot comment much either, all we can do is see threads such as
+http://marc.info/?t=139470791100003&r=1&w=2 and propose.
 
-	cpufreq_transition_lock();
+This series does include iMx as well which seems to have equivalent
+challenges.
 
-	cpufreq_notify_transition(CPUFREQ_PRECHANGE);
+I have given examples here on how the current driver at least tries to
+make generic the instances of SoCs that we have today, further, the
+driver in no way constraints us from using opp_modifier_register with
+proper ops in case we do something weirdly different (example: use non
+memory mapped operations) - it is just a simple framework.
 
-	//Perform the frequency change
+> 
+>>> bindings for every different possible way. Just add platform code to
+>>> do the OPP setup you need.
+>> Errr.. adding platform code means the hardware description goes back
+>> to kernel. is'nt that giving up on device tree binding for describing
+>> hardware?
+> 
+> We're always going to have some platform code. I'm not saying you have
+> to in this case. I'm saying either come up with an OPP binding
+> addressing all these issues or live with the existing one and fix it
+> up in the kernel or bootloader.
 
-	cpufreq_notify_transition(CPUFREQ_POSTCHANGE);
+bootloader is out of the picture considering most of the platforms
+need to deal with legacy bootloaders.
 
-	cpufreq_transition_unlock();
+then tying part of the data in kernel and part in dts!
+> 
+>>> Frankly, I prefer the bootloader/firmware fixup the OPP table approach
+>>> mentioned in the cpufreq-cpu0 thread. Somewhat less desirable, but the
+>>> kernel could do the fixups as well (via of_update_property).
+>>
+>> a) Trying to move the hardware definition away from device tree seems
+>> to me a major step backwards.
+>> b) Allowing for definitions in platform code is a step backwards again
+>> for a generic solution that works for more than 1 vendor.
+>> c) moving the logic away to bootloader when it can easily be done in
+>> kernel again is adding burden to bootloader for data it does need to
+>> handle.
+> 
+> The burden has to be somewhere. Maintaining a binding forever in the
+> kernel is a burden as well if it is poorly designed.
 
-That's it!
+> 
+> Valid OPPs are not going to just be random. There's probably on a few
+> combinations and they'll be based on part# or speed grade or something
+> (which in turn defines the efuses in your case). While a dev board may
+> have random parts on it, an actual product would not. I could argue
+> that your DTB just needs to be correct to begin with for a given
+> part/design. Obviously, managing minor differences in a DTB like this
+> can be a pain. This is why firmware or bootloaders do adjustments to
+> the DTB at runtime and it is quite common.
+Bootloaders may not always be capable of doing things or may just be
+legacy bootloader that were created in a world where kernel was self
+sustaining (opp data was in the kernel previously in OMAP as an
+example). asking bootloader to change to ensure dtbs are proper is
+just opening up another can of worms here.
 
-[ We can either introduce a new "transition" lock or perhaps even reuse
-the cpufreq_driver_lock if it fits... but the point is, the _caller_ has
-to perform the locking; trying to be smart inside cpufreq_notify_transition()
-is a recipe for headache :-( ]
+> 
+>> OPP is a hardware behavior, which OPPs are enabled are described in
+>> hardware on certain SoCs. the current proposal is to provide a generic
+>> solution for those devices that allow for dynamic definition of OPPs
+>> based on SoC efuse definition.
+> 
+> What if the decision is not based on a single register bit? Perhaps
+> efuses are not directly memory mapped. Maybe it is based on Si
+> revision. Or you need to limit frequency because a certain board can't
+> supply adequate current. You call this generic, but it is not. It
+> doesn't even solve the part that is generic which is marking some OPPs
+> disabled.
 
-Is there any problem with this approach due to which you didn't take
-this route?
+Are we saying that having a generic layer which may decide on which
+OPPs are valid and which are not is a no-no? the RFC has a few issues,
+I agree, but that is part of our review process to help improve if we
+think the over all concept is good enough to carry forward for next
+patch iteration. You dont seem convinced enough to think that makes
+sense here.
 
-> +	if (unlikely(WARN_ON(!policy->transition_ongoing &&
-> +				(state == CPUFREQ_POSTCHANGE)))) {
-> +		mutex_unlock(&policy->transition_lock);
-> +		return;
-> +	}
-> +
-> +	if (state == CPUFREQ_PRECHANGE) {
-> +		while (policy->transition_ongoing) {
-> +			mutex_unlock(&policy->transition_lock);
-> +			/* TODO: Can we do something better here? */
-> +			cpu_relax();
-> +			mutex_lock(&policy->transition_lock);
+As I mentioned, patch #1 is the framework, patch #2 is a specific
+implementation(and there are improvements possible)-> if we need to
+add sil revision based logic OR have current supply based
+implementation OR have non memory mapped based decision making,
+there'd be specific drivers for them.
 
-If the caller takes care of the synchronization, we can avoid
-these sorts of acrobatics ;-)
+The key question is this: do we have an conceptual agreement that
+making the decision on which OPPs are valid is a decision for the
+kernel? if yes, lets make that as the standard, if kernel should not
+do it, then we enforce discipline that bootloaders will mandatorily
+implement dtb modification for OPP entries for all SoCs. If I
+understand your thought, I think your push is for dtbs containing the
+right OPP entries always.
 
+If we agree that kernel should be standalone capable of handling valid
+OPPs (which happens to be my view), then lets debate if a generic
+layer such as the one proposed should be created helping all SoCs to
+operate generically. So far, none of the arguments you have presented
+seems to indicate such a generic layer is impossible to do.
+
+-- 
 Regards,
-Srivatsa S. Bhat
-
-> +		}
-> +
-> +		policy->transition_ongoing = true;
-> +		mutex_unlock(&policy->transition_lock);
-> +	}
-> +
-> +	notify_transition_for_each_cpu(policy, freqs, state);
-> +
-> +	if (state == CPUFREQ_POSTCHANGE) {
-> +		policy->transition_ongoing = false;
-> +		mutex_unlock(&policy->transition_lock);
-> +	}
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
-> 
-> @@ -983,6 +1017,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
-> 
->  	INIT_LIST_HEAD(&policy->policy_list);
->  	init_rwsem(&policy->rwsem);
-> +	mutex_init(&policy->transition_lock);
-> 
->  	return policy;
-> 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 31c431e..e5cebce 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -104,6 +104,8 @@ struct cpufreq_policy {
->  	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
->  	 */
->  	struct rw_semaphore	rwsem;
-> +	bool			transition_ongoing; /* Tracks transition status */
-> +	struct mutex		transition_lock;
->  };
-> 
->  /* Only for ACPI */
-> 
-
+Nishanth Menon
