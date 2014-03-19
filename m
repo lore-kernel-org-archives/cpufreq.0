@@ -1,52 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: powerpc: replace CPUFREQ_ETERNAL with cpufreq transition latency for FSL e500mc Socs
-Date: Wed, 19 Mar 2014 02:42:15 +0100
-Message-ID: <2143464.l2G8tITm4N@vostro.rjw.lan>
+From: "Zhuoyu.Zhang@freescale.com" <Zhuoyu.Zhang@freescale.com>
+Subject: RE: [PATCH] cpufreq: powerpc: replace CPUFREQ_ETERNAL with cpufreq
+ transition latency for FSL e500mc Socs
+Date: Wed, 19 Mar 2014 03:51:59 +0000
+Message-ID: <9ac578cdc68c41ef98e1639a57f2772f@BN1PR03MB154.namprd03.prod.outlook.com>
 References: <1395034168-7342-1-git-send-email-Zhuoyu.Zhang@freescale.com>
+ <2143464.l2G8tITm4N@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: base64
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1395034168-7342-1-git-send-email-Zhuoyu.Zhang@freescale.com>
+In-Reply-To: <2143464.l2G8tITm4N@vostro.rjw.lan>
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Zhuoyu Zhang <Zhuoyu.Zhang@freescale.com>
-Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Yuantian.Tang@freescale.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yuantian Tang <Yuantian.Tang@freescale.com>
 
-On Monday, March 17, 2014 01:29:28 PM Zhuoyu Zhang wrote:
-> According to the data provided by HW Team, at least 12 internal platform clock cycles are required to 
-> stabilize a DFS clock switch on FSL e500mc Socs. This patch replaces the CPUFREQ_ETERNAL with 
-> appropriate HW clock transition latency to make DFS governors work normally on Freescale e500mc boards.
-
-Please sign off the patch.  I can't apply it without your sign-off.
-
-> ---
->  drivers/cpufreq/ppc-corenet-cpufreq.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> index 051000f..ff7b625 100644
-> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> @@ -21,6 +21,7 @@
->  #include <linux/of.h>
->  #include <linux/slab.h>
->  #include <linux/smp.h>
-> +#include <sysdev/fsl_soc.h>
->  
->  /**
->   * struct cpu_data - per CPU data struct
-> @@ -205,7 +206,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	for_each_cpu(i, per_cpu(cpu_mask, cpu))
->  		per_cpu(cpu_data, i) = data;
->  
-> -	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
-> +	policy->cpuinfo.transition_latency = (12 * NSEC_PER_SEC) / fsl_get_sys_freq();
->  	of_node_put(np);
->  
->  	return 0;
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogV2VkbmVzZGF5LCBNYXJjaCAx
+OSwgMjAxNCA5OjQyIEFNDQo+IFRvOiBaaGFuZyBaaHVveXUtQjQ2NTUyDQo+IENjOiB2aXJlc2gu
+a3VtYXJAbGluYXJvLm9yZzsgY3B1ZnJlcUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPiBwbUB2
+Z2VyLmtlcm5lbC5vcmc7IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0hdIGNwdWZyZXE6IHBvd2VycGM6IHJlcGxhY2UgQ1BVRlJFUV9FVEVSTkFMIHdpdGgNCj4gY3B1
+ZnJlcSB0cmFuc2l0aW9uIGxhdGVuY3kgZm9yIEZTTCBlNTAwbWMgU29jcw0KPiANCj4gT24gTW9u
+ZGF5LCBNYXJjaCAxNywgMjAxNCAwMToyOToyOCBQTSBaaHVveXUgWmhhbmcgd3JvdGU6DQo+ID4g
+QWNjb3JkaW5nIHRvIHRoZSBkYXRhIHByb3ZpZGVkIGJ5IEhXIFRlYW0sIGF0IGxlYXN0IDEyIGlu
+dGVybmFsDQo+ID4gcGxhdGZvcm0gY2xvY2sgY3ljbGVzIGFyZSByZXF1aXJlZCB0byBzdGFiaWxp
+emUgYSBERlMgY2xvY2sgc3dpdGNoIG9uDQo+ID4gRlNMIGU1MDBtYyBTb2NzLiBUaGlzIHBhdGNo
+IHJlcGxhY2VzIHRoZSBDUFVGUkVRX0VURVJOQUwgd2l0aA0KPiBhcHByb3ByaWF0ZSBIVyBjbG9j
+ayB0cmFuc2l0aW9uIGxhdGVuY3kgdG8gbWFrZSBERlMgZ292ZXJub3JzIHdvcmsNCj4gbm9ybWFs
+bHkgb24gRnJlZXNjYWxlIGU1MDBtYyBib2FyZHMuDQo+IA0KPiBQbGVhc2Ugc2lnbiBvZmYgdGhl
+IHBhdGNoLiAgSSBjYW4ndCBhcHBseSBpdCB3aXRob3V0IHlvdXIgc2lnbi1vZmYuDQoNClNvcnJ5
+IHRvIG1pc3MgdGhlICJzaWduLW9mZiIsIEkgYWxyZWFkeSBzZW50IGFub3RoZXIgdmVyc2lvbiBm
+b3IgeW91ciByZXZpZXcuDQoNCi0tWmh1b3l1DQoNCj4gDQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMv
+Y3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMgfCAzICsrLQ0KPiA+ICAxIGZpbGUgY2hhbmdl
+ZCwgMiBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVm
+cmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+IGluZGV4IDA1MTAwMGYuLmZmN2I2MjUgMTAw
+NjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+
+ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMNCj4gPiBAQCAtMjEs
+NiArMjEsNyBAQA0KPiA+ICAjaW5jbHVkZSA8bGludXgvb2YuaD4NCj4gPiAgI2luY2x1ZGUgPGxp
+bnV4L3NsYWIuaD4NCj4gPiAgI2luY2x1ZGUgPGxpbnV4L3NtcC5oPg0KPiA+ICsjaW5jbHVkZSA8
+c3lzZGV2L2ZzbF9zb2MuaD4NCj4gPg0KPiA+ICAvKioNCj4gPiAgICogc3RydWN0IGNwdV9kYXRh
+IC0gcGVyIENQVSBkYXRhIHN0cnVjdCBAQCAtMjA1LDcgKzIwNiw3IEBAIHN0YXRpYw0KPiA+IGlu
+dCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kp
+DQo+ID4gIAlmb3JfZWFjaF9jcHUoaSwgcGVyX2NwdShjcHVfbWFzaywgY3B1KSkNCj4gPiAgCQlw
+ZXJfY3B1KGNwdV9kYXRhLCBpKSA9IGRhdGE7DQo+ID4NCj4gPiAtCXBvbGljeS0+Y3B1aW5mby50
+cmFuc2l0aW9uX2xhdGVuY3kgPSBDUFVGUkVRX0VURVJOQUw7DQo+ID4gKwlwb2xpY3ktPmNwdWlu
+Zm8udHJhbnNpdGlvbl9sYXRlbmN5ID0gKDEyICogTlNFQ19QRVJfU0VDKSAvDQo+ID4gK2ZzbF9n
+ZXRfc3lzX2ZyZXEoKTsNCj4gPiAgCW9mX25vZGVfcHV0KG5wKTsNCj4gPg0KPiA+ICAJcmV0dXJu
+IDA7DQo+ID4NCj4gDQo+IC0tDQo+IEkgc3BlYWsgb25seSBmb3IgbXlzZWxmLg0KPiBSYWZhZWwg
+Si4gV3lzb2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo+IA0KDQo=
