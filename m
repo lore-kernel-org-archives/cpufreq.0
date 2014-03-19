@@ -1,159 +1,66 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [RFC V2] cpufreq: make sure frequency transitions are serialized
-Date: Wed, 19 Mar 2014 15:20:40 +0530
-Message-ID: <53296870.5010505@linux.vnet.ibm.com>
-References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org> <532840FD.308@linux.vnet.ibm.com> <CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com>
+Date: Wed, 19 Mar 2014 15:39:16 +0530
+Message-ID: <CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com>
+References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
+	<532840FD.308@linux.vnet.ibm.com>
+	<CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com>
+	<53296870.5010505@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <53296870.5010505@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, amit.daniel@samsung.com
+Content-Transfer-Encoding: 7bit
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
 
-On 03/19/2014 11:38 AM, Viresh Kumar wrote:
-> On 18 March 2014 18:20, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> On 03/14/2014 01:13 PM, Viresh Kumar wrote:
->>> +     if ((state != CPUFREQ_PRECHANGE) && (state != CPUFREQ_POSTCHANGE))
->>
->> Wait a min, when is this condition ever true? I mean, what else can
->> 'state' ever be, apart from CPUFREQ_PRECHANGE and POSTCHANGE?
-> 
-> There were two more 'unused' states available:
-> CPUFREQ_RESUMECHANGE and CPUFREQ_SUSPENDCHANGE
-> 
-> I have sent a patch to remove them now and this code would go away..
-> 
->>> +             return notify_transition_for_each_cpu(policy, freqs, state);
->>> +
->>> +     /* Serialize pre-post notifications */
->>> +     mutex_lock(&policy->transition_lock);
->>
->> Nope, this is definitely not the way to go, IMHO. We should enforce that
->> the *callers* serialize the transitions, something like this:
->>
->>         cpufreq_transition_lock();
->>
->>         cpufreq_notify_transition(CPUFREQ_PRECHANGE);
->>
->>         //Perform the frequency change
->>
->>         cpufreq_notify_transition(CPUFREQ_POSTCHANGE);
->>
->>         cpufreq_transition_unlock();
->>
->> That's it!
->>
->> [ We can either introduce a new "transition" lock or perhaps even reuse
->> the cpufreq_driver_lock if it fits... but the point is, the _caller_ has
->> to perform the locking; trying to be smart inside cpufreq_notify_transition()
->> is a recipe for headache :-( ]
->>
->> Is there any problem with this approach due to which you didn't take
->> this route?
-> 
-> I didn't wanted drivers to handle this as core must make sure things are in
-> order. Over that it would have helped by not pasting redundant code
-> everywhere..
-> 
-> Drivers are anyway going to call cpufreq_notify_transition(), why increase
-> burden on them?
+On 19 March 2014 15:20, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> No, its not about burden. Its about the elegance of the design. We should
+> not be overly "smart" in the cpufreq core. Hiding the synchronization inside
+> the cpufreq core only encourages people to write buggy code in their drivers.
+
+What kind of buggy code can be there? They are supposed to call notifiers
+in the order mentioned and so it shouldn't be a problem at all.. Don't know..
+
+> Why don't we go with what Rafael suggested? We can have dedicated
+> begin_transition() and end_transition() calls to demarcate the frequency
+> transitions. That way, it makes it very clear how the synchronization is
+> done. Of course, these functions would be provided (exported) by the cpufreq
+> core, by implementing them using locks/counters/whatever.
 >
+> Basically what I'm arguing against, is the idea of having the cpufreq
+> core figure out what the driver _intended_ to do, from inside the
+> cpufreq_notify_transition() call.
+>
+> What I would prefer instead is to have the cpufreq driver do something
+> like this:
+>
+> cpufreq_freq_transition_begin();
+>
+> cpufreq_notify_transition(CPUFREQ_PRECHANGE);
 
-No, its not about burden. Its about the elegance of the design. We should
-not be overly "smart" in the cpufreq core. Hiding the synchronization inside
-the cpufreq core only encourages people to write buggy code in their drivers.
+Why do we need two routines then? What about doing notification from
+inside cpufreq_freq_transition_begin()?
 
-Why don't we go with what Rafael suggested? We can have dedicated
-begin_transition() and end_transition() calls to demarcate the frequency
-transitions. That way, it makes it very clear how the synchronization is
-done. Of course, these functions would be provided (exported) by the cpufreq
-core, by implementing them using locks/counters/whatever.
+This is a burden for driver writers, who don't normally understand the
+relevance of these calls in detail and may think, only the first one is
+enough or the second one is..
 
-Basically what I'm arguing against, is the idea of having the cpufreq
-core figure out what the driver _intended_ to do, from inside the
-cpufreq_notify_transition() call.
+Its better if they simply let the core that they are starting to do transitions,
+i.e. cpufreq_freq_transition_begin() and then the core should send
+notifications.
 
-What I would prefer instead is to have the cpufreq driver do something
-like this:
+> //perform the frequency change
+>
+> cpufreq_notify_transition(CPUFREQ_POSTCHANGE);
+>
+> cpufreq_freq_transition_end();
+>
+> [ASYNC_NOTIFICATION drivers will invoke the last two functions in a
+> separate context/thread.]
 
-cpufreq_freq_transition_begin();
-
-cpufreq_notify_transition(CPUFREQ_PRECHANGE);
-
-//perform the frequency change
-
-cpufreq_notify_transition(CPUFREQ_POSTCHANGE);
-
-cpufreq_freq_transition_end();
-
-[ASYNC_NOTIFICATION drivers will invoke the last two functions in a
-separate context/thread.]
-
-Regards,
-Srivatsa S. Bhat
- 
->>> +     if (unlikely(WARN_ON(!policy->transition_ongoing &&
->>> +                             (state == CPUFREQ_POSTCHANGE)))) {
->>> +             mutex_unlock(&policy->transition_lock);
->>> +             return;
->>> +     }
->>> +
->>> +     if (state == CPUFREQ_PRECHANGE) {
->>> +             while (policy->transition_ongoing) {
->>> +                     mutex_unlock(&policy->transition_lock);
->>> +                     /* TODO: Can we do something better here? */
->>> +                     cpu_relax();
->>> +                     mutex_lock(&policy->transition_lock);
->>
->> If the caller takes care of the synchronization, we can avoid
->> these sorts of acrobatics ;-)
-> 
-> If we are fine with taking a mutex for the entire transition, then
-> we can avoid above kind of acrobatics by just taking the mutex
-> from PRECHANGE and leaving it at POSTCHANGE..
-> 
-> It will look like this then, hope this looks fine :)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 2677ff1..3b9eac4 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -335,8 +335,15 @@ static void __cpufreq_notify_transition(struct
-> cpufreq_policy *policy,
->  void cpufreq_notify_transition(struct cpufreq_policy *policy,
->                 struct cpufreq_freqs *freqs, unsigned int state)
->  {
-> +       if (state == CPUFREQ_PRECHANGE)
-> +               mutex_lock(&policy->transition_lock);
-> +
-> +       /* Send notifications */
->         for_each_cpu(freqs->cpu, policy->cpus)
->                 __cpufreq_notify_transition(policy, freqs, state);
-> +
-> +       if (state == CPUFREQ_POSTCHANGE)
-> +               mutex_unlock(&policy->transition_lock);
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
-> 
-> @@ -983,6 +990,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
-> 
->         INIT_LIST_HEAD(&policy->policy_list);
->         init_rwsem(&policy->rwsem);
-> +       mutex_init(&policy->transition_lock);
-> 
->         return policy;
-> 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 31c431e..5f9209a 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -104,6 +104,7 @@ struct cpufreq_policy {
->          *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
->          */
->         struct rw_semaphore     rwsem;
-> +       struct mutex            transition_lock;
->  };
+Same for the last two routines and yes they would be called from
+separate thread for ASYNC_NOTIFICATION drivers..
