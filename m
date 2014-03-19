@@ -1,72 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC V2] cpufreq: make sure frequency transitions are serialized
-Date: Wed, 19 Mar 2014 14:53:59 +0100
-Message-ID: <10055939.1CZiP7vyp7@vostro.rjw.lan>
-References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org> <53296870.5010505@linux.vnet.ibm.com> <CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC v3] cpufreq: Make sure frequency transitions are serialized
+Date: Wed, 19 Mar 2014 20:18:54 +0530
+Message-ID: <5329AE56.8080204@linux.vnet.ibm.com>
+References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org> <532840FD.308@linux.vnet.ibm.com> <CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com> <53296870.5010505@linux.vnet.ibm.com> <CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com> <53298A7D.3080400@linux.vnet.ibm.com> <CAKohpomQjvkAaty-nBSb=Qyxvk0RhvkwNXC9194gmYr6Vpw5WA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomQjvkAaty-nBSb=Qyxvk0RhvkwNXC9194gmYr6Vpw5WA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
 
-On Wednesday, March 19, 2014 03:39:16 PM Viresh Kumar wrote:
-> On 19 March 2014 15:20, Srivatsa S. Bhat
+On 03/19/2014 07:05 PM, Viresh Kumar wrote:
+> On 19 March 2014 17:45, Srivatsa S. Bhat
 > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> > No, its not about burden. Its about the elegance of the design. We should
-> > not be overly "smart" in the cpufreq core. Hiding the synchronization inside
-> > the cpufreq core only encourages people to write buggy code in their drivers.
+>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+>> +       bool                    transition_ongoing; /* Tracks transition status */
+>> +       struct mutex            transition_lock;
+>> +       wait_queue_head_t       transition_wait;
 > 
-> What kind of buggy code can be there? They are supposed to call notifiers
-> in the order mentioned and so it shouldn't be a problem at all.. Don't know..
+> Similar to what I have done in my last version, why do you need
+> transition_ongoing and transition_wait? Simply work with
+> transition_lock? i.e. Acquire it for the complete transition sequence.
 > 
-> > Why don't we go with what Rafael suggested? We can have dedicated
-> > begin_transition() and end_transition() calls to demarcate the frequency
-> > transitions. That way, it makes it very clear how the synchronization is
-> > done. Of course, these functions would be provided (exported) by the cpufreq
-> > core, by implementing them using locks/counters/whatever.
-> >
-> > Basically what I'm arguing against, is the idea of having the cpufreq
-> > core figure out what the driver _intended_ to do, from inside the
-> > cpufreq_notify_transition() call.
-> >
-> > What I would prefer instead is to have the cpufreq driver do something
-> > like this:
-> >
-> > cpufreq_freq_transition_begin();
-> >
-> > cpufreq_notify_transition(CPUFREQ_PRECHANGE);
-> 
-> Why do we need two routines then? What about doing notification from
-> inside cpufreq_freq_transition_begin()?
 
-We can do that in my opinion.
+We *can't* acquire it for the complete transition sequence
+in case of drivers that do asynchronous notification, because
+PRECHANGE is done in one thread and POSTCHANGE is done in a
+totally different thread! You can't acquire a lock in one
+task and release it in a different task. That would be a
+fundamental violation of locking.
 
-> This is a burden for driver writers, who don't normally understand the
-> relevance of these calls in detail and may think, only the first one is
-> enough or the second one is..
-> 
-> Its better if they simply let the core that they are starting to do transitions,
-> i.e. cpufreq_freq_transition_begin() and then the core should send
-> notifications.
-> 
-> > //perform the frequency change
-> >
-> > cpufreq_notify_transition(CPUFREQ_POSTCHANGE);
-> >
-> > cpufreq_freq_transition_end();
-> >
-> > [ASYNC_NOTIFICATION drivers will invoke the last two functions in a
-> > separate context/thread.]
-> 
-> Same for the last two routines and yes they would be called from
-> separate thread for ASYNC_NOTIFICATION drivers..
+That's why I introduced the wait queue to help us create
+a "flow" which encompasses 2 different, but co-ordinating
+tasks. You simply can't do that elegantly by using plain
+locks alone.
 
-That'd be fine by me in principle.
+Regards,
+Srivatsa S. Bhat
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
