@@ -1,49 +1,56 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Remove unnecessary braces
-Date: Thu, 20 Mar 2014 05:36:36 +0530
-Message-ID: <CAKohpomLRH7QT71+N7_7AveKPU3rgQv37Ye6d=pUcKjC6shtEg@mail.gmail.com>
-References: <532A0D0C.50507@semaphore.gr>
-	<93042283.W9rbzHbJB2@vostro.rjw.lan>
-	<532A2759.1000708@semaphore.gr>
+Subject: Re: [RFC v3] cpufreq: Make sure frequency transitions are serialized
+Date: Thu, 20 Mar 2014 10:09:26 +0530
+Message-ID: <CAKohpon=VLfPiukzrtQOSVAQg-Z-Aq3+AkZ1myrE6XtVRMY8mQ@mail.gmail.com>
+References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
+	<532840FD.308@linux.vnet.ibm.com>
+	<CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com>
+	<53296870.5010505@linux.vnet.ibm.com>
+	<CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com>
+	<53298A7D.3080400@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <532A2759.1000708@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <53298A7D.3080400@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
 
-On 20 March 2014 04:55, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> I'm sorry for the inconvenience. I read again the CodingStyle (more carefully :) ).
-> I'm sending the corrected patch with the single case of unnecessary braces.
->
-> Thanks,
-> Stratos
->
-> ------------------------8<-----------------------
-> Remove unnecessary braces from a single statement.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
+On 19 March 2014 17:45, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index e3aa9de..220c4a9 100644
+> index 199b52b..e90388f 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1330,10 +1330,9 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->                 if (new_cpu >= 0) {
->                         update_policy_cpu(policy, new_cpu);
+> @@ -349,6 +349,38 @@ void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
+>  EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
 >
-> -                       if (!cpufreq_suspended) {
-> +                       if (!cpufreq_suspended)
->                                 pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
->                                          __func__, new_cpu, cpu);
-> -                       }
->                 }
->         }
+>
+> +void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
+> +               struct cpufreq_freqs *freqs, unsigned int state)
+> +{
+> +wait:
+> +       wait_event(&policy->transition_wait, !policy->transition_ongoing);
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I think its broken here. At this point another thread can come take lock,
+update transition_ongoing, send notification and finally unlock..
+
+And after that we can take the lock and send another notification..
+
+Correct?
+
+> +       if (!mutex_trylock(&policy->transition_lock))
+> +               goto wait;
+> +
+> +       policy->transition_ongoing++;
+
+s/++/ = true
+
+> +       cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
+> +
+> +       mutex_unlock(&policy->transition_lock);
+
+We can release the lock before sending notifications, its there just to
+protect transition_ongoing.
