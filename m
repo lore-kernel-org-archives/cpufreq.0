@@ -1,49 +1,78 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 15/16] cpufreq: intel-pstate: Use del_timer_sync in
- intel_pstate_cpu_exit()
-Date: Sun, 23 Mar 2014 15:09:32 -0000
-Message-ID: <20140323150754.272874059@linutronix.de>
-References: <20140323150557.288925975@linutronix.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline;
- filename=cpufreq-intel-pstate-use-del_timer_sync.patch
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 58001] "ondemand" CPU governor never raises frequency (Dell XPS
+ 12)
+Date: Sun, 23 Mar 2014 22:39:18 +0000
+Message-ID: <bug-58001-12968-mlkUG0oCMz@https.bugzilla.kernel.org/>
+References: <bug-58001-12968@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Julia Lawall <Julia.Lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, pm <linux-pm@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-58001-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-We are about to free the data structure. Make sure no timer callback
-is running. I might be paranoid, but the ->exit callback can be
-invoked from so many places, that it is not entirely clear whether
-del_timer is always called on the cpu on which it is enqueued.
+https://bugzilla.kernel.org/show_bug.cgi?id=58001
 
-While looking through the call sites I noticed, that
-cpufreq_init_policy() can fail and invoke cpufreq_driver->exit() but
-it does not return the failure and the callsite happily proceeds.
+Paul Johnson <pauljohn@ku.edu> changed:
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: cpufreq <cpufreq@vger.kernel.org>
-Cc: pm <linux-pm@vger.kernel.org>
----
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |pauljohn@ku.edu
 
- drivers/cpufreq/intel_pstate.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--- Comment #14 from Paul Johnson <pauljohn@ku.edu> ---
+I see problem too. May not be kernel, but in Ubuntu in particular. I think the
+up_threshold is set at 95, too high, and keeping it lower is a bit of a hassle.
 
-Index: tip/drivers/cpufreq/intel_pstate.c
-===================================================================
---- tip.orig/drivers/cpufreq/intel_pstate.c
-+++ tip/drivers/cpufreq/intel_pstate.c
-@@ -777,7 +777,7 @@ static int intel_pstate_cpu_exit(struct
- {
- 	int cpu = policy->cpu;
- 
--	del_timer(&all_cpu_data[cpu]->timer);
-+	del_timer_sync(&all_cpu_data[cpu]->timer);
- 	kfree(all_cpu_data[cpu]);
- 	all_cpu_data[cpu] = NULL;
- 	return 0;
+My system now:
 
+$ uname -a
+Linux dellap7 3.11.0-13-generic #20-Ubuntu SMP Wed Oct 23 07:38:26 UTC 2013
+x86_64 x86_64 x86_64 GNU/Linux
+
+CPU never goes fast in ondemand unless I do this:
+
+su -c  "echo -n 70 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold"
+
+I find 70 is low enough to solve the sluggishness problem in Ubuntu. 
+
+I wanted to make that permanent. Its not easy in newer Ununtu. I find that
+suggestions to edit /etc/sysfs.conf are unhelpful. I found one post that claims
+that the Ubuntu stack does not create /sys/devices/system/cpu/cpufreq/ondemand
+soon enough, so the sysfs adjustments have no effect. The best explanation I've
+found is #5 in this thread
+https://bugs.launchpad.net/ubuntu/+source/sysfsutils/+bug/955918.
+
+A suggestion is to insert this in /etc/rc.local, so it will run, or wait until
+the rest of the system has done what it is supposed to. I've not got advice
+from an expert on whether this is bad or good, but I'm doing it, following that
+example.
+
+until [ -d "/sys/devices/system/cpu/cpufreq/ondemand" ]; do
+            sleep 1
+done
+
+echo -n "70" > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
+
+Another thing users with same up_threshold problem might benefit from use of a 
+applet that can turn CPUs to performance mode instantly. It works in user
+space, no admin required (that was a new thing to me, anyway). Look for this:
+
+indicator-cpufreq 
+
+That's handy when you can't seem to get the CPUs to go fast. Performance mode
+makes a laptop hotter (in several senses :) ).
+
+From a user's point of view, this has all become very confusing. What is
+controlling speed now? There's no cpufreqd anymore? Some guidance from kernel
+experts would be pleasant. There were posts claiming that Intel discouraged
+ondemand, maybe that factors into problem (Intel Dev says "Stop using
+OnDemand!!!"
+https://bbs.archlinux.org/viewtopic.php?id=163524&p=2). I suppose that must
+have been bogus, since we are still using ondemand a year later. But not
+cpufreqd, so far as I can tell, in a fresh Ubuntu install.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
