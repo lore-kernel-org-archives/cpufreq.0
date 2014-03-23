@@ -1,39 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/3] cpufreq: Make sure frequency transitions are serialized
-Date: Sat, 22 Mar 2014 09:18:37 +0530
-Message-ID: <CAKohpokYbnt0Yv2txN6qfHcdeaLeE5owsMWsTsKbz7cv63S2bQ@mail.gmail.com>
-References: <cover.1395379422.git.viresh.kumar@linaro.org>
-	<f6116069b730c0c3a74ff627fa818b98dc4f1491.1395379422.git.viresh.kumar@linaro.org>
-	<532BEE64.3090501@linux.vnet.ibm.com>
-	<CAKohpom8ZHXxVmuSHYL5nyZzNrK8EFNVdx5XJdJxiHWPb13aeg@mail.gmail.com>
-	<532BFB77.5060107@linux.vnet.ibm.com>
-	<CAKohpomY4xf4tOFTGt-ykE7sUi4ks7vW5qp8ytgopm6CiY9QRg@mail.gmail.com>
-	<20140321110559.GB13596@arm.com>
-	<532C2160.4030909@linux.vnet.ibm.com>
-	<20140321180723.GM13596@arm.com>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140321180723.GM13596@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 15/16] cpufreq: intel-pstate: Use del_timer_sync in
+ intel_pstate_cpu_exit()
+Date: Sun, 23 Mar 2014 15:09:32 -0000
+Message-ID: <20140323150754.272874059@linutronix.de>
+References: <20140323150557.288925975@linutronix.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline;
+ filename=cpufreq-intel-pstate-use-del_timer_sync.patch
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Julia Lawall <Julia.Lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, pm <linux-pm@vger.kernel.org>
 
-On 21 March 2014 23:37, Catalin Marinas <catalin.marinas@arm.com> wrote:
-> smp_mb() is all about relative ordering. So if you want memory accesses
-> in post_transition() to be visible to other observers before
-> transition_ongoing = false, you also need to make sure that the readers
-> of transition_ongoing have a barrier before subsequent memory accesses.
+We are about to free the data structure. Make sure no timer callback
+is running. I might be paranoid, but the ->exit callback can be
+invoked from so many places, that it is not entirely clear whether
+del_timer is always called on the cpu on which it is enqueued.
 
-I don't think this is a requirement in our case. We are just trying to serialize
-frequency transitions here and just want to make sure that second one
-start after first one is over. And so this query.
+While looking through the call sites I noticed, that
+cpufreq_init_policy() can fail and invoke cpufreq_driver->exit() but
+it does not return the failure and the callsite happily proceeds.
 
-> OK, I start to get it. Is there a risk of missing a wake_up event? E.g.
-> one thread waking up earlier, noticing that transition is in progress
-> and waiting indefinitely?
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: cpufreq <cpufreq@vger.kernel.org>
+Cc: pm <linux-pm@vger.kernel.org>
+---
 
-I don't think so. The only requirement is that second thread wakes up
-after this variable is set to false.
+ drivers/cpufreq/intel_pstate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: tip/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- tip.orig/drivers/cpufreq/intel_pstate.c
++++ tip/drivers/cpufreq/intel_pstate.c
+@@ -777,7 +777,7 @@ static int intel_pstate_cpu_exit(struct
+ {
+ 	int cpu = policy->cpu;
+ 
+-	del_timer(&all_cpu_data[cpu]->timer);
++	del_timer_sync(&all_cpu_data[cpu]->timer);
+ 	kfree(all_cpu_data[cpu]);
+ 	all_cpu_data[cpu] = NULL;
+ 	return 0;
+
