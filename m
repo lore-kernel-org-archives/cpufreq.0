@@ -1,52 +1,29 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] intel_pstate:  Use del_timer_sync in intel_pstate_cpu_stop
-Date: Mon, 24 Mar 2014 20:24:29 +0530
-Message-ID: <53304725.3000900@linux.vnet.ibm.com>
-References: <1395672089-19336-1-git-send-email-dirk.j.brandewie@intel.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 72211] intel_pstate Haswell CPU is not entering hardware
+ package idle state
+Date: Mon, 24 Mar 2014 21:14:19 +0000
+Message-ID: <bug-72211-12968-fbBidg7uKT@https.bugzilla.kernel.org/>
+References: <bug-72211-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1395672089-19336-1-git-send-email-dirk.j.brandewie@intel.com>
+In-Reply-To: <bug-72211-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: dirk.brandewie@gmail.com
-Cc: linux-kernel@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>
+To: cpufreq@vger.kernel.org
 
-On 03/24/2014 08:11 PM, dirk.brandewie@gmail.com wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> 
-> Ensure that no timer callback is running since we are about to free
-> the timer structure.  We cannot guarantee that the call back is called
-> on the CPU where the timer is running.
-> 
-> Reported-by: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: cpufreq <cpufreq@vger.kernel.org>
+https://bugzilla.kernel.org/show_bug.cgi?id=72211
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+--- Comment #2 from opensource@macht-blau.org ---
+the onboard network device (realtek r8168) was the issue. I replaced the
+vanilla kernel module (r8169) with realteks r8168. Once the monitor is switched
+off via dpms i reach 97% package c state pc6. 
 
-Regards,
-Srivatsa S. Bhat
+I assume the r8169 does not support aspm. 
 
-> ---
->  drivers/cpufreq/intel_pstate.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index e9092fd..a4a9ba5 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -780,7 +780,7 @@ static int intel_pstate_cpu_stop(struct cpufreq_policy *policy)
-> 
->  	pr_info("intel_pstate CPU %d exiting\n", cpu_num);
-> 
-> -	del_timer(&all_cpu_data[cpu_num]->timer);
-> +	del_timer_sync(&all_cpu_data[cpu_num]->timer);
->  	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
->  	kfree(all_cpu_data[cpu_num]);
->  	all_cpu_data[cpu_num] = NULL;
-> 
+Should this bug be closed or moved to drivers?
 
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
