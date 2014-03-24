@@ -1,73 +1,54 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [patch 15/16] cpufreq: intel-pstate: Use del_timer_sync in intel_pstate_cpu_exit()
-Date: Mon, 24 Mar 2014 07:18:01 -0700
-Message-ID: <53303E99.70509@gmail.com>
-References: <20140323150557.288925975@linutronix.de> <20140323150754.272874059@linutronix.de> <2311758.L3eN8OTkba@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+From: dirk.brandewie@gmail.com
+Subject: [PATCH] intel_pstate:  Use del_timer_sync in intel_pstate_cpu_stop
+Date: Mon, 24 Mar 2014 07:41:29 -0700
+Message-ID: <1395672089-19336-1-git-send-email-dirk.j.brandewie@intel.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=tN2WiQzCpTVOZNgDYrbpX+7cqKXD++piyb/xs5RHS80=;
-        b=FvcRkLu4aoa4zhf1mZ7wO9PxnCgqei6ARy6Tx87WI7UXrR59Kwa1SDHe8UCeIDQqD5
-         J5NiGYBVH/6uoITJs+IZHVNtH9dm+rHBoIuskhuyxdpJGBk/UiXpX2nlFVVtou/vyEO4
-         CVBdNTOMZsOSYi8sDXJV1/0amreVXx9bg78xzA0GBUe6t/ioFBcYRyqxU/qJX7nC+s8r
-         tFdBP9osjUb0TzOeH3KsD2rOsazfIW6m7+bnv5wz54/Zz0umq8wZ2JkssouCMt4przKT
-         of00ToG5Z86JsUdcNAeQRD7jUZEXOhg2ZinDAr2G6kdU0hvwKfURfiRmIPaDK1+r94VG
-         6FCQ==
-In-Reply-To: <2311758.L3eN8OTkba@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+        h=from:to:cc:subject:date:message-id;
+        bh=3i9apTmFf/0aBMyUdCVD8DHHLE+pz86H+uOVLOJki2U=;
+        b=ZdLUn7oSe2BdNvNSrNJ7kRzqdSw3UEusELsoAL+pEc/zGEzPMDSQ50Atu/iaKgQ4Lz
+         wZWTkKidQSv5uahF20tMZjC8mJGEmS4h1GAYhPcc7QJWZIXPFdOzUSPvlIc4M3x4EOvq
+         oo7ALIvCuc3nm56L9snfpLganzTLatm/eZehov0QnXkLoapzfsRhO7/tTNrZzDdui2bI
+         2uB8s1XbA1QCWbqRtqbyTSZWAbASjd1aeag3gtHtnRXkuP9bVGC/LYHzf0+zO0jHUTmh
+         WG0pq+nV4K4IyoNmh3Mh0Ss7/z/tHQmH5LpufrkE8noyE1B03KO97T8XHd3S3WgtA/Oo
+         5ihg==
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, dirk.j.brandewie@intel.com
-Cc: dirk.brandewie@gmail.com, LKML <linux-kernel@vger.kernel.org>, Julia Lawall <Julia.Lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>, cpufreq <cpufreq@vger.kernel.org>, pm <linux-pm@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>
 
-Hi Thomas,
-On 03/23/2014 06:56 PM, Rafael J. Wysocki wrote:
-> On Sunday, March 23, 2014 03:09:32 PM Thomas Gleixner wrote:
->> We are about to free the data structure. Make sure no timer callback
->> is running. I might be paranoid, but the ->exit callback can be
->> invoked from so many places, that it is not entirely clear whether
->> del_timer is always called on the cpu on which it is enqueued.
->>
->> While looking through the call sites I noticed, that
->> cpufreq_init_policy() can fail and invoke cpufreq_driver->exit() but
->> it does not return the failure and the callsite happily proceeds.
->>
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-The call to del_timer() has been moved to a new callback in material
-in Rafaels pull request for v3.15.
+Ensure that no timer callback is running since we are about to free
+the timer structure.  We cannot guarantee that the call back is called
+on the CPU where the timer is running.
 
-I will send a patch adding this change to the v3.15 material.
+Reported-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: cpufreq <cpufreq@vger.kernel.org>
+---
+ drivers/cpufreq/intel_pstate.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---Dirk
->> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: cpufreq <cpufreq@vger.kernel.org>
->> Cc: pm <linux-pm@vger.kernel.org>
->
-> Dirk?
->
->> ---
->>
->>   drivers/cpufreq/intel_pstate.c |    2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> Index: tip/drivers/cpufreq/intel_pstate.c
->> ===================================================================
->> --- tip.orig/drivers/cpufreq/intel_pstate.c
->> +++ tip/drivers/cpufreq/intel_pstate.c
->> @@ -777,7 +777,7 @@ static int intel_pstate_cpu_exit(struct
->>   {
->>   	int cpu = policy->cpu;
->>
->> -	del_timer(&all_cpu_data[cpu]->timer);
->> +	del_timer_sync(&all_cpu_data[cpu]->timer);
->>   	kfree(all_cpu_data[cpu]);
->>   	all_cpu_data[cpu] = NULL;
->>   	return 0;
->>
->>
->
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index e9092fd..a4a9ba5 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -780,7 +780,7 @@ static int intel_pstate_cpu_stop(struct cpufreq_policy *policy)
+ 
+ 	pr_info("intel_pstate CPU %d exiting\n", cpu_num);
+ 
+-	del_timer(&all_cpu_data[cpu_num]->timer);
++	del_timer_sync(&all_cpu_data[cpu_num]->timer);
+ 	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
+ 	kfree(all_cpu_data[cpu_num]);
+ 	all_cpu_data[cpu_num] = NULL;
+-- 
+1.8.3.1
+
