@@ -1,31 +1,45 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
 Subject: Re: [PATCH] cpufreq: don't print value of .driver_data from core
-Date: Thu, 27 Mar 2014 15:49:29 +0530
-Message-ID: <5333FB31.7080602@linux.vnet.ibm.com>
+Date: Thu, 27 Mar 2014 16:18:42 +0530
+Message-ID: <20140327104842.GB27777@in.ibm.com>
 References: <2490cd0aaeaaeb88131c8089d491c485f08da5da.1395914766.git.viresh.kumar@linaro.org>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <2490cd0aaeaaeb88131c8089d491c485f08da5da.1395914766.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com
 
-On 03/27/2014 03:37 PM, Viresh Kumar wrote:
+
+On Thu, Mar 27, 2014 at 03:37:22PM +0530, Viresh Kumar wrote:
 > CPUFreq core doesn't control value of .driver_data and this field is completely
 > driver specific. This can contain any value and not only indexes. For most of
 > the drivers, which aren't using this field, its value is zero. So, printing this
 > from core doesn't make any sense. Don't print it.
+
+So after this patch, driver_data is only going to be used by drivers
+which want an "unsigned int" value to be saved along with the
+frequency in the frequency_table and for those who want to overload
+its interpretation to indicate BOOST.
+
+From the core's stand point, it is useful only for determining whether
+a frequency is BOOST frequency or not. 
+
+So, wouldn't it be logical to allow drivers maintain their own driver
+data since the core is anyway not interested in it, and change this
+.driver_data to "flags" or some such which can indicate boost ?
+
+--
+Thanks and Regards
+gautham.
+
 > 
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-
-Regards,
-Srivatsa S. Bhat
-
 > ---
 >  drivers/cpufreq/freq_table.c | 7 +++----
 >  1 file changed, 3 insertions(+), 4 deletions(-)
@@ -55,5 +69,7 @@ Srivatsa S. Bhat
 > 
 >  	return 0;
 >  }
+> -- 
+> 1.7.12.rc2.18.g61b472e
 > 
 
