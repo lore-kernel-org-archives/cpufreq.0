@@ -1,72 +1,51 @@
-From: rosslagerwall@gmail.com
-Subject: Re: [stable request <=3.7] acpi-cpufreq: set current frequency based
- on target P-State
-Date: Wed, 26 Mar 2014 07:22:32 +0000
-Message-ID: <20140326072232.GA777@hobo.lan>
-References: <20131220081912.GA13684@hobo.Home>
- <1395785057-28903-1-git-send-email-vlee@twopensource.com>
- <20140325221803.GA32518@hobo.lan>
- <CAHTgTXVEjNUMkrTNSyu+TtXc+Ac5PsD8Sp4m-7Md6UNwQfwkJQ@mail.gmail.com>
-Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        bh=Hte/3AEMBe8cVJiACb0RA0LGuhG/eYJmFGiRBWh6qb8=;
-        b=clpVdKA9mEY+YyxT7IhicO4nq3Z4h01LaeWp7r+sl5NPX10r8mW8Oreu8cU1VKghTz
-         0sD94v0MNEFVTD3s9+f3XWKyCUqykH7LTh2RxzMuLnewuDPMima47ETV9ItFw0NQdwiw
-         K2st3JJQ6iL1rfCASGwgVOnczrjckxqGfs5IGAprtiDQaUpBIQUSlS8JPPqZmBQZFdl9
-         8EBxAMYDmW5jnLuCOHbgHvfB+muthMxCfpiuheMSTc/xGPn/aNEiTmzGuwWsX7eH0dlV
-         gjcBCp6ojn4mIbhAvWr/Lysm1aEdux0vkfvYhm5G0hCWsQJg7BBAL/weq7StFz3fH+fg
-         eiAg==
-Content-Disposition: inline
-In-Reply-To: <CAHTgTXVEjNUMkrTNSyu+TtXc+Ac5PsD8Sp4m-7Md6UNwQfwkJQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: don't print value of .driver_data from core
+Date: Thu, 27 Mar 2014 15:37:22 +0530
+Message-ID: <2490cd0aaeaaeb88131c8089d491c485f08da5da.1395914766.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Vinson Lee <vlee@twopensource.com>
-Cc: stable@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Shatil Rafiullah <srafiullah@twopensource.com>
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tue, Mar 25, 2014 at 03:53:40PM -0700, Vinson Lee wrote:
-> On Tue, Mar 25, 2014 at 3:18 PM,  <rosslagerwall@gmail.com> wrote:
-> > On Tue, Mar 25, 2014 at 03:04:16PM -0700, Vinson Lee wrote:
-> >> Hi.
-> >>
-> >> Please backport upstream commit 8673b83bf2f013379453b4779047bf3c6ae387e4
-> >> "acpi-cpufreq: set current frequency based on target P-State" to stable
-> >> kernels 3.7 and earlier. This patch enables the kernel to control
-> >> P-states on several platforms. Without this patch, the kernel was unable
-> >> to control P-states on the same platforms.
-> >>
-> >> The upstream patch cleanly applies to 3.7.
-> >>
-> >> A backported patch is needed with the removal of SYSTEM_AMD_MSR_CAPABLE
-> >> for kernels 3.6 and earlier.
-> >>
-> >
-> > I seem to recall that the problem was a regression introduced by commit
-> > 5a1c0228 (cpufreq: Avoid calling cpufreq driver's target() routine if
-> > target_freq == policy->cur) which was introduced in the 3.8 cycle.  Are
-> > you sure it is necessary for kernels < 3.8?
-> >
-> > Regards
-> > --
-> > Ross Lagerwall
-> 
-> 
-> This specific patch allows P-states to work with the 3.4 kernel on
-> several hardware platforms.
-> 
-> Perhaps this is not the correct patch to backport. However, P-states
-> are not working properly with the 3.4 kernel, even though it does not
-> have the regression commit 5a1c0228 "cpufreq: Avoid calling cpufreq
-> driver's target() routine if target_freq == policy->cur" backported.
-> 
+CPUFreq core doesn't control value of .driver_data and this field is completely
+driver specific. This can contain any value and not only indexes. For most of
+the drivers, which aren't using this field, its value is zero. So, printing this
+from core doesn't make any sense. Don't print it.
 
-Fair enough,
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/freq_table.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-Cheers
+diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+index 8e54f97..f002272 100644
+--- a/drivers/cpufreq/freq_table.c
++++ b/drivers/cpufreq/freq_table.c
+@@ -36,8 +36,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+ 		    && table[i].driver_data == CPUFREQ_BOOST_FREQ)
+ 			continue;
+ 
+-		pr_debug("table entry %u: %u kHz, %u driver_data\n",
+-					i, freq, table[i].driver_data);
++		pr_debug("table entry %u: %u kHz\n", i, freq);
+ 		if (freq < min_freq)
+ 			min_freq = freq;
+ 		if (freq > max_freq)
+@@ -175,8 +174,8 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+ 	} else
+ 		*index = optimal.driver_data;
+ 
+-	pr_debug("target is %u (%u kHz, %u)\n", *index, table[*index].frequency,
+-		table[*index].driver_data);
++	pr_debug("target index is %u, freq is:%u kHz\n", *index,
++		 table[*index].frequency);
+ 
+ 	return 0;
+ }
 -- 
-Ross Lagerwall
+1.7.12.rc2.18.g61b472e
+
