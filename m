@@ -1,161 +1,90 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: use kzalloc() to allocate memory for cpufreq_frequency_table
-Date: Fri, 28 Mar 2014 15:44:24 +0530
-Message-ID: <f6aa622dc5acfd3ab9b1360973c0d15b3972c6b6.1396001532.git.viresh.kumar@linaro.org>
-References: <b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH] cpufreq: create another field .flags in
+ cpufreq_frequency_table
+Date: Fri, 28 Mar 2014 11:19:43 +0100
+Message-ID: <20140328111943.272d0bea@amdc2363>
+References: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
+ <b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
 
-Few drivers are using kmalloc() to allocate memory for frequency tables and once
-we have an additional field '.flags' in 'struct cpufreq_frequency_table', these
-might become unstable. Better get these fixed by replacing kmalloc() by
-kzalloc() instead.
+Hi Viresh,
 
-Along with that we also remove use of .driver_data from SPEAr driver as it
-doesn't use it at all. Also, writing zero to .driver_data is not required for
-powernow-k8 as it is already zero.
+> diff --git a/drivers/cpufreq/exynos4x12-cpufreq.c
+> b/drivers/cpufreq/exynos4x12-cpufreq.c index 7c11ace..8c4c6a5 100644
+> --- a/drivers/cpufreq/exynos4x12-cpufreq.c
+> +++ b/drivers/cpufreq/exynos4x12-cpufreq.c
+> @@ -30,21 +30,21 @@ static unsigned int exynos4x12_volt_table[] = {
+>  };
+> 
+>  static struct cpufreq_frequency_table exynos4x12_freq_table[] = {
+> -       {CPUFREQ_BOOST_FREQ, 1500 * 1000},
+> -       {L1, 1400 * 1000},
+> -       {L2, 1300 * 1000},
+> -       {L3, 1200 * 1000},
+> -       {L4, 1100 * 1000},
+> -       {L5, 1000 * 1000},
+> -       {L6,  900 * 1000},
+> -       {L7,  800 * 1000},
+> -       {L8,  700 * 1000},
+> -       {L9,  600 * 1000},
+> -       {L10, 500 * 1000},
+> -       {L11, 400 * 1000},
+> -       {L12, 300 * 1000},
+> -       {L13, 200 * 1000},
+> -       {0, CPUFREQ_TABLE_END},
+> +       {CPUFREQ_BOOST_FREQ, 0, 1500 * 1000},
+> +       {0, L1, 1400 * 1000},
+> +       {0, L2, 1300 * 1000},
+> +       {0, L3, 1200 * 1000},
+> +       {0, L4, 1100 * 1000},
+> +       {0, L5, 1000 * 1000},
+> +       {0, L6,  900 * 1000},
+> +       {0, L7,  800 * 1000},
+> +       {0, L8,  700 * 1000},
+> +       {0, L9,  600 * 1000},
+> +       {0, L10, 500 * 1000},
+> +       {0, L11, 400 * 1000},
+> +       {0, L12, 300 * 1000},
+> +       {0, L13, 200 * 1000},
+> +       {0, 0, CPUFREQ_TABLE_END},
+>  };
 
-Reported-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-@Rafael: Please apply this one before:
+Looks correct for me.
 
-http://permalink.gmane.org/gmane.linux.kernel/1673994
+One little remark - since cpufreq_frequency_tables are defined as
+static it seems like we don't need to explicitly specify the 0, for
+flags field.
 
-so that git bisect doesn't break. Though the chances of this field getting
-initialized to a value equal to BOOST, i.e. 0x1 are very rare.
+Something like {, L13, 200 * 1000}, shall be enough.
 
- drivers/cpufreq/acpi-cpufreq.c      | 2 +-
- drivers/cpufreq/ia64-acpi-cpufreq.c | 2 +-
- drivers/cpufreq/longhaul.c          | 2 +-
- drivers/cpufreq/powernow-k8.c       | 5 ++---
- drivers/cpufreq/s3c24xx-cpufreq.c   | 4 ++--
- drivers/cpufreq/spear-cpufreq.c     | 7 ++-----
- 6 files changed, 9 insertions(+), 13 deletions(-)
+> +/* Special Values of .flags field */
+> +#define CPUFREQ_BOOST_FREQ     0x1
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index d5eaedb..000e4e0 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -754,7 +754,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_unreg;
- 	}
- 
--	data->freq_table = kmalloc(sizeof(*data->freq_table) *
-+	data->freq_table = kzalloc(sizeof(*data->freq_table) *
- 		    (perf->state_count+1), GFP_KERNEL);
- 	if (!data->freq_table) {
- 		result = -ENOMEM;
-diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
-index beb191b..c30aaa6 100644
---- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-+++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-@@ -254,7 +254,7 @@ acpi_cpufreq_cpu_init (
- 	}
- 
- 	/* alloc freq_table */
--	data->freq_table = kmalloc(sizeof(*data->freq_table) *
-+	data->freq_table = kzalloc(sizeof(*data->freq_table) *
- 	                           (data->acpi_data.state_count + 1),
- 	                           GFP_KERNEL);
- 	if (!data->freq_table) {
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index 5c440f8..d00e5d1 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -475,7 +475,7 @@ static int longhaul_get_ranges(void)
- 		return -EINVAL;
- 	}
- 
--	longhaul_table = kmalloc((numscales + 1) * sizeof(*longhaul_table),
-+	longhaul_table = kzalloc((numscales + 1) * sizeof(*longhaul_table),
- 			GFP_KERNEL);
- 	if (!longhaul_table)
- 		return -ENOMEM;
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index 770a9e1..1b6ae6b 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -623,7 +623,7 @@ static int fill_powernow_table(struct powernow_k8_data *data,
- 	if (check_pst_table(data, pst, maxvid))
- 		return -EINVAL;
- 
--	powernow_table = kmalloc((sizeof(*powernow_table)
-+	powernow_table = kzalloc((sizeof(*powernow_table)
- 		* (data->numps + 1)), GFP_KERNEL);
- 	if (!powernow_table) {
- 		printk(KERN_ERR PFX "powernow_table memory alloc failure\n");
-@@ -793,7 +793,7 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
- 	}
- 
- 	/* fill in data->powernow_table */
--	powernow_table = kmalloc((sizeof(*powernow_table)
-+	powernow_table = kzalloc((sizeof(*powernow_table)
- 		* (data->acpi_data.state_count + 1)), GFP_KERNEL);
- 	if (!powernow_table) {
- 		pr_debug("powernow_table memory alloc failure\n");
-@@ -810,7 +810,6 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
- 
- 	powernow_table[data->acpi_data.state_count].frequency =
- 		CPUFREQ_TABLE_END;
--	powernow_table[data->acpi_data.state_count].driver_data = 0;
- 	data->powernow_table = powernow_table;
- 
- 	if (cpumask_first(cpu_core_mask(data->cpu)) == data->cpu)
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-index a3dc192..be1b2b5 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-@@ -586,7 +586,7 @@ static int s3c_cpufreq_build_freq(void)
- 	size = cpu_cur.info->calc_freqtable(&cpu_cur, NULL, 0);
- 	size++;
- 
--	ftab = kmalloc(sizeof(*ftab) * size, GFP_KERNEL);
-+	ftab = kzalloc(sizeof(*ftab) * size, GFP_KERNEL);
- 	if (!ftab) {
- 		printk(KERN_ERR "%s: no memory for tables\n", __func__);
- 		return -ENOMEM;
-@@ -664,7 +664,7 @@ int __init s3c_plltab_register(struct cpufreq_frequency_table *plls,
- 
- 	size = sizeof(*vals) * (plls_no + 1);
- 
--	vals = kmalloc(size, GFP_KERNEL);
-+	vals = kzalloc(size, GFP_KERNEL);
- 	if (vals) {
- 		memcpy(vals, plls, size);
- 		pll_reg = vals;
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index 4cfdcff..3867839 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -195,18 +195,15 @@ static int spear_cpufreq_probe(struct platform_device *pdev)
- 	cnt = prop->length / sizeof(u32);
- 	val = prop->value;
- 
--	freq_tbl = kmalloc(sizeof(*freq_tbl) * (cnt + 1), GFP_KERNEL);
-+	freq_tbl = kzalloc(sizeof(*freq_tbl) * (cnt + 1), GFP_KERNEL);
- 	if (!freq_tbl) {
- 		ret = -ENOMEM;
- 		goto out_put_node;
- 	}
- 
--	for (i = 0; i < cnt; i++) {
--		freq_tbl[i].driver_data = i;
-+	for (i = 0; i < cnt; i++)
- 		freq_tbl[i].frequency = be32_to_cpup(val++);
--	}
- 
--	freq_tbl[i].driver_data = i;
- 	freq_tbl[i].frequency = CPUFREQ_TABLE_END;
- 
- 	spear_cpufreq.freq_tbl = freq_tbl;
+Maybe (1 << 0) to explicitly show that those are flags.
+
+> 
+>  struct cpufreq_frequency_table {
+> +       unsigned int    flags;
+>         unsigned int    driver_data; /* driver specific data, not
+
+The driver_data shall be changed to int. However I suppose that it will
+be done at separate patch.
+
+> used by core */ unsigned int    frequency; /* kHz - doesn't need to
+> be in ascending
+>                                     * order */
+
 -- 
-1.7.12.rc2.18.g61b472e
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
