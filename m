@@ -1,84 +1,79 @@
-From: Jean Delvare <jdelvare@suse.de>
-Subject: Re: Move of powerpc/cell cpufreq drivers
-Date: Fri, 28 Mar 2014 19:44:49 +0100
-Message-ID: <1396032289.8076.22.camel@chaos.site>
-References: <20140328102616.20b45a0a@endymion.delvare>
-	 <201403281902.33169.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201403281902.33169.arnd@arndb.de>
-Sender: cpufreq-owner@vger.kernel.org
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v5 0/3] powernv,cpufreq: Dynamic Frequency Scaling support
+Date: Sat, 29 Mar 2014 01:41:21 +0530
+Message-ID: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, svaidy@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Hi Arnd,
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Thanks for the quick reply.
+Hi,
 
-Le Friday 28 March 2014 =C3=A0 19:02 +0100, Arnd Bergmann a =C3=A9crit =
-:
-> On Friday 28 March 2014, Jean Delvare wrote:
->=20
-> > The current situation is kind of odd, because CPU_FREQ_CBE_PMI (boo=
-l)
-> > depends on CPU_FREQ_CBE (tristate) so it is possible to have
-> > CPU_FREQ_CBE=3Dm and CPU_FREQ_CBE_PMI=3Dy. If ppc_cbe_cpufreq_pmi r=
-eally
-> > depends on ppc_cbe_cpufreq, then that will fail, as ppc_cbe_cpufreq=
- as
-> > a module may not be loaded when ppc_cbe_cpufreq_pmi is initialized.=
- The
-> > compiler would complain about missing symbols. So I suspect this
-> > dependency doesn't actually exist, otherwise after one year someone
-> > would have noticed the build breakage, right?
->=20
-> I believe CPU_FREQ_CBE can be built with support for CPU_FREQ_CBE_PMI
-> or without, but if the PMI code is a module, then CPU_FREQ_CBE
-> cannot be 'y'.=09
->=20
-> > As a conclusion I believe the following changes should be applied:
-> > * CPU_FREQ_CBE_PMI should be changed to a tristate.
-> > * CPU_FREQ_CBE_PMI should not depend on CPU_FREQ_CBE.
-> >=20
-> > I can write and submit the patches once it is confirmed that this
-> > changes are the right way to fix the problem.
->=20
-> If you do this, you should also add
->=20
-> 	depends on CPU_FREQ_CBE_PMI || !CPU_FREQ_CBE_PMI
->=20
-> to the CPU_FREQ_CBE option, to correctly handle the dependency.
+This is v5 of the patchset to enable dynamic frequency scaling on IBM
+PowerNV platforms. This patchset does address all the review comments
+obtained for v4 (which can be found at [1]).
 
-Ah, my bad, I thought both modules were more or less independent, I
-didn't realize ppc_cbe_cpufreq_pmi was actually a helper "module" for
-ppc_cbe_cpufreq when enabled.
+Changes from v4:
 
-Thinking about it some more, I think this would be much more simple to
-build ppc_cbe_cpufreq_pmi.c as an object that would part of
-ppc_cbe_cpufreq.ko. That is, build everything as a single module in the
-end. That would solve the cross-dependency issue, and the code in
-ppc_cbe_cpufreq_pmi would no longer have to be built-in.
+    * Created a separate patch to select the CPUFreq related Config
+      options for PowerNV
 
-But well, I don't really have the time to look into this, especially as
-I don't even have a powerpc machine at hand to test the changes. So if
-nobody cares, things will have to stay the way they are.
+    * Dropped the per-core locking hunks in
+      drivers/cpufreq/powernv-cpufreq.c since the CPUFreq core takes
+      care of the for us after the following commit which is present in
+      linux-next:
 
-> I don't actually see a problem with the current code, other than
-> that CPU_FREQ_CBE_PMI could in theory be a module. This code is
-> used only for an IBM machine that has been end-of-service for
-> a couple of years. If anyone still wants to build kernels for
-> it, they probably want it built-in anyway, and not have
-> the same kernel run on other machines.
+	commit 12478cf0c55e5969f740bb38a24b1a0104ae18d8	  
+      	Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+        Date:   Mon Mar 24 13:35:44 2014 +0530
 
-Thanks for pointing this out. I don't know much about powerpc hardware
-so I didn't realize that. We indeed ended up disabling this driver
-altogether in our default ppc kernel config. Which was the easiest way
-to solve our problem after all :-)
+       	cpufreq: Make sure frequency transitions are serialized
 
---=20
-Jean Delvare
-SUSE L3 Support
+    * [PATCH v5 3/3] gets rid of the powernv_pstate_ids[] array that
+      was being used to record the pstate ids. After the following
+      patch it is safe to use cpufreq_frequency_table.driver_data
+      since it is opaque to the cpufreq core: 
+
+      	From: Viresh Kumar <viresh.kumar@linaro.org>
+	Date: 2014-03-28 13:53:47
+	url: http://marc.info/?l=linux-pm&m=139601416804702&w=2
+	    
+	cpufreq: create another field .flags in cpufreq_frequency_table
+
+The patchset is based on the commit
+201544be8c37dffbf069bb5fc9edb5674f8c1754 of the linux-next tree.
+
+While all the patches in the patchset apply cleanly on linux-next,
+[PATCH v5 3/3] requires the Viresh's patch that was mentioned
+above. Otherwise, the frequency corresponding to pstate id -3 will be
+omited while reporting the "scaling_available_frequencies" in sysfs.
+
+[1]: http://marc.info/?l=linux-pm&m=139585297620612&w=2
+
+Gautham R. Shenoy (2):
+  powernv, cpufreq: Select CPUFreq related Kconfig options for powernv
+  powernv,cpufreq: Use cpufreq_frequency_table.driver_data to store
+    pstate ids
+
+Vaidyanathan Srinivasan (1):
+  powernv, cpufreq: cpufreq driver for powernv platform
+
+ arch/powerpc/configs/pseries_defconfig    |   1 +
+ arch/powerpc/configs/pseries_le_defconfig |   1 +
+ arch/powerpc/include/asm/reg.h            |   4 +
+ arch/powerpc/platforms/powernv/Kconfig    |   6 +
+ drivers/cpufreq/Kconfig.powerpc           |   8 +
+ drivers/cpufreq/Makefile                  |   1 +
+ drivers/cpufreq/powernv-cpufreq.c         | 341 ++++++++++++++++++++++++++++++
+ 7 files changed, 362 insertions(+)
+ create mode 100644 drivers/cpufreq/powernv-cpufreq.c
+
+-- 
+1.8.3.1
 
