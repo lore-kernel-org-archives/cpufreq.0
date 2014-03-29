@@ -1,67 +1,94 @@
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v5 1/3] powernv, cpufreq: Select CPUFreq related Kconfig options for powernv
-Date: Sat, 29 Mar 2014 01:41:22 +0530
-Message-ID: <1396037484-23907-2-git-send-email-ego@linux.vnet.ibm.com>
-References: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Move of powerpc/cell cpufreq drivers
+Date: Sat, 29 Mar 2014 03:46:16 +0100
+Message-ID: <201403290346.17069.arnd@arndb.de>
+References: <20140328102616.20b45a0a@endymion.delvare> <201403281902.33169.arnd@arndb.de> <1396032289.8076.22.camel@chaos.site>
+Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1396032289.8076.22.camel@chaos.site>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, svaidy@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Content-Type: Text/Plain; charset="utf-8"
+To: Jean Delvare <jdelvare@suse.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Friday 28 March 2014, Jean Delvare wrote:
+> Le Friday 28 March 2014 =C3=A0 19:02 +0100, Arnd Bergmann a =C3=A9cri=
+t :
+> > On Friday 28 March 2014, Jean Delvare wrote:
+> >=20
+> > > The current situation is kind of odd, because CPU_FREQ_CBE_PMI (b=
+ool)
+> > > depends on CPU_FREQ_CBE (tristate) so it is possible to have
+> > > CPU_FREQ_CBE=3Dm and CPU_FREQ_CBE_PMI=3Dy. If ppc_cbe_cpufreq_pmi=
+ really
+> > > depends on ppc_cbe_cpufreq, then that will fail, as ppc_cbe_cpufr=
+eq as
+> > > a module may not be loaded when ppc_cbe_cpufreq_pmi is initialize=
+d. The
+> > > compiler would complain about missing symbols. So I suspect this
+> > > dependency doesn't actually exist, otherwise after one year someo=
+ne
+> > > would have noticed the build breakage, right?
+> >=20
+> > I believe CPU_FREQ_CBE can be built with support for CPU_FREQ_CBE_P=
+MI
+> > or without, but if the PMI code is a module, then CPU_FREQ_CBE
+> > cannot be 'y'.       =20
+> >=20
+> > > As a conclusion I believe the following changes should be applied=
+:
+> > > * CPU_FREQ_CBE_PMI should be changed to a tristate.
+> > > * CPU_FREQ_CBE_PMI should not depend on CPU_FREQ_CBE.
+> > >=20
+> > > I can write and submit the patches once it is confirmed that this
+> > > changes are the right way to fix the problem.
+> >=20
+> > If you do this, you should also add
+> >=20
+> >       depends on CPU_FREQ_CBE_PMI || !CPU_FREQ_CBE_PMI
+> >=20
+> > to the CPU_FREQ_CBE option, to correctly handle the dependency.
+>=20
+> Ah, my bad, I thought both modules were more or less independent, I
+> didn't realize ppc_cbe_cpufreq_pmi was actually a helper "module" for
+> ppc_cbe_cpufreq when enabled.
+>=20
+> Thinking about it some more, I think this would be much more simple t=
+o
+> build ppc_cbe_cpufreq_pmi.c as an object that would part of
+> ppc_cbe_cpufreq.ko. That is, build everything as a single module in t=
+he
+> end. That would solve the cross-dependency issue, and the code in
+> ppc_cbe_cpufreq_pmi would no longer have to be built-in.
+>=20
+> But well, I don't really have the time to look into this, especially =
+as
+> I don't even have a powerpc machine at hand to test the changes. So i=
+f
+> nobody cares, things will have to stay the way they are.
 
-Enable CPUFreq for PowerNV. Select "performance", "powersave",
-"userspace" and "ondemand" governors. Choose "ondemand" to be the
-default governor.
+=46ine with me.
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
- arch/powerpc/configs/pseries_defconfig    | 1 +
- arch/powerpc/configs/pseries_le_defconfig | 1 +
- arch/powerpc/platforms/powernv/Kconfig    | 6 ++++++
- 3 files changed, 8 insertions(+)
+> > I don't actually see a problem with the current code, other than
+> > that CPU_FREQ_CBE_PMI could in theory be a module. This code is
+> > used only for an IBM machine that has been end-of-service for
+> > a couple of years. If anyone still wants to build kernels for
+> > it, they probably want it built-in anyway, and not have
+> > the same kernel run on other machines.
+>=20
+> Thanks for pointing this out. I don't know much about powerpc hardwar=
+e
+> so I didn't realize that. We indeed ended up disabling this driver
+> altogether in our default ppc kernel config. Which was the easiest wa=
+y
+> to solve our problem after all :-)
 
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 9ea8342b..a905063 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -306,3 +306,4 @@ CONFIG_KVM_BOOK3S_64=m
- CONFIG_KVM_BOOK3S_64_HV=y
- CONFIG_TRANSPARENT_HUGEPAGE=y
- CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS=y
-+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
-index 3c84f9d..58e3dbf 100644
---- a/arch/powerpc/configs/pseries_le_defconfig
-+++ b/arch/powerpc/configs/pseries_le_defconfig
-@@ -301,3 +301,4 @@ CONFIG_CRYPTO_LZO=m
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
- CONFIG_CRYPTO_DEV_NX=y
- CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
-+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index 895e8a2..c252ee9 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -11,6 +11,12 @@ config PPC_POWERNV
- 	select PPC_UDBG_16550
- 	select PPC_SCOM
- 	select ARCH_RANDOM
-+	select CPU_FREQ
-+	select CPU_FREQ_GOV_PERFORMANCE
-+	select CPU_FREQ_GOV_POWERSAVE
-+	select CPU_FREQ_GOV_USERSPACE
-+	select CPU_FREQ_GOV_ONDEMAND
-+	select CPU_FREQ_GOV_CONSERVATIVE
- 	default y
- 
- config PPC_POWERNV_RTAS
--- 
-1.8.3.1
+You probably want to disable all of PPC_CELL anyway, which implies
+disabling this driver. There are a few hacks that get enabled if you
+want Cell support that have a small impact on performance on other
+platforms, and I don't expect anyone to run distro kernels on
+these machines any more.
 
+	Arnd
