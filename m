@@ -1,60 +1,32 @@
-From: =?iso-8859-1?Q?Lu=EDs?= Henriques <luis.henriques@canonical.com>
-Subject: Re: [stable request <=3.7] acpi-cpufreq: set current frequency based
- on target P-State
-Date: Mon, 31 Mar 2014 09:50:17 +0100
-Message-ID: <20140331085017.GA5042@hercules>
-References: <20131220081912.GA13684@hobo.Home>
- <1395785057-28903-1-git-send-email-vlee@twopensource.com>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: Why are the file perns of /sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq
+ much more rigide  ?
+Date: Mon, 31 Mar 2014 21:17:23 +0200
+Message-ID: <5339BF43.4060908@gmx.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1395785057-28903-1-git-send-email-vlee@twopensource.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="iso-8859-1"
-To: Vinson Lee <vlee@twopensource.com>
-Cc: stable@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Ross Lagerwall <rosslagerwall@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: cpufreq@vger.kernel.org
 
-On Tue, Mar 25, 2014 at 03:04:16PM -0700, Vinson Lee wrote:
-> Hi.
->=20
-> Please backport upstream commit 8673b83bf2f013379453b4779047bf3c6ae38=
-7e4=20
-> "acpi-cpufreq: set current frequency based on target P-State" to stab=
-le=20
-> kernels 3.7 and earlier. This patch enables the kernel to control=20
-> P-states on several platforms. Without this patch, the kernel was una=
-ble=20
-> to control P-states on the same platforms.
->=20
-> The upstream patch cleanly applies to 3.7.
->=20
-> A backported patch is needed with the removal of SYSTEM_AMD_MSR_CAPAB=
-LE=20
-> for kernels 3.6 and earlier.
->=20
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-Thank you, I'm queuing this backport to the 3.5 kernel.
+all other files in that directory are 644 , but that file has 400 ?
 
-Cheers,
---
-Lu=EDs
+Kernel is v3.14
 
-> Cheers,
-> Vinson
->=20
->=20
-> Ross Lagerwall (1):
->   acpi-cpufreq: set current frequency based on target P-State
->=20
->  drivers/cpufreq/acpi-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> --=20
-> 1.8.3.2
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe stable" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+- --=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print:1A37 6F99 4A9D 026F 13E2 4DCF C4EA CDDE 0076 E94E
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlM5v0IACgkQxOrN3gB26U4ubQD+OZ44f1hVY+Z7C/czsZ6sGCO0
+emcg5ixJk4+oZgSptZgA/R+pjhr4msuknJNhLv0fO5SU3nv2PNRS6FBy8+uE5MUz
+=3DMhMg
+-----END PGP SIGNATURE-----
