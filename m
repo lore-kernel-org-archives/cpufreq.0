@@ -1,78 +1,38 @@
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [PATCH REPOST v5 1/3] powernv, cpufreq: Select CPUFreq related
- Kconfig options for powernv
-Date: Tue, 01 Apr 2014 20:46:49 +1100
-Message-ID: <1396345609.28055.7.camel@pasglop>
-References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
-	 <1396336408-20954-1-git-send-email-ego@linux.vnet.ibm.com>
-	 <1396336408-20954-3-git-send-email-ego@linux.vnet.ibm.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: cpufrequtils error with Core i7 "Haswell" 4771 on Funtoo Linux
+Date: Tue, 01 Apr 2014 16:23 +0200
+Message-ID: <2804357.TW6KgcJonJ@skinner>
+References: <533854CE.7070206@libero.it>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1396336408-20954-3-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, svaidy@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <533854CE.7070206@libero.it>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+To: Sandro <alcerb1972@libero.it>
+Cc: cpufreq@vger.kernel.org
 
-On Tue, 2014-04-01 at 12:43 +0530, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Sunday, March 30, 2014 07:30:54 PM Sandro wrote:
+> Hello, I am a member of Funtoo Linux OS.
+> I've written about the problems relating to bugs.funtoo.org cpufrequtils
+> with the cpu of my system.
+> I read of addressing this email address .......
+> I hope I did not disturb you.
 > 
-> Enable CPUFreq for PowerNV. Select "performance", "powersave",
-> "userspace" and "ondemand" governors. Choose "ondemand" to be the
-> default governor.
-
-Rafael, are you going to take these or should I send them to Linus ?
-
-(I'd rather you take them :-)
-
-Cheers,
-Ben.
-
+> Actually i use kernel:
 > 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/configs/pseries_defconfig    | 1 +
->  arch/powerpc/configs/pseries_le_defconfig | 1 +
->  arch/powerpc/platforms/powernv/Kconfig    | 6 ++++++
->  3 files changed, 8 insertions(+)
+> ci7ht ~ # uname -a
+> Linux ci7ht 3.12.13-gentoo #1 SMP PREEMPT Fri Mar 28 23:54:21 CET 2014
+> x86_64 Intel(R) Core(TM) i7-4771 CPU @ 3.50GHz GenuineIntel GNU/Linux
 > 
-> diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-> index 9ea8342b..a905063 100644
-> --- a/arch/powerpc/configs/pseries_defconfig
-> +++ b/arch/powerpc/configs/pseries_defconfig
-> @@ -306,3 +306,4 @@ CONFIG_KVM_BOOK3S_64=m
->  CONFIG_KVM_BOOK3S_64_HV=y
->  CONFIG_TRANSPARENT_HUGEPAGE=y
->  CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS=y
-> +CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-> diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
-> index 3c84f9d..58e3dbf 100644
-> --- a/arch/powerpc/configs/pseries_le_defconfig
-> +++ b/arch/powerpc/configs/pseries_le_defconfig
-> @@ -301,3 +301,4 @@ CONFIG_CRYPTO_LZO=m
->  # CONFIG_CRYPTO_ANSI_CPRNG is not set
->  CONFIG_CRYPTO_DEV_NX=y
->  CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
-> +CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-> diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-> index 895e8a2..c252ee9 100644
-> --- a/arch/powerpc/platforms/powernv/Kconfig
-> +++ b/arch/powerpc/platforms/powernv/Kconfig
-> @@ -11,6 +11,12 @@ config PPC_POWERNV
->  	select PPC_UDBG_16550
->  	select PPC_SCOM
->  	select ARCH_RANDOM
-> +	select CPU_FREQ
-> +	select CPU_FREQ_GOV_PERFORMANCE
-> +	select CPU_FREQ_GOV_POWERSAVE
-> +	select CPU_FREQ_GOV_USERSPACE
-> +	select CPU_FREQ_GOV_ONDEMAND
-> +	select CPU_FREQ_GOV_CONSERVATIVE
->  	default y
->  
->  config PPC_POWERNV_RTAS
+> There are suggestions for this trouble ?
 
+cpufrequtils is outdated for quite some time.
+cpupower is the successor (afaik some package it as cpupowerutils).
 
+If you still have problems, best use the original sources:
+tools/power/cpupower
+from the kernel sources and report problems here and add me to CC.
+
+  Thomas
