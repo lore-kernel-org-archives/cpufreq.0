@@ -1,32 +1,37 @@
-From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
-Subject: Why are the file perns of /sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq
- much more rigide  ?
-Date: Mon, 31 Mar 2014 21:17:23 +0200
-Message-ID: <5339BF43.4060908@gmx.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Why are the file perns of /sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq
+ much more rigide ?
+Date: Tue, 1 Apr 2014 09:53:20 +0530
+Message-ID: <CAOh2x=kSuDxpuBgHGwcRwykPthB1GZ_UVBvxe2s-M-nD7z3ciQ@mail.gmail.com>
+References: <5339BF43.4060908@gmx.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        bh=i344pkdXhuhPOyAJlKKNxzGcBRt8QHp+OZexb6sKyaQ=;
+        b=k0gdVRg41+R7Bfst6TYriRgIcMoTeic9I81IVNP3oMZqhr+gO1e//ZkdafMACFoF8e
+         kdeA9Xp+bnRBGMpaAawtAsQsC3LnVT6GbfMcmyCqbnV8UUFo4hHlQ9QsIty9BZ2vSbqe
+         u87C2U2AgRgLOFdZ4RbUf8aAA+FtQVkFHZkcVhjOyUAC2i04Xi93+4wickraD31LxUVy
+         1ZgFosX5hJusq+fFT5ST+B0lfLVBXGrVatiIxohZqK/JS+fgfw1R5gUL8V+Ii9qtk+d0
+         LLeUBKW2DHfsgnSzpTImDJtZXF3yT/hzdaU3LYpVALiPfy+g7Of+IJKNVmJAY/mKyCMO
+         uwiw==
+In-Reply-To: <5339BF43.4060908@gmx.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@vger.kernel.org
+To: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+On Tue, Apr 1, 2014 at 12:47 AM, Toralf F=F6rster <toralf.foerster@gmx.=
+de> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA256
+>
+> all other files in that directory are 644 , but that file has 400 ?
+>
+> Kernel is v3.14
 
-all other files in that directory are 644 , but that file has 400 ?
-
-Kernel is v3.14
-
-- --=20
-MfG/Sincerely
-Toralf F=C3=B6rster
-pgp finger print:1A37 6F99 4A9D 026F 13E2 4DCF C4EA CDDE 0076 E94E
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlM5v0IACgkQxOrN3gB26U4ubQD+OZ44f1hVY+Z7C/czsZ6sGCO0
-emcg5ixJk4+oZgSptZgA/R+pjhr4msuknJNhLv0fO5SU3nv2PNRS6FBy8+uE5MUz
-=3DMhMg
------END PGP SIGNATURE-----
+https://bugzilla.kernel.org/show_bug.cgi?id=3D65611
