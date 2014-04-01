@@ -1,38 +1,31 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: cpufrequtils error with Core i7 "Haswell" 4771 on Funtoo Linux
-Date: Tue, 01 Apr 2014 16:23 +0200
-Message-ID: <2804357.TW6KgcJonJ@skinner>
-References: <533854CE.7070206@libero.it>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH REPOST v5 1/3] powernv, cpufreq: Select CPUFreq related Kconfig options for powernv
+Date: Wed, 02 Apr 2014 00:03:07 +0200
+Message-ID: <1506880.SKUfks4BOU@vostro.rjw.lan>
+References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com> <1396336408-20954-3-git-send-email-ego@linux.vnet.ibm.com> <1396345609.28055.7.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <533854CE.7070206@libero.it>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1396345609.28055.7.camel@pasglop>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Sandro <alcerb1972@libero.it>
-Cc: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, svaidy@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sunday, March 30, 2014 07:30:54 PM Sandro wrote:
-> Hello, I am a member of Funtoo Linux OS.
-> I've written about the problems relating to bugs.funtoo.org cpufrequtils
-> with the cpu of my system.
-> I read of addressing this email address .......
-> I hope I did not disturb you.
+On Tuesday, April 01, 2014 08:46:49 PM Benjamin Herrenschmidt wrote:
+> On Tue, 2014-04-01 at 12:43 +0530, Gautham R. Shenoy wrote:
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > Enable CPUFreq for PowerNV. Select "performance", "powersave",
+> > "userspace" and "ondemand" governors. Choose "ondemand" to be the
+> > default governor.
 > 
-> Actually i use kernel:
+> Rafael, are you going to take these or should I send them to Linus ?
 > 
-> ci7ht ~ # uname -a
-> Linux ci7ht 3.12.13-gentoo #1 SMP PREEMPT Fri Mar 28 23:54:21 CET 2014
-> x86_64 Intel(R) Core(TM) i7-4771 CPU @ 3.50GHz GenuineIntel GNU/Linux
-> 
-> There are suggestions for this trouble ?
+> (I'd rather you take them :-)
 
-cpufrequtils is outdated for quite some time.
-cpupower is the successor (afaik some package it as cpupowerutils).
+I can do that, but the timing is pretty bad.  How urgent are they?
 
-If you still have problems, best use the original sources:
-tools/power/cpupower
-from the kernel sources and report problems here and add me to CC.
+Rafael
 
-  Thomas
