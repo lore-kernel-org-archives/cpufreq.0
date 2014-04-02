@@ -1,45 +1,45 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 73421] intel/p_state Does not increase into Turbo Boost states
- and does not display all governors. i5-3201M
-Date: Thu, 03 Apr 2014 01:33:42 +0000
-Message-ID: <bug-73421-12968-JlRlhF0bos@https.bugzilla.kernel.org/>
-References: <bug-73421-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: loongson2_cpufreq: don't declare local variable as static
+Date: Wed,  2 Apr 2014 10:14:24 +0530
+Message-ID: <254471b8cee296f860d24368cc467c00b5a07336.1396413826.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-73421-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="macroman"
-To: cpufreq@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lxoliva@fsfla.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D73421
+Earlier commit:
+	commit 652ed95d5fa6074b3c4ea245deb0691f1acb6656
+	Author: Viresh Kumar <viresh.kumar@linaro.org>
+	Date:   Thu Jan 9 20:38:43 2014 +0530
 
---- Comment #2 from =C3=81lvaro Castillo <netsys@fedoraproject.org> ---
-Yes I am getting 2.90 but does not set 3.1Ghz.=20
+	    cpufreq: introduce cpufreq_generic_get() routine
 
-=46or example, In this bug https://bugzilla.kernel.org/show_bug.cgi?id=3D=
-66581 got
-problems that does not increases more of 2.8Ghz of kernel when max frec=
-uencies
-is 3.8Ghz.
+did some changes to driver and by mistake made cpuclk as a 'static' local
+variable, which wasn't actually required. Fix it.
 
-I don't understand why is not increases into 3.1Ghz.If not Intel should=
- be tell
-the truth about Turbo boost and frequencies.
+Reported-by: Alexandre Oliva <lxoliva@fsfla.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/loongson2_cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-By other hand, I end compile a kernel over 30 minutes more less. Howeve=
-r, my
-friend does have an Intel Core 2  P8600 takes 10 minutes more less. How=
- is a
-CPU old with 2 cores can compile a kernel into 10 minutes more less tha=
-n my new
-CPU It's new model. I think is a bug.
+diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
+index a3588d61..f0bc31f 100644
+--- a/drivers/cpufreq/loongson2_cpufreq.c
++++ b/drivers/cpufreq/loongson2_cpufreq.c
+@@ -69,7 +69,7 @@ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
+ 
+ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	static struct clk *cpuclk;
++	struct clk *cpuclk;
+ 	int i;
+ 	unsigned long rate;
+ 	int ret;
+-- 
+1.7.12.rc2.18.g61b472e
 
-Some users of Gentoo with i5 processors tells me that 5-6 minutes more =
-less
-should be end compiling a kernel process. :/
-
---=20
-You are receiving this mail because:
-You are the assignee for the bug.
