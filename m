@@ -1,56 +1,108 @@
-From: Josh Boyer <jwboyer@fedoraproject.org>
-Subject: [PATCH] arm64: Fix duplicated Kconfig entries again
-Date: Wed, 2 Apr 2014 10:40:20 -0400
-Message-ID: <20140402144020.GA20438@zod>
-References: <CA+5PVA6awqaSHQboqdv9nynV9Xjp46VeqijDWxZX1v5wDK0NWQ@mail.gmail.com>
- <CAKohpok3gKyOWD0=pSv0yQLNqJcNPNZagRGFXNFHW+3J7E=mOg@mail.gmail.com>
-Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        bh=plUGJDNtXn5XHvXxX3FaHv/ICYY0iEF4133sqtBBwnw=;
-        b=kPl9Ti1CPt8l3TwUbCqqxyp2H/auvkAs14uI6P6HCxxZnEH9jOJpaAWycNhDjwjeyq
-         QiRROVVFHQbjZG36b00VX/DtT1sELTh//OSTJ5zhhSN1KcUXjNKF9/7L3Xo6MzOOGmZ7
-         McZOpSnnnLMm6DHMesOE87pUtk+8OVyDbqEboPHLyjlQj99SId6isohNr2u5PIyydnU+
-         mlvLUR1GTLGSV/aGOKe08zIOp847pGeL2NEgyaPBBBnmwNlHHw6PCvqIWqH8qWVphSbB
-         1Q1Tv3X+UvKzGaKRY1T+G7Eggv4xNYCL6kE5d3caeQ4YUuQMfXb8b61Jv7KIWTBLCJXl
-         KcIg==
-Content-Disposition: inline
-In-Reply-To: <CAKohpok3gKyOWD0=pSv0yQLNqJcNPNZagRGFXNFHW+3J7E=mOg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH 2/2] cpufreq: Fix timer/workqueue corruption due to double
+ queueing
+Date: Wed, 02 Apr 2014 16:19:38 +0200
+Message-ID: <1396448378-22487-3-git-send-email-k.kozlowski@samsung.com>
+References: <1396448378-22487-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <stable-owner@vger.kernel.org>
+In-reply-to: <1396448378-22487-1-git-send-email-k.kozlowski@samsung.com>
+Sender: stable-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Xiaoguang Chen <chenxg@marvell.com>, Stephen Boyd <sboyd@codeaurora.org>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Commit 74397174989e5f70 attempted to clean up the power management options
-for arm64, but when things were merged it didn't fully take effect.  Fix
-it again.
+From: Stephen Boyd <sboyd@codeaurora.org>
 
-Signed-off-by: Josh Boyer <jwboyer@fedoraproject.org>
+When a CPU is hot removed we'll cancel all the delayed work items
+via gov_cancel_work(). Normally this will just cancels a delayed
+timer on each CPU that the policy is managing and the work won't
+run, but if the work is already running the workqueue code will
+wait for the work to finish before continuing to prevent the
+work items from re-queuing themselves like they normally do. This
+scheme will work most of the time, except for the case where the
+work function determines that it should adjust the delay for all
+other CPUs that the policy is managing. If this scenario occurs,
+the canceling CPU will cancel its own work but queue up the other
+CPUs works to run. For example:
+
+ CPU0                                        CPU1
+ ----                                        ----
+ cpu_down()
+  ...
+  __cpufreq_remove_dev()
+   cpufreq_governor_dbs()
+    case CPUFREQ_GOV_STOP:
+     gov_cancel_work(dbs_data, policy);
+      cpu0 work is canceled
+       timer is canceled
+       cpu1 work is canceled                    <work runs>
+       <waits for cpu1>                         od_dbs_timer()
+                                                 gov_queue_work(*, *, true);
+ 						  cpu0 work queued
+ 						  cpu1 work queued
+						  cpu2 work queued
+						  ...
+       cpu1 work is canceled
+       cpu2 work is canceled
+       ...
+
+At the end of the GOV_STOP case cpu0 still has a work queued to
+run although the code is expecting all of the works to be
+canceled. __cpufreq_remove_dev() will then proceed to
+re-initialize all the other CPUs works except for the CPU that is
+going down. The CPUFREQ_GOV_START case in cpufreq_governor_dbs()
+will trample over the queued work and debugobjects will spit out
+a warning:
+
+WARNING: at lib/debugobjects.c:260 debug_print_object+0x94/0xbc()
+ODEBUG: init active (active state 0) object type: timer_list hint: delayed_work_timer_fn+0x0/0x10
+Modules linked in:
+CPU: 0 PID: 1491 Comm: sh Tainted: G        W    3.10.0 #19
+[<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
+[<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)
+[<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)
+[<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c0388a7c>] (debug_print_object+0x94/0xbc)
+[<c0388a7c>] (debug_print_object+0x94/0xbc) from [<c0388e34>] (__debug_object_init+0x2d0/0x340)
+[<c0388e34>] (__debug_object_init+0x2d0/0x340) from [<c019e3b0>] (init_timer_key+0x14/0xb0)
+[<c019e3b0>] (init_timer_key+0x14/0xb0) from [<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8)
+[<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8) from [<c06325a0>] (__cpufreq_governor+0xdc/0x1a4)
+[<c06325a0>] (__cpufreq_governor+0xdc/0x1a4) from [<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434)
+[<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434) from [<c08989f4>] (cpufreq_cpu_callback+0x60/0x80)
+[<c08989f4>] (cpufreq_cpu_callback+0x60/0x80) from [<c08a43c0>] (notifier_call_chain+0x38/0x68)
+[<c08a43c0>] (notifier_call_chain+0x38/0x68) from [<c01938e0>] (__cpu_notify+0x28/0x40)
+[<c01938e0>] (__cpu_notify+0x28/0x40) from [<c0892ad4>] (_cpu_down+0x7c/0x2c0)
+[<c0892ad4>] (_cpu_down+0x7c/0x2c0) from [<c0892d3c>] (cpu_down+0x24/0x40)
+[<c0892d3c>] (cpu_down+0x24/0x40) from [<c0893ea8>] (store_online+0x2c/0x74)
+[<c0893ea8>] (store_online+0x2c/0x74) from [<c04519d8>] (dev_attr_store+0x18/0x24)
+[<c04519d8>] (dev_attr_store+0x18/0x24) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
+[<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
+[<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)
+[<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
+
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: <stable@vger.kernel.org>
 ---
- arch/arm64/Kconfig | 6 ------
- 1 file changed, 6 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 07aa3556952c..8033b9b8a2df 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -321,12 +321,6 @@ menu "CPU Power Management"
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 87427360c77f..bce2cd216423 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -119,6 +119,9 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+ {
+ 	int i;
  
- source "drivers/cpuidle/Kconfig"
- 
--source "drivers/cpufreq/Kconfig"
--
--endmenu
--
--menu "Power management options"
--
- source "kernel/power/Kconfig"
- 
- source "drivers/cpufreq/Kconfig"
++	if (!policy->governor_enabled)
++		return;
++
+ 	if (!all_cpus) {
+ 		__gov_queue_work(smp_processor_id(), dbs_data, delay);
+ 	} else {
 -- 
-1.8.5.3
+1.7.9.5
