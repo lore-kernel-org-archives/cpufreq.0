@@ -1,42 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH REPOST v5 1/3] powernv,
- cpufreq: Select CPUFreq related Kconfig options for powernv
-Date: Wed, 02 Apr 2014 13:03:35 +0200
-Message-ID: <1621325.cz1O3Ng49e@vostro.rjw.lan>
-References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
- <1506880.SKUfks4BOU@vostro.rjw.lan> <1396412608.1394.15.camel@pasglop>
+From: Josh Boyer <jwboyer@fedoraproject.org>
+Subject: [PATCH] arm64: Fix duplicated Kconfig entries again
+Date: Wed, 2 Apr 2014 10:40:20 -0400
+Message-ID: <20140402144020.GA20438@zod>
+References: <CA+5PVA6awqaSHQboqdv9nynV9Xjp46VeqijDWxZX1v5wDK0NWQ@mail.gmail.com>
+ <CAKohpok3gKyOWD0=pSv0yQLNqJcNPNZagRGFXNFHW+3J7E=mOg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1396412608.1394.15.camel@pasglop>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=plUGJDNtXn5XHvXxX3FaHv/ICYY0iEF4133sqtBBwnw=;
+        b=kPl9Ti1CPt8l3TwUbCqqxyp2H/auvkAs14uI6P6HCxxZnEH9jOJpaAWycNhDjwjeyq
+         QiRROVVFHQbjZG36b00VX/DtT1sELTh//OSTJ5zhhSN1KcUXjNKF9/7L3Xo6MzOOGmZ7
+         McZOpSnnnLMm6DHMesOE87pUtk+8OVyDbqEboPHLyjlQj99SId6isohNr2u5PIyydnU+
+         mlvLUR1GTLGSV/aGOKe08zIOp847pGeL2NEgyaPBBBnmwNlHHw6PCvqIWqH8qWVphSbB
+         1Q1Tv3X+UvKzGaKRY1T+G7Eggv4xNYCL6kE5d3caeQ4YUuQMfXb8b61Jv7KIWTBLCJXl
+         KcIg==
+Content-Disposition: inline
+In-Reply-To: <CAKohpok3gKyOWD0=pSv0yQLNqJcNPNZagRGFXNFHW+3J7E=mOg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com
+Content-Transfer-Encoding: 7bit
+To: Mark Brown <broonie@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-T24gV2VkbmVzZGF5LCBBcHJpbCAwMiwgMjAxNCAwMzoyMzoyOCBQTSBCZW5qYW1pbiBIZXJyZW5z
-Y2htaWR0IHdyb3RlOgo+IE9uIFdlZCwgMjAxNC0wNC0wMiBhdCAwMDowMyArMDIwMCwgUmFmYWVs
-IEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+IFJhZmFlbCwgYXJlIHlvdSBnb2luZyB0byB0YWtlIHRo
-ZXNlIG9yIHNob3VsZCBJIHNlbmQgdGhlbSB0byBMaW51cyA/Cj4gPiA+IAo+ID4gPiAoSSdkIHJh
-dGhlciB5b3UgdGFrZSB0aGVtIDotKQo+ID4gCj4gPiBJIGNhbiBkbyB0aGF0LCBidXQgdGhlIHRp
-bWluZyBpcyBwcmV0dHkgYmFkLiAgSG93IHVyZ2VudCBhcmUgdGhleT8KPiAKPiBUbyBiZSBob25l
-c3QgcHJldHR5IHVyZ2VudC4gSXQncyBhIG5ldyBkcm9wLWluIGRyaXZlciBzbyBpdCBzaG91bGRu
-J3QKPiBiZSBhIGh1Z2UgZGVhbC4KPiAKPiBXZSBoYXZlIGRpc3Ryb3MgcmVhbGx5IHdhaXRpbmcg
-Zm9yIHRoaXMgdG8gaGl0IHVwc3RyZWFtLi4uIEJ1dCBJJ2xsCj4gbGVhdmUgdGhhdCBkZWNpc2lv
-biB0byB5b3UgOi0pCgpXZWxsLCBJJ3ZlIGFscmVhZHkgc2VudCBhIHNlY29uZCBwdWxsIHJlcXVl
-c3QgZm9yIHRoaXMgbWVyZ2Ugd2luZG93CmFuZCBJJ20gbm90IGdvaW5nIHRvIHNlbmQgdGhlIG5l
-eHQgb25lIGJlZm9yZSBpdCBpcyBtZXJnZWQuCgpTbywgSSBjYW4gcHVzaCB0aGVtIG5leHQgd2Vl
-ayByZWFsaXN0aWNhbGx5LgoKUmFmYWVsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBs
-aXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBw
-Yy1kZXY=
+Commit 74397174989e5f70 attempted to clean up the power management options
+for arm64, but when things were merged it didn't fully take effect.  Fix
+it again.
+
+Signed-off-by: Josh Boyer <jwboyer@fedoraproject.org>
+---
+ arch/arm64/Kconfig | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 07aa3556952c..8033b9b8a2df 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -321,12 +321,6 @@ menu "CPU Power Management"
+ 
+ source "drivers/cpuidle/Kconfig"
+ 
+-source "drivers/cpufreq/Kconfig"
+-
+-endmenu
+-
+-menu "Power management options"
+-
+ source "kernel/power/Kconfig"
+ 
+ source "drivers/cpufreq/Kconfig"
+-- 
+1.8.5.3
