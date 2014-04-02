@@ -1,128 +1,40 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 1/2] cpufreq: Fix governor start/stop race condition
-Date: Wed, 02 Apr 2014 16:19:37 +0200
-Message-ID: <1396448378-22487-2-git-send-email-k.kozlowski@samsung.com>
-References: <1396448378-22487-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <stable-owner@vger.kernel.org>
-In-reply-to: <1396448378-22487-1-git-send-email-k.kozlowski@samsung.com>
-Sender: stable-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH REPOST v5 1/3] powernv, cpufreq: Select CPUFreq related
+ Kconfig options for powernv
+Date: Wed, 02 Apr 2014 22:29:20 +1100
+Message-ID: <1396438160.19206.23.camel@pasglop>
+References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
+ <1506880.SKUfks4BOU@vostro.rjw.lan> <1396412608.1394.15.camel@pasglop>
+ <1621325.cz1O3Ng49e@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <1621325.cz1O3Ng49e@vostro.rjw.lan>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Xiaoguang Chen <chenxg@marvell.com>, Stephen Boyd <sboyd@codeaurora.org>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com
 
-From: Xiaoguang Chen <chenxg@marvell.com>
-
-Cpufreq governors' stop and start operations should be carried out
-in sequence.  Otherwise, there will be unexpected behavior, like in
-the example below.
-
-Suppose there are 4 CPUs and policy->cpu=CPU0, CPU1/2/3 are linked
-to CPU0.  The normal sequence is:
-
- 1) Current governor is userspace.  An application tries to set the
-    governor to ondemand.  It will call __cpufreq_set_policy() in
-    which it will stop the userspace governor and then start the
-    ondemand governor.
-
- 2) Current governor is userspace.  The online of CPU3 runs on CPU0.
-    It will call cpufreq_add_policy_cpu() in which it will first
-    stop the userspace governor, and then start it again.
-
-If the sequence of the above two cases interleaves, it becomes:
-
- 1) Application stops userspace governor
- 2)                                  Hotplug stops userspace governor
-
-which is a problem, because the governor shouldn't be stopped twice
-in a row.  What happens next is:
-
- 3) Application starts ondemand governor
- 4)                                  Hotplug starts a governor
-
-In step 4, the hotplug is supposed to start the userspace governor,
-but now the governor has been changed by the application to ondemand,
-so the ondemand governor is started once again, which is incorrect.
-
-The solution is to prevent policy governors from being stopped
-multiple times in a row.  A governor should only be stopped once for
-one policy.  After it has been stopped, no more governor stop
-operations should be executed.
-
-Also add a mutex to serialize governor operations.
-
-[rjw: Changelog.  And you owe me a beverage of my choice.]
-Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: <stable@vger.kernel.org>
----
- drivers/cpufreq/cpufreq.c |   24 ++++++++++++++++++++++++
- include/linux/cpufreq.h   |    1 +
- 2 files changed, 25 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index f8c28607ccd6..43cf60832468 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -49,6 +49,7 @@ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- #endif
- static DEFINE_RWLOCK(cpufreq_driver_lock);
-+static DEFINE_MUTEX(cpufreq_governor_lock);
- 
- /*
-  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-@@ -1635,6 +1636,21 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 
- 	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
- 						policy->cpu, event);
-+
-+	mutex_lock(&cpufreq_governor_lock);
-+	if ((!policy->governor_enabled && (event == CPUFREQ_GOV_STOP)) ||
-+	    (policy->governor_enabled && (event == CPUFREQ_GOV_START))) {
-+		mutex_unlock(&cpufreq_governor_lock);
-+		return -EBUSY;
-+	}
-+
-+	if (event == CPUFREQ_GOV_STOP)
-+		policy->governor_enabled = false;
-+	else if (event == CPUFREQ_GOV_START)
-+		policy->governor_enabled = true;
-+
-+	mutex_unlock(&cpufreq_governor_lock);
-+
- 	ret = policy->governor->governor(policy, event);
- 
- 	if (!ret) {
-@@ -1642,6 +1658,14 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 			policy->governor->initialized++;
- 		else if (event == CPUFREQ_GOV_POLICY_EXIT)
- 			policy->governor->initialized--;
-+	} else {
-+		/* Restore original values */
-+		mutex_lock(&cpufreq_governor_lock);
-+		if (event == CPUFREQ_GOV_STOP)
-+			policy->governor_enabled = true;
-+		else if (event == CPUFREQ_GOV_START)
-+			policy->governor_enabled = false;
-+		mutex_unlock(&cpufreq_governor_lock);
- 	}
- 
- 	/* we keep one module reference alive for
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index d93905633dc7..125719d41285 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -111,6 +111,7 @@ struct cpufreq_policy {
- 	unsigned int		policy; /* see above */
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
-+	bool			governor_enabled; /* governor start/stop flag */
- 
- 	struct work_struct	update; /* if update_policy() needs to be
- 					 * called, but you're in IRQ context */
--- 
-1.7.9.5
+T24gV2VkLCAyMDE0LTA0LTAyIGF0IDEzOjAzICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
+ZToKPiA+IFRvIGJlIGhvbmVzdCBwcmV0dHkgdXJnZW50LiBJdCdzIGEgbmV3IGRyb3AtaW4gZHJp
+dmVyIHNvIGl0Cj4gc2hvdWxkbid0Cj4gPiBiZSBhIGh1Z2UgZGVhbC4KPiA+IAo+ID4gV2UgaGF2
+ZSBkaXN0cm9zIHJlYWxseSB3YWl0aW5nIGZvciB0aGlzIHRvIGhpdCB1cHN0cmVhbS4uLiBCdXQg
+SSdsbAo+ID4gbGVhdmUgdGhhdCBkZWNpc2lvbiB0byB5b3UgOi0pCj4gCj4gV2VsbCwgSSd2ZSBh
+bHJlYWR5IHNlbnQgYSBzZWNvbmQgcHVsbCByZXF1ZXN0IGZvciB0aGlzIG1lcmdlIHdpbmRvdwo+
+IGFuZCBJJ20gbm90IGdvaW5nIHRvIHNlbmQgdGhlIG5leHQgb25lIGJlZm9yZSBpdCBpcyBtZXJn
+ZWQuCj4gCj4gU28sIEkgY2FuIHB1c2ggdGhlbSBuZXh0IHdlZWsgcmVhbGlzdGljYWxseS4KClRo
+YW5rcy4gWW91IGNhbiBibGFtZSBtZSBmb3IgdGhlIGxhdGVuZXNzIGlmIHlvdSB3YW50IChhbmQg
+dGhlIGRlYmF0ZSBhcwp0byB3aGljaCB0cmVlIHNob3VsZCBjYXJyeSB0aGVtIDotKQoKQ2hlZXJz
+LApCZW4uCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+TGludXhwcGMtZGV2IG1haWxpbmcgbGlzdApMaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZwpo
+dHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2
