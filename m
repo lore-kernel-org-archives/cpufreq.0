@@ -1,61 +1,31 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: exynos: Disable on multiplatform build
-Date: Wed, 2 Apr 2014 16:35:37 +0530
-Message-ID: <CAKohpo=wVHubLTyR1oX_HPLrGvrg+YsqO0kbPSKYB9wEyhXb2w@mail.gmail.com>
-References: <1396436627-22744-1-git-send-email-sachin.kamat@linaro.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 73421] intel/p_state Does not increase into Turbo Boost states
+ and does not display all governors. i5-3201M
+Date: Thu, 03 Apr 2014 01:52:09 +0000
+Message-ID: <bug-73421-12968-qVhHH9UNou@https.bugzilla.kernel.org/>
+References: <bug-73421-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1396436627-22744-1-git-send-email-sachin.kamat@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-73421-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>
+To: cpufreq@vger.kernel.org
 
-On 2 April 2014 16:33, Sachin Kamat <sachin.kamat@linaro.org> wrote:
-> The current exynos cpufreq drivers are not multiplatform compliant
-> and give build errors as they refer to header files from machine
-> directory. Work to migrate them to generic cpufreq framework is under
-> progress. Till such time disable the build on multiplatform so that
-> other multiplatform ready features get tested.
->
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/cpufreq/Kconfig.arm |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 1e2b9db563ec..0e9cce82844b 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -30,7 +30,7 @@ config ARM_EXYNOS_CPUFREQ
->
->  config ARM_EXYNOS4210_CPUFREQ
->         bool "SAMSUNG EXYNOS4210"
-> -       depends on CPU_EXYNOS4210
-> +       depends on CPU_EXYNOS4210 && !ARCH_MULTIPLATFORM
->         default y
->         select ARM_EXYNOS_CPUFREQ
->         help
-> @@ -41,7 +41,7 @@ config ARM_EXYNOS4210_CPUFREQ
->
->  config ARM_EXYNOS4X12_CPUFREQ
->         bool "SAMSUNG EXYNOS4x12"
-> -       depends on (SOC_EXYNOS4212 || SOC_EXYNOS4412)
-> +       depends on (SOC_EXYNOS4212 || SOC_EXYNOS4412) && !ARCH_MULTIPLATFORM
->         default y
->         select ARM_EXYNOS_CPUFREQ
->         help
-> @@ -52,7 +52,7 @@ config ARM_EXYNOS4X12_CPUFREQ
->
->  config ARM_EXYNOS5250_CPUFREQ
->         bool "SAMSUNG EXYNOS5250"
-> -       depends on SOC_EXYNOS5250
-> +       depends on SOC_EXYNOS5250 && !ARCH_MULTIPLATFORM
->         default y
->         select ARM_EXYNOS_CPUFREQ
->         help
+https://bugzilla.kernel.org/show_bug.cgi?id=73421
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+--- Comment #3 from Dirk Brandewie <dirk.brandewie@gmail.com> ---
+The msr-tools package from https://01.org/msr-tools/downloads makes it easy to
+see what P state is being requested for each core with the command:
+   sudo rdmsr -a   0x199
+
+The requested P state is in the upper eight bits.
+
+The P state intel_pstate requests is just that a request in the turbo range,
+the CPU itself decides what frequency will be used while keeping the processor
+in it thermal envelop.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
