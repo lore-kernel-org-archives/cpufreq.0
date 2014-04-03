@@ -1,38 +1,45 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH REPOST v5 1/3] powernv, cpufreq: Select CPUFreq related
- Kconfig options for powernv
-Date: Wed, 02 Apr 2014 15:23:28 +1100
-Message-ID: <1396412608.1394.15.camel@pasglop>
-References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
- <1396336408-20954-3-git-send-email-ego@linux.vnet.ibm.com>
- <1396345609.28055.7.camel@pasglop> <1506880.SKUfks4BOU@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 73421] intel/p_state Does not increase into Turbo Boost states
+ and does not display all governors. i5-3201M
+Date: Thu, 03 Apr 2014 01:33:42 +0000
+Message-ID: <bug-73421-12968-JlRlhF0bos@https.bugzilla.kernel.org/>
+References: <bug-73421-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1506880.SKUfks4BOU@vostro.rjw.lan>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-73421-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="macroman"
+To: cpufreq@vger.kernel.org
 
-T24gV2VkLCAyMDE0LTA0LTAyIGF0IDAwOjAzICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiA+IFJhZmFlbCwgYXJlIHlvdSBnb2luZyB0byB0YWtlIHRoZXNlIG9yIHNob3VsZCBJIHNl
-bmQgdGhlbSB0byBMaW51cyA/Cj4gPiAKPiA+IChJJ2QgcmF0aGVyIHlvdSB0YWtlIHRoZW0gOi0p
-Cj4gCj4gSSBjYW4gZG8gdGhhdCwgYnV0IHRoZSB0aW1pbmcgaXMgcHJldHR5IGJhZC4gIEhvdyB1
-cmdlbnQgYXJlIHRoZXk/CgpUbyBiZSBob25lc3QgcHJldHR5IHVyZ2VudC4gSXQncyBhIG5ldyBk
-cm9wLWluIGRyaXZlciBzbyBpdCBzaG91bGRuJ3QKYmUgYSBodWdlIGRlYWwuCgpXZSBoYXZlIGRp
-c3Ryb3MgcmVhbGx5IHdhaXRpbmcgZm9yIHRoaXMgdG8gaGl0IHVwc3RyZWFtLi4uIEJ1dCBJJ2xs
-CmxlYXZlIHRoYXQgZGVjaXNpb24gdG8geW91IDotKQoKQ2hlZXJzLApCZW4uCgoKX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXhwcGMtZGV2IG1haWxp
-bmcgbGlzdApMaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZwpodHRwczovL2xpc3RzLm96bGFi
-cy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2
+https://bugzilla.kernel.org/show_bug.cgi?id=3D73421
+
+--- Comment #2 from =C3=81lvaro Castillo <netsys@fedoraproject.org> ---
+Yes I am getting 2.90 but does not set 3.1Ghz.=20
+
+=46or example, In this bug https://bugzilla.kernel.org/show_bug.cgi?id=3D=
+66581 got
+problems that does not increases more of 2.8Ghz of kernel when max frec=
+uencies
+is 3.8Ghz.
+
+I don't understand why is not increases into 3.1Ghz.If not Intel should=
+ be tell
+the truth about Turbo boost and frequencies.
+
+By other hand, I end compile a kernel over 30 minutes more less. Howeve=
+r, my
+friend does have an Intel Core 2  P8600 takes 10 minutes more less. How=
+ is a
+CPU old with 2 cores can compile a kernel into 10 minutes more less tha=
+n my new
+CPU It's new model. I think is a bug.
+
+Some users of Gentoo with i5 processors tells me that 5-6 minutes more =
+less
+should be end compiling a kernel process. :/
+
+--=20
+You are receiving this mail because:
+You are the assignee for the bug.
