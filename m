@@ -1,44 +1,63 @@
-From: Alexandre Oliva <oliva@gnu.org>
-Subject: Re: [PATCH] cpufreq: loongson2_cpufreq: don't declare local variable as static
-Date: Fri, 04 Apr 2014 11:34:51 -0300
-Message-ID: <or1txd88ok.fsf@livre.home>
-References: <254471b8cee296f860d24368cc467c00b5a07336.1396413826.git.viresh.kumar@linaro.org>
-	<or61mqio12.fsf@livre.home>
-	<CAKohpo=HfZMmSsHdNyZ5cGhOAyMHkHNH8bBrOwk7kC9eBK_VbQ@mail.gmail.com>
+From: Chen Gang <gang.chen.5i5j@gmail.com>
+Subject: [PATCH] drivers:cpufreq:unicore32: fix typo issue for 'clk'
+Date: Mon, 07 Apr 2014 20:04:21 +0800
+Message-ID: <53429445.5000005@gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=HfZMmSsHdNyZ5cGhOAyMHkHNH8bBrOwk7kC9eBK_VbQ@mail.gmail.com>
-	(Viresh Kumar's message of "Thu, 3 Apr 2014 20:14:24 +0530")
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        bh=+Yf0UJBfbF/dl6BGZlhkzpDyijOycoquiZa03TQKp0Y=;
+        b=ekyoC0494vnMimVTUoPVWAMFEWjhB6/+uH2wSeOUojd9pBiu28UtWwIf7EXDLShy02
+         PqNktn8dZVUivi8xRa7ZxI7fTaCAzEwReKzYq+IADQbWjudXZUHERj9w0t38a+xGUdpw
+         DZaIR5GFCxd3SyMOcUO2Ipt8n1VmRHVrsegKH3wzs8qYRdGXiGn/sE6wkSSZPzPEUY9N
+         EUjHgFa+GwFN3w7sB5XAiFkLo49hw5slyzwJf/Op+a6i8GpOHNcIOTr5yo8hGggo6ems
+         LPe1oQlNCKkhIKLok+j5mMVgpdPYV/g+VobmIbjgw4b/FsHAHSIQmy91n91FIOSpAe3r
+         DJAQ==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="windows-1252"
+To: Guan Xuetao <gxt@mprc.pku.edu.cn>, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Apr  3, 2014, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+Need use 'clk' instead of 'mclk', which is the original removed local
+variable.
 
-> On 3 April 2014 18:10, Alexandre Oliva <oliva@gnu.org> wrote:
->> FWIW, the same mistake is present in at32.
+The related original commit:
 
-> I will check others as well now :)
+  "652ed95 cpufreq: introduce cpufreq_generic_get() routine"
 
-Thanks!
+The related error with allmodconfig for unicore32:
 
->> Reverting all the changes to loongson2_cpufreq.c in 652ed95d5fa makes
->> cpufreq work again, as opposed to printing nan% in all cpufreq stats in
->> cpufreq-info's output, and freezing shortly thereafter.
+    CC      drivers/cpufreq/unicore2-cpufreq.o
+  drivers/cpufreq/unicore2-cpufreq.c: In function =91ucv2_target=92:
+  drivers/cpufreq/unicore2-cpufreq.c:48: error: =91struct cpufreq_polic=
+y=92 has no member named =91mclk=92
+  make[2]: *** [drivers/cpufreq/unicore2-cpufreq.o] Error 1
+  make[1]: *** [drivers/cpufreq] Error 2
+  make: *** [drivers] Error 2
 
-> You must have a look at this:
 
-> https://lkml.org/lkml/2014/4/2/426 : [PATCH] MIPS/loongson2_cpufreq:
-> fix CPU clock rate setting
+Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
+---
+ drivers/cpufreq/unicore2-cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks, I confirm that patch is enough to avoid the symptoms I'd
-described.
-
--- 
-Alexandre Oliva, freedom fighter    http://FSFLA.org/~lxoliva/
-You must be the change you wish to see in the world. -- Gandhi
-Be Free! -- http://FSFLA.org/   FSF Latin America board member
-Free Software Evangelist|Red Hat Brasil GNU Toolchain Engineer
+diff --git a/drivers/cpufreq/unicore2-cpufreq.c b/drivers/cpufreq/unico=
+re2-cpufreq.c
+index 13be802..8d045af 100644
+--- a/drivers/cpufreq/unicore2-cpufreq.c
++++ b/drivers/cpufreq/unicore2-cpufreq.c
+@@ -45,7 +45,7 @@ static int ucv2_target(struct cpufreq_policy *policy,
+ 	freqs.new =3D target_freq;
+=20
+ 	cpufreq_freq_transition_begin(policy, &freqs);
+-	ret =3D clk_set_rate(policy->mclk, target_freq * 1000);
++	ret =3D clk_set_rate(policy->clk, target_freq * 1000);
+ 	cpufreq_freq_transition_end(policy, &freqs, ret);
+=20
+ 	return ret;
+--=20
+1.7.9.5
