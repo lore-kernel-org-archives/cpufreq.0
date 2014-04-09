@@ -1,31 +1,28 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: highbank: fix ARM_HIGHBANK_CPUFREQ dependency warning
-Date: Wed, 9 Apr 2014 09:58:26 +0530
-Message-ID: <CAKohponpGAm4J2shQRV8doMZGT22eJ2MnU0+GzF-GkZirGPW5g@mail.gmail.com>
-References: <1397010873-11020-1-git-send-email-wangkefeng.wang@huawei.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 73741] intel_pstate.c does not support scaling_cur_freq and
+ breaks gkrellm-gkfreq monitor
+Date: Wed, 09 Apr 2014 16:13:03 +0000
+Message-ID: <bug-73741-12968-tUvT0KihJT@https.bugzilla.kernel.org/>
+References: <bug-73741-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1397010873-11020-1-git-send-email-wangkefeng.wang@huawei.com>
+In-Reply-To: <bug-73741-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kefeng Wang <wangkefeng.wang@huawei.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Langsdorf <mark.langsdorf@calxeda.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, guohanjun@huawei.com
+To: cpufreq@vger.kernel.org
 
-On 9 April 2014 08:04, Kefeng Wang <wangkefeng.wang@huawei.com> wrote:
-> When make ARCH=arm multi_v7_defconfig, we get the following warnings:
->
-> warning: (ARM_HIGHBANK_CPUFREQ) selects GENERIC_CPUFREQ_CPU0 which has
-> unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && HAVE_CLK
-> && REGULATOR && OF && THERMAL && CPU_THERMAL)
->
-> To fix this, make ARM_HIGHBANK_CPUFREQ depend on ARCH_HAS_CPUFREQ and
-> REGULATOR instead of selecting them, PM_OPP will be selected by ARCH_HAS_CPUFREQ.
->
-> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
-> ---
->  drivers/cpufreq/Kconfig.arm | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+https://bugzilla.kernel.org/show_bug.cgi?id=73741
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Jean Delvare <jdelvare@suse.de> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+          Component|Hardware Monitoring         |cpufreq
+           Assignee|jdelvare@suse.de            |cpufreq@vger.kernel.org
+            Product|Drivers                     |Power Management
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
