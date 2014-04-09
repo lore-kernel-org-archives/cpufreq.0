@@ -1,52 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 1/4] cpufreq: ia64: don't set .driver_data to index
-Date: Tue, 08 Apr 2014 14:14:59 +0200
-Message-ID: <2698524.P4nWCs3Rzq@vostro.rjw.lan>
-References: <57f831e4e1d45b7d81bc4cf4a94946db57360366.1396013927.git.viresh.kumar@linaro.org>
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: [PATCH] cpufreq: highbank: fix ARM_HIGHBANK_CPUFREQ dependency warning
+Date: Wed, 9 Apr 2014 10:34:33 +0800
+Message-ID: <1397010873-11020-1-git-send-email-wangkefeng.wang@huawei.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <57f831e4e1d45b7d81bc4cf4a94946db57360366.1396013927.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, l.majewski@samsung.com
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, mark.langsdorf@calxeda.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, guohanjun@huawei.com, Kefeng Wang <wangkefeng.wang@huawei.com>
 
-On Friday, March 28, 2014 07:11:44 PM Viresh Kumar wrote:
-> .driver_data field is only required to be filled if drivers want to preserve
-> some data in there which they can use according to the value of .frequency
-> field. But this driver isn't using this field at all, but just setting it equal
-> to the index value. Which isn't required. Fix it.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+When make ARCH=arm multi_v7_defconfig, we get the following warnings:
 
-All four queued up for the next pull request, thanks!
+warning: (ARM_HIGHBANK_CPUFREQ) selects GENERIC_CPUFREQ_CPU0 which has
+unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && HAVE_CLK
+&& REGULATOR && OF && THERMAL && CPU_THERMAL)
 
-> ---
-> V1->V2: No Change
-> 
-> Hi Rafael,
-> 
-> To avoid confusion I am sending all related cpufreq patches again.
-> 
->  drivers/cpufreq/ia64-acpi-cpufreq.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
-> index a22b5d1..beb191b 100644
-> --- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-> +++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-> @@ -275,7 +275,6 @@ acpi_cpufreq_cpu_init (
->  	/* table init */
->  	for (i = 0; i <= data->acpi_data.state_count; i++)
->  	{
-> -		data->freq_table[i].driver_data = i;
->  		if (i < data->acpi_data.state_count) {
->  			data->freq_table[i].frequency =
->  			      data->acpi_data.states[i].core_frequency * 1000;
-> 
+To fix this, make ARM_HIGHBANK_CPUFREQ depend on ARCH_HAS_CPUFREQ and
+REGULATOR instead of selecting them, PM_OPP will be selected by ARCH_HAS_CPUFREQ.
 
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+---
+ drivers/cpufreq/Kconfig.arm | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 1e2b9db..30dfaef 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -92,11 +92,7 @@ config ARM_EXYNOS_CPU_FREQ_BOOST_SW
+ 
+ config ARM_HIGHBANK_CPUFREQ
+ 	tristate "Calxeda Highbank-based"
+-	depends on ARCH_HIGHBANK
+-	select GENERIC_CPUFREQ_CPU0
+-	select PM_OPP
+-	select REGULATOR
+-
++	depends on ARCH_HIGHBANK && GENERIC_CPUFREQ_CPU0 && REGULATOR
+ 	default m
+ 	help
+ 	  This adds the CPUFreq driver for Calxeda Highbank SoC
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.2.2
+
+
