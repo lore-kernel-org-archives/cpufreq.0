@@ -1,81 +1,89 @@
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-Subject: Re: [PATCH] cpufreq: highbank: fix ARM_HIGHBANK_CPUFREQ dependency
- warning
-Date: Thu, 10 Apr 2014 11:06:17 +0800
-Message-ID: <53460AA9.7030801@huawei.com>
-References: <1397010873-11020-1-git-send-email-wangkefeng.wang@huawei.com> <CAKohponpGAm4J2shQRV8doMZGT22eJ2MnU0+GzF-GkZirGPW5g@mail.gmail.com> <1453884.JQRzhD9Q31@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 73781] New: acpi-cpufreq cannot be loaded.
+Date: Thu, 10 Apr 2014 14:23:47 +0000
+Message-ID: <bug-73781-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1453884.JQRzhD9Q31@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="windows-1252"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Mark Langsdorf <mark.langsdorf@calxeda.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, guohanjun@huawei.com
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-Hi Rafael,
+https://bugzilla.kernel.org/show_bug.cgi?id=73781
 
-On 04/10 10:18, Rafael J. Wysocki wrote:
-> On Wednesday, April 09, 2014 09:58:26 AM Viresh Kumar wrote:
->> On 9 April 2014 08:04, Kefeng Wang <wangkefeng.wang@huawei.com> wrot=
-e:
->>> When make ARCH=3Darm multi_v7_defconfig, we get the following warni=
-ngs:
->>>
->>> warning: (ARM_HIGHBANK_CPUFREQ) selects GENERIC_CPUFREQ_CPU0 which =
-has
->>> unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && HAVE_CLK
->>> && REGULATOR && OF && THERMAL && CPU_THERMAL)
->>>
->>> To fix this, make ARM_HIGHBANK_CPUFREQ depend on ARCH_HAS_CPUFREQ a=
-nd
->>> REGULATOR instead of selecting them, PM_OPP will be selected by ARC=
-H_HAS_CPUFREQ.
->>>
->>> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
->=20
-> Well, it doesn't work as intended, I'm afraid:
->=20
-> tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-=2Egit bleeding-edge
-> head:   588bc73d890c5dea35b7982a368c0e95089d5389
-> commit: 51be80edc69390521622df71855d86da4e358488 [67/68] cpufreq: hig=
-hbank: fix ARM_HIGHBANK_CPUFREQ dependency warning
-> config: make ARCH=3Di386 allyesconfig
->=20
-> All warnings:
->=20
-> warning: (GENERIC_CPUFREQ_CPU0 && ARM_BIG_LITTLE_CPUFREQ && ARM_EXYNO=
-S5440_CPUFREQ) selects PM_OPP which has unmet direct dependencies (ARCH=
-_HAS_OPP)
+            Bug ID: 73781
+           Summary: acpi-cpufreq cannot be loaded.
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.14
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: katoh@mikage.ne.jp
+        Regression: No
 
-I don't think this is my issue, without this patch=EF=BC=8Cthe warning =
-is still there.
+After I upgraded kernel to 3.14, acpi-cpufreq module cannot be loaded.
+Accordingly my laptop's cpufreq doesn't run anymore.
+Until kernel 3.13.8, acpi-cpufreq has been loaded automatically as expected.
 
-warning: (GENERIC_CPUFREQ_CPU0 && ARM_BIG_LITTLE_CPUFREQ && ARM_EXYNOS5=
-440_CPUFREQ && ARM_HIGHBANK_CPUFREQ) selects PM_OPP which has unmet dir=
-ect dependencies (ARCH_HAS_OPP)
+If I try to load acpi-cpufreq manually on 3.14, 
 
-this warning is caused by commit 109df086e(cpufreq: Select PM_OPP rathe=
-r than depending on it),
-so could you merge this patch? I will send a revert patch to solve this=
- issue, what is your opinion?
+# modprobe acpi-cpufreq
+modprobe: ERROR: could not insert 'acpi_cpufreq': No such device
 
-Regards,
-Kefeng
+Strangely if p4_clockmod was loaded initially, acpi-cpufreq can be
+loaded sucessfully too. My laptop's cpu is PentiumM though.
 
->=20
->>> ---
->>>  drivers/cpufreq/Kconfig.arm | 6 +-----
->>>  1 file changed, 1 insertion(+), 5 deletions(-)
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> --
->> To unsubscribe from this list: send the line "unsubscribe cpufreq" i=
-n
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
+# modprobe p4-clockmod
+# modprobe acpi-cpufreq
+
+In this case, available frequencies are messed up.
+
+# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
+212500 425000 637500 850000 1062500 1275000 1487500 1700000
+
+On 3.13.8 (This is correct.)
+# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
+1700000 1400000 1200000 1000000 800000 600000 
 
 
+/proc/cpuinfo on Linux version 3.13.8
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 9
+model name      : Intel(R) Pentium(R) M processor 1700MHz
+stepping        : 5
+microcode       : 0x7
+cpu MHz         : 600.000
+cache size      : 1024 KB
+physical id     : 0
+siblings        : 1
+core id         : 0
+cpu cores       : 1
+apicid          : 0
+initial apicid  : 0
+fdiv_bug        : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr mce cx8 sep mtrr pge mca cmov clflush
+dts acpi mmx fxsr sse sse2 tm pbe bts est tm2
+bogomips        : 1199.92
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 32 bits physical, 32 bits virtual
+power management:
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
