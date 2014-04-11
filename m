@@ -1,44 +1,51 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 73781] acpi-cpufreq cannot be loaded.
-Date: Fri, 11 Apr 2014 15:17:04 +0000
-Message-ID: <bug-73781-12968-V3QDJoag2K@https.bugzilla.kernel.org/>
-References: <bug-73781-12968@https.bugzilla.kernel.org/>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [stable request <=3.7] acpi-cpufreq: set current frequency based
+ on target P-State
+Date: Fri, 11 Apr 2014 09:05:43 -0700
+Message-ID: <20140411160543.GC31676@kroah.com>
+References: <20131220081912.GA13684@hobo.Home>
+ <1395785057-28903-1-git-send-email-vlee@twopensource.com>
+ <20140325221803.GA32518@hobo.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-73781-12968@https.bugzilla.kernel.org/>
+DKIM-Signature: v=1; a=rsa-sha1; c=relaxed/relaxed; d=
+	messagingengine.com; h=date:from:to:cc:subject:message-id
+	:references:mime-version:content-type:in-reply-to; s=smtpout;
+	 bh=or6w1DOaHwEeKUHNYR7WyQ4LKTE=; b=LZnx/cm7qgIJqDErwjrLu949ss0Q
+	pcapRCWhubaOUZFxrRG+y+L1e1Vsq1KSIst227tEcj0p41/RfjHHz0FsMB/t3nAn
+	nZTNyiJR42KxCwDaQVuPQIbebBNf0Pvw2hnZBks6Cjkb/uJ2hevqxlB2Jkw9YD2P
+	+K1mdEf+Q0ZpKNk=
+Content-Disposition: inline
+In-Reply-To: <20140325221803.GA32518@hobo.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: rosslagerwall@gmail.com
+Cc: Vinson Lee <vlee@twopensource.com>, stable@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=73781
+On Tue, Mar 25, 2014 at 10:18:03PM +0000, rosslagerwall@gmail.com wrote:
+> On Tue, Mar 25, 2014 at 03:04:16PM -0700, Vinson Lee wrote:
+> > Hi.
+> > 
+> > Please backport upstream commit 8673b83bf2f013379453b4779047bf3c6ae387e4 
+> > "acpi-cpufreq: set current frequency based on target P-State" to stable 
+> > kernels 3.7 and earlier. This patch enables the kernel to control 
+> > P-states on several platforms. Without this patch, the kernel was unable 
+> > to control P-states on the same platforms.
+> > 
+> > The upstream patch cleanly applies to 3.7.
+> > 
+> > A backported patch is needed with the removal of SYSTEM_AMD_MSR_CAPABLE 
+> > for kernels 3.6 and earlier.
+> > 
+> 
+> I seem to recall that the problem was a regression introduced by commit
+> 5a1c0228 (cpufreq: Avoid calling cpufreq driver's target() routine if
+> target_freq == policy->cur) which was introduced in the 3.8 cycle.  Are
+> you sure it is necessary for kernels < 3.8?
 
---- Comment #9 from KATO Hiroshi <katoh@mikage.ne.jp> ---
-(In reply to Viresh Kumar from comment #8)
-> Do git bisect please and let us know the offending commit.
+Given the lack of response here, I'm dropping these from my queue.  If
+someone wants them back in, please resend after responding to this...
 
-I'll do as possible. 
-
-
-By the way while glancing through dmesg, one important difference found.
-
-3.13.8
-
-[    0.087346] acpiphp: Slot [1-1] registered
-[    0.090033] Found 1 acpi root devices
-[    0.140788] Switched to clocksource acpi_pm
-[    1.856854] ACPI: acpi_idle registered with cpuidle
-[    2.101747] thinkpad_acpi: ThinkPad ACPI Extras v0.25
-
-3.14
-[    0.083948] acpiphp: Slot [1-1] registered
-[    0.139115] Switched to clocksource acpi_pm
-[    2.266132] thinkpad_acpi: ThinkPad ACPI Extras v0.25
-
-3.14 kernel does not find an acpi root device.
-I think this can be the point of this problem intead of cpufreq.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+greg k-h
