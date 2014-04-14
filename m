@@ -1,38 +1,79 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH RESEND 2/2] cpufreq: imx6q: Remove unused include
-Date: Mon, 14 Apr 2014 11:46:57 +0200
-Message-ID: <1397468817-23266-2-git-send-email-p.zabel@pengutronix.de>
-References: <1397468817-23266-1-git-send-email-p.zabel@pengutronix.de>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH 00/20] Introduce new cpufreq helper macros
+Date: Tue, 15 Apr 2014 00:07:32 +0300
+Message-ID: <534C4E14.3080509@semaphore.gr>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1397468817-23266-1-git-send-email-p.zabel@pengutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@freescale.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, Philipp Zabel <p.zabel@pengutronix.de>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "David S. Miller" <davem@davemloft.net>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Randy Dunlap <rdunlap@infradead.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-There is no need to include delay.h.
+Hi all,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Shawn Guo <shawn.guo@freescale.com>
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
----
- drivers/cpufreq/imx6q-cpufreq.c | 1 -
- 1 file changed, 1 deletion(-)
+This patch set introduces two freq_table helper macros which
+can be used for iteration over cpufreq_frequency_table and
+makes the necessary changes to cpufreq core and drivers that
+use such an iteration procedure.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 92a82ec..af366c2 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -9,7 +9,6 @@
- #include <linux/clk.h>
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
--#include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
+The motivation was a usage of common procedure to iterate over
+cpufreq_frequency_table across all drivers and cpufreq core.
+
+This was tested on a x86_64 platform.
+Patches 4-17 compiled successfully but unfortunately I was not
+able to compile test patches 18-20.
+
+
+Stratos Karafotis (20):
+  cpufreq: Introduce macros for cpufreq_frequency_table iteration
+  cpufreq: acpi-cpufreq: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: stats: Use cpufreq_for_each_valid_entry macro for iteration
+  cpufreq: arm_big_little: Use cpufreq_for_each_entry macro for
+    iteration
+  cpufreq: dbx500: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: elanfreq: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: exynos: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: exynos5440: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: longhaul: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: powernow-k6: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: s3c2416: Use cpufreq_for_each_valid_entry macro for iteration
+  cpufreq: s3c64xx: Use cpufreq_for_each_valid_entry macro for iteration
+  sh: clk: Use cpufreq_for_each_valid_entry macro for iteration
+  thermal: cpu_cooling: Use cpufreq_for_each_valid_entry macro for
+    iteration
+  mfd: db8500-prcmu: Use cpufreq_for_each_entry macro for iteration
+  mips: lemote 2f: se cpufreq_for_each_entry macro for iteration
+  davinci: da850: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: pasemi: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: pcc_cbe: Use cpufreq_for_each_entry macro for iteration
+  irda: sh_sir: Use cpufreq_for_each_valid_entry macro for iteration
+
+ Documentation/cpu-freq/cpu-drivers.txt | 16 ++++++++++
+ arch/arm/mach-davinci/da850.c          |  9 +++---
+ arch/mips/loongson/lemote-2f/clock.c   | 15 ++++------
+ drivers/cpufreq/acpi-cpufreq.c         | 10 +++----
+ drivers/cpufreq/arm_big_little.c       | 18 ++++++-----
+ drivers/cpufreq/cpufreq.c              | 11 +++++++
+ drivers/cpufreq/cpufreq_stats.c        | 22 +++++---------
+ drivers/cpufreq/dbx500-cpufreq.c       |  7 ++---
+ drivers/cpufreq/elanfreq.c             |  8 ++---
+ drivers/cpufreq/exynos-cpufreq.c       | 14 ++++-----
+ drivers/cpufreq/exynos5440-cpufreq.c   | 30 +++++++++----------
+ drivers/cpufreq/freq_table.c           | 55 ++++++++++++++++------------------
+ drivers/cpufreq/longhaul.c             | 13 ++++----
+ drivers/cpufreq/pasemi-cpufreq.c       | 10 +++----
+ drivers/cpufreq/powernow-k6.c          | 13 ++++----
+ drivers/cpufreq/ppc_cbe_cpufreq.c      |  9 +++---
+ drivers/cpufreq/s3c2416-cpufreq.c      | 40 +++++++++++--------------
+ drivers/cpufreq/s3c64xx-cpufreq.c      | 15 ++++------
+ drivers/mfd/db8500-prcmu.c             | 18 +++++------
+ drivers/net/irda/sh_sir.c              | 14 ++++-----
+ drivers/sh/clk/core.c                  | 19 ++++--------
+ drivers/thermal/cpu_cooling.c          | 33 ++++++++------------
+ include/linux/cpufreq.h                | 21 +++++++++++++
+ 23 files changed, 211 insertions(+), 209 deletions(-)
+
 -- 
-1.9.1
+1.9.0
