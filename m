@@ -1,77 +1,60 @@
 From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH 12/20] cpufreq: s3c64xx: Use cpufreq_for_each_valid_entry
- macro for iteration
-Date: Tue, 15 Apr 2014 00:09:57 +0300
-Message-ID: <534C4EA5.3090204@semaphore.gr>
+Subject: [PATCH 18/20] cpufreq: pasemi: Use cpufreq_for_each_entry macro for
+ iteration
+Date: Tue, 15 Apr 2014 00:10:55 +0300
+Message-ID: <534C4EDF.2050607@semaphore.gr>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linuxppc-dev@lists.ozlabs.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-The cpufreq core supports the cpufreq_for_each_entry and
-cpufreq_for_each_valid_entry macros helpers for iteration over the
-cpufreq_frequency_table, so use them.
+The cpufreq core supports the cpufreq_for_each_entry macro helper
+for iteration over the cpufreq_frequency_table, so use it.
 
 It should have no functional changes.
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
- drivers/cpufreq/s3c64xx-cpufreq.c | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-index ff7d3ec..176e84c 100644
---- a/drivers/cpufreq/s3c64xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-@@ -118,11 +118,10 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
- 		pr_err("Unable to check supported voltages\n");
+Please note that I was no able to compile test this patch due to 
+lack of cross compiler.
+
+ drivers/cpufreq/pasemi-cpufreq.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
+index 84c84b5..9a64492 100644
+--- a/drivers/cpufreq/pasemi-cpufreq.c
++++ b/drivers/cpufreq/pasemi-cpufreq.c
+@@ -136,9 +136,10 @@ void restore_astate(int cpu)
+ 
+ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
++	struct cpufreq_frequency_table *pos;
+ 	const u32 *max_freqp;
+ 	u32 max_freq;
+-	int i, cur_astate;
++	int cur_astate;
+ 	struct resource res;
+ 	struct device_node *cpu, *dn;
+ 	int err = -ENODEV;
+@@ -197,10 +198,9 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	pr_debug("initializing frequency table\n");
+ 
+ 	/* initialize frequency table */
+-	for (i=0; pas_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
+-		pas_freqs[i].frequency =
+-			get_astate_freq(pas_freqs[i].driver_data) * 100000;
+-		pr_debug("%d: %d\n", i, pas_freqs[i].frequency);
++	cpufreq_for_each_entry(pos, pas_freqs) {
++		pos->frequency = get_astate_freq(pos->driver_data) * 100000;
++		pr_debug("%lu: %d\n", pos - pas_freqs, pos->frequency);
  	}
  
--	freq = s3c64xx_freq_table;
--	while (count > 0 && freq->frequency != CPUFREQ_TABLE_END) {
--		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
--			continue;
-+	if (!count)
-+		goto out;
- 
-+	cpufreq_for_each_valid_entry(freq, s3c64xx_freq_table) {
- 		dvfs = &s3c64xx_dvfs_table[freq->driver_data];
- 		found = 0;
- 
-@@ -137,10 +136,9 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
- 				 freq->frequency);
- 			freq->frequency = CPUFREQ_ENTRY_INVALID;
- 		}
--
--		freq++;
- 	}
- 
-+out:
- 	/* Guess based on having to do an I2C/SPI write; in future we
- 	 * will be able to query the regulator performance here. */
- 	regulator_latency = 1 * 1000 * 1000;
-@@ -179,8 +177,7 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	}
- #endif
- 
--	freq = s3c64xx_freq_table;
--	while (freq->frequency != CPUFREQ_TABLE_END) {
-+	cpufreq_for_each_entry(freq, s3c64xx_freq_table) {
- 		unsigned long r;
- 
- 		/* Check for frequencies we can generate */
-@@ -196,8 +193,6 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
- 		 * frequency is the maximum we can support. */
- 		if (!vddarm && freq->frequency > clk_get_rate(policy->clk) / 1000)
- 			freq->frequency = CPUFREQ_ENTRY_INVALID;
--
--		freq++;
- 	}
- 
- 	/* Datasheet says PLL stabalisation time (if we were to use
+ 	cur_astate = get_cur_astate(policy->cpu);
 -- 
 1.9.0
