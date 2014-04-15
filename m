@@ -1,38 +1,28 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 09/20] cpufreq: longhaul: Use cpufreq_for_each_entry macro
- for iteration
-Date: Tue, 15 Apr 2014 11:15:20 +0530
-Message-ID: <CAKohpon7+VSvLROB7jqd2mUMk=zDSwDPOTuOEkJBMkPdRnNZFw@mail.gmail.com>
-References: <534C4E86.4060304@semaphore.gr>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 73741] intel_pstate.c does not support scaling_cur_freq and
+ breaks gkrellm-gkfreq monitor
+Date: Tue, 15 Apr 2014 05:54:08 +0000
+Message-ID: <bug-73741-12968-Ja97WCPswg@https.bugzilla.kernel.org/>
+References: <bug-73741-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <534C4E86.4060304@semaphore.gr>
+In-Reply-To: <bug-73741-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: cpufreq@vger.kernel.org
 
-On 15 April 2014 02:39, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> The cpufreq core supports the cpufreq_for_each_entry macro helper
-> for iteration over the cpufreq_frequency_table, so use it.
->
-> It should have no functional changes.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/longhaul.c | 13 ++++++-------
->  1 file changed, 6 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-> index d00e5d1..6de99c4 100644
-> --- a/drivers/cpufreq/longhaul.c
-> +++ b/drivers/cpufreq/longhaul.c
-> @@ -528,6 +528,7 @@ static int longhaul_get_ranges(void)
->
->  static void longhaul_setup_voltagescaling(void)
->  {
-> +       struct cpufreq_frequency_table *freq;
+https://bugzilla.kernel.org/show_bug.cgi?id=73741
 
-Be consistent and use 'pos' here as well.
+Aaron Lu <aaron.lu@intel.com> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |ASSIGNED
+                 CC|                            |aaron.lu@intel.com
+           Assignee|cpufreq@vger.kernel.org     |dirk.brandewie@gmail.com
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
