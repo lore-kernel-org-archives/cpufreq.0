@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 02/20] cpufreq: acpi-cpufreq: Use cpufreq_for_each_entry
+Subject: Re: [PATCH 03/20] cpufreq: stats: Use cpufreq_for_each_valid_entry
  macro for iteration
-Date: Tue, 15 Apr 2014 11:02:43 +0530
-Message-ID: <CAKohpok5+Eai=OOs9J+uYp4NaYmovXqkkg_Bvx0025_XyS4xTQ@mail.gmail.com>
-References: <534C4E36.9060208@semaphore.gr>
+Date: Tue, 15 Apr 2014 11:05:17 +0530
+Message-ID: <CAKohpo=25ed_2azaiUFtou75j_yNeP-QN=t5ZWTdgTtDV1DBpg@mail.gmail.com>
+References: <534C4E48.9080601@semaphore.gr>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <534C4E36.9060208@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <534C4E48.9080601@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,43 +15,44 @@ To: Stratos Karafotis <stratosk@semaphore.gr>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
 On 15 April 2014 02:38, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> The cpufreq core supports the cpufreq_for_each_entry macro helper
-> for iteration over the cpufreq_frequency_table, so use it.
+> The cpufreq core supports the cpufreq_for_each_valid_entry macro
+> helper for iteration over the cpufreq_frequency_table, so use it.
 >
 > It should have no functional changes.
 >
 > Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 > ---
->  drivers/cpufreq/acpi-cpufreq.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+>  drivers/cpufreq/cpufreq_stats.c | 22 ++++++++--------------
+>  1 file changed, 8 insertions(+), 14 deletions(-)
 >
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index 000e4e0..12a5750 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -213,7 +213,7 @@ static unsigned extract_io(u32 value, struct acpi_cpufreq_data *data)
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index ecaaebf..223078d 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -182,11 +182,11 @@ static void cpufreq_stats_free_table(unsigned int cpu)
 >
->  static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
+>  static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
 >  {
-> -       int i;
-> +       struct cpufreq_frequency_table *pos;
->         struct acpi_processor_performance *perf;
+> -       unsigned int i, j, count = 0, ret = 0;
+> +       unsigned int i, count = 0, ret = 0;
+>         struct cpufreq_stats *stat;
+>         unsigned int alloc_size;
+>         unsigned int cpu = policy->cpu;
+> -       struct cpufreq_frequency_table *table;
+> +       struct cpufreq_frequency_table *pos, *table;
 >
->         if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
-> @@ -223,11 +223,11 @@ static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
+>         table = cpufreq_frequency_get_table(cpu);
+>         if (unlikely(!table))
+> @@ -205,10 +205,7 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
+>         stat->cpu = cpu;
+>         per_cpu(cpufreq_stats_table, cpu) = stat;
 >
->         perf = data->acpi_data;
->
-> -       for (i = 0; data->freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> -               if (msr == perf->states[data->freq_table[i].driver_data].status)
-> -                       return data->freq_table[i].frequency;
-> +       cpufreq_for_each_entry(pos, data->freq_table) {
-> +               if (msr == perf->states[pos->driver_data].status)
-> +                       return pos->frequency;
+> -       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> -               unsigned int freq = table[i].frequency;
+> -               if (freq == CPUFREQ_ENTRY_INVALID)
+> -                       continue;
+> +       cpufreq_for_each_valid_entry(pos, table) {
+>                 count++;
 >         }
-> -       return data->freq_table[0].frequency;
-> +       return data->freq_table->frequency;
 
-This isn't a related change, isn't it? Also it make it less readable.
-So probably
-just leave it as is.
+Remove {} as well..
