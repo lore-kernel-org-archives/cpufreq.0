@@ -1,42 +1,45 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 73781] acpi-cpufreq cannot be loaded.
-Date: Thu, 17 Apr 2014 08:13:41 +0000
-Message-ID: <bug-73781-12968-MkkaUC409Y@https.bugzilla.kernel.org/>
-References: <bug-73781-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-73781-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 2/3] cpufreq: ppc: Fix integer overflow in expression
+Date: Thu, 17 Apr 2014 11:53:26 +0200
+Message-ID: <1397728407-13909-2-git-send-email-geert+renesas@glider.be>
+References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=73781
+On 32-bit, "12 * NSEC_PER_SEC" doesn't fit in "unsigned long"
+(NSEC_PER_SEC is a "long" constant), causing an integer overflow:
 
---- Comment #12 from Stuart Foster <smf.linux@ntlworld.com> ---
-My bisect attempt reports this as the source of the issue:
+drivers/cpufreq/ppc-corenet-cpufreq.c: In function 'corenet_cpufreq_cpu_init':
+drivers/cpufreq/ppc-corenet-cpufreq.c:211:9: warning: integer overflow in expression [-Woverflow]
 
-root@Mars:/work/linux-git# git bisect bad
-b981513f806d26b2cc971eb65ced14bede67558b is the first bad commit
-commit b981513f806d26b2cc971eb65ced14bede67558b
-Author: Jiang Liu <jiang.liu@linux.intel.com>
-Date:   Thu Jan 9 16:15:19 2014 +0800
+Force the intermediate to be 64-bit by adding an "ULL" suffix to the
+constant multiplier to fix this.
 
-    ACPI / scan: bail out early if failed to parse APIC ID for CPU
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/cpufreq/ppc-corenet-cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-    Enhance ACPI CPU hotplug driver to print clear error message and
-    bail out early if BIOS returns wrong value in ACPI MADT table or
-    _MAT method. Otherwise it will add the CPU device even if failed
-    to get APIC ID and fails any operations against sysfs interface:
-    /sys/devices/system/cpu/cpux/online
-
-    Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
-    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-:040000 040000 beed2874da58eff342807a9bed397a9b3f23accb
-07f57bb8eb502216ae49cce21293a191b594095d M    drivers
-
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+index e78f9c806de4..53881d78a931 100644
+--- a/drivers/cpufreq/ppc-corenet-cpufreq.c
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -208,7 +208,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		per_cpu(cpu_data, i) = data;
+ 
+ 	policy->cpuinfo.transition_latency =
+-				(12 * NSEC_PER_SEC) / fsl_get_sys_freq();
++				(12ULL * NSEC_PER_SEC) / fsl_get_sys_freq();
+ 	of_node_put(np);
+ 
+ 	return 0;
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.7.9.5
+
