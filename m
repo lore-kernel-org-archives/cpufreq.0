@@ -1,29 +1,35 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 73781] acpi-cpufreq cannot be loaded.
-Date: Fri, 18 Apr 2014 01:59:20 +0000
-Message-ID: <bug-73781-12968-IUqFWuTc8i@https.bugzilla.kernel.org/>
-References: <bug-73781-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-73781-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH 0/2] Support cpufreq driver for Exynos3250
+Date: Fri, 18 Apr 2014 11:20:32 +0900
+Message-ID: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: kgene.kim@samsung.com, kyungmin.park@samsung.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=73781
+This patchset support cpufreq driver for Exynos3250 which uses the Cortex-A7
+dual cores and has a target speed of 1.0 GHz and code clean using dev_err/info
+instead of pr_err/info function.
 
-Lan Tianyu <tianyu.lan@intel.com> changed:
+This patchset has a dependency on following patchset[1] to support Exynos3250:
+[1] https://lkml.org/lkml/2014/4/17/669
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-          Component|cpufreq                     |Config-Processors
-           Assignee|cpufreq@vger.kernel.org     |acpi_config-processors@kern
-                   |                            |el-bugs.osdl.org
-            Product|Power Management            |ACPI
-                 CC|                            |tianyu.lan@intel.com
+Chanwoo Choi (2):
+  cpufreq: exynos: Use dev_err/info function instead of pr_err/info
+  cpufreq: exynos: Add new Exynos3250 cpufreq driver
+
+ drivers/cpufreq/Kconfig.arm          |  11 +++
+ drivers/cpufreq/Makefile             |   1 +
+ drivers/cpufreq/exynos-cpufreq.c     |  25 +++---
+ drivers/cpufreq/exynos-cpufreq.h     |  18 ++++
+ drivers/cpufreq/exynos3250-cpufreq.c | 158 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 203 insertions(+), 10 deletions(-)
+ create mode 100644 drivers/cpufreq/exynos3250-cpufreq.c
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.8.0
+
