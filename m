@@ -1,128 +1,147 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 1/8] cpufreq: Introduce macros for cpufreq_frequency_table iteration
-Date: Tue, 22 Apr 2014 00:06:39 +0200
-Message-ID: <26900651.DzFuLa6PAS@vostro.rjw.lan>
-References: <534E2B44.7090008@semaphore.gr>
+Subject: Re: [PATCH RESEND 1/2] cpufreq: imx6q: Drop devm_clk/regulator_get usage
+Date: Tue, 22 Apr 2014 00:08:20 +0200
+Message-ID: <6608663.Uaf3xkE0GI@vostro.rjw.lan>
+References: <1397468817-23266-1-git-send-email-p.zabel@pengutronix.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <534E2B44.7090008@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1397468817-23266-1-git-send-email-p.zabel@pengutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linus Walleij <linus.walleij@linaro.org>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@freescale.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de
 
-On Wednesday, April 16, 2014 10:03:32 AM Stratos Karafotis wrote:
-> Many cpufreq drivers need to iterate over the cpufreq_frequency_table
-> for various tasks.
+On Monday, April 14, 2014 11:46:56 AM Philipp Zabel wrote:
+> This driver is using devres managed calls incorrectly, giving the cpu0
+> device as first parameter instead of the cpufreq platform device.
+> This results in resources not being freed if the cpufreq platform device
+> is unbound, for example if probing has to be deferred for a missing
+> regulator.
+> Supporting probe deferral properly is a prerequisite to enabling the
+> internal LDO bypass on i.MX6 and regulating the CPU voltage with an
+> external regulator.
 > 
-> This patch introduces two macros which can be used for iteration over
-> cpufreq_frequency_table keeping a common coding style across drivers:
-> 
-> - cpufreq_for_each_entry: iterate over each entry of the table
-> - cpufreq_for_each_valid_entry: iterate over each entry that contains
-> a valid frequency.
-> 
-> It should have no functional changes.
-> 
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Acked-by: Shawn Guo <shawn.guo@freescale.com>
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> ---
+> This didn't turn up in v3.15-rc1. Resend in case it fell through the cracks.
 
-Can you please resend the entire series as v4 so that it is clear which version
-of each patch is the current one?
+Please resend with a CC to linux-pm@vger.kernel.org (and you can drop cpufreq
+from the CC list).
 
 > ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 53 ++++++++++++++++++++++++++++++-----------
+>  1 file changed, 39 insertions(+), 14 deletions(-)
 > 
-> Changes v2 -> v3
-> 	- Better formatting in Documentation
-> 	- Fix spell error in comments
-> 
->  Documentation/cpu-freq/cpu-drivers.txt | 19 +++++++++++++++++++
->  drivers/cpufreq/cpufreq.c              | 11 +++++++++++
->  include/linux/cpufreq.h                | 21 +++++++++++++++++++++
->  3 files changed, 51 insertions(+)
-> 
-> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-> index 48da5fd..b045fe5 100644
-> --- a/Documentation/cpu-freq/cpu-drivers.txt
-> +++ b/Documentation/cpu-freq/cpu-drivers.txt
-> @@ -228,3 +228,22 @@ is the corresponding frequency table helper for the ->target
->  stage. Just pass the values to this function, and the unsigned int
->  index returns the number of the frequency table entry which contains
->  the frequency the CPU shall be set to.
-> +
-> +The following macros can be used as iterators over cpufreq_frequency_table:
-> +
-> +cpufreq_for_each_entry(pos, table) - iterates over all entries of frequency
-> +table.
-> +
-> +cpufreq-for_each_valid_entry(pos, table) - iterates over all entries,
-> +excluding CPUFREQ_ENTRY_INVALID frequencies.
-> +Use arguments "pos" - a cpufreq_frequency_table * as a loop cursor and
-> +"table" - the cpufreq_frequency_table * you want to iterate over.
-> +
-> +For example:
-> +
-> +	struct cpufreq_frequency_table *pos, *driver_freq_table;
-> +
-> +	cpufreq_for_each_entry(pos, driver_freq_table) {
-> +		/* Do something with pos */
-> +		pos->frequency = ...
-> +	}
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index abda660..a517da9 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -237,6 +237,17 @@ void cpufreq_cpu_put(struct cpufreq_policy *policy)
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index e27fca8..92a82ec 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -170,25 +170,25 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+>  		return -ENOENT;
+>  	}
+>  
+> -	arm_clk = devm_clk_get(cpu_dev, "arm");
+> -	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
+> -	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
+> -	step_clk = devm_clk_get(cpu_dev, "step");
+> -	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
+> +	arm_clk = clk_get(cpu_dev, "arm");
+> +	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
+> +	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
+> +	step_clk = clk_get(cpu_dev, "step");
+> +	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
+>  	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
+>  	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
+>  		dev_err(cpu_dev, "failed to get clocks\n");
+>  		ret = -ENOENT;
+> -		goto put_node;
+> +		goto put_clk;
+>  	}
+>  
+> -	arm_reg = devm_regulator_get(cpu_dev, "arm");
+> -	pu_reg = devm_regulator_get(cpu_dev, "pu");
+> -	soc_reg = devm_regulator_get(cpu_dev, "soc");
+> +	arm_reg = regulator_get(cpu_dev, "arm");
+> +	pu_reg = regulator_get(cpu_dev, "pu");
+> +	soc_reg = regulator_get(cpu_dev, "soc");
+>  	if (IS_ERR(arm_reg) || IS_ERR(pu_reg) || IS_ERR(soc_reg)) {
+>  		dev_err(cpu_dev, "failed to get regulators\n");
+>  		ret = -ENOENT;
+> -		goto put_node;
+> +		goto put_reg;
+>  	}
+>  
+>  	/*
+> @@ -201,21 +201,21 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+>  		ret = of_init_opp_table(cpu_dev);
+>  		if (ret < 0) {
+>  			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
+> -			goto put_node;
+> +			goto put_reg;
+>  		}
+>  
+>  		num = dev_pm_opp_get_opp_count(cpu_dev);
+>  		if (num < 0) {
+>  			ret = num;
+>  			dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
+> -			goto put_node;
+> +			goto put_reg;
+>  		}
+>  	}
+>  
+>  	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+>  	if (ret) {
+>  		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+> -		goto put_node;
+> +		goto put_reg;
+>  	}
+>  
+>  	/* Make imx6_soc_volt array's size same as arm opp number */
+> @@ -301,7 +301,24 @@ soc_opp_out:
+>  
+>  free_freq_table:
+>  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+> -put_node:
+> +put_reg:
+> +	if (!IS_ERR(arm_reg))
+> +		regulator_put(arm_reg);
+> +	if (!IS_ERR(pu_reg))
+> +		regulator_put(pu_reg);
+> +	if (!IS_ERR(soc_reg))
+> +		regulator_put(soc_reg);
+> +put_clk:
+> +	if (!IS_ERR(arm_clk))
+> +		clk_put(arm_clk);
+> +	if (!IS_ERR(pll1_sys_clk))
+> +		clk_put(pll1_sys_clk);
+> +	if (!IS_ERR(pll1_sw_clk))
+> +		clk_put(pll1_sw_clk);
+> +	if (!IS_ERR(step_clk))
+> +		clk_put(step_clk);
+> +	if (!IS_ERR(pll2_pfd2_396m_clk))
+> +		clk_put(pll2_pfd2_396m_clk);
+>  	of_node_put(np);
+>  	return ret;
 >  }
->  EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
+> @@ -310,6 +327,14 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
+>  {
+>  	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
+>  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+> +	regulator_put(arm_reg);
+> +	regulator_put(pu_reg);
+> +	regulator_put(soc_reg);
+> +	clk_put(arm_clk);
+> +	clk_put(pll1_sys_clk);
+> +	clk_put(pll1_sw_clk);
+> +	clk_put(step_clk);
+> +	clk_put(pll2_pfd2_396m_clk);
 >  
-> +bool cpufreq_next_valid(struct cpufreq_frequency_table **pos)
-> +{
-> +	while ((*pos)->frequency != CPUFREQ_TABLE_END)
-> +		if ((*pos)->frequency != CPUFREQ_ENTRY_INVALID)
-> +			return true;
-> +		else
-> +			(*pos)++;
-> +	return false;
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_next_valid);
-> +
->  /*********************************************************************
->   *            EXTERNALLY AFFECTING FREQUENCY CHANGES                 *
->   *********************************************************************/
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 5ae5100..77a5fa1 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -468,6 +468,27 @@ struct cpufreq_frequency_table {
->  				    * order */
->  };
->  
-> +bool cpufreq_next_valid(struct cpufreq_frequency_table **pos);
-> +
-> +/*
-> + * cpufreq_for_each_entry -	iterate over a cpufreq_frequency_table
-> + * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
-> + * @table:	the cpufreq_frequency_table * to iterate over.
-> + */
-> +
-> +#define cpufreq_for_each_entry(pos, table)	\
-> +	for (pos = table; pos->frequency != CPUFREQ_TABLE_END; pos++)
-> +
-> +/*
-> + * cpufreq_for_each_valid_entry -     iterate over a cpufreq_frequency_table
-> + *	excluding CPUFREQ_ENTRY_INVALID frequencies.
-> + * @pos:        the cpufreq_frequency_table * to use as a loop cursor.
-> + * @table:      the cpufreq_frequency_table * to iterate over.
-> + */
-> +
-> +#define cpufreq_for_each_valid_entry(pos, table)	\
-> +	for (pos = table; cpufreq_next_valid(&pos); pos++)
-> +
->  int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
->  				    struct cpufreq_frequency_table *table);
->  
+>  	return 0;
+>  }
 > 
 
 -- 
