@@ -1,82 +1,56 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH 0/2] Support cpufreq driver for Exynos3250
-Date: Sat, 19 Apr 2014 16:36:48 +0200
-Message-ID: <53528A00.6090906@gmail.com>
-References: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>	<CAK9yfHygoHZ7hnAcLuuaMEsPb8Tqw-QbcTrQ+b=2CD6kK3odmw@mail.gmail.com>	<CAGTfZH1M9h3Sx73wJsD=_vnSyV-+fyOY041PN_7ea718B0mFoQ@mail.gmail.com>	<53527F54.5020601@gmail.com> <CAK9yfHxdC7JAJ6CiBsoHWcdbnv53qzs0XNtfjsabGmA6Sgv=ww@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Another powernow-k6 bug
+Date: Mon, 21 Apr 2014 11:03:04 +0530
+Message-ID: <CAOh2x=ndnFUBphVYGRL+x2jra36VS1T_F=sMpkAgm9xi52Qvvg@mail.gmail.com>
+References: <1397676206.5717.7.camel@deadeye.wl.decadent.org.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=rFnRvtoBXxCDbfCbgnuwHoIfcT8N1PA5qDTQj6tfaUg=;
-        b=Dimkz2KO+usw6CF2sCsRl3B6b6ChJBn1/Yyel9iZbL6V5Oitp0kjpUBc2GLR8PhxPo
-         Q/qLgEQZZZQe4Faf16uw84z74IgLWXGu/2ifKcrTM8wnh5BRVnIhs2ChdmoakFJAUf5W
-         V7u4ecI3mAncs3TMDoI1iN++9jyVuFAkHsU3TyWiZO4kSZWLE48kgDYuy0zkX1MO5LpC
-         hKPY4eZjZlkKBBDQkKcOyOOhEbX7b86XmMcM3aG7URNMUbkUDJ65NTKgJ6qip8wzbJOl
-         5ASPsAafSRmThbwKjVwtpAVchDWXcELP27rZ7AOasjid26/r4o0uBIpoWtQ//IjuUWxF
-         83Jg==
-In-Reply-To: <CAK9yfHxdC7JAJ6CiBsoHWcdbnv53qzs0XNtfjsabGmA6Sgv=ww@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type;
+        bh=OPjsXjAvwFY8BaFHeqZ5hiJWkYLz86L8YgwkW7Amj4Y=;
+        b=B3zJJhsOEut9nL+WH+uRTGtVvse50/9x+mf88okg1RKfni/5FaRiN/R+Oc+KX/eq41
+         yMk/00rcYN/Rj7zCFCNaTOcR1xWBrwy2SLgYl7+7y6TVY+/fWn382K86Mp0Uh9YLVPpt
+         ViSAEbkBBHTgLmHR27sx4JNOoVnkkpj3ugsAIZt7jNaOPqUSA+qug7ZAfPg7HRZLmokg
+         g8gOEhaWIAgj/K1Dk1hmaxzvv20o+9jxUAasK4ur3YqY6hAluScP+yj/QhQ9lzA28KpX
+         Z98Hceoip8WU9hdfFlHCgoZCT3lFd3SbLZUuGf3zmnHPVyG3ktffI5PCl+a0RTW4RPHc
+         Kkfg==
+In-Reply-To: <1397676206.5717.7.camel@deadeye.wl.decadent.org.uk>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Chanwoo Choi <cwchoi00@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, LKML <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Ben Hutchings <ben@decadent.org.uk>
+Cc: Mikulas Patocka <mpatocka@redhat.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-
-
-On 19.04.2014 16:35, Sachin Kamat wrote:
-> Hi Tomasz,
+On Thu, Apr 17, 2014 at 12:53 AM, Ben Hutchings <ben@decadent.org.uk> wrote:
+> While looking at your recent powernow-k6 fixes (thanks for those), I
+> noticed that powernow_k6_cpu_exit() doesn't work properly:
 >
->
-> On 19 April 2014 19:21, Tomasz Figa <tomasz.figa@gmail.com> wrote:
->> Hi Chanwoo, Sachin,
->>
->>
->> On 19.04.2014 15:43, Chanwoo Choi wrote:
->>>
->>> Hi Sachin,
->>>
->>> On Fri, Apr 18, 2014 at 5:14 PM, Sachin Kamat <sachin.kamat@linaro.org>
->>> wrote:
->>>>
->>>> Hi Chanwoo,
->>>>
->>>> On 18 April 2014 07:50, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->>>>>
->>>>> This patchset support cpufreq driver for Exynos3250 which uses the
->>>>> Cortex-A7
->>>>> dual cores and has a target speed of 1.0 GHz and code clean using
->>>>> dev_err/info
->>>>> instead of pr_err/info function.
->>>>
->>>>
->>>> Per SoC cpufreq driver which does not use CCF is no more encouraged for
->>>> new
->>>> Exynos platforms. Thomas has already posted patches to make use of
->>>> generic cpu freq driver
->>>> on Exynos platforms. Please refer to [1] and try to utilize it for
->>>> this platform as well.
->>>>
->>>> [1] http://permalink.gmane.org/gmane.linux.kernel.samsung-soc/26886
->>>
->>>
->>> OK, I'll refer to this new patch for cpufreq and rebase it.
->>>
->>> Thanks for your reply.
->>
->>
->> The last version posted by Thomas still had several comments to be addressed
->> that could lead to quite big changes in the whole design in next version.
->> According to the information from Thomas, the work on it is in progress and
->> we should see updated patchset soon.
->
-> Yes, that is right. I wanted Chanwoo to be aware of this new design
-> and track the same.
->
+> static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
+> {
+>         unsigned int i;
+>         for (i = 0; i < 8; i++) {
+>                 if (i == max_multiplier)
+>                         powernow_k6_set_state(i);
+>         }
 
-Sure. Just wanted to make sure this is clear.
+Yeah, there is a issue there. But why do we need to set freq to
+highest freq on exit()? Probably this code can be simply removed?
 
-Best regards,
-Tomasz
+>         cpufreq_frequency_table_put_attr(policy->cpu);
+
+This doesn't exist anymore in latest sources.
+
+>         return 0;
+> }
+>
+> As max_multiplier is the actual multiplier * 10, this will never change
+> the state.  I'm guessing this should be something like:
+>
+>         for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++)
+>                 if (clock_ratio[i].driver_data == max_multiplier)
+
+--
+viresh
