@@ -1,61 +1,125 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: ppc: Fix handling of non-existent clocks
-Date: Mon, 21 Apr 2014 11:31:05 +0530
-Message-ID: <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
-References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
-	<1397728407-13909-3-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH 1/2] cpufreq: exynos: Use dev_err/info function instead of pr_err/info
+Date: Mon, 21 Apr 2014 11:35:19 +0530
+Message-ID: <CAKohpo=-Oxu6ZoB4B2H4552meq46iXrVzKbP5ZwnG==sCc2_MA@mail.gmail.com>
+References: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>
+	<1397787634-9334-2-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1397787634-9334-2-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert+renesas@glider.be>, Mike Turquette <mike.turquette@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 
-On 17 April 2014 15:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> If the clock doesn't exist, clk_get_rate() returns -EINVAL
-
-You clk_get_rate() isn't written well then, it should return zero.
-@Mike: I didn't see this clearly mentioned in clk.h, should we fix
-that?
-
->, which becomes
-> a large number (freq is u32), failing the "freq < min_cpufreq" test.
-> Explicitly test for "(u32)-EINVAL" to fix this.
-
-That's a bad check. We should have done this instead:
-
-(s32)freq < 0; but that would be true for high values of clock. And that's
-why clk_get_rate() must return zero for errors.
-
-> Update the comment, and fix a grammer issue while we're at it.
+On 18 April 2014 07:50, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> This patch uses dev_err/info function to show accurate log message with device name
+> instead of pr_err/info function.
 >
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 > ---
->  drivers/cpufreq/ppc-corenet-cpufreq.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+>  drivers/cpufreq/exynos-cpufreq.c | 21 ++++++++++++---------
+>  drivers/cpufreq/exynos-cpufreq.h |  1 +
+>  2 files changed, 13 insertions(+), 9 deletions(-)
+
+This still looks fine even if we don't take the new driver ?
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+> index f99cfe2..8b4bb4a 100644
+> --- a/drivers/cpufreq/exynos-cpufreq.c
+> +++ b/drivers/cpufreq/exynos-cpufreq.c
+> @@ -49,6 +49,7 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+>         struct cpufreq_policy *policy = cpufreq_cpu_get(0);
+>         unsigned int arm_volt, safe_arm_volt = 0;
+>         unsigned int mpll_freq_khz = exynos_info->mpll_freq_khz;
+> +       struct device *dev = exynos_info->dev;
+>         unsigned int old_freq;
+>         int index, old_index;
+>         int ret = 0;
+> @@ -90,8 +91,8 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+>                 /* Firstly, voltage up to increase frequency */
+>                 ret = regulator_set_voltage(arm_regulator, arm_volt, arm_volt);
+>                 if (ret) {
+> -                       pr_err("%s: failed to set cpu voltage to %d\n",
+> -                               __func__, arm_volt);
+> +                       dev_err(dev, "failed to set cpu voltage to %d\n",
+> +                               arm_volt);
+>                         return ret;
+>                 }
+>         }
+> @@ -100,8 +101,8 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+>                 ret = regulator_set_voltage(arm_regulator, safe_arm_volt,
+>                                       safe_arm_volt);
+>                 if (ret) {
+> -                       pr_err("%s: failed to set cpu voltage to %d\n",
+> -                               __func__, safe_arm_volt);
+> +                       dev_err(dev, "failed to set cpu voltage to %d\n",
+> +                               safe_arm_volt);
+>                         return ret;
+>                 }
+>         }
+> @@ -115,8 +116,8 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+>                 ret = regulator_set_voltage(arm_regulator, arm_volt,
+>                                 arm_volt);
+>                 if (ret) {
+> -                       pr_err("%s: failed to set cpu voltage to %d\n",
+> -                               __func__, arm_volt);
+> +                       dev_err(dev, "failed to set cpu voltage to %d\n",
+> +                               arm_volt);
+>                         goto out;
+>                 }
+>         }
+> @@ -163,6 +164,8 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
+>         if (!exynos_info)
+>                 return -ENOMEM;
 >
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> index 53881d78a931..7027eab814ce 100644
-> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> @@ -179,10 +179,11 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
->                 clk = of_clk_get(data->parent, i);
->                 freq = clk_get_rate(clk);
->                 /*
-> -                * the clock is valid if its frequency is not masked
-> -                * and large than minimum allowed frequency.
-> +                * the clock is valid if it exists, its frequency is not
-> +                * masked, and larger than minimum allowed frequency.
->                  */
-> -               if (freq < min_cpufreq || (mask & (1 << i)))
-> +               if (freq == (u32)-EINVAL || freq < min_cpufreq ||
-> +                   (mask & (1 << i)))
->                         table[i].frequency = CPUFREQ_ENTRY_INVALID;
->                 else
->                         table[i].frequency = freq / 1000;
+> +       exynos_info->dev = &pdev->dev;
+> +
+>         if (soc_is_exynos4210())
+>                 ret = exynos4210_cpufreq_init(exynos_info);
+>         else if (soc_is_exynos4212() || soc_is_exynos4412())
+> @@ -176,13 +179,13 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
+>                 goto err_vdd_arm;
+>
+>         if (exynos_info->set_freq == NULL) {
+> -               pr_err("%s: No set_freq function (ERR)\n", __func__);
+> +               dev_err(&pdev->dev, "No set_freq function (ERR)\n");
+>                 goto err_vdd_arm;
+>         }
+>
+>         arm_regulator = regulator_get(NULL, "vdd_arm");
+>         if (IS_ERR(arm_regulator)) {
+> -               pr_err("%s: failed to get resource vdd_arm\n", __func__);
+> +               dev_err(&pdev->dev, "failed to get resource vdd_arm\n");
+>                 goto err_vdd_arm;
+>         }
+>
+> @@ -192,7 +195,7 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
+>         if (!cpufreq_register_driver(&exynos_driver))
+>                 return 0;
+>
+> -       pr_err("%s: failed to register cpufreq driver\n", __func__);
+> +       dev_err(&pdev->dev, "failed to register cpufreq driver\n");
+>         regulator_put(arm_regulator);
+>  err_vdd_arm:
+>         kfree(exynos_info);
+> diff --git a/drivers/cpufreq/exynos-cpufreq.h b/drivers/cpufreq/exynos-cpufreq.h
+> index 3ddade8..b72ff10 100644
+> --- a/drivers/cpufreq/exynos-cpufreq.h
+> +++ b/drivers/cpufreq/exynos-cpufreq.h
+> @@ -34,6 +34,7 @@ struct apll_freq {
+>  };
+>
+>  struct exynos_dvfs_info {
+> +       struct device   *dev;
+>         unsigned long   mpll_freq_khz;
+>         unsigned int    pll_safe_idx;
+>         struct clk      *cpu_clk;
 > --
-> 1.7.9.5
+> 1.8.0
 >
