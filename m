@@ -1,22 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Should we get cpufreq@vger.kernel.org removed?
-Date: Mon, 21 Apr 2014 11:07:00 +0530
-Message-ID: <CAKohpomWwGJA0wyao-7i19Q_63ThRZ4vpVxnToCHU3zpUi3ioA@mail.gmail.com>
+Subject: Re: [PATCH 1/3] cpufreq: ppc: Add missing #include <asm/smp.h>
+Date: Mon, 21 Apr 2014 11:21:48 +0530
+Message-ID: <CAKohpon6BvgtwrHWQn8va49ZbNF0XbDDHf4ytP=vA5zudRYzgg@mail.gmail.com>
+References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-We always want people to use: linux-pm@vger.kernel.org for
-any cpufreq work. And sometimes people just send mails to
-cpufreq@vger.kernel.org, as MAINTAINERS file tells them to.
+On 17 April 2014 15:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> If CONFIG_SMP=n, <linux/smp.h> does not include <asm/smp.h>, causing:
+>
+> drivers/cpufreq/ppc-corenet-cpufreq.c: In function 'corenet_cpufreq_cpu_init':
+> drivers/cpufreq/ppc-corenet-cpufreq.c:173:3: error: implicit declaration of function 'get_hard_smp_processor_id' [-Werror=implicit-function-declaration]
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/cpufreq/ppc-corenet-cpufreq.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> index b7e677be1df0..e78f9c806de4 100644
+> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
+> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> @@ -22,6 +22,8 @@
+>  #include <linux/smp.h>
+>  #include <sysdev/fsl_soc.h>
+>
+> +#include <asm/smp.h>
+> +
 
-Should we get the cpufreq mailing list removed physically and
-from MAINTAINERS file to make life simple?
+Probably similar to what Srivatsa did:
 
---
-viresh
++#include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+
+??
