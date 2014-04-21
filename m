@@ -1,85 +1,70 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 3/3] cpufreq: ppc: Fix handling of non-existent clocks
-Date: Mon, 21 Apr 2014 10:01:13 +0200
-Message-ID: <CAMuHMdV7p93j_nbyOtjKo8na02C8YYcL4DcqjY2TP=9x_se+4w@mail.gmail.com>
-References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
- <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
- <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
+From: Ben Hutchings <ben@decadent.org.uk>
+Subject: Re: Another powernow-k6 bug
+Date: Mon, 21 Apr 2014 12:45:51 +0100
+Message-ID: <1398080751.3624.97.camel@deadeye.wl.decadent.org.uk>
+References: <1397676206.5717.7.camel@deadeye.wl.decadent.org.uk>
+	 <CAOh2x=ndnFUBphVYGRL+x2jra36VS1T_F=sMpkAgm9xi52Qvvg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20120113;
- h=mime-version:sender:in-reply-to:references:date:message-id:subject
- :from:to:cc:content-type;
- bh=jvxJz9PTw+EliwMgRmVpK79WOCAAfuVNiR6jsrA3wqY=;
- b=ENti3Pzc7JyX344Z6jDobMjWVep7FqsPYpsKHAAl0gAIjk19BXIBw/UTUcQWXEUGvK
- 7+1+y8kWaZSUEBMdcuHHS+esELj2FlNAlDlE/By9CURyKIUcG45FgHOQvJIvuwwxNcEL
- Byrc6iKf0/BE/SEuCpJZXExUPfwD6/0GNouqLNstBcraQnx1vJUPIIEKFnjiGKXEoUf5
- sfEtjRdr/EmumE2cYywhB3AG09jElWt5WWrZVzUQxdAIc03/5iTApfNedkpT+QRUKMud
- eOkXp/doEMpFqurg2/tmkQUTf+qV6lZMEko+C+yhfarZVNXedLqRrmqaxDzPyxgZuCeA
- e1yg==
-In-Reply-To: <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/signed; micalg="pgp-sha512";
+	protocol="application/pgp-signature"; boundary="=-Vf/vxmyTJyXqphSEqgXq"
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=ndnFUBphVYGRL+x2jra36VS1T_F=sMpkAgm9xi52Qvvg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Mike Turquette <mike.turquette@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Mikulas Patocka <mpatocka@redhat.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-SGkgVmlyZXNoLAoKT24gTW9uLCBBcHIgMjEsIDIwMTQgYXQgODowMSBBTSwgVmlyZXNoIEt1bWFy
-IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4gd3JvdGU6Cj4gT24gMTcgQXByaWwgMjAxNCAxNToy
-MywgR2VlcnQgVXl0dGVyaG9ldmVuIDxnZWVydCtyZW5lc2FzQGdsaWRlci5iZT4gd3JvdGU6Cj4+
-IElmIHRoZSBjbG9jayBkb2Vzbid0IGV4aXN0LCBjbGtfZ2V0X3JhdGUoKSByZXR1cm5zIC1FSU5W
-QUwKPgo+IFlvdSBjbGtfZ2V0X3JhdGUoKSBpc24ndCB3cml0dGVuIHdlbGwgdGhlbiwgaXQgc2hv
-dWxkIHJldHVybiB6ZXJvLgoKWW91J3JlIHJpZ2h0LCB0aGFua3MhCk9uY2UgYWdhaW4gSSBsb29r
-ZWQgYXQgdGhlIHdyb25nIGNsa19nZXRfcmF0ZSgpIGltcGxlbWVudGF0aW9uIDotKApUaGVzZSBu
-b24tQ0NGIHZhcmlhbnRzIHNob3VsZCBkaWUgc29vbi4uLgoKU28gdGhlIG9yaWdpbmFsIGNvZGUg
-d2FzIGNvcnJlY3Q6IGlmIHRoZSBjbG9jayBpcyBub3QgdmFsaWQsIGZyZXEgPT0gMCwKYW5kIHRo
-dXMgImZyZXEgPCBtaW5fY3B1ZnJlcSIgaXMgdHJ1ZS4KCj4gQE1pa2U6IEkgZGlkbid0IHNlZSB0
-aGlzIGNsZWFybHkgbWVudGlvbmVkIGluIGNsay5oLCBzaG91bGQgd2UgZml4Cj4gdGhhdD8KPgo+
-Piwgd2hpY2ggYmVjb21lcwo+PiBhIGxhcmdlIG51bWJlciAoZnJlcSBpcyB1MzIpLCBmYWlsaW5n
-IHRoZSAiZnJlcSA8IG1pbl9jcHVmcmVxIiB0ZXN0Lgo+PiBFeHBsaWNpdGx5IHRlc3QgZm9yICIo
-dTMyKS1FSU5WQUwiIHRvIGZpeCB0aGlzLgo+Cj4gVGhhdCdzIGEgYmFkIGNoZWNrLiBXZSBzaG91
-bGQgaGF2ZSBkb25lIHRoaXMgaW5zdGVhZDoKPgo+IChzMzIpZnJlcSA8IDA7IGJ1dCB0aGF0IHdv
-dWxkIGJlIHRydWUgZm9yIGhpZ2ggdmFsdWVzIG9mIGNsb2NrLiBBbmQgdGhhdCdzCj4gd2h5IGNs
-a19nZXRfcmF0ZSgpIG11c3QgcmV0dXJuIHplcm8gZm9yIGVycm9ycy4KPgo+PiBVcGRhdGUgdGhl
-IGNvbW1lbnQsIGFuZCBmaXggYSBncmFtbWVyIGlzc3VlIHdoaWxlIHdlJ3JlIGF0IGl0Lgo+Pgo+
-PiBTaWduZWQtb2ZmLWJ5OiBHZWVydCBVeXR0ZXJob2V2ZW4gPGdlZXJ0K3JlbmVzYXNAZ2xpZGVy
-LmJlPgo+PiAtLS0KPj4gIGRyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMgfCAg
-ICA3ICsrKystLS0KPj4gIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDMgZGVsZXRp
-b25zKC0pCj4+Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvcHBjLWNvcmVuZXQtY3B1
-ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYwo+PiBpbmRleCA1
-Mzg4MWQ3OGE5MzEuLjcwMjdlYWI4MTRjZSAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy9jcHVmcmVx
-L3BwYy1jb3JlbmV0LWNwdWZyZXEuYwo+PiArKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBjLWNvcmVu
-ZXQtY3B1ZnJlcS5jCj4+IEBAIC0xNzksMTAgKzE3OSwxMSBAQCBzdGF0aWMgaW50IGNvcmVuZXRf
-Y3B1ZnJlcV9jcHVfaW5pdChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkKPj4gICAgICAg
-ICAgICAgICAgIGNsayA9IG9mX2Nsa19nZXQoZGF0YS0+cGFyZW50LCBpKTsKPj4gICAgICAgICAg
-ICAgICAgIGZyZXEgPSBjbGtfZ2V0X3JhdGUoY2xrKTsKPj4gICAgICAgICAgICAgICAgIC8qCj4+
-IC0gICAgICAgICAgICAgICAgKiB0aGUgY2xvY2sgaXMgdmFsaWQgaWYgaXRzIGZyZXF1ZW5jeSBp
-cyBub3QgbWFza2VkCj4+IC0gICAgICAgICAgICAgICAgKiBhbmQgbGFyZ2UgdGhhbiBtaW5pbXVt
-IGFsbG93ZWQgZnJlcXVlbmN5Lgo+PiArICAgICAgICAgICAgICAgICogdGhlIGNsb2NrIGlzIHZh
-bGlkIGlmIGl0IGV4aXN0cywgaXRzIGZyZXF1ZW5jeSBpcyBub3QKPj4gKyAgICAgICAgICAgICAg
-ICAqIG1hc2tlZCwgYW5kIGxhcmdlciB0aGFuIG1pbmltdW0gYWxsb3dlZCBmcmVxdWVuY3kuCj4+
-ICAgICAgICAgICAgICAgICAgKi8KPj4gLSAgICAgICAgICAgICAgIGlmIChmcmVxIDwgbWluX2Nw
-dWZyZXEgfHwgKG1hc2sgJiAoMSA8PCBpKSkpCj4+ICsgICAgICAgICAgICAgICBpZiAoZnJlcSA9
-PSAodTMyKS1FSU5WQUwgfHwgZnJlcSA8IG1pbl9jcHVmcmVxIHx8Cj4+ICsgICAgICAgICAgICAg
-ICAgICAgKG1hc2sgJiAoMSA8PCBpKSkpCj4+ICAgICAgICAgICAgICAgICAgICAgICAgIHRhYmxl
-W2ldLmZyZXF1ZW5jeSA9IENQVUZSRVFfRU5UUllfSU5WQUxJRDsKPj4gICAgICAgICAgICAgICAg
-IGVsc2UKPj4gICAgICAgICAgICAgICAgICAgICAgICAgdGFibGVbaV0uZnJlcXVlbmN5ID0gZnJl
-cSAvIDEwMDA7CgpHcntvZXRqZSxlZXRpbmd9cywKCiAgICAgICAgICAgICAgICAgICAgICAgIEdl
-ZXJ0CgotLQpHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9u
-ZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25z
-IHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0CndoZW4g
-SSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29t
-ZXRoaW5nIGxpa2UgdGhhdC4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAtLSBMaW51
-cyBUb3J2YWxkcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
-Cmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
+
+--=-Vf/vxmyTJyXqphSEqgXq
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2014-04-21 at 11:03 +0530, Viresh Kumar wrote:
+> On Thu, Apr 17, 2014 at 12:53 AM, Ben Hutchings <ben@decadent.org.uk> wro=
+te:
+> > While looking at your recent powernow-k6 fixes (thanks for those), I
+> > noticed that powernow_k6_cpu_exit() doesn't work properly:
+> >
+> > static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
+> > {
+> >         unsigned int i;
+> >         for (i =3D 0; i < 8; i++) {
+> >                 if (i =3D=3D max_multiplier)
+> >                         powernow_k6_set_state(i);
+> >         }
+>=20
+> Yeah, there is a issue there. But why do we need to set freq to
+> highest freq on exit()? Probably this code can be simply removed?
+[...]
+
+Because that is how the CPU was running before the driver was loaded.
+
+Ben.
+
+--=20
+Ben Hutchings
+Knowledge is power.  France is bacon.
+
+--=-Vf/vxmyTJyXqphSEqgXq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIVAwUAU1UE7+e/yOyVhhEJAQpWwRAAwx/P16RgxfblUivldve1mRWx6x2+jIPI
+Fs0bmi3muE9d1DeAHr6PVa+9aQDQzUdlIkeZdCMeF7WNVt4lDlr8+X/HU1mCJHY4
+qky5bRIb42Thqh2zJ0sPMEBLrGf1goJkLp3iia3q63s00EO1JGgkRc3XYMDyRQrj
+ufQHsVpFDqLhUHkVhzN20JuBzyZBcNphiSDjYpfUm5GtbN+3J1BkpCFLj8W27B+b
+1iB7XJgNFzpbKELHhgqJyH0ngM38MnG9D8+EJSrnnpaXjfylKssrFBlUBfSfD7to
+mxDfEx7iI7fyhjl3UVc+FAqbAyzRLqz9Gw6QDXKEBESnY/Gp+n7IOiEfrVVpnPms
+aCJpsm6bmbIdxtQ2LZ7N1TnCWykIY3BANadR5ZkaeLkbyOwhHKqViShIiUNEiQdy
+X3O55p1sfHCa9a2IvWyzO1AHXWuMVeg6zNokCATiR2SMxJ9H816logfSxtvUxnuM
++yyAYpF5KhXo27gFgCYf2AxlyoYUPbhnpxlZdEIOIYEQxiYnLNxH4C8FSJW1uwpu
+XsMaI/yZUFAq78xtJkENOUNVov66PESBHpfmyOrbIr90DgZPNG8Nmr5f9k/pQ/Rl
+bwmM3L/gazLWv2zI1yW3BhzvAXucmBI39ZpeWg2EUr2w07lglHBZKVwn1hwIhapa
+22gSLdkBuFo=
+=5bAM
+-----END PGP SIGNATURE-----
+
+--=-Vf/vxmyTJyXqphSEqgXq--
