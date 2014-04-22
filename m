@@ -1,132 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Make linux-pm@vger.kernel.org official mailing list
-Date: Tue, 22 Apr 2014 10:42:05 +0530
-Message-ID: <b2b1ad7b6c034a1dafc0595507baf50ffc3a4c1a.1398143512.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH] cpufreq: Kconfig: Fix spelling errors
+Date: Tue, 22 Apr 2014 22:40:10 +0300
+Message-ID: <5356C59A.1070906@semaphore.gr>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-There have been confusion all the time about which mailing list to follow for
-cpufreq activities, linux-pm@vger.kernel.org or cpufreq@vger.kernel.org.
-As Maintainers always wanted people to send patches to linux-pm@vger.kernel.org
-and kernel source asked them to use cpufreq@vger.kernel.org.
+Fix 4 spelling errors in help sections.
 
-Lets make linux-pm@vger.kernel.org the official mailing list for cpufreq stuff
-and remove all references of cpufreq@vger.kernel.org from kernel source.
-
-Later, we can remove the list as well from vger.kernel.org.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
- Documentation/ABI/testing/sysfs-devices-system-cpu   | 4 ++--
- Documentation/cpu-freq/index.txt                     | 4 ++--
- MAINTAINERS                                          | 2 --
- drivers/cpufreq/speedstep-centrino.c                 | 2 +-
- tools/power/cpupower/Makefile                        | 2 +-
- tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c | 2 +-
- 6 files changed, 7 insertions(+), 9 deletions(-)
+ drivers/cpufreq/Kconfig.arm | 4 ++--
+ drivers/cpufreq/Kconfig.x86 | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index d5a0d33..acb9bfc 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -128,7 +128,7 @@ Description:	Discover cpuidle policy and mechanism
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 5805035..6e05a1e 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -85,7 +85,7 @@ config ARM_EXYNOS_CPU_FREQ_BOOST_SW
+ 	  It allows usage of special frequencies for Samsung Exynos
+ 	  processors if thermal conditions are appropriate.
  
- What:		/sys/devices/system/cpu/cpu#/cpufreq/*
- Date:		pre-git history
--Contact:	cpufreq@vger.kernel.org
-+Contact:	linux-pm@vger.kernel.org
- Description:	Discover and change clock speed of CPUs
+-	  It reguires, for safe operation, thermal framework with properly
++	  It requires, for safe operation, thermal framework with properly
+ 	  defined trip points.
  
- 		Clock scaling allows you to change the clock speed of the
-@@ -146,7 +146,7 @@ Description:	Discover and change clock speed of CPUs
+ 	  If in doubt, say N.
+@@ -186,7 +186,7 @@ config ARM_S3C2416_CPUFREQ
+ 	  S3C2450 SoC. The S3C2416 supports changing the rate of the
+ 	  armdiv clock source and also entering a so called dynamic
+ 	  voltage scaling mode in which it is possible to reduce the
+-	  core voltage of the cpu.
++	  core voltage of the CPU.
  
- What:		/sys/devices/system/cpu/cpu#/cpufreq/freqdomain_cpus
- Date:		June 2013
--Contact:	cpufreq@vger.kernel.org
-+Contact:	linux-pm@vger.kernel.org
- Description:	Discover CPUs in the same CPU frequency coordination domain
+ 	  If in doubt, say N.
  
- 		freqdomain_cpus is the list of CPUs (online+offline) that share
-diff --git a/Documentation/cpu-freq/index.txt b/Documentation/cpu-freq/index.txt
-index 3d0b915..dc024ab 100644
---- a/Documentation/cpu-freq/index.txt
-+++ b/Documentation/cpu-freq/index.txt
-@@ -35,8 +35,8 @@ Mailing List
- ------------
- There is a CPU frequency changing CVS commit and general list where
- you can report bugs, problems or submit patches. To post a message,
--send an email to cpufreq@vger.kernel.org, to subscribe go to
--http://vger.kernel.org/vger-lists.html#cpufreq and follow the
-+send an email to linux-pm@vger.kernel.org, to subscribe go to
-+http://vger.kernel.org/vger-lists.html#linux-pm and follow the
- instructions there.
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index d369349..89ae88f 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -10,7 +10,7 @@ config X86_INTEL_PSTATE
+ 	  The driver implements an internal governor and will become
+           the scaling driver and governor for Sandy bridge processors.
  
- Links
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6dc67b1..88b60d9 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2415,7 +2415,6 @@ F:	drivers/net/ethernet/ti/cpmac.c
- CPU FREQUENCY DRIVERS
- M:	Rafael J. Wysocki <rjw@rjwysocki.net>
- M:	Viresh Kumar <viresh.kumar@linaro.org>
--L:	cpufreq@vger.kernel.org
- L:	linux-pm@vger.kernel.org
- S:	Maintained
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-@@ -2426,7 +2425,6 @@ F:	include/linux/cpufreq.h
- CPU FREQUENCY DRIVERS - ARM BIG LITTLE
- M:	Viresh Kumar <viresh.kumar@linaro.org>
- M:	Sudeep Holla <sudeep.holla@arm.com>
--L:	cpufreq@vger.kernel.org
- L:	linux-pm@vger.kernel.org
- W:	http://www.arm.com/products/processors/technologies/biglittleprocessing.php
- S:	Maintained
-diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
-index 6723f03..7d4a315 100644
---- a/drivers/cpufreq/speedstep-centrino.c
-+++ b/drivers/cpufreq/speedstep-centrino.c
-@@ -28,7 +28,7 @@
- #include <asm/cpu_device_id.h>
+-	  When this driver is enabled it will become the perferred
++	  When this driver is enabled it will become the preferred
+           scaling driver for Sandy bridge processors.
  
- #define PFX		"speedstep-centrino: "
--#define MAINTAINER	"cpufreq@vger.kernel.org"
-+#define MAINTAINER	"linux-pm@vger.kernel.org"
+ 	  If in doubt, say N.
+@@ -52,7 +52,7 @@ config X86_ACPI_CPUFREQ_CPB
+ 	help
+ 	  The powernow-k8 driver used to provide a sysfs knob called "cpb"
+ 	  to disable the Core Performance Boosting feature of AMD CPUs. This
+-	  file has now been superseeded by the more generic "boost" entry.
++	  file has now been superseded by the more generic "boost" entry.
  
- #define INTEL_MSR_RANGE	(0xffff)
- 
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index cbfec92..3651db7 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -62,7 +62,7 @@ LIB_MAJ=			0.0.0
- LIB_MIN=			0
- 
- PACKAGE =			cpupower
--PACKAGE_BUGREPORT =		cpufreq@vger.kernel.org
-+PACKAGE_BUGREPORT =		linux-pm@vger.kernel.org
- LANGUAGES = 			de fr it cs pt
- 
- 
-diff --git a/tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c b/tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c
-index 0f10b81..5224ee5 100644
---- a/tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c
-+++ b/tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c
-@@ -18,7 +18,7 @@
-  * 5.) if the third value, "diff_pmtmr", changes between 2. and 4., the
-  *     TSC-based delay routine on the Linux kernel does not correctly
-  *     handle the cpufreq transition. Please report this to
-- *     cpufreq@vger.kernel.org
-+ *     linux-pm@vger.kernel.org
-  */
- 
- #include <linux/kernel.h>
+ 	  By enabling this option the acpi_cpufreq driver provides the old
+ 	  entry in addition to the new boost ones, for compatibility reasons.
 -- 
-1.7.12.rc2.18.g61b472e
+1.9.0
 
