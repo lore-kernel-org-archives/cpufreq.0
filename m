@@ -1,37 +1,59 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: CPUFREQ: Try to load pcc driver on HP ProLiants automatically
-Date: Wed, 23 Apr 2014 15:49:23 +0200
-Message-ID: <7669060.dKLoxkfpfu@skinner>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH] cpufreq: powernow-k8: Fix checkpatch warnings
+Date: Wed, 23 Apr 2014 16:53:36 +0300
+Message-ID: <5357C5E0.1070207@semaphore.gr>
+References: <5356DB92.1060600@semaphore.gr> <2606012.9SjvfKiI5Z@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <2606012.9SjvfKiI5Z@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: viresh.kumar@linaro.org
-Cc: rjw@rjwysocki.net, cpufreq@vger.kernel.org, thomas.mingarelli@hp.com
+Content-Type: text/plain; charset="utf-8"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-HP ProLiants are sold with CPU frequency controlled by BIOS by default.
-The pcc-cpufreq driver still exports some frequency info to userspace and
-should be tried to get loaded on these platforms.
+On 23/04/2014 01:37 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
+> On Wednesday, April 23, 2014 12:13:54 AM Stratos Karafotis wrote:
+>> Fix the following checkpatch warnings:
+>=20
+> In addition to comments from Viresh, I have a general one.
+>=20
+> Some of the checkpatch.pl warnings are not worth fixing at all ->
+>=20
+>> - WARNING: Prefer pr_err(... to printk(KERN_ERR ...
+>> - WARNING: Prefer pr_info(... to printk(KERN_INFO ...
+>> - WARNING: Prefer pr_warn(... to printk(KERN_WARNING ...
+>> - WARNING: quoted string split across lines
+>> - WARNING: line over 80 characters
+>=20
+> -> and the "line over 80 characters" ones are outright wrong in many =
+cases,
+> so please don't "fix" them.
+>=20
 
-Successfully tested on a recent ProLiant machine:
-  - without this patch no pcc-cpufreq driver loaded, no frequency info
-  - with this patch the driver got autoloaded
+Hi Rafael,
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+Thanks for your comments!
 
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index 728a2d8..ff1ebd0 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -603,6 +603,8 @@ static void __exit pcc_cpufreq_exit(void)
- 	free_percpu(pcc_cpu_info);
- }
- 
-+MODULE_ALIAS("dmi:*:svnHP:pnProLiant*:*");
-+
- MODULE_AUTHOR("Matthew Garrett, Naga Chumbalkar");
- MODULE_VERSION(PCC_VERSION);
- MODULE_DESCRIPTION("Processor Clocking Control interface driver");
+Could you please clarify if you want me to drop the entire patch or
+send it only with the changes about the last warning found ("no spaces
+at the start of a line)?
+
+Also, I would like to take the opportunity and ask a question. :)
+
+Reading the code, sometimes, I find some minor formatting issues.
+Like the checkpatch warnings or unnecessary parentheses and braces.
+
+=46or example the line bellow:
+		if ((freq < policy->min) || (freq > policy->max))
+
+I know that this is not actually an issue and a patch with such changes
+is (somehow) a noise for the maintainers. But, should it be "fixed" or =
+not?
+
+Thanks for your time,
+
+Stratos
+
 
