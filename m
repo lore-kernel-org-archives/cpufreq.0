@@ -1,46 +1,31 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v4 2/8] cpufreq: Use cpufreq_for_each_* macros for frequency
- table iteration
-Date: Fri, 25 Apr 2014 18:11:20 +0300
-Message-ID: <535A7B18.9070505@semaphore.gr>
-References: <534DB1EB.1080401@semaphore.gr> <5355A327.3020308@semaphore.gr> <CA+V-a8swMCPkf=rwbLOjiqAgpaQ7TZPutTQTh_sSFmbJvHz-1Q@mail.gmail.com>
+From: Meelis Roos <mroos@linux.ee>
+Subject: Re: [PATCH 0/3] Cpufreq frequency serialization fixes
+Date: Fri, 25 Apr 2014 20:29:04 +0300 (EEST)
+Message-ID: <alpine.SOC.1.00.1404252028410.11626@math.ut.ee>
+References: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+V-a8swMCPkf=rwbLOjiqAgpaQ7TZPutTQTh_sSFmbJvHz-1Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Prabhakar,
+> Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
+> commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
+> The root-cause of this issue is the extra invocation of the
+> cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
+> longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
+> drivers as well. This patchset fixes the issue in all the 3 drivers.
+> 
+>  Srivatsa S. Bhat (3):
+>       cpufreq, powernow-k7: Fix double invocation of cpufreq_freq_transition_begin/end
+>       cpufreq, powernow-k6: Fix double invocation of cpufreq_freq_transition_begin/end
+>       cpufreq, longhaul: Fix double invocation of cpufreq_freq_transition_begin/end
 
-On 25/04/2014 03:31 =CE=BC=CE=BC, Prabhakar Lad wrote:
-> Hi Stratos,
->=20
-> Thanks for the patch.
->=20
-> On Tue, Apr 22, 2014 at 4:30 AM, Stratos Karafotis
-> <stratosk@semaphore.gr> wrote:
->> The cpufreq core now supports the cpufreq_for_each_entry and
->> cpufreq_for_each_valid_entry macros helpers for iteration over the
->> cpufreq_frequency_table, so use them.
->>
->> It should have no functional changes.
->>
-> This patch produces following build warning,
->=20
-> drivers/cpufreq/freq_table.c: In function 'cpufreq_frequency_table_cp=
-uinfo':
-> drivers/cpufreq/freq_table.c:36:3: warning: format '%lu' expects
-> argument of type 'long unsigned int', but argument 2 has type 'int'
-> [-Wformat=3D]
->    pr_debug("table entry %lu: %u kHz\n", pos - table, freq);
+This set fixes it for me on VIA EPIA with longhaul.
 
-Thanks for this finding.
-I will fix it and resend the patch.
-
-
-Stratos Karafotis
-
+-- 
+Meelis Roos (mroos@linux.ee)
