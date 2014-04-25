@@ -1,12 +1,12 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/3] cpufreq, powernow-k6: Fix double invocation of cpufreq_freq_transition_begin/end
-Date: Fri, 25 Apr 2014 13:58:27 +0530
-Message-ID: <CAKohpomVzp7TE6sC0FfC4x9v+pM6R4hLhz-q2E+wWybK4UuV1g@mail.gmail.com>
+Subject: Re: [PATCH 1/3] cpufreq, longhaul: Fix double invocation of cpufreq_freq_transition_begin/end
+Date: Fri, 25 Apr 2014 14:07:13 +0530
+Message-ID: <CAKohpo=0wppEthZzoRGTqurtt=135NWeVTKJ2y=mwy82+O7-zQ@mail.gmail.com>
 References: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
-	<20140425081815.10258.36201.stgit@srivatsabhat.in.ibm.com>
+	<20140425081804.10258.8324.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20140425081815.10258.36201.stgit@srivatsabhat.in.ibm.com>
+In-Reply-To: <20140425081804.10258.8324.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
@@ -16,81 +16,20 @@ Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpuf
 
 On 25 April 2014 13:48, Srivatsa S. Bhat
 <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> During frequency transitions, the cpufreq core takes the responsibility of
-> invoking cpufreq_freq_transition_begin() and cpufreq_freq_transition_end()
-> for those cpufreq drivers that define the ->target_index callback but don't
-> set the ASYNC_NOTIFICATION flag.
->
-> The powernow-k6 cpufreq driver falls under this category, but this driver was
-> invoking the _begin() and _end() APIs itself around frequency transitions,
-> which led to double invocation of the _begin() API. The _begin API makes
-> contending callers wait until the previous invocation is complete. Hence,
-> the powernow-k6 driver ended up waiting on itself, leading to system hangs
-> during boot.
->
-> Fix this by removing the calls to the _begin() and _end() APIs from the
-> powernow-k6 driver, since they rightly belong to the cpufreq core.
->
-> (Note that during ->exit(), the powernow-k6 driver sets the frequency
->  without any help from the cpufreq core. So add explicit calls to the
->  _begin() and _end() APIs around that frequency transition alone, to take
->  care of that special case. Also, add a missing 'break' statement there.)
->
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->
->  drivers/cpufreq/powernow-k6.c |   20 +++++++++++---------
->  1 file changed, 11 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-> index 49f120e..6a4c34e 100644
-> --- a/drivers/cpufreq/powernow-k6.c
-> +++ b/drivers/cpufreq/powernow-k6.c
-> @@ -138,22 +138,14 @@ static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
->  static int powernow_k6_target(struct cpufreq_policy *policy,
->                 unsigned int best_i)
->  {
-> -       struct cpufreq_freqs freqs;
->
->         if (clock_ratio[best_i].driver_data > max_multiplier) {
->                 printk(KERN_ERR PFX "invalid target frequency\n");
->                 return -EINVAL;
->         }
->
-> -       freqs.old = busfreq * powernow_k6_get_cpu_multiplier();
-> -       freqs.new = busfreq * clock_ratio[best_i].driver_data;
-> -
-> -       cpufreq_freq_transition_begin(policy, &freqs);
-> -
->         powernow_k6_set_cpu_multiplier(best_i);
->
-> -       cpufreq_freq_transition_end(policy, &freqs, 0);
-> -
->         return 0;
->  }
->
-> @@ -228,8 +220,18 @@ static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
->  {
->         unsigned int i;
->         for (i = 0; i < 8; i++) {
-> -               if (i == max_multiplier)
-> +               if (i == max_multiplier) {
 
-This wouldn't work, it has to be: (clock_ratio[i].driver_data == max_multiplier)
+> diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
 
-> +                       struct cpufreq_freqs freqs;
-> +
-> +                       freqs.old = policy->cur;
-> +                       freqs.new = clock_ratio[i].frequency;
-> +                       freqs.flags = 0;
-> +
-> +                       cpufreq_freq_transition_begin(policy, &freqs);
->                         powernow_k6_target(policy, i);
-> +                       cpufreq_freq_transition_end(policy, &freqs, 0);
-> +                       break;
-> +               }
->         }
->         return 0;
->  }
+> @@ -269,8 +269,6 @@ static void longhaul_setstate(struct cpufreq_policy *policy,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This routine has this code as well:
+
+mult = mults[mults_index & 0x1f];
+if (mult == -1)
+        return;
+speed = calc_speed(mult);
+if ((speed > highest_speed) || (speed < lowest_speed))
+        return;
+
+And so it might return without changing frequency and that's why I
+left this driver earlier for this change.. So, please return -EINVAL
+from here..
