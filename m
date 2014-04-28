@@ -1,18 +1,22 @@
-From: Meelis Roos <mroos@linux.ee>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH v2 0/5] Cpufreq frequency serialization fixes
-Date: Mon, 28 Apr 2014 23:57:34 +0300 (EEST)
-Message-ID: <alpine.SOC.1.00.1404282357170.13567@math.ut.ee>
+Date: Tue, 29 Apr 2014 01:47:33 +0200
+Message-ID: <9665161.ytKRFCMQPA@vostro.rjw.lan>
 References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: mroos@linux.ee, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On Tuesday, April 29, 2014 12:23:54 AM Srivatsa S. Bhat wrote:
+> 
+> Hi,
+> 
 > Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
 > commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
 > The root-cause of this issue is the extra invocation of the
@@ -28,19 +32,15 @@ Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-p
 > 
 > Patch 5 adds a debug infrastructure to the cpufreq core to catch such problems
 > more easily in the future.
-> 
-> 
-> Changes in v2:
-> --------------
-> 
-> * Modified patch 1 to take error returns into account, as pointed out by
->   Viresh.
-> * Added patch 2 to fix the existing issue in the powernow-k6 driver, pointed
->   out by Viresh.
-> * Added patch 5 to introduce a debug infrastructure to catch such issues
->   easily.
 
-This also works on my VIA EPIA.
+I've queued up patches [1-4/5] for 3.15, the last one I need to have another
+look at tomorrow.
+
+BTW, when you fix regressions, please always add a Fixes: tag to the changelog.
+
+Thanks!
+
 
 -- 
-Meelis Roos (mroos@linux.ee)
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
