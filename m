@@ -1,73 +1,57 @@
-From: Mascha Kurpicz <mascha.kurpicz@unine.ch>
-Subject: time_in_state on Ubuntu 13.10
-Date: Mon, 28 Apr 2014 16:43:18 +0200
-Message-ID: <535E6906.2090201@unine.ch>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+From: Tim Gardner <tim.gardner@canonical.com>
+Subject: [PATCH 3.15-rc3] cpufreq: ppc-corenet-cpufreq: Fix __udivdi3 modpost error
+Date: Mon, 28 Apr 2014 10:18:18 -0600
+Message-ID: <1398701898-68201-1-git-send-email-tim.gardner@canonical.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
-Cc: Maxime Colmant <maxime.colmant@inria.fr>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhuoyu Zhang <Zhuoyu.Zhang@freescale.com>
 
-Hi,
+bfa709bc823fc32ee8dd5220d1711b46078235d8 (cpufreq: powerpc: add cpufreq
+transition latency for FSL e500mc SoCs) introduced a modpost error:
 
-First of all I would like to thank for the cpufreq utility that I use
-regularly.
+ERROR: "__udivdi3" [drivers/cpufreq/ppc-corenet-cpufreq.ko] undefined!
+make[1]: *** [__modpost] Error 1
 
-Unfortunately, when upgrading our systems from Ubuntu 12.04 to 13.10, we
-are encountering some issues with the data in
-/sys/devices/system/cpu/cpu*/cpufreq/stats/time_in_state.
+Fix this by avoiding 64 bit integer division.
 
-On some of the machines, the values are all set to 0 [1], whereas on
-other machines, values are 0 or very small [2]. In both cases, the
-output of cpufreq-info for the cpufreq stats is not correct. When
-running Ubuntu 12.04, we get reasonable values.
+gcc version 4.8.2
 
-We noticed this behavior on Intel i3 machines, and on Intel Xeon. Kernel
-version in all cases is 3.11.0-20-generic.
-
-Thanks in advance and best regards,
-
-Mascha
-
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhuoyu Zhang <Zhuoyu.Zhang@freescale.com>
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
 ---
-[1]
-user@ubuntu1310:~$ cat
-/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
-3100000 0
-2800000 0
-2600000 0
-2400000 0
-2200000 0
-2000000 0
-1800000 0
-1600000 0
+ drivers/cpufreq/ppc-corenet-cpufreq.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-user@ubuntu1310:~$ cpufreq-info
-...
- cpufreq stats: 3.10 GHz:-nan%, 2.80 GHz:-nan%, 2.60 GHz:-nan%, 2.40
-GHz:-nan%, 2.20 GHz:-nan%, 2.00 GHz:-nan%, 1.80 GHz:-nan%, 1.60
-GHz:-nan%  (21768)
-...
-
-[2]
-user@ubuntu1310:~$ cat
-/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
-3100000 0
-2800000 0
-2600000 0
-2400000 0
-2200000 0
-2000000 0
-1800000 0
-1600000 6
-
-user@ubuntu1310:~$ cpufreq-info
-...
-cpufreq stats: 3.10 GHz:0.00%, 2.80 GHz:0.00%, 2.60 GHz:0.00%, 2.40
-GHz:0.00%, 2.20 GHz:0.00%, 2.00 GHz:0.00%, 1.80 GHz:0.00%, 1.60
-GHz:100.00%  (86356)
-...
-
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+index a1ca3dd..0af618a 100644
+--- a/drivers/cpufreq/ppc-corenet-cpufreq.c
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -138,6 +138,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	struct cpufreq_frequency_table *table;
+ 	struct cpu_data *data;
+ 	unsigned int cpu = policy->cpu;
++	u64 transition_latency_hz;
+ 
+ 	np = of_get_cpu_node(cpu, NULL);
+ 	if (!np)
+@@ -205,8 +206,10 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	for_each_cpu(i, per_cpu(cpu_mask, cpu))
+ 		per_cpu(cpu_data, i) = data;
+ 
++	transition_latency_hz = 12ULL * NSEC_PER_SEC;
+ 	policy->cpuinfo.transition_latency =
+-				(12ULL * NSEC_PER_SEC) / fsl_get_sys_freq();
++		do_div(transition_latency_hz, fsl_get_sys_freq());
++
+ 	of_node_put(np);
+ 
+ 	return 0;
+-- 
+1.7.9.5
