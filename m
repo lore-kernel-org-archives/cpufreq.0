@@ -1,57 +1,37 @@
-From: Tim Gardner <tim.gardner@canonical.com>
-Subject: [PATCH 3.15-rc3] cpufreq: ppc-corenet-cpufreq: Fix __udivdi3 modpost error
-Date: Mon, 28 Apr 2014 10:18:18 -0600
-Message-ID: <1398701898-68201-1-git-send-email-tim.gardner@canonical.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] Cpufreq frequency serialization fixes
+Date: Tue, 29 Apr 2014 00:17:44 +0530
+Message-ID: <535EA250.5060700@linux.vnet.ibm.com>
+References: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com> <alpine.SOC.1.00.1404252028410.11626@math.ut.ee>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhuoyu Zhang <Zhuoyu.Zhang@freescale.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <alpine.SOC.1.00.1404252028410.11626@math.ut.ee>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Meelis Roos <mroos@linux.ee>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-bfa709bc823fc32ee8dd5220d1711b46078235d8 (cpufreq: powerpc: add cpufreq
-transition latency for FSL e500mc SoCs) introduced a modpost error:
+On 04/25/2014 10:59 PM, Meelis Roos wrote:
+>> Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
+>> commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
+>> The root-cause of this issue is the extra invocation of the
+>> cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
+>> longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
+>> drivers as well. This patchset fixes the issue in all the 3 drivers.
+>>
+>>  Srivatsa S. Bhat (3):
+>>       cpufreq, powernow-k7: Fix double invocation of cpufreq_freq_transition_begin/end
+>>       cpufreq, powernow-k6: Fix double invocation of cpufreq_freq_transition_begin/end
+>>       cpufreq, longhaul: Fix double invocation of cpufreq_freq_transition_begin/end
+> 
+> This set fixes it for me on VIA EPIA with longhaul.
+> 
 
-ERROR: "__udivdi3" [drivers/cpufreq/ppc-corenet-cpufreq.ko] undefined!
-make[1]: *** [__modpost] Error 1
+Thanks a lot for testing this Meelis! I'll send out the v2
+soon.
 
-Fix this by avoiding 64 bit integer division.
+Regards,
+Srivatsa S. Bhat
 
-gcc version 4.8.2
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhuoyu Zhang <Zhuoyu.Zhang@freescale.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
----
- drivers/cpufreq/ppc-corenet-cpufreq.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-index a1ca3dd..0af618a 100644
---- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-+++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-@@ -138,6 +138,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	struct cpufreq_frequency_table *table;
- 	struct cpu_data *data;
- 	unsigned int cpu = policy->cpu;
-+	u64 transition_latency_hz;
- 
- 	np = of_get_cpu_node(cpu, NULL);
- 	if (!np)
-@@ -205,8 +206,10 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	for_each_cpu(i, per_cpu(cpu_mask, cpu))
- 		per_cpu(cpu_data, i) = data;
- 
-+	transition_latency_hz = 12ULL * NSEC_PER_SEC;
- 	policy->cpuinfo.transition_latency =
--				(12ULL * NSEC_PER_SEC) / fsl_get_sys_freq();
-+		do_div(transition_latency_hz, fsl_get_sys_freq());
-+
- 	of_node_put(np);
- 
- 	return 0;
--- 
-1.7.9.5
