@@ -1,25 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Change the calculation of next pstate
-Date: Tue, 29 Apr 2014 10:28:02 +0530
-Message-ID: <CAKohpomhUk7RQ3YL3=wpVKSbK_oSkyYBRUZiqnHzWqrZ2DjRRA@mail.gmail.com>
-References: <535D80C8.9090906@semaphore.gr>
+From: Jonghwan Choi <jhbird.choi@samsung.com>
+Subject: [PATCH 2/2] cpufreq: Remove exynos_sort_descend_freq_table in
+ exynos5440-cpufreq.c
+Date: Tue, 29 Apr 2014 14:24:05 +0900
+Message-ID: <000701cf636b$3d1d13c0$b7573b40$@samsung.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <535D80C8.9090906@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-language: ko
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>, Dirk Brandewie <dirk.j.brandewie@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "'open list:CPU FREQUENCY DRI...'" <cpufreq@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Kukjin Kim' <kgene.kim@samsung.com>
 
-Cc'd Dirk,
+After applying "PM / OPP: Use list_for_each_entry_reverse instead of
+list_for_each_entry",
+cpufreq table is sorted int descending order. So
+exynos_sort_descend_freq_table
+doesn't need anymore.
 
-On 28 April 2014 03:42, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Currently the driver calculates the next pstate proportional to
-> core_busy factor and reverse proportional to current pstate.
->
-> Change the above method and calculate the next pstate independently
-> of current pstate.
+Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
+---
+ drivers/cpufreq/exynos5440-cpufreq.c |   20 --------------------
+ 1 file changed, 20 deletions(-)
 
-We must mention why the change is required.
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c
+b/drivers/cpufreq/exynos5440-cpufreq.c
+index a6b8214..92db80b 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -279,25 +279,6 @@ static irqreturn_t exynos_cpufreq_irq(int irq, void
+*id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void exynos_sort_descend_freq_table(void)
+-{
+-	struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
+-	int i = 0, index;
+-	unsigned int tmp_freq;
+-	/*
+-	 * Exynos5440 clock controller state logic expects the cpufreq table
+to
+-	 * be in descending order. But the OPP library constructs the table
+in
+-	 * ascending order. So to make the table descending we just need to
+-	 * swap the i element with the N - i element.
+-	 */
+-	for (i = 0; i < dvfs_info->freq_count / 2; i++) {
+-		index = dvfs_info->freq_count - i - 1;
+-		tmp_freq = freq_tbl[i].frequency;
+-		freq_tbl[i].frequency = freq_tbl[index].frequency;
+-		freq_tbl[index].frequency = tmp_freq;
+-	}
+-}
+-
+ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	policy->clk = dvfs_info->cpu_clk;
+@@ -374,7 +355,6 @@ static int exynos_cpufreq_probe(struct platform_device
+*pdev)
+ 		goto err_put_node;
+ 	}
+ 	dvfs_info->freq_count = dev_pm_opp_get_opp_count(dvfs_info->dev);
+-	exynos_sort_descend_freq_table();
+ 
+ 	if (of_property_read_u32(np, "clock-latency", &dvfs_info->latency))
+ 		dvfs_info->latency = DEF_TRANS_LATENCY;
+-- 
+1.7.10.4
