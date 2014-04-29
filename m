@@ -1,54 +1,102 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Wed, 30 Apr 2014 00:26:07 +0200
-Message-ID: <1621123.rMC9JtD3Mo@vostro.rjw.lan>
-References: <535AC247.3070907@semaphore.gr> <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com> <535FCDBD.6080500@semaphore.gr>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Disable interrupts during MSRs reading
+Date: Wed, 30 Apr 2014 00:29:23 +0200
+Message-ID: <1442595.xWVWXlLQjO@vostro.rjw.lan>
+References: <535FE55D.40500@semaphore.gr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <535FCDBD.6080500@semaphore.gr>
-Sender: linux-doc-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <535FE55D.40500@semaphore.gr>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
-> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
-> > On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> w=
-rote:
-> >> This patch set introduces two freq_table helper macros which
-> >> can be used for iteration over cpufreq_frequency_table and
-> >> makes the necessary changes to cpufreq core and drivers that
-> >> use such an iteration procedure.
-> >>
-> >> The motivation was a usage of common procedure to iterate over
-> >> cpufreq_frequency_table across all drivers and cpufreq core.
-> >>
-> >> This was tested on a x86_64 platform.
-> >> Most files compiled successfully but unfortunately I was not
-> >> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
-> >> due to lack of cross compiler.
-> >>
-> >> Changelog
-> >>
-> >> v4 -> v5
-> >>         - Fix warnings in printk format specifier for 32 bit
-> >>           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
-> >=20
-> > Doesn't look much has changed and so it stays as is:
-> >=20
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >=20
->=20
-> Thank you very much!
+On Tuesday, April 29, 2014 08:46:05 PM Stratos Karafotis wrote:
+> According to Intel 64 and IA-32 Architectures SDM, Volume 3,
+> Chapter 14.2, "Software needs to exercise care to avoid delays
+> between the two RDMSRs (for example interrupts)".
+> 
+> So, disable interrupts during reading MSRs IA32_APERF and IA32_MPERF.
+> Since the TSC is also takes place in the calculation include it in
+> the protected section. This should increase the accuracy of the
+> calculations.
+> 
+> Tested on Intel i7-3770 CPU @ 3.40GHz.
+> Benchmarks (Phoronix Linux compilation) show a slightly increase
+> in performance by ~0.1% and a decrease in power consumption by
+> ~0.13%.
+> 
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 
-I've applied the series to my bleeding-edge branch, will move it to lin=
-ux-next
-after build testing later this week.
+This looks good to me, but I need Dirk Brandewie to review and comment
+all intel_pstate patches before I apply any of them.
 
 Thanks!
 
---=20
+> ---
+> 
+> I hope it's not too inappropriate to post test results in
+> conjunction with my previous patch about the change of calculation
+> method of next p-state (https://lkml.org/lkml/2014/4/27/100).
+> I used Phoronix benchmark - Linux Kernel Compilation 3.1.
+> Below the test results using turbostat (5 iterations):
+> 
+> Without 2 patches:
+> 
+> Ph. avg Time	Total time	PkgWatt		Total Energy
+> 	79.63	266.416		57.74		15382.85984
+> 	79.63	265.609		57.87		15370.79283
+> 	79.57	266.994		57.54		15362.83476
+> 	79.53	265.304		57.83		15342.53032
+> 	79.71	265.977		57.76		15362.83152
+> avg	79.61	266.06		57.74		15364.36985
+> 
+> With change calculation patch:
+> 
+> Ph. avg Time	Total time	PkgWatt		Total Energy
+> 	78.23	258.826		59.14		15306.96964
+> 	78.41	259.110		59.15		15326.35650
+> 	78.40	258.530		59.26		15320.48780
+> 	78.46	258.673		59.20		15313.44160
+> 	78.19	259.075		59.16		15326.87700
+> avg	78.34	258.842		59.18		15318.82650
+> 
+> With change calculation patch + this one
+> 
+> Ph. avg Time	Total time	PkgWatt		Total Energy
+> 	78.33	259.320		59.06		15315.43920
+> 	78.28	258.245		59.20		15288.10400
+> 	78.08	257.523		59.32		15276.26436
+> 	78.38	259.084		59.13		15319.63692
+> 	78.31	258.232		59.22		15292.49904
+> avg	78.27	258.480		59.18		15298.38870
+> 
+> 
+>  drivers/cpufreq/intel_pstate.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 8e309db..95b3958 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -576,10 +576,13 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+>  {
+>  	u64 aperf, mperf;
+>  	unsigned long long tsc;
+> +	unsigned long flags;
+>  
+> +	local_irq_save(flags);
+>  	rdmsrl(MSR_IA32_APERF, aperf);
+>  	rdmsrl(MSR_IA32_MPERF, mperf);
+>  	tsc = native_read_tsc();
+> +	local_irq_restore(flags);
+>  
+>  	aperf = aperf >> FRAC_BITS;
+>  	mperf = mperf >> FRAC_BITS;
+> 
+
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
