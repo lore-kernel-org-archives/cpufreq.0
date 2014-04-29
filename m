@@ -1,177 +1,77 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 5/5] cpufreq: Catch double invocations of cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 11:38:24 +0530
-Message-ID: <535F41D8.90002@linux.vnet.ibm.com>
-References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com> <20140428185507.28755.6483.stgit@srivatsabhat.in.ibm.com> <CAKohpomaJ0ubnzzQ7AwAd6z+Zm085i+UwB7XMa=si7qthZdgZg@mail.gmail.com>
+From: Amit Kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH 2/2] cpufreq: Remove exynos_sort_descend_freq_table in exynos5440-cpufreq.c
+Date: Tue, 29 Apr 2014 11:44:14 +0530
+Message-ID: <CADGdYn7cA940sxPszP5TA5tMnXD_=QkH3U3Wedy2DoC++rwRkQ@mail.gmail.com>
+References: <000701cf636b$3d1d13c0$b7573b40$@samsung.com>
+	<CAKohpo=ei0v69iQtjd6cjmfUCo-+sd1JzNc4RDza92nxaPoiVg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomaJ0ubnzzQ7AwAd6z+Zm085i+UwB7XMa=si7qthZdgZg@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        bh=K5SjWVduyZTDqCs5bZRdhDNouxYmD9M5hJACoqFUmac=;
+        b=XeOug7c5SifmR2k5TPA2YGKcpoEgY09FB54crv8TnxCXvhBzJQbAHNK83rBo5x4XjR
+         lcHdDYJxHi0NOYeYu/RUD8nCpVUMJDM7bss2pIg3GbkprGVqudItO1Y13NIMQuCYBPEX
+         KTzdLjBIXYQ0yPV+FSYIxGCGqugAsSESmuq8Hcgi1PUXiRroDuP8CcPMs5mMe1qwj4c/
+         2EyoW79i6Ggnifc5aiHqg6+tebJotlkKchZsFxGRh++MPsgoCfht7Avm4Te02a0teSxH
+         +clXcgCukCnoA8ZHA9q9SoZ2M16i8BMQnafGcxpkhtQ3rgYEMX3LP8qcH2w5S6C9i1qs
+         sPwA==
+In-Reply-To: <CAKohpo=ei0v69iQtjd6cjmfUCo-+sd1JzNc4RDza92nxaPoiVg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>
 
-On 04/29/2014 10:21 AM, Viresh Kumar wrote:
-> Nice effort.
+On 4/29/14, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 29 April 2014 10:54, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
+>> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c
+>> -static void exynos_sort_descend_freq_table(void)
+>> -{
+>> -       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
+>> -       int i = 0, index;
+>> -       unsigned int tmp_freq;
+>> -       /*
+>> -        * Exynos5440 clock controller state logic expects the cpufreq
+>> table
+>> to
+>> -        * be in descending order. But the OPP library constructs the
+>> table
+>> in
+>> -        * ascending order. So to make the table descending we just need
+>> to
+>> -        * swap the i element with the N - i element.
+>> -        */
 >
+> What I am more focused is on: Why do we need to worry about order at
+> all in the first place.
+>
+> Okay, above comment says something about it but I couldn't understand
+> what's the logic behind that. Why do we need same order as of clock
+> controller. Please point out relevant code pieces as well..
+>
+> @Amit: Your comments on this ?
 
-Thanks! :-)
- 
-> On 29 April 2014 00:25, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> Now all such drivers have been fixed, but debugging this issue was not
->> very straight-forward (even lockdep didn't catch this). So let us add a
->> debug infrastructure to the cpufreq core to catch such issues more easily
->> in the future.
-> 
-> BUT, I am not sure if we really need it :(
-> 
-> I think we just got into the 'barrier' stuff as we had some doubts about it
-> earlier and were quite sure that nothing else could go wrong. Otherwise
-> the only problem could have been present was the second queuing
-> from the same thread. And we will surely get stuck if that happens and
-> we can't just miss that error..
-> 
+Hi Viresh/Jonghwan,
 
-Yeah, and we _did_ hit that hang, but it was not at all intuitive at first
-as to what was going wrong. Worse, even lockdep is not in a position to catch
-such scenarios. So it definitely doesn't hurt to add a small infrastructure
-to catch such issues in the future, IMHO.
+In the frequency table dts file, the frequencies are arranged in
+descending order which maps 1 to 1 with other frequency parameter to
+be calculated and programmed in some registers.
+But the OPP library works by generating the frequencies in ascending
+order which breaks the above logic. Ideally i should expect frequency
+values in same order as what is supplied.
+So OPP library should not change the order or should take input flags
+flags like,
+dev_pm_opp_init_cpufreq_table(TABLE_ORDER_ASCEND|
+TABLE_ORDER_DESCEND|TABLE_ORDER_ORIGINAL )
 
-Besides, if we can add features for users, surely we can also add some
-non-intrusive debug code for ourselves too, to make our lives easier, right? :-)
-I'm sure we deserve that privilege ;-)
-
-Regards,
-Srivatsa S. Bhat
-
->> Scenario 1: (Deadlock-free)
->> ----------
->>
->>          Task A                                         Task B
->>
->>     /* 1st freq transition */
->>     Invoke _begin() {
->>             ...
->>             ...
->>     }
->>
->>     Change the frequency
->>
->>                                                 Got interrupt for successful
->>                                                 change of frequency.
->>
->>                                                 /* 1st freq transition */
->>                                                 Invoke _end() {
->>                                                         ...
->>                                                         ...
->>     /* 2nd freq transition */                           ...
->>     Invoke _begin() {                                   ...
->>             ... //waiting for B                         ...
->>             ... //to finish _end()              }
->>             ...
->>             ...
->>     }
->>
->>
->> This scenario is actually deadlock-free because Task A can wait inside the
->> second call to _begin() without self-deadlocking, because it is the
->> responsibility of Task B to finish the first sequence by invoking the
->> corresponding _end().
->>
->> By setting the value of 'transition_task' again explicitly in _end(), we
->> ensure that the code won't print a false-positive warning in this case.
->>
->> However the same code successfully catches the following deadlock-prone
->> scenario even in ASYNC_NOTIFICATION drivers:
->>
->> Scenario 2: (Deadlock-prone)
->> ----------
->>
->>          Task A                                         Task B
->>
->>     /* 1st freq transition */
->>     Invoke _begin() {
->>             ...
->>             ...
->>     }
->>
->>     /* 2nd freq transition */
->>     Invoke _begin() {
->>             ...
->>             ...
->>     }
->>
->>     Change the frequency
->>
->>
->> Here the bug is that Task A called the second _begin() *before* actually
->> performing the 1st frequency transition. In other words, it failed to set
->> Task B in motion for the 1st frequency transition, and hence it will
->> self-deadlock. This is very similar to the case of drivers which do
->> synchronous notification, and hence the debug infrastructure developed
->> in this patch can catch this scenario easily.
->>
->> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->> ---
->>
->>  drivers/cpufreq/cpufreq.c |   12 ++++++++++++
->>  include/linux/cpufreq.h   |    1 +
->>  2 files changed, 13 insertions(+)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index abda660..2c99a6c 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -354,6 +354,10 @@ static void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
->>  void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
->>                 struct cpufreq_freqs *freqs)
->>  {
->> +
->> +       /* Catch double invocations of _begin() which lead to self-deadlock */
->> +       WARN_ON(current == policy->transition_task);
->> +
->>  wait:
->>         wait_event(policy->transition_wait, !policy->transition_ongoing);
->>
->> @@ -365,6 +369,7 @@ wait:
->>         }
->>
->>         policy->transition_ongoing = true;
->> +       policy->transition_task = current;
->>
->>         spin_unlock(&policy->transition_lock);
->>
->> @@ -378,9 +383,16 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
->>         if (unlikely(WARN_ON(!policy->transition_ongoing)))
->>                 return;
->>
->> +       /*
->> +        * The task invoking _end() could be different from the one that
->> +        * invoked the _begin(). So set ->transition_task again here
->> +        * explicity.
->> +        */
->> +       policy->transition_task = current;
->>         cpufreq_notify_post_transition(policy, freqs, transition_failed);
->>
->>         policy->transition_ongoing = false;
->> +       policy->transition_task = NULL;
->>
->>         wake_up(&policy->transition_wait);
->>  }
->> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->> index 5ae5100..8f44d79 100644
->> --- a/include/linux/cpufreq.h
->> +++ b/include/linux/cpufreq.h
->> @@ -110,6 +110,7 @@ struct cpufreq_policy {
->>         bool                    transition_ongoing; /* Tracks transition status */
->>         spinlock_t              transition_lock;
->>         wait_queue_head_t       transition_wait;
->> +       struct task_struct      *transition_task; /* Task which is doing the transition */
->>  };
->>
->>  /* Only for ACPI */
->>
-
+Thanks,
+Amit Daniel
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>
