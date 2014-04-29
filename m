@@ -1,46 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/5] Cpufreq frequency serialization fixes
-Date: Tue, 29 Apr 2014 01:47:33 +0200
-Message-ID: <9665161.ytKRFCMQPA@vostro.rjw.lan>
-References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
+Date: Tue, 29 Apr 2014 09:47:47 +0530
+Message-ID: <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
+References: <535AC247.3070907@semaphore.gr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
+In-Reply-To: <535AC247.3070907@semaphore.gr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: mroos@linux.ee, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
 
-On Tuesday, April 29, 2014 12:23:54 AM Srivatsa S. Bhat wrote:
-> 
-> Hi,
-> 
-> Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
-> commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
-> The root-cause of this issue is the extra invocation of the
-> cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
-> longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
-> drivers as well. This patchset fixes the issue in all the 3 drivers and also
-> adds a debug infrastructure to catch such issues easily.
-> 
-> Patches 1-4 fix the regression in longhaul, powernow-k6 and powernow-k7
-> drivers. (Patch 2 fixes a different bug in powernow-k6, and it is kept as a
-> separate patch instead of merging it with patch 3, because I felt that it was
-> a bit subtle and needed attention in a separate patch).
-> 
-> Patch 5 adds a debug infrastructure to the cpufreq core to catch such problems
-> more easily in the future.
+On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> This patch set introduces two freq_table helper macros which
+> can be used for iteration over cpufreq_frequency_table and
+> makes the necessary changes to cpufreq core and drivers that
+> use such an iteration procedure.
+>
+> The motivation was a usage of common procedure to iterate over
+> cpufreq_frequency_table across all drivers and cpufreq core.
+>
+> This was tested on a x86_64 platform.
+> Most files compiled successfully but unfortunately I was not
+> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
+> due to lack of cross compiler.
+>
+> Changelog
+>
+> v4 -> v5
+>         - Fix warnings in printk format specifier for 32 bit
+>           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
 
-I've queued up patches [1-4/5] for 3.15, the last one I need to have another
-look at tomorrow.
+Doesn't look much has changed and so it stays as is:
 
-BTW, when you fix regressions, please always add a Fixes: tag to the changelog.
-
-Thanks!
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
