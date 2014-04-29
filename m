@@ -1,39 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: Remove exynos_sort_descend_freq_table in exynos5440-cpufreq.c
-Date: Tue, 29 Apr 2014 11:05:11 +0530
-Message-ID: <CAKohpo=ei0v69iQtjd6cjmfUCo-+sd1JzNc4RDza92nxaPoiVg@mail.gmail.com>
-References: <000701cf636b$3d1d13c0$b7573b40$@samsung.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 0/5] Cpufreq frequency serialization fixes
+Date: Tue, 29 Apr 2014 11:29:32 +0530
+Message-ID: <535F3FC4.7050906@linux.vnet.ibm.com>
+References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com> <9665161.ytKRFCMQPA@vostro.rjw.lan>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <000701cf636b$3d1d13c0$b7573b40$@samsung.com>
+In-Reply-To: <9665161.ytKRFCMQPA@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jonghwan Choi <jhbird.choi@samsung.com>, Amit Daniel <amit.daniel@samsung.com>
-Cc: "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: mroos@linux.ee, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 29 April 2014 10:54, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
-> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c
-> -static void exynos_sort_descend_freq_table(void)
-> -{
-> -       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
-> -       int i = 0, index;
-> -       unsigned int tmp_freq;
-> -       /*
-> -        * Exynos5440 clock controller state logic expects the cpufreq table
-> to
-> -        * be in descending order. But the OPP library constructs the table
-> in
-> -        * ascending order. So to make the table descending we just need to
-> -        * swap the i element with the N - i element.
-> -        */
+On 04/29/2014 05:17 AM, Rafael J. Wysocki wrote:
+> On Tuesday, April 29, 2014 12:23:54 AM Srivatsa S. Bhat wrote:
+>>
+>> Hi,
+>>
+>> Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
+>> commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
+>> The root-cause of this issue is the extra invocation of the
+>> cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
+>> longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
+>> drivers as well. This patchset fixes the issue in all the 3 drivers and also
+>> adds a debug infrastructure to catch such issues easily.
+>>
+>> Patches 1-4 fix the regression in longhaul, powernow-k6 and powernow-k7
+>> drivers. (Patch 2 fixes a different bug in powernow-k6, and it is kept as a
+>> separate patch instead of merging it with patch 3, because I felt that it was
+>> a bit subtle and needed attention in a separate patch).
+>>
+>> Patch 5 adds a debug infrastructure to the cpufreq core to catch such problems
+>> more easily in the future.
+> 
+> I've queued up patches [1-4/5] for 3.15, the last one I need to have another
+> look at tomorrow.
 
-What I am more focused is on: Why do we need to worry about order at
-all in the first place.
+Great! Thanks a lot!
 
-Okay, above comment says something about it but I couldn't understand
-what's the logic behind that. Why do we need same order as of clock
-controller. Please point out relevant code pieces as well..
+> 
+> BTW, when you fix regressions, please always add a Fixes: tag to the changelog.
+>
 
-@Amit: Your comments on this ?
+Oh, ok, will keep that in mind from next time. Thank you!
+ 
+Regards,
+Srivatsa S. Bhat
+
