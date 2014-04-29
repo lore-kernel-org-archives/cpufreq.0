@@ -1,36 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: Remove exynos_sort_descend_freq_table in exynos5440-cpufreq.c
-Date: Tue, 29 Apr 2014 11:51:03 +0530
-Message-ID: <CAKohponkT9o4WVUo=fNmVq+kMjm68Z3hdFVMhe7+8qsKPPc2CQ@mail.gmail.com>
-References: <000701cf636b$3d1d13c0$b7573b40$@samsung.com>
-	<CAKohpo=ei0v69iQtjd6cjmfUCo-+sd1JzNc4RDza92nxaPoiVg@mail.gmail.com>
-	<CADGdYn7cA940sxPszP5TA5tMnXD_=QkH3U3Wedy2DoC++rwRkQ@mail.gmail.com>
+Subject: Re: [PATCH v2 5/5] cpufreq: Catch double invocations of cpufreq_freq_transition_begin/end
+Date: Tue, 29 Apr 2014 12:19:39 +0530
+Message-ID: <CAKohpokiRMnZ6ga3_y2Tqgo95LzExb5nNgoKBNBXvsMyO__ZYA@mail.gmail.com>
+References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
+	<20140428185507.28755.6483.stgit@srivatsabhat.in.ibm.com>
+	<CAKohpomaJ0ubnzzQ7AwAd6z+Zm085i+UwB7XMa=si7qthZdgZg@mail.gmail.com>
+	<CAKohpokiy2Fvry=uTVnOCymH7Co1ka+JCFT3ndtPQBSD94Mnew@mail.gmail.com>
+	<535F43B2.2000309@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CADGdYn7cA940sxPszP5TA5tMnXD_=QkH3U3Wedy2DoC++rwRkQ@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <535F43B2.2000309@linux.vnet.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Amit Kachhap <amit.kachhap@gmail.com>
-Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 29 April 2014 11:44, Amit Kachhap <amit.kachhap@gmail.com> wrote:
-> In the frequency table dts file, the frequencies are arranged in
-> descending order which maps 1 to 1 with other frequency parameter to
-> be calculated and programmed in some registers.
-> But the OPP library works by generating the frequencies in ascending
-> order which breaks the above logic. Ideally i should expect frequency
-> values in same order as what is supplied.
-> So OPP library should not change the order or should take input flags
-> flags like,
-> dev_pm_opp_init_cpufreq_table(TABLE_ORDER_ASCEND|
-> TABLE_ORDER_DESCEND|TABLE_ORDER_ORIGINAL )
+On 29 April 2014 11:46, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> Yes, I'm aware that this corner case doesn't work well with my debug
 
-Looks a good idea :)
+Don't know if its a corner case, it may be the most obvious case for
+some :)
 
-This is what I wrote in another thread:
+> patch. I tried to avoid this but couldn't think of any solution.
 
-What I would recommend is, use .driver_data field to hold what has to
-be written to hardware for any frequency. And then simply use
-driver_data instead of index.
+The problem is not that it wouldn't work for these systems, but we will
+get WARN_ON() when they shouldn't have come :)
+
+> (One big-hammer way to avoid this is to exclude this infrastructure
+> for all ASYNC_NOTIFICATION drivers, but I didn't want to go with that
+> approach, since it makes it look ugly). Do you have any better ideas
+> to deal with this scenario?
+
+Can't think of anything better than this:
+
++       WARN_ON(!(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION)
+                             && (current == policy->transition_task));
+
+which you already mentioned.
+
+> Also, do we really have cases in mind where a single thread does
+> multiple frequency transitions in one go? That too in such quick
+> successions? Echo's to sysfs, changing of governors from userspace etc
+> all do one frequency transition at a time per-task...
+
+Its not really about if we can think of a real use case or not. The point
+is, governor is free to call transition calls one after the other (will always
+happen from a single thread) and it isn't supposed to wait for drivers
+to finish earlier transitions as ->target() has already returned.
+
+--
+viresh
