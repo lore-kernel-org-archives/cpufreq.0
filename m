@@ -1,46 +1,52 @@
 From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Tue, 29 Apr 2014 19:05:17 +0300
-Message-ID: <535FCDBD.6080500@semaphore.gr>
-References: <535AC247.3070907@semaphore.gr> <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Change the calculation of next
+ pstate
+Date: Tue, 29 Apr 2014 19:34:46 +0300
+Message-ID: <535FD4A6.3050905@semaphore.gr>
+References: <535D80C8.9090906@semaphore.gr> <CAKohpomhUk7RQ3YL3=wpVKSbK_oSkyYBRUZiqnHzWqrZ2DjRRA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomhUk7RQ3YL3=wpVKSbK_oSkyYBRUZiqnHzWqrZ2DjRRA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="utf-8"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
-> On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> wro=
+On 29/04/2014 07:58 =CF=80=CE=BC, Viresh Kumar wrote:
+> Cc'd Dirk,
+>=20
+> On 28 April 2014 03:42, Stratos Karafotis <stratosk@semaphore.gr> wro=
 te:
->> This patch set introduces two freq_table helper macros which
->> can be used for iteration over cpufreq_frequency_table and
->> makes the necessary changes to cpufreq core and drivers that
->> use such an iteration procedure.
+>> Currently the driver calculates the next pstate proportional to
+>> core_busy factor and reverse proportional to current pstate.
 >>
->> The motivation was a usage of common procedure to iterate over
->> cpufreq_frequency_table across all drivers and cpufreq core.
->>
->> This was tested on a x86_64 platform.
->> Most files compiled successfully but unfortunately I was not
->> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
->> due to lack of cross compiler.
->>
->> Changelog
->>
->> v4 -> v5
->>         - Fix warnings in printk format specifier for 32 bit
->>           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
+>> Change the above method and calculate the next pstate independently
+>> of current pstate.
 >=20
-> Doesn't look much has changed and so it stays as is:
->=20
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> We must mention why the change is required.
 >=20
 
-Thank you very much!
+Hi Viresh,
 
+Actually, I can't say that it's required. :)
+I just believe that calculation of next p-state should be independent
+from current one. In my opinion we can't scale the load across differen=
+t
+p-states, because it's not always equivalent.
 
+=46or example suppose a load of 100% because of a tight for loop in the
+current p-state. It will be also a 100% load in any other p-state.
+It will be wrong if we scale the load in the calculation formula
+according to the current p-state.
+
+I included the test results in the change log to point out an improveme=
+nt
+because of this patch.
+
+I will enrich more the change log as you suggested.
+
+Thanks,
 Stratos Karafotis
+
