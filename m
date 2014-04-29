@@ -1,123 +1,36 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 5/5] cpufreq: Catch double invocations of cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 11:46:18 +0530
-Message-ID: <535F43B2.2000309@linux.vnet.ibm.com>
-References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com> <20140428185507.28755.6483.stgit@srivatsabhat.in.ibm.com> <CAKohpomaJ0ubnzzQ7AwAd6z+Zm085i+UwB7XMa=si7qthZdgZg@mail.gmail.com> <CAKohpokiy2Fvry=uTVnOCymH7Co1ka+JCFT3ndtPQBSD94Mnew@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: Remove exynos_sort_descend_freq_table in exynos5440-cpufreq.c
+Date: Tue, 29 Apr 2014 11:51:03 +0530
+Message-ID: <CAKohponkT9o4WVUo=fNmVq+kMjm68Z3hdFVMhe7+8qsKPPc2CQ@mail.gmail.com>
+References: <000701cf636b$3d1d13c0$b7573b40$@samsung.com>
+	<CAKohpo=ei0v69iQtjd6cjmfUCo-+sd1JzNc4RDza92nxaPoiVg@mail.gmail.com>
+	<CADGdYn7cA940sxPszP5TA5tMnXD_=QkH3U3Wedy2DoC++rwRkQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokiy2Fvry=uTVnOCymH7Co1ka+JCFT3ndtPQBSD94Mnew@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CADGdYn7cA940sxPszP5TA5tMnXD_=QkH3U3Wedy2DoC++rwRkQ@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: Amit Kachhap <amit.kachhap@gmail.com>
+Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>
 
-On 04/29/2014 10:25 AM, Viresh Kumar wrote:
-> On 29 April 2014 10:21, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> Nice effort.
->>
->> On 29 April 2014 00:25, Srivatsa S. Bhat
->> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>> Now all such drivers have been fixed, but debugging this issue was not
->>> very straight-forward (even lockdep didn't catch this). So let us add a
->>> debug infrastructure to the cpufreq core to catch such issues more easily
->>> in the future.
->>
->> BUT, I am not sure if we really need it :(
->>
->> I think we just got into the 'barrier' stuff as we had some doubts about it
->> earlier and were quite sure that nothing else could go wrong. Otherwise
->> the only problem could have been present was the second queuing
->> from the same thread. And we will surely get stuck if that happens and
->> we can't just miss that error..
->>
->>> Scenario 1: (Deadlock-free)
->>> ----------
->>>
->>>          Task A                                         Task B
->>>
->>>     /* 1st freq transition */
->>>     Invoke _begin() {
->>>             ...
->>>             ...
->>>     }
->>>
->>>     Change the frequency
->>>
->>>                                                 Got interrupt for successful
->>>                                                 change of frequency.
->>>
->>>                                                 /* 1st freq transition */
->>>                                                 Invoke _end() {
->>>                                                         ...
->>>                                                         ...
->>>     /* 2nd freq transition */                           ...
->>>     Invoke _begin() {                                   ...
->>>             ... //waiting for B                         ...
->>>             ... //to finish _end()              }
->>>             ...
->>>             ...
->>>     }
->>>
->>>
->>> This scenario is actually deadlock-free because Task A can wait inside the
->>> second call to _begin() without self-deadlocking, because it is the
->>> responsibility of Task B to finish the first sequence by invoking the
->>> corresponding _end().
-> 
-> WTF, I was writing my mail and it just got send due to some stupid combination
-> of keys :( .. Sorry.
->
+On 29 April 2014 11:44, Amit Kachhap <amit.kachhap@gmail.com> wrote:
+> In the frequency table dts file, the frequencies are arranged in
+> descending order which maps 1 to 1 with other frequency parameter to
+> be calculated and programmed in some registers.
+> But the OPP library works by generating the frequencies in ascending
+> order which breaks the above logic. Ideally i should expect frequency
+> values in same order as what is supplied.
+> So OPP library should not change the order or should take input flags
+> flags like,
+> dev_pm_opp_init_cpufreq_table(TABLE_ORDER_ASCEND|
+> TABLE_ORDER_DESCEND|TABLE_ORDER_ORIGINAL )
 
-No problem!
- 
-> Also, this might not work as expected. Consider this scenario:
-> 
->      /* 1st freq transition */
->      Invoke _begin() {
->              ...
->              ...
->      }
-> 
->      Start Change of frequency and return
->      back as there is no end from same thread.
-> 
->      /* 2nd freq transition as there is nobody stopping us */
->      Invoke _begin() {
->              ... //waiting for B
->              ... //to finish _end()
->              ...
->              ...
->      }
-> 
->                                                               Got
-> interrupt for successful
->                                                               change
-> of frequency.
-> 
->                                                               /* 1st
-> freq transition */
->                                                               Invoke _end() {
->                                                                      ...
->                                                                      ...
->                                                              }
-> 
-> And your patch will probably break this ?
+Looks a good idea :)
 
-Yes, I'm aware that this corner case doesn't work well with my debug
-patch. I tried to avoid this but couldn't think of any solution.
-(One big-hammer way to avoid this is to exclude this infrastructure
-for all ASYNC_NOTIFICATION drivers, but I didn't want to go with that
-approach, since it makes it look ugly). Do you have any better ideas
-to deal with this scenario?
+This is what I wrote in another thread:
 
-Also, do we really have cases in mind where a single thread does
-multiple frequency transitions in one go? That too in such quick
-successions? Echo's to sysfs, changing of governors from userspace etc
-all do one frequency transition at a time per-task...
-
-
-Regards,
-Srivatsa S. Bhat
-
+What I would recommend is, use .driver_data field to hold what has to
+be written to hardware for any frequency. And then simply use
+driver_data instead of index.
