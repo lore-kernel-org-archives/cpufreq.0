@@ -1,67 +1,61 @@
 From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH] cpufreq: intel_pstate: Remove sample parameter in intel_pstate_calc_busy
-Date: Tue, 29 Apr 2014 20:53:49 +0300
-Message-ID: <535FE72D.2020402@semaphore.gr>
+Subject: [PATCH] cpufreq: Break out early when frequency equals target_freq
+Date: Tue, 29 Apr 2014 23:28:33 +0300
+Message-ID: <53600B71.2050904@semaphore.gr>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Since commit d37e2b7644 ("intel_pstate: remove unneeded sample buffers")
-we use only one sample. So, there is no need to pass the sample
-pointer to intel_pstate_calc_busy. Instead, get the pointer from
-cpudata. Also, remove the unused SAMPLE_COUNT macro.
+Many drivers keep frequencies in frequency table in ascending
+or descending order. When governor tries to change to policy->min
+or policy->max respectively then the cpufreq_frequency_table_target
+could return on first iteration. This will save some iteration cycles.
 
-While at it, reformat the first line in this function.
+So, break out early when a frequency in cpufreq_frequency_table
+equals to target one.
+
+Testing this during kernel compilation using ondemand governor
+with a frequency table in ascending order, the
+cpufreq_frequency_table_target returned early on the first
+iteration at about 30% of times called.
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
- drivers/cpufreq/intel_pstate.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ drivers/cpufreq/freq_table.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 95b3958..8192ff1 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -32,8 +32,6 @@
- #include <asm/msr.h>
- #include <asm/cpu_device_id.h>
- 
--#define SAMPLE_COUNT		3
--
- #define BYT_RATIOS		0x66a
- #define BYT_VIDS		0x66b
- #define BYT_TURBO_RATIOS	0x66c
-@@ -553,14 +551,13 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
- 	intel_pstate_set_pstate(cpu, cpu->pstate.max_pstate);
- }
- 
--static inline void intel_pstate_calc_busy(struct cpudata *cpu,
--					struct sample *sample)
-+static inline void intel_pstate_calc_busy(struct cpudata *cpu)
- {
-+	struct sample *sample = &cpu->sample;
- 	int32_t core_pct;
- 	int32_t c0_pct;
- 
--	core_pct = div_fp(int_tofp((sample->aperf)),
--			int_tofp((sample->mperf)));
-+	core_pct = div_fp(int_tofp(sample->aperf), int_tofp(sample->mperf));
- 	core_pct = mul_fp(core_pct, int_tofp(100));
- 	FP_ROUNDUP(core_pct);
- 
-@@ -595,7 +592,7 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
- 	cpu->sample.mperf -= cpu->prev_mperf;
- 	cpu->sample.tsc -= cpu->prev_tsc;
- 
--	intel_pstate_calc_busy(cpu, &cpu->sample);
-+	intel_pstate_calc_busy(cpu);
- 
- 	cpu->prev_aperf = aperf;
- 	cpu->prev_mperf = mperf;
+diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+index 8e518c6..1632981 100644
+--- a/drivers/cpufreq/freq_table.c
++++ b/drivers/cpufreq/freq_table.c
+@@ -137,9 +137,13 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+ 		i = pos - table;
+ 		if ((freq < policy->min) || (freq > policy->max))
+ 			continue;
++		if (freq == target_freq) {
++			optimal.driver_data = i;
++			break;
++		}
+ 		switch (relation) {
+ 		case CPUFREQ_RELATION_H:
+-			if (freq <= target_freq) {
++			if (freq < target_freq) {
+ 				if (freq >= optimal.frequency) {
+ 					optimal.frequency = freq;
+ 					optimal.driver_data = i;
+@@ -152,7 +156,7 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+ 			}
+ 			break;
+ 		case CPUFREQ_RELATION_L:
+-			if (freq >= target_freq) {
++			if (freq > target_freq) {
+ 				if (freq <= optimal.frequency) {
+ 					optimal.frequency = freq;
+ 					optimal.driver_data = i;
 -- 
 1.9.0
