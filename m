@@ -1,70 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: powernow-k8: Fix checkpatch warnings
-Date: Wed, 30 Apr 2014 00:39:11 +0200
-Message-ID: <4780344.RfsAca3Qz3@vostro.rjw.lan>
-References: <5356DB92.1060600@semaphore.gr> <2606012.9SjvfKiI5Z@vostro.rjw.lan> <5357C5E0.1070207@semaphore.gr>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 75121] New: Intel Pstate driver - powersave mode - CPU
+ frequency too low
+Date: Tue, 29 Apr 2014 23:47:53 +0000
+Message-ID: <bug-75121-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <5357C5E0.1070207@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-On Wednesday, April 23, 2014 04:53:36 PM Stratos Karafotis wrote:
-> On 23/04/2014 01:37 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
-> > On Wednesday, April 23, 2014 12:13:54 AM Stratos Karafotis wrote:
-> >> Fix the following checkpatch warnings:
-> >=20
-> > In addition to comments from Viresh, I have a general one.
-> >=20
-> > Some of the checkpatch.pl warnings are not worth fixing at all ->
-> >=20
-> >> - WARNING: Prefer pr_err(... to printk(KERN_ERR ...
-> >> - WARNING: Prefer pr_info(... to printk(KERN_INFO ...
-> >> - WARNING: Prefer pr_warn(... to printk(KERN_WARNING ...
-> >> - WARNING: quoted string split across lines
-> >> - WARNING: line over 80 characters
-> >=20
-> > -> and the "line over 80 characters" ones are outright wrong in man=
-y cases,
-> > so please don't "fix" them.
-> >=20
->=20
-> Hi Rafael,
->=20
-> Thanks for your comments!
->=20
-> Could you please clarify if you want me to drop the entire patch or
-> send it only with the changes about the last warning found ("no space=
-s
-> at the start of a line)?
->=20
-> Also, I would like to take the opportunity and ask a question. :)
->=20
-> Reading the code, sometimes, I find some minor formatting issues.
-> Like the checkpatch warnings or unnecessary parentheses and braces.
->=20
-> For example the line bellow:
-> 		if ((freq < policy->min) || (freq > policy->max))
->=20
-> I know that this is not actually an issue and a patch with such chang=
-es
-> is (somehow) a noise for the maintainers. But, should it be "fixed" o=
-r not?
+https://bugzilla.kernel.org/show_bug.cgi?id=75121
 
-It should be cleaned up generally, so if you have the time and you're w=
-illing
-to do such things, please do them.
+            Bug ID: 75121
+           Summary: Intel Pstate driver - powersave mode - CPU frequency
+                    too low
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.15rc3
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: dsmythies@telus.net
+        Regression: No
 
-That said things like lines in excess of 80 characters may stay as they=
- are.
+Until recently, the difference between the intel_pstate driver in performance
+mode verses powersave mode was minimal to imperceptible. Now, the frequency
+response (meaning the rate of load / noload on a CPU) is drastically different
+than it used to be and often not even as good as the acpi-cpufreq driver in
+ondemand mode.
 
-Thanks!
+This is a negative side effect from Commit fcb6a15c2e7e - intel_pstate: Take
+core C0 time into account for core busy calculation.
 
+I can revert to the same performance as previously for the intel_pstate driver
+in powersave mode by changing one line in the code (kernel = 3.15rc3-doug on
+the graphs). From this:
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+sample->core_pct_busy = mul_fp(core_pct, c0_pct);
+
+to this:
+
+sample->core_pct_busy = core_pct;
+
+basically, reverting the commit.
+
+There has been other bug reports and threads:
+References:
+https://bugzilla.kernel.org/show_bug.cgi?id=70941
+https://bugzilla.kernel.org/show_bug.cgi?id=66581
+https://lkml.org/lkml/2014/2/19/626
+
+In a moment, I will add 3 attachment graphs that detail the issue.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
