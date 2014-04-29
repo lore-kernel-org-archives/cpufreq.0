@@ -1,99 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Catch double invocations of cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 18:53:40 +0530
-Message-ID: <CAKohpo=UYR3sgtutEBRcvRtXjvNpph9wu2TgoM1168HXQrWjLA@mail.gmail.com>
-References: <20140429130506.7052.54268.stgit@srivatsabhat.in.ibm.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
+Date: Tue, 29 Apr 2014 19:05:17 +0300
+Message-ID: <535FCDBD.6080500@semaphore.gr>
+References: <535AC247.3070907@semaphore.gr> <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140429130506.7052.54268.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
 
-On 29 April 2014 18:36, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Some cpufreq drivers were redundantly invoking the _begin() and _end()
-> APIs around frequency transitions, and this double invocation (one from
-> the cpufreq core and the other from the cpufreq driver) used to result
-> in a self-deadlock, leading to system hangs during boot. (The _begin()
-> API makes contending callers wait until the previous invocation is
-> complete. Hence, the cpufreq driver would end up waiting on itself!).
->
-> Now all such drivers have been fixed, but debugging this issue was not
-> very straight-forward (even lockdep didn't catch this). So let us add a
-> debug infrastructure to the cpufreq core to catch such issues more easily
-> in the future.
->
-> We add a new field called 'transition_task' to the policy structure, to keep
-> track of the task which is performing the frequency transition. Using this
-> field, we make note of this task during _begin() and print a warning if we
-> find a case where the same task is calling _begin() again, before completing
-> the previous frequency transition using the corresponding _end().
->
-> We have left out ASYNC_NOTIFICATION drivers from this debug infrastructure
-> for 2 reasons:
->
-> 1. At the moment, we have no way to avoid a particular scenario where this
->    debug infrastructure can emit false-positive warnings for such drivers.
->    The scenario is depicted below:
->
->
->          Task A                                         Task B
->
->     /* 1st freq transition */
->     Invoke _begin() {
->             ...
->             ...
->     }
->
->     Change the frequency
->
->     /* 2nd freq transition */
->     Invoke _begin() {
->             ... //waiting for B to
->             ... //finish _end() for
->             ... //the 1st transition
->             ...       |                         Got interrupt for successful
->             ...       |                         change of frequency (1st one).
->             ...       |
->             ...       |                         /* 1st freq transition */
->             ...       |                         Invoke _end() {
->             ...       |                                 ...
->             ...       V                         }
->             ...
->             ...
->     }
->
->    This scenario is actually deadlock-free because, once Task A changes the
->    frequency, it is Task B's responsibility to invoke the corresponding
->    _end() for the 1st frequency transition. Hence it is perfectly legal for
->    Task A to go ahead and attempt another frequency transition in the meantime.
->    (Of course it won't be able to proceed until Task B finishes the 1st _end(),
->    but this doesn't cause a deadlock or a hang).
->
->    The debug infrastructure cannot handle this scenario and will treat it as
->    a deadlock and print a warning. To avoid this, we exclude such drivers
->    from the purview of this code.
->
-> 2. Luckily, we don't _need_ this infrastructure for ASYNC_NOTIFICATION drivers
->    at all! The cpufreq core does not automatically invoke the _begin() and
->    _end() APIs during frequency transitions in such drivers. Thus, the driver
->    alone is responsible for invoking _begin()/_end() and hence there shouldn't
->    be any conflicts which lead to double invocations. So, we can skip these
->    drivers, since the probability that such drivers will hit this problem is
->    extremely low, as outlined above.
->
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->
-> v2: Removed the coverage of ASYNC_NOTIFICATION drivers, in order to avoid
-> false-positives.
->
->  drivers/cpufreq/cpufreq.c |    7 +++++++
->  include/linux/cpufreq.h   |    1 +
->  2 files changed, 8 insertions(+)
+On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
+> On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> wro=
+te:
+>> This patch set introduces two freq_table helper macros which
+>> can be used for iteration over cpufreq_frequency_table and
+>> makes the necessary changes to cpufreq core and drivers that
+>> use such an iteration procedure.
+>>
+>> The motivation was a usage of common procedure to iterate over
+>> cpufreq_frequency_table across all drivers and cpufreq core.
+>>
+>> This was tested on a x86_64 platform.
+>> Most files compiled successfully but unfortunately I was not
+>> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
+>> due to lack of cross compiler.
+>>
+>> Changelog
+>>
+>> v4 -> v5
+>>         - Fix warnings in printk format specifier for 32 bit
+>>           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
+>=20
+> Doesn't look much has changed and so it stays as is:
+>=20
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>=20
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Thank you very much!
+
+
+Stratos Karafotis
