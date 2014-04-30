@@ -1,76 +1,57 @@
-From: Jonghwan Choi <jhbird.choi@samsung.com>
-Subject: [PATCH 2/3] cpufreq: Removed exynos_sort_descend_freq_table funtion
-Date: Wed, 30 Apr 2014 15:28:35 +0900
-Message-ID: <000101cf643d$6a36c270$3ea44750$@samsung.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
+Date: Wed, 30 Apr 2014 18:37:06 +0300
+Message-ID: <536118A2.2060204@semaphore.gr>
+References: <535AC247.3070907@semaphore.gr> <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com> <535FCDBD.6080500@semaphore.gr> <1621123.rMC9JtD3Mo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-language: ko
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1621123.rMC9JtD3Mo@vostro.rjw.lan>
+Sender: linux-doc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: "'open list:CPU FREQUENCY DRI...'" <cpufreq@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Kukjin Kim' <kgene.kim@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
 
-After applying "PM / OPP: Add support for descending order for cpufreq
-table"
-,to make the table descending we can use OPP_TABLE_ORDER_DESCEND flag.
+On 30/04/2014 01:26 =CF=80=CE=BC, Rafael J. Wysocki wrote:
+> On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
+>> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
+>>> On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> w=
+rote:
+>>>> This patch set introduces two freq_table helper macros which
+>>>> can be used for iteration over cpufreq_frequency_table and
+>>>> makes the necessary changes to cpufreq core and drivers that
+>>>> use such an iteration procedure.
+>>>>
+>>>> The motivation was a usage of common procedure to iterate over
+>>>> cpufreq_frequency_table across all drivers and cpufreq core.
+>>>>
+>>>> This was tested on a x86_64 platform.
+>>>> Most files compiled successfully but unfortunately I was not
+>>>> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
+>>>> due to lack of cross compiler.
+>>>>
+>>>> Changelog
+>>>>
+>>>> v4 -> v5
+>>>>         - Fix warnings in printk format specifier for 32 bit
+>>>>           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
+>>>
+>>> Doesn't look much has changed and so it stays as is:
+>>>
+>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>
+>>
+>> Thank you very much!
+>=20
+> I've applied the series to my bleeding-edge branch, will move it to l=
+inux-next
+> after build testing later this week.
+>=20
+> Thanks!
+>=20
 
-Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
----
- drivers/cpufreq/exynos5440-cpufreq.c |   22 +---------------------
- 1 file changed, 1 insertion(+), 21 deletions(-)
+Thanks so much!
 
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c
-b/drivers/cpufreq/exynos5440-cpufreq.c
-index a6b8214..fc19beb 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -279,25 +279,6 @@ static irqreturn_t exynos_cpufreq_irq(int irq, void
-*id)
- 	return IRQ_HANDLED;
- }
- 
--static void exynos_sort_descend_freq_table(void)
--{
--	struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
--	int i = 0, index;
--	unsigned int tmp_freq;
--	/*
--	 * Exynos5440 clock controller state logic expects the cpufreq table
-to
--	 * be in descending order. But the OPP library constructs the table
-in
--	 * ascending order. So to make the table descending we just need to
--	 * swap the i element with the N - i element.
--	 */
--	for (i = 0; i < dvfs_info->freq_count / 2; i++) {
--		index = dvfs_info->freq_count - i - 1;
--		tmp_freq = freq_tbl[i].frequency;
--		freq_tbl[i].frequency = freq_tbl[index].frequency;
--		freq_tbl[index].frequency = tmp_freq;
--	}
--}
--
- static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	policy->clk = dvfs_info->cpu_clk;
-@@ -367,14 +348,13 @@ static int exynos_cpufreq_probe(struct platform_device
-*pdev)
- 	}
- 
- 	ret = dev_pm_opp_init_cpufreq_table(dvfs_info->dev,
--					    &dvfs_info->freq_table);
-+			&dvfs_info->freq_table, OPP_TABLE_ORDER_DESCEND);
- 	if (ret) {
- 		dev_err(dvfs_info->dev,
- 			"failed to init cpufreq table: %d\n", ret);
- 		goto err_put_node;
- 	}
- 	dvfs_info->freq_count = dev_pm_opp_get_opp_count(dvfs_info->dev);
--	exynos_sort_descend_freq_table();
- 
- 	if (of_property_read_u32(np, "clock-latency", &dvfs_info->latency))
- 		dvfs_info->latency = DEF_TRANS_LATENCY;
--- 
-1.7.10.4
+
+Stratos Karafotis
