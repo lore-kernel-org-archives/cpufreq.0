@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 75121] Intel Pstate driver - powersave mode - CPU frequency too
  low
-Date: Tue, 29 Apr 2014 23:59:10 +0000
-Message-ID: <bug-75121-12968-0Z24XvP0lb@https.bugzilla.kernel.org/>
+Date: Wed, 30 Apr 2014 00:08:52 +0000
+Message-ID: <bug-75121-12968-fX4WR85FaJ@https.bugzilla.kernel.org/>
 References: <bug-75121-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,13 +15,13 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=75121
 
---- Comment #3 from Doug Smythies <dsmythies@telus.net> ---
-Created attachment 134331
-  --> https://bugzilla.kernel.org/attachment.cgi?id=134331&action=edit
-CPU 7 frequency vs load / idle freqency. Turbo on. various kernels
+--- Comment #4 from Doug Smythies <dsmythies@telus.net> ---
+Created attachment 134341
+  --> https://bugzilla.kernel.org/attachment.cgi?id=134341&action=edit
+The phoronix ffmpeg test graph again with one more data point
 
-This graph is also more generic and shows the frequency response (meaning the
-load /idle frequency response) under constant load.
+I forgot to add the results from my "doug" test kernel to the phoronix graph
+before I posted it, so adding it now.
 
 -- 
 You are receiving this mail because:
