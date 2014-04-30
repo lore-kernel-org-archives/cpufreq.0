@@ -1,57 +1,36 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Wed, 30 Apr 2014 18:37:06 +0300
-Message-ID: <536118A2.2060204@semaphore.gr>
-References: <535AC247.3070907@semaphore.gr> <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com> <535FCDBD.6080500@semaphore.gr> <1621123.rMC9JtD3Mo@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: powernow-k8: Fix checkpatch warnings
+Date: Wed, 30 Apr 2014 22:16:14 +0200
+Message-ID: <2559921.qEXZdngR08@vostro.rjw.lan>
+References: <5356DB92.1060600@semaphore.gr> <4780344.RfsAca3Qz3@vostro.rjw.lan> <CAKohponkTeEqdgqJ6+caQcKd5yoMNhFvkZib1UueqNBCmO=pmA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1621123.rMC9JtD3Mo@vostro.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponkTeEqdgqJ6+caQcKd5yoMNhFvkZib1UueqNBCmO=pmA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 30/04/2014 01:26 =CF=80=CE=BC, Rafael J. Wysocki wrote:
-> On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
->> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
->>> On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> w=
-rote:
->>>> This patch set introduces two freq_table helper macros which
->>>> can be used for iteration over cpufreq_frequency_table and
->>>> makes the necessary changes to cpufreq core and drivers that
->>>> use such an iteration procedure.
->>>>
->>>> The motivation was a usage of common procedure to iterate over
->>>> cpufreq_frequency_table across all drivers and cpufreq core.
->>>>
->>>> This was tested on a x86_64 platform.
->>>> Most files compiled successfully but unfortunately I was not
->>>> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
->>>> due to lack of cross compiler.
->>>>
->>>> Changelog
->>>>
->>>> v4 -> v5
->>>>         - Fix warnings in printk format specifier for 32 bit
->>>>           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
->>>
->>> Doesn't look much has changed and so it stays as is:
->>>
->>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>
->>
->> Thank you very much!
->=20
-> I've applied the series to my bleeding-edge branch, will move it to l=
-inux-next
-> after build testing later this week.
->=20
-> Thanks!
->=20
+On Wednesday, April 30, 2014 09:34:03 AM Viresh Kumar wrote:
+> On 30 April 2014 04:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > It should be cleaned up generally, so if you have the time and you're willing
+> > to do such things, please do them.
+> >
+> > That said things like lines in excess of 80 characters may stay as they are.
+> 
+> I have tried this sort of stuff earlier, but there is one issue that stands
+> up again and again. When you update neighboring lines of lines
+> crossing 80 columns, we do get warnings for lines which aren't actually
+> updated by us (from checkpatch.pl). So, probably we need to fix
+> checkpatch then..
 
-Thanks so much!
+That has been my opinion pretty much forever.
+
+Thanks!
 
 
-Stratos Karafotis
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
