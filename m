@@ -1,46 +1,126 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: time_in_state on Ubuntu 13.10
-Date: Fri, 2 May 2014 10:55:09 +0530
-Message-ID: <CAKohponNhk2wxM2vTX6ZWf590bxTSjT-53oV9D6AKPch+VbsSw@mail.gmail.com>
-References: <535E6906.2090201@unine.ch>
-	<CAOh2x==Q_oDn9v4S5ggh_e-3_=vSU_5Ko_89LfWM9ARBS9i=Rg@mail.gmail.com>
-	<535F51F7.5090804@unine.ch>
-	<CAKohponpGMMRUvDivaxj_qz5dQvhxZHiHW4Z19GzpaEJHGStRQ@mail.gmail.com>
-	<535F6508.5020202@unine.ch>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] cpufreq: intel_pstate: Change the calculation of next pstate
+Date: Fri, 02 May 2014 14:26:54 +0200
+Message-ID: <7610386.oS78YEZMBm@vostro.rjw.lan>
+References: <5362B5F5.1020706@semaphore.gr> <21200760.cENPVVrS5i@vostro.rjw.lan> <5362F958.6000807@gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <535F6508.5020202@unine.ch>
+In-Reply-To: <5362F958.6000807@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mascha Kurpicz <mascha.kurpicz@unine.ch>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Maxime Colmant <maxime.colmant@inria.fr>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 29 April 2014 14:08, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
-> On 04/29/2014 10:26 AM, Viresh Kumar wrote:
->> On 29 April 2014 12:47, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
->>> Sorry for the imprecision.
->>>
->>> Works correctly with
->>> Ubuntu 12.04.3 LTS - kernel 3.2.0-29-generic
->>> Ubuntu 12.04.3 LTS -  kernel 3.8.0-29
->>> Ubuntu 13.10 - kernel 3.8.0-29-generic
->>>
->>> 0 or very small (e.g. 6) values with
->>> Ubuntu 13.10 - kernel 3.11.0-20-generic
->> Can you provide cpufreq-info 's output for the last two cases please?
+On Thursday, May 01, 2014 06:48:08 PM Dirk Brandewie wrote:
+> On 05/01/2014 04:18 PM, Rafael J. Wysocki wrote:
+> > On Thursday, May 01, 2014 02:30:42 PM Dirk Brandewie wrote:
+> >> On 05/01/2014 02:00 PM, Stratos Karafotis wrote:
+> >>> Currently the driver calculates the next pstate proportional to
+> >>> core_busy factor, scaled by the ratio max_pstate / current_pstate.
+> >>>
+> >>> Using the scaled load (core_busy) to calculate the next pstate
+> >>> is not always correct, because there are cases that the load is
+> >>> independent from current pstate. For example, a tight 'for' loop
+> >>> through many sampling intervals will cause a load of 100% in
+> >>> every pstate.
+> >>>
+> >>> So, change the above method and calculate the next pstate with
+> >>> the assumption that the next pstate should not depend on the
+> >>> current pstate. The next pstate should only be directly
+> >>> proportional to measured load.
+> >>>
+> >>> Tested on Intel i7-3770 CPU @ 3.40GHz.
+> >>> Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
+> >>> increase ~1.5% in performance. Below the test results using turbostat
+> >>> (5 iterations):
+> >>>
+> >>> Without patch:
+> >>>
+> >>> Ph. avg Time	Total time	PkgWatt		Total Energy
+> >>> 	79.63	266.416		57.74		15382.85984
+> >>> 	79.63	265.609		57.87		15370.79283
+> >>> 	79.57	266.994		57.54		15362.83476
+> >>> 	79.53	265.304		57.83		15342.53032
+> >>> 	79.71	265.977		57.76		15362.83152
+> >>> avg	79.61	266.06		57.74		15364.36985
+> >>>
+> >>> With patch:
+> >>>
+> >>> Ph. avg Time	Total time	PkgWatt		Total Energy
+> >>> 	78.23	258.826		59.14		15306.96964
+> >>> 	78.41	259.110		59.15		15326.35650
+> >>> 	78.40	258.530		59.26		15320.48780
+> >>> 	78.46	258.673		59.20		15313.44160
+> >>> 	78.19	259.075		59.16		15326.87700
+> >>> avg	78.34	258.842		59.18		15318.82650
+> >>>
+> >>> The total test time reduced by ~2.6%, while the total energy
+> >>> consumption during a test iteration reduced by ~0.35%
+> >>>
+> >>> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> >>> ---
+> >>>
+> >>> Changes v1 -> v2
+> >>> 	- Enhance change log as Rafael and Viresh suggested
+> >>>
+> >>>
+> >>>    drivers/cpufreq/intel_pstate.c | 15 +++++++--------
+> >>>    1 file changed, 7 insertions(+), 8 deletions(-)
+> >>>
+> >>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> >>> index 0999673..8e309db 100644
+> >>> --- a/drivers/cpufreq/intel_pstate.c
+> >>> +++ b/drivers/cpufreq/intel_pstate.c
+> >>> @@ -608,28 +608,27 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+> >>>    	mod_timer_pinned(&cpu->timer, jiffies + delay);
+> >>>    }
+> >>>
+> >>> -static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+> >>> +static inline int32_t intel_pstate_get_busy(struct cpudata *cpu)
+> >>>    {
+> >>> -	int32_t core_busy, max_pstate, current_pstate;
+> >>> +	int32_t core_busy, max_pstate;
+> >>>
+> >>>    	core_busy = cpu->sample.core_pct_busy;
+> >>>    	max_pstate = int_tofp(cpu->pstate.max_pstate);
+> >>> -	current_pstate = int_tofp(cpu->pstate.current_pstate);
+> >>> -	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+> >>> +	core_busy = mul_fp(core_busy, max_pstate);
+> >>
+> >> NAK,  The goal of this code is to find out how busy the core is at the current
+> >> P state. This change will return a value WAY too high.
+> >>
+> >> Assume core_busy is 100 and the max non-turbo P state is 34 (3.4GHz) this code
+> >> would return a busy value of 3400. The PID  is trying to keep the busy value
+> >> at the setpoint any value of ~3% will drive the P state to the highest turbo
+> >> P state in this example.
+> >
+> > Well, the problem is that the numbers above indicate an improvement in energy
+> > efficiency as a result of this patch and we need to explain that result.
+> >
+> The performance governor is the best option for this workload.
+> 
+> This change will give you the highest trubo for all but very idle work loads.
 
-Sorry, got distracted and just forgot about this thread :), must have marked
-it in my pending list :(
+I see.
 
-Anyways, I have tried to look at the diff between these kernel releases and
-looks like I couldn't figure out what's going wrong.
+> Lets say you have a processor with max P state of 3.4GHz  The current P state
+> is 1.6 GHz so if the processor was 100% in C0 the core_busy values would be
+> 47% This number scaled would be 100%.  With the change above the PID would be
+> reacting to a load of 1598%.  APERF/MPERF give you the percent of entire
+> core scaling it lets you find out how busy your are within the cureent P state.
 
-I tried to test things with the latest kernel and they seem to be working fine.
-Atleast on my ARM board.
+OK
 
-Would it be possible for you to do a git bisect between 3.8 and 3.11 ?
+Stratos seems to be arguing that we can achieve better results, in therms of
+both performance and energy efficiency, if we disregard the history and only
+take the current situation into account.  The patch itself may not be correct,
+but the idea is worth consideration in my opinion, especially in the face
+of the fact that we made a similar change in cpufreq and the results improved.
 
---
-viresh
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
