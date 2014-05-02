@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 75121] Intel Pstate driver - powersave mode - CPU frequency too
  low
-Date: Fri, 02 May 2014 14:25:20 +0000
-Message-ID: <bug-75121-12968-XzzC71cs64@https.bugzilla.kernel.org/>
+Date: Fri, 02 May 2014 23:42:23 +0000
+Message-ID: <bug-75121-12968-E3POZEH6v0@https.bugzilla.kernel.org/>
 References: <bug-75121-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,23 +15,28 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=75121
 
-Dirk Brandewie <dirk.brandewie@gmail.com> changed:
+--- Comment #6 from Doug Smythies <dsmythies@telus.net> ---
+Created attachment 134771
+  --> https://bugzilla.kernel.org/attachment.cgi?id=134771&action=edit
+output from perf script as requested
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |dirk.brandewie@gmail.com
+I had troubles with phoronix stuff also when I tried to run it under "perf
+record". It seemed to think it needed to re-install and then I couldn't find
+where the test profile was, so that I could change it to 1 run instead of the
+default 3 (I typically run it 10 times, and always abort the first run because
+it has an inconsistent run time due to the extra time needed to load the file,
+which thereafter is cached).
 
---- Comment #5 from Dirk Brandewie <dirk.brandewie@gmail.com> ---
-Hi Doug,
+In the end I ran this:
 
-I am trying to get phoronix installed to reproduce this (without success so
-far)
+sudo /home/doug/bin/perf record -a -c 1 -e power:pstate_sample
+phoronix-test-suite benchmark pts/ffmpeg
 
-Could you run:
-  perf record -a -c 1 -e power:pstate_sample phoronix-test-suite ffmpeg
+The output from "pref script" has been truncated to just one of the 3 tests.
 
-And attach the output of:
-  perf script
+Myself, I find it much easier to interpret pref data captured for the "consume"
+program that was used to make the other graphs. I'll attach some of that data
+also.
 
 -- 
 You are receiving this mail because:
