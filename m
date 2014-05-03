@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 75121] Intel Pstate driver - powersave mode - CPU frequency too
  low
-Date: Fri, 02 May 2014 23:58:00 +0000
-Message-ID: <bug-75121-12968-gW9QyPBgnH@https.bugzilla.kernel.org/>
+Date: Sat, 03 May 2014 00:03:21 +0000
+Message-ID: <bug-75121-12968-SioTOSBIHz@https.bugzilla.kernel.org/>
 References: <bug-75121-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,15 +15,13 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=75121
 
---- Comment #7 from Doug Smythies <dsmythies@telus.net> ---
-Created attachment 134781
-  --> https://bugzilla.kernel.org/attachment.cgi?id=134781&action=edit
-Perf data for Kernel 3.15RC3 CPU at 85% load at 200 Hertz load / noload
+--- Comment #8 from Doug Smythies <dsmythies@telus.net> ---
+Created attachment 134791
+  --> https://bugzilla.kernel.org/attachment.cgi?id=134791&action=edit
+Perf data for Kernel 3.15RC3 CPU at 10% load at 200 Hertz load / noload
 frequency.
 
-Under these conditions, the CPU is never in the C0 state for an entire
-intel_pstate sample time. In my opinion the C0 inclusion unduly biases the
-target p-state downwards.
+Under these conditions, the CPU used to have started to ramp up in frequency.
 
 -- 
 You are receiving this mail because:
