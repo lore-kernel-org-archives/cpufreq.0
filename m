@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 75121] Intel Pstate driver - powersave mode - CPU frequency too
  low
-Date: Sat, 03 May 2014 05:00:04 +0000
-Message-ID: <bug-75121-12968-Ihg3bf4reX@https.bugzilla.kernel.org/>
+Date: Sun, 04 May 2014 19:18:50 +0000
+Message-ID: <bug-75121-12968-g4c5tlnbXE@https.bugzilla.kernel.org/>
 References: <bug-75121-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,14 +15,19 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=75121
 
-Doug Smythies <dsmythies@telus.net> changed:
+--- Comment #15 from Doug Smythies <dsmythies@telus.net> ---
+Created attachment 135151
+  --> https://bugzilla.kernel.org/attachment.cgi?id=135151&action=edit
+Just another method I tried. Phoronix ffmpeg test is as fast as performance
+mode with this method.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
- Attachment #134851|CPU 7 frequency vs load /   |CPU 7 frequency vs load /
-        description|idle freqency. Turbo on.    |idle freqency. Turbo on.
-                   |Modified C0 inclusionarious |Modified C0 inclusion.
-                   |kernels                     |Various kernels
+Hi Dirk: Did you ever figure out for certain why some had the CPU freq remains
+high after suspend issue? It remains unclear to me, and I do not know how to
+even try to re-create here on my test computer.
+
+References (some but not all):
+https://bugzilla.kernel.org/show_bug.cgi?id=66581#c21
+https://bugzilla.kernel.org/show_bug.cgi?id=66581#c26
 
 -- 
 You are receiving this mail because:
