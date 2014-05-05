@@ -1,142 +1,40 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH 1/2] PM / OPP: Remove cpufreq wrapper dependency on internal data organization
-Date: Mon, 5 May 2014 08:33:49 -0500
-Message-ID: <1399296830-13056-2-git-send-email-nm@ti.com>
-References: <1399296830-13056-1-git-send-email-nm@ti.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 75121] Intel Pstate driver - powersave mode - CPU frequency too
+ low
+Date: Mon, 05 May 2014 18:05:11 +0000
+Message-ID: <bug-75121-12968-ptcCEdLGWv@https.bugzilla.kernel.org/>
+References: <bug-75121-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1399296830-13056-1-git-send-email-nm@ti.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-75121-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>
+To: cpufreq@vger.kernel.org
 
-CPUFREQ custom functions for OPP (Operating Performance Points)
-currently exist inside the OPP library. These custom functions currently
-depend on internal data structures to pick up OPP information to create
-the cpufreq table.  For example, the cpufreq table is created precisely
-in the same order of how OPP entries are stored inside the list implementation.
+https://bugzilla.kernel.org/show_bug.cgi?id=75121
 
-This kind of tight interdependency is purely artificial since the same
-functionality can be achieved using the generic OPP functions
-meant to do the same. This interdependency also limits the independent
-modification of cpufreq and OPP library.
+--- Comment #16 from Dirk Brandewie <dirk.brandewie@gmail.com> ---
+(In reply to Doug Smythies from comment #15)
+> Created attachment 135151 [details]
+> Just another method I tried. Phoronix ffmpeg test is as fast as performance
+> mode with this method.
+> 
+> Hi Dirk: Did you ever figure out for certain why some had the CPU freq
+> remains high after suspend issue? It remains unclear to me, and I do not
+> know how to even try to re-create here on my test computer.
+> 
 
-So use the generic dev_pm_opp_find_freq_ceil function that achieves the
-table organization as we currently use.
+I could make it happen occasionally on my ivy bridge laptop test system.
 
-As a result of this, we dont need to use the internal device_opp
-structure anymore, and we hence we can switch over to rcu lock instead
-of the mutex holding the internal list lock.
+I think it have to the hardware coordination on the chip but I haven't
+proven that.
 
-This breaking of dependency on internal data structure imposes no change
-to usage of these.
+> References (some but not all):
+> https://bugzilla.kernel.org/show_bug.cgi?id=66581#c21
+> https://bugzilla.kernel.org/show_bug.cgi?id=66581#c26
 
-NOTE: This change is a precursor to moving this cpufreq specific logic
-out of the generic library into cpufreq.
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: cpufreq@vger.kernel.org
-Cc: linux-samsung-soc@vger.kernel.org
-Cc: linux-omap@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
- drivers/base/power/opp.c |   55 +++++++++++++++++++++++-----------------------
- 1 file changed, 28 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 2553867..38b43bb 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -617,53 +617,54 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_disable);
-  * the table if any of the mentioned functions have been invoked in the interim.
-  *
-  * Locking: The internal device_opp and opp structures are RCU protected.
-- * To simplify the logic, we pretend we are updater and hold relevant mutex here
-- * Callers should ensure that this function is *NOT* called under RCU protection
-- * or in contexts where mutex locking cannot be used.
-+ * Since we just use the regular accessor functions to access the internal data
-+ * structures, we use RCU read lock inside this function. As a result, users of
-+ * this function DONOT need to use explicit locks for invoking.
-  */
- int dev_pm_opp_init_cpufreq_table(struct device *dev,
- 			    struct cpufreq_frequency_table **table)
- {
--	struct device_opp *dev_opp;
- 	struct dev_pm_opp *opp;
--	struct cpufreq_frequency_table *freq_table;
--	int i = 0;
-+	struct cpufreq_frequency_table *freq_table = NULL;
-+	int i, max_opps, ret = 0;
-+	unsigned long rate;
- 
--	/* Pretend as if I am an updater */
--	mutex_lock(&dev_opp_list_lock);
-+	rcu_read_lock();
- 
--	dev_opp = find_device_opp(dev);
--	if (IS_ERR(dev_opp)) {
--		int r = PTR_ERR(dev_opp);
--		mutex_unlock(&dev_opp_list_lock);
--		dev_err(dev, "%s: Device OPP not found (%d)\n", __func__, r);
--		return r;
-+	max_opps = dev_pm_opp_get_opp_count(dev);
-+	if (max_opps <= 0) {
-+		ret = max_opps ? max_opps : -ENODATA;
-+		goto out;
- 	}
- 
--	freq_table = kzalloc(sizeof(struct cpufreq_frequency_table) *
--			     (dev_pm_opp_get_opp_count(dev) + 1), GFP_KERNEL);
-+	freq_table = kzalloc(sizeof(*freq_table) * (max_opps + 1), GFP_KERNEL);
- 	if (!freq_table) {
--		mutex_unlock(&dev_opp_list_lock);
--		dev_warn(dev, "%s: Unable to allocate frequency table\n",
--			__func__);
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto out;
- 	}
- 
--	list_for_each_entry(opp, &dev_opp->opp_list, node) {
--		if (opp->available) {
--			freq_table[i].driver_data = i;
--			freq_table[i].frequency = opp->rate / 1000;
--			i++;
-+	for (i = 0, rate = 0; i < max_opps; i++, rate++) {
-+		/* find next rate */
-+		opp = dev_pm_opp_find_freq_ceil(dev, &rate);
-+		if (IS_ERR(opp)) {
-+			ret = PTR_ERR(opp);
-+			goto out;
- 		}
-+		freq_table[i].driver_data = i;
-+		freq_table[i].frequency = rate / 1000;
- 	}
--	mutex_unlock(&dev_opp_list_lock);
- 
- 	freq_table[i].driver_data = i;
- 	freq_table[i].frequency = CPUFREQ_TABLE_END;
- 
- 	*table = &freq_table[0];
- 
--	return 0;
-+out:
-+	rcu_read_unlock();
-+	if (ret)
-+		kfree(freq_table);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_init_cpufreq_table);
- 
 -- 
-1.7.9.5
+You are receiving this mail because:
+You are the assignee for the bug.
