@@ -1,49 +1,142 @@
-From: Mascha Kurpicz <mascha.kurpicz@unine.ch>
-Subject: Re: time_in_state on Ubuntu 13.10
-Date: Mon, 5 May 2014 14:08:09 +0200
-Message-ID: <53677F29.2090905@unine.ch>
-References: <535E6906.2090201@unine.ch>	<CAOh2x==Q_oDn9v4S5ggh_e-3_=vSU_5Ko_89LfWM9ARBS9i=Rg@mail.gmail.com>	<535F51F7.5090804@unine.ch>	<CAKohponpGMMRUvDivaxj_qz5dQvhxZHiHW4Z19GzpaEJHGStRQ@mail.gmail.com>	<535F6508.5020202@unine.ch> <CAKohponNhk2wxM2vTX6ZWf590bxTSjT-53oV9D6AKPch+VbsSw@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH 1/2] PM / OPP: Remove cpufreq wrapper dependency on internal data organization
+Date: Mon, 5 May 2014 08:33:49 -0500
+Message-ID: <1399296830-13056-2-git-send-email-nm@ti.com>
+References: <1399296830-13056-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohponNhk2wxM2vTX6ZWf590bxTSjT-53oV9D6AKPch+VbsSw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1399296830-13056-1-git-send-email-nm@ti.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Maxime Colmant <maxime.colmant@inria.fr>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>
 
-On 05/02/2014 07:25 AM, Viresh Kumar wrote:
-> On 29 April 2014 14:08, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
->> On 04/29/2014 10:26 AM, Viresh Kumar wrote:
->>> On 29 April 2014 12:47, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
->>>> Sorry for the imprecision.
->>>>
->>>> Works correctly with
->>>> Ubuntu 12.04.3 LTS - kernel 3.2.0-29-generic
->>>> Ubuntu 12.04.3 LTS -  kernel 3.8.0-29
->>>> Ubuntu 13.10 - kernel 3.8.0-29-generic
->>>>
->>>> 0 or very small (e.g. 6) values with
->>>> Ubuntu 13.10 - kernel 3.11.0-20-generic
->>> Can you provide cpufreq-info 's output for the last two cases please?
-> Sorry, got distracted and just forgot about this thread :), must have marked
-> it in my pending list :(
->
-> Anyways, I have tried to look at the diff between these kernel releases and
-> looks like I couldn't figure out what's going wrong.
->
-> I tried to test things with the latest kernel and they seem to be working fine.
-> Atleast on my ARM board.
->
-> Would it be possible for you to do a git bisect between 3.8 and 3.11 ?
-We just tested with the latest release (14.04) and realized that the
-issue was already fixed for the latest kernel version, sorry about that!
+CPUFREQ custom functions for OPP (Operating Performance Points)
+currently exist inside the OPP library. These custom functions currently
+depend on internal data structures to pick up OPP information to create
+the cpufreq table.  For example, the cpufreq table is created precisely
+in the same order of how OPP entries are stored inside the list implementation.
 
-https://lkml.org/lkml/2013/9/7/119
+This kind of tight interdependency is purely artificial since the same
+functionality can be achieved using the generic OPP functions
+meant to do the same. This interdependency also limits the independent
+modification of cpufreq and OPP library.
 
-Thanks anyways for your support :-)
+So use the generic dev_pm_opp_find_freq_ceil function that achieves the
+table organization as we currently use.
 
-> --
-> viresh
+As a result of this, we dont need to use the internal device_opp
+structure anymore, and we hence we can switch over to rcu lock instead
+of the mutex holding the internal list lock.
 
+This breaking of dependency on internal data structure imposes no change
+to usage of these.
+
+NOTE: This change is a precursor to moving this cpufreq specific logic
+out of the generic library into cpufreq.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: cpufreq@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-omap@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+ drivers/base/power/opp.c |   55 +++++++++++++++++++++++-----------------------
+ 1 file changed, 28 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 2553867..38b43bb 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -617,53 +617,54 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_disable);
+  * the table if any of the mentioned functions have been invoked in the interim.
+  *
+  * Locking: The internal device_opp and opp structures are RCU protected.
+- * To simplify the logic, we pretend we are updater and hold relevant mutex here
+- * Callers should ensure that this function is *NOT* called under RCU protection
+- * or in contexts where mutex locking cannot be used.
++ * Since we just use the regular accessor functions to access the internal data
++ * structures, we use RCU read lock inside this function. As a result, users of
++ * this function DONOT need to use explicit locks for invoking.
+  */
+ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+ 			    struct cpufreq_frequency_table **table)
+ {
+-	struct device_opp *dev_opp;
+ 	struct dev_pm_opp *opp;
+-	struct cpufreq_frequency_table *freq_table;
+-	int i = 0;
++	struct cpufreq_frequency_table *freq_table = NULL;
++	int i, max_opps, ret = 0;
++	unsigned long rate;
+ 
+-	/* Pretend as if I am an updater */
+-	mutex_lock(&dev_opp_list_lock);
++	rcu_read_lock();
+ 
+-	dev_opp = find_device_opp(dev);
+-	if (IS_ERR(dev_opp)) {
+-		int r = PTR_ERR(dev_opp);
+-		mutex_unlock(&dev_opp_list_lock);
+-		dev_err(dev, "%s: Device OPP not found (%d)\n", __func__, r);
+-		return r;
++	max_opps = dev_pm_opp_get_opp_count(dev);
++	if (max_opps <= 0) {
++		ret = max_opps ? max_opps : -ENODATA;
++		goto out;
+ 	}
+ 
+-	freq_table = kzalloc(sizeof(struct cpufreq_frequency_table) *
+-			     (dev_pm_opp_get_opp_count(dev) + 1), GFP_KERNEL);
++	freq_table = kzalloc(sizeof(*freq_table) * (max_opps + 1), GFP_KERNEL);
+ 	if (!freq_table) {
+-		mutex_unlock(&dev_opp_list_lock);
+-		dev_warn(dev, "%s: Unable to allocate frequency table\n",
+-			__func__);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto out;
+ 	}
+ 
+-	list_for_each_entry(opp, &dev_opp->opp_list, node) {
+-		if (opp->available) {
+-			freq_table[i].driver_data = i;
+-			freq_table[i].frequency = opp->rate / 1000;
+-			i++;
++	for (i = 0, rate = 0; i < max_opps; i++, rate++) {
++		/* find next rate */
++		opp = dev_pm_opp_find_freq_ceil(dev, &rate);
++		if (IS_ERR(opp)) {
++			ret = PTR_ERR(opp);
++			goto out;
+ 		}
++		freq_table[i].driver_data = i;
++		freq_table[i].frequency = rate / 1000;
+ 	}
+-	mutex_unlock(&dev_opp_list_lock);
+ 
+ 	freq_table[i].driver_data = i;
+ 	freq_table[i].frequency = CPUFREQ_TABLE_END;
+ 
+ 	*table = &freq_table[0];
+ 
+-	return 0;
++out:
++	rcu_read_unlock();
++	if (ret)
++		kfree(freq_table);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_init_cpufreq_table);
+ 
+-- 
+1.7.9.5
