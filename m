@@ -1,47 +1,99 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 75121] Intel Pstate driver - powersave mode - CPU frequency too
- low
-Date: Mon, 05 May 2014 18:52:26 +0000
-Message-ID: <bug-75121-12968-Nbiwde7k7j@https.bugzilla.kernel.org/>
-References: <bug-75121-12968@https.bugzilla.kernel.org/>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
+Date: Tue, 6 May 2014 17:24:46 +0200
+Message-ID: <CAMuHMdU6eKQbmqvDj8Ra3MjuqhvFQ6WxoTsiJ4mojqXY4XOtaw@mail.gmail.com>
+References: <535AC247.3070907@semaphore.gr>
+	<CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
+	<535FCDBD.6080500@semaphore.gr>
+	<1621123.rMC9JtD3Mo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-75121-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        bh=xoTV2ndWNZxARy11IFoautZamar+CR+MmZqN5doXc3U=;
+        b=QBPNnR8jdgOmkJSnjnmUcuPzbHAb2jqqrMDqVQsES0tfmfoIDbNXnyrdn+RPnFGyGW
+         bjAc77mSq7ucrHGQpysR9QW2cNRwVmDoZo/MzYyqz0h4nxjFKz5wI6/o5OKTkrUy/SMU
+         Zy8rtw2HBjvJZgCL81yImhiuvmJpSW6LrP9JbqNbsCHbhom1ZO9IBoaAgJNYzNV1nDWo
+         fK2ianZAoQ2voE7w0Pk9HD80WaxRPNy6VpVOz0TcZSpH0HqFASGPsznw/Z+f3SDgb5na
+         QPD6zcdJSnmA6W02O8ZwZmP5D6k/T/Qe8EKuhwQfPQZu7wlu9MPyHjFeLSx5Lex0i7BR
+         6tTw==
+In-Reply-To: <1621123.rMC9JtD3Mo@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=75121
+Hi Stratos,
 
---- Comment #17 from Doug Smythies <dsmythies@telus.net> ---
-(In reply to Dirk Brandewie from comment #16)
-> (In reply to Doug Smythies from comment #15)
-> > Hi Dirk: Did you ever figure out for certain why some had the CPU freq
-> > remains high after suspend issue? It remains unclear to me, and I do not
-> > know how to even try to re-create here on my test computer.
-> > 
-> 
-> I could make it happen occasionally on my ivy bridge laptop test system.
-> 
-> I think it have to the hardware coordination on the chip but I haven't
-> proven that.
->  
+On Wed, Apr 30, 2014 at 12:26 AM, Rafael J. Wysocki <rjw@rjwysocki.net>=
+ wrote:
+> On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
+>> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
+>> > On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> =
+wrote:
+>> >> This patch set introduces two freq_table helper macros which
+>> >> can be used for iteration over cpufreq_frequency_table and
+>> >> makes the necessary changes to cpufreq core and drivers that
+>> >> use such an iteration procedure.
+>> >>
+>> >> The motivation was a usage of common procedure to iterate over
+>> >> cpufreq_frequency_table across all drivers and cpufreq core.
+>> >>
+>> >> This was tested on a x86_64 platform.
+>> >> Most files compiled successfully but unfortunately I was not
+>> >> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
+>> >> due to lack of cross compiler.
+>> >>
+>> >> Changelog
+>> >>
+>> >> v4 -> v5
+>> >>         - Fix warnings in printk format specifier for 32 bit
+>> >>           architectures in freq_table.c, longhaul, pasemi, ppc_cb=
+e
+>> >
+>> > Doesn't look much has changed and so it stays as is:
+>> >
+>> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> >
+>>
+>> Thank you very much!
+>
+> I've applied the series to my bleeding-edge branch, will move it to l=
+inux-next
+> after build testing later this week.
 
-I have figured out how to "suspend" my test computer. I have tried a few times,
-but so far haven't been able to re-create the issue. I wanted to be able to
-re-create the issue, as a base line reference, so that I would know how far I
-can adjust C0_WEIGHT or C0_MINIMUM and still have the issue never occur.
+This breaks if CONFIG_CPU_FREQ=3Dn, e.g. ARM/shmobile/koelsch/
+non-multiplatform:
 
-It still doesn't make sense to me that the intel_pstate driver would work fine
-before but not after a "suspend". If the root issue is some hardware
-coordination on the chip, then shouldn't that be fixed (if possible via
-whatever re-initialization) rather than messing with the intel_pstate servo
-loop? If it is not some hardware coordination on the chip, but rather due to
-some flaw in the servo loop, then we should be able to re-create the issue
-without any intervening "suspend".
+drivers/built-in.o: In function `clk_round_parent':
+clkdev.c:(.text+0xcf168): undefined reference to `cpufreq_next_valid'
+drivers/built-in.o: In function `clk_rate_table_find':
+clkdev.c:(.text+0xcf820): undefined reference to `cpufreq_next_valid'
+make[3]: *** [vmlinux] Error 1
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+drivers/sh/clk/core.c (pre-CCF shmobile clock core) calls
+cpufreq_for_each_valid_entry():
+
+#define cpufreq_for_each_valid_entry(pos, table)        \
+        for (pos =3D table; cpufreq_next_valid(&pos); pos++)
+
+but cpufreq_next_valid() in drivers/cpufreq/cpufreq.c is not
+compiled in.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-=
+m68k.org
+
+In personal conversations with technical people, I call myself a hacker=
+=2E But
+when I'm talking to journalists I just say "programmer" or something li=
+ke that.
+                                -- Linus Torvalds
