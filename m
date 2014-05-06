@@ -1,85 +1,96 @@
-From: Johan Hovold <jhovold@gmail.com>
-Subject: Performance regression in v3.14
-Date: Tue, 6 May 2014 18:35:59 +0200
-Message-ID: <20140506163559.GA5308@localhost>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
+Date: Tue, 06 May 2014 20:55:22 +0300
+Message-ID: <5369220A.3030207@semaphore.gr>
+References: <535AC247.3070907@semaphore.gr>	<CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>	<535FCDBD.6080500@semaphore.gr>	<1621123.rMC9JtD3Mo@vostro.rjw.lan> <CAMuHMdU6eKQbmqvDj8Ra3MjuqhvFQ6WxoTsiJ4mojqXY4XOtaw@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        bh=WLC4kRY5su+f0ztkkypYj2meRApnlyNAwLc4anLZqNA=;
-        b=ihrCa8Fuwq6IP/llutJjJ5/wY2gFrBswHiVo9D3XaKuwP/DshAUrKWpusnvmGKjJT3
-         Ig8fj/ye02lltDiqMJ4bkE1nnv91M//t4uAZKPrufiOBhAoOGRNVrqmwCKtwqcc5mz+y
-         6YkJtUggRSgkb3tMymYR5EIvQc1bH4WO7hDzYUd+QKykm2SS0FFyhs6b8mJev1/8yctl
-         dg6sE/Kl0UAKjjlpS9bUl5GZyYcCEBpbVBdv9AHNOUrrRFtxdTXD+l3kprfFhyBVmltl
-         0Xy9qPCDhaNueR7RqKAX03YRKqEp/rXEp5aR7sf2teUPDCKUpaRi8PqrGvT2XqSwPpdH
-         6f3Q==
-Content-Disposition: inline
+In-Reply-To: <CAMuHMdU6eKQbmqvDj8Ra3MjuqhvFQ6WxoTsiJ4mojqXY4XOtaw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+To: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-After updating my main system from v3.13 to v3.14.2, I found that the
-git bash-completion was extremely sluggish. Completing a file name would
-take roughly six rather than one second on this Haswell machine
-(i7-4770). (Other things, such as git rebase, also felt slower, but
-the completion issue was much more obvious and easy to measure).
+Hi all,
 
-I managed to reproduce the problem using the following minimal construct
+On 06/05/2014 06:24 =CE=BC=CE=BC, Geert Uytterhoeven wrote:
+> Hi Stratos,
+>=20
+> On Wed, Apr 30, 2014 at 12:26 AM, Rafael J. Wysocki <rjw@rjwysocki.ne=
+t> wrote:
+>> On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
+>>> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
+>>>> On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> =
+wrote:
+>>>>> This patch set introduces two freq_table helper macros which
+>>>>> can be used for iteration over cpufreq_frequency_table and
+>>>>> makes the necessary changes to cpufreq core and drivers that
+>>>>> use such an iteration procedure.
+>>>>>
+>>>>> The motivation was a usage of common procedure to iterate over
+>>>>> cpufreq_frequency_table across all drivers and cpufreq core.
+>>>>>
+>>>>> This was tested on a x86_64 platform.
+>>>>> Most files compiled successfully but unfortunately I was not
+>>>>> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
+>>>>> due to lack of cross compiler.
+>>>>>
+>>>>> Changelog
+>>>>>
+>>>>> v4 -> v5
+>>>>>         - Fix warnings in printk format specifier for 32 bit
+>>>>>           architectures in freq_table.c, longhaul, pasemi, ppc_cb=
+e
+>>>>
+>>>> Doesn't look much has changed and so it stays as is:
+>>>>
+>>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>>
+>>>
+>>> Thank you very much!
+>>
+>> I've applied the series to my bleeding-edge branch, will move it to =
+linux-next
+>> after build testing later this week.
+>=20
+> This breaks if CONFIG_CPU_FREQ=3Dn, e.g. ARM/shmobile/koelsch/
+> non-multiplatform:
+>=20
+> drivers/built-in.o: In function `clk_round_parent':
+> clkdev.c:(.text+0xcf168): undefined reference to `cpufreq_next_valid'
+> drivers/built-in.o: In function `clk_rate_table_find':
+> clkdev.c:(.text+0xcf820): undefined reference to `cpufreq_next_valid'
+> make[3]: *** [vmlinux] Error 1
+>=20
+> drivers/sh/clk/core.c (pre-CCF shmobile clock core) calls
+> cpufreq_for_each_valid_entry():
+>=20
+> #define cpufreq_for_each_valid_entry(pos, table)        \
+>         for (pos =3D table; cpufreq_next_valid(&pos); pos++)
+>=20
+> but cpufreq_next_valid() in drivers/cpufreq/cpufreq.c is not
+> compiled in.
 
-	cat dmesg.repeat | while read x; do true; done
+My bad. I'm sorry for this. :(
 
-where dmesg.repeat is simply dmesg concatenated together to an
-equivalent number of lines as produced by git ls-files in the
-kernel-source tree root (45k), and where the actual processing of each
-line has been removed.
+Rafael,
+A solution could be to make cpufreq_next_valid an inline function in cp=
+ufreq.h,
+but as Viresh mentioned this would be very inefficient because of multi=
+ple copies.
 
-Most of the time I get:
+So, maybe it's better to revert the 2 patches that don't depend on CONF=
+IG_CPU_FREQ:
 
-	$ time cat dmesg.repeat | while read x; do true; done
+4229e1c61a4a ("sh: clk: Use cpufreq_for_each_valid_entry macro for iter=
+ation") and
+04ae58645afa ("irda: sh_sir: Use cpufreq_for_each_valid_entry macro for=
+ iteration").
 
-	real    0m6.091s
-	user    0m3.674s
-	sys     0m2.447s
+Do I need to send revert patches for the above?
 
-but sometimes it only takes one second.
-
-	$ time cat dmesg.repeat | while read x; do true; done
-
-	real    0m1.100s
-	user    0m0.544s
-	sys     0m0.570s
-
-I don't seem to be able to reproduce the problem on 3.13 where the pipe
-always takes about one second to finish.
-
-Taking all but one core offline seems to make the problem go away, and so
-does using the performance rather than powersave governor of the
-intel_pstate cpufreq driver (on at least one of two online cores).
-
-Moving the mouse cursor makes to loop finish faster, and so does
-switching to a another terminal to print cpufreq/cpuinfo_cur_freq which
-was around cpuinfo_min_freq several times (when tracing, see below).
-
-I could not reproduce the problem when using perf record, but I can get
-function-profile traces using ftrace (in which case the loop takes about
-60 seconds instead of six seconds to finish).
-
-Comparing the traces I see a lot of functions taking ten times longer to
-finish, but I guess that's expected if this is indeed a cpufreq issue.
-
-Since this is my main machine (and only multi-core machine at the
-moment) I'm not able to bisect this myself. And for the same reason I
-have not verified that the problem persists in v3.15-rc.
-
-I don't see any cpufreq patches in the v3.14.3 stable queue nor anything
-obviously related and marked for stable in v3.15-rc.
-
-Any ideas about what might be going on?
 
 Thanks,
-Johan
+Stratos
