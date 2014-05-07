@@ -1,108 +1,203 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: Performance regression in v3.14
-Date: Wed, 07 May 2014 07:10:49 -0700
-Message-ID: <536A3EE9.5050409@intel.com>
-References: <20140506163559.GA5308@localhost> <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 75661] New: acpi-cpufreq cannot use lowest reported P-state
+Date: Wed, 07 May 2014 16:15:54 +0000
+Message-ID: <bug-75661-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=vHpb2yKHPqqzG2k9rsewZh+RYlh/jAFsOy+qIEkE8WM=;
-        b=VTbrtepkgiZSJdOrrQ1zketymS2jhd3M53J0Uao4vYHeqbtODNlU82XfQ35pcw8pQN
-         PHYq6sJf14uIXOsL4yeQ2Jgxzyv4ket7NhnJKAqh7992T3oScIT872/iDzvS9WZ3wUVh
-         TJMal7b4FR+2p4twCba4B/XE4T/UhqOxdKwBgpzLRYxSdTRbIchkPZi/CgY/J5C8ngjA
-         fkWLpxH+k0kkqYnBsVJYUuthytEgKA09KyLhSJuFqJukCpn/O6pIODbAZiZUkBC6Sxi1
-         BaW0fJhSb+NnzNkInmoFckVWOPHn2+457WGrNxnhstk+h1Be1gRCt0rmtoUKfQubPYFh
-         JDYQ==
-In-Reply-To: <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Viresh Kumar <viresh.kumar@linaro.org>, Johan Hovold <jhovold@gmail.com>
-Cc: dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-On 05/06/2014 10:40 PM, Viresh Kumar wrote:
-> Cc'ing Dirk who is taking care of intel-pstate driver.
->
+https://bugzilla.kernel.org/show_bug.cgi?id=75661
 
-Thanks Viresh I had seen this thread.
+            Bug ID: 75661
+           Summary: acpi-cpufreq cannot use lowest reported P-state
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.14.2
+          Hardware: x86-64
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: runningskittle@gmail.com
+        Regression: No
 
-I am looking into it
+CPU: AMD A8-4500M
+cpupower reports 900Mhz is lowest P-state frequency. However available
+frequency for governor only 1.4ghz - 1.9ghz.
 
---Dirk
-> On 6 May 2014 22:05, Johan Hovold <jhovold@gmail.com> wrote:
->> After updating my main system from v3.13 to v3.14.2, I found that the
->> git bash-completion was extremely sluggish. Completing a file name would
->> take roughly six rather than one second on this Haswell machine
->> (i7-4770). (Other things, such as git rebase, also felt slower, but
->> the completion issue was much more obvious and easy to measure).
->>
->> I managed to reproduce the problem using the following minimal construct
->>
->>          cat dmesg.repeat | while read x; do true; done
->>
->> where dmesg.repeat is simply dmesg concatenated together to an
->> equivalent number of lines as produced by git ls-files in the
->> kernel-source tree root (45k), and where the actual processing of each
->> line has been removed.
->>
->> Most of the time I get:
->>
->>          $ time cat dmesg.repeat | while read x; do true; done
->>
->>          real    0m6.091s
->>          user    0m3.674s
->>          sys     0m2.447s
->>
->> but sometimes it only takes one second.
->>
->>          $ time cat dmesg.repeat | while read x; do true; done
->>
->>          real    0m1.100s
->>          user    0m0.544s
->>          sys     0m0.570s
->>
->> I don't seem to be able to reproduce the problem on 3.13 where the pipe
->> always takes about one second to finish.
->>
->> Taking all but one core offline seems to make the problem go away, and so
->> does using the performance rather than powersave governor of the
->> intel_pstate cpufreq driver (on at least one of two online cores).
->>
->> Moving the mouse cursor makes to loop finish faster, and so does
->> switching to a another terminal to print cpufreq/cpuinfo_cur_freq which
->> was around cpuinfo_min_freq several times (when tracing, see below).
->>
->> I could not reproduce the problem when using perf record, but I can get
->> function-profile traces using ftrace (in which case the loop takes about
->> 60 seconds instead of six seconds to finish).
->>
->> Comparing the traces I see a lot of functions taking ten times longer to
->> finish, but I guess that's expected if this is indeed a cpufreq issue.
->>
->> Since this is my main machine (and only multi-core machine at the
->> moment) I'm not able to bisect this myself. And for the same reason I
->> have not verified that the problem persists in v3.15-rc.
->>
->> I don't see any cpufreq patches in the v3.14.3 stable queue nor anything
->> obviously related and marked for stable in v3.15-rc.
->>
->> Any ideas about what might be going on?
->
-> I tried to take a look at the diff for cpufreq between 3.13 and 3.14.2 and
-> couldn't pin point on any change which might cause it. Don't have a clue
-> of what's going on. I don't know how to help you on this.
->
-> Normally I test my stuff on a ARM board and I don't remember facing
-> any such behavior there. There might be something wrong with intel-pstate
-> as well..
->
-> Also, can you try to use acpi-cpufreq instead? And see how that is behaving?
->
-> --
-> viresh
->
+****************************************************
+[root@skittle-hp skittle]# cpupower frequency-info
+analyzing CPU 0:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0
+  CPUs which need to have their frequency coordinated by software: 0
+  maximum transition latency: 4.0 us.
+  hardware limits: 1.40 GHz - 1.90 GHz
+  available frequency steps: 1.90 GHz, 1.80 GHz, 1.70 GHz, 1.60 GHz, 1.40 GHz
+  available cpufreq governors: ondemand, performance
+  current policy: frequency should be within 1.40 GHz and 1.90 GHz.
+                  The governor "ondemand" may decide which speed to use
+                  within this range.
+  current CPU frequency is 1.40 GHz (asserted by call to hardware).
+  boost state support:
+    Supported: yes
+    Active: no
+    Boost States: 2
+    Total States: 8
+    Pstate-Pb0: 2800MHz (boost state)
+    Pstate-Pb1: 2300MHz (boost state)
+    Pstate-P0:  1900MHz
+    Pstate-P1:  1800MHz
+    Pstate-P2:  1700MHz
+    Pstate-P3:  1600MHz
+    Pstate-P4:  1400MHz
+    Pstate-P5:  900MHz
 
+
+[root@skittle-hp skittle]# cat /proc/cpuinfo 
+processor    : 0
+vendor_id    : AuthenticAMD
+cpu family    : 21
+model        : 16
+model name    : AMD A8-4500M APU with Radeon(tm) HD Graphics
+stepping    : 1
+microcode    : 0x6001119
+cpu MHz        : 1400.000
+cache size    : 2048 KB
+physical id    : 0
+siblings    : 4
+core id        : 0
+cpu cores    : 2
+apicid        : 16
+initial apicid    : 0
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb
+rdtscp lm constant_tsc rep_good nopl nonstop_tsc extd_apicid aperfmperf pni
+pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 popcnt aes xsave avx f16c
+lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch
+osvw ibs xop skinit wdt lwp fma4 tce nodeid_msr tbm topoext perfctr_core
+perfctr_nb arat cpb hw_pstate npt lbrv svm_lock nrip_save tsc_scale vmcb_clean
+flushbyasid decodeassists pausefilter pfthreshold bmi1
+bogomips    : 3794.12
+TLB size    : 1536 4K pages
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 48 bits physical, 48 bits virtual
+power management: ts ttp tm 100mhzsteps hwpstate cpb eff_freq_ro
+
+processor    : 1
+vendor_id    : AuthenticAMD
+cpu family    : 21
+model        : 16
+model name    : AMD A8-4500M APU with Radeon(tm) HD Graphics   
+stepping    : 1
+microcode    : 0x6001119
+cpu MHz        : 1400.000
+cache size    : 2048 KB
+physical id    : 0
+siblings    : 4
+core id        : 1
+cpu cores    : 2
+apicid        : 17
+initial apicid    : 1
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb
+rdtscp lm constant_tsc rep_good nopl nonstop_tsc extd_apicid aperfmperf pni
+pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 popcnt aes xsave avx f16c
+lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch
+osvw ibs xop skinit wdt lwp fma4 tce nodeid_msr tbm topoext perfctr_core
+perfctr_nb arat cpb hw_pstate npt lbrv svm_lock nrip_save tsc_scale vmcb_clean
+flushbyasid decodeassists pausefilter pfthreshold bmi1
+bogomips    : 3794.12
+TLB size    : 1536 4K pages
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 48 bits physical, 48 bits virtual
+power management: ts ttp tm 100mhzsteps hwpstate cpb eff_freq_ro
+
+processor    : 2
+vendor_id    : AuthenticAMD
+cpu family    : 21
+model        : 16
+model name    : AMD A8-4500M APU with Radeon(tm) HD Graphics   
+stepping    : 1
+microcode    : 0x6001119
+cpu MHz        : 1400.000
+cache size    : 2048 KB
+physical id    : 0
+siblings    : 4
+core id        : 2
+cpu cores    : 2
+apicid        : 18
+initial apicid    : 2
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb
+rdtscp lm constant_tsc rep_good nopl nonstop_tsc extd_apicid aperfmperf pni
+pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 popcnt aes xsave avx f16c
+lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch
+osvw ibs xop skinit wdt lwp fma4 tce nodeid_msr tbm topoext perfctr_core
+perfctr_nb arat cpb hw_pstate npt lbrv svm_lock nrip_save tsc_scale vmcb_clean
+flushbyasid decodeassists pausefilter pfthreshold bmi1
+bogomips    : 3794.12
+TLB size    : 1536 4K pages
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 48 bits physical, 48 bits virtual
+power management: ts ttp tm 100mhzsteps hwpstate cpb eff_freq_ro
+
+processor    : 3
+vendor_id    : AuthenticAMD
+cpu family    : 21
+model        : 16
+model name    : AMD A8-4500M APU with Radeon(tm) HD Graphics   
+stepping    : 1
+microcode    : 0x6001119
+cpu MHz        : 1400.000
+cache size    : 2048 KB
+physical id    : 0
+siblings    : 4
+core id        : 3
+cpu cores    : 2
+apicid        : 19
+initial apicid    : 3
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb
+rdtscp lm constant_tsc rep_good nopl nonstop_tsc extd_apicid aperfmperf pni
+pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 popcnt aes xsave avx f16c
+lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch
+osvw ibs xop skinit wdt lwp fma4 tce nodeid_msr tbm topoext perfctr_core
+perfctr_nb arat cpb hw_pstate npt lbrv svm_lock nrip_save tsc_scale vmcb_clean
+flushbyasid decodeassists pausefilter pfthreshold bmi1
+bogomips    : 3794.12
+TLB size    : 1536 4K pages
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 48 bits physical, 48 bits virtual
+power management: ts ttp tm 100mhzsteps hwpstate cpb eff_freq_ro
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
