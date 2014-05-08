@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 75121] Intel Pstate driver - powersave mode - CPU frequency too
  low
-Date: Thu, 08 May 2014 22:21:14 +0000
-Message-ID: <bug-75121-12968-mBtoc1Reqf@https.bugzilla.kernel.org/>
+Date: Thu, 08 May 2014 22:26:04 +0000
+Message-ID: <bug-75121-12968-R9D669Xsic@https.bugzilla.kernel.org/>
 References: <bug-75121-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,10 +15,9 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=75121
 
---- Comment #19 from Doug Smythies <dsmythies@telus.net> ---
-Created attachment 135501
-  --> https://bugzilla.kernel.org/attachment.cgi?id=135501&action=edit
-CPU 7 frequency vs load / idle freqency. Turbo on. Dirk patch applied.
+--- Comment #20 from Dirk Brandewie <dirk.brandewie@gmail.com> ---
+Fix sent to LKML also the fix to FP_ROUNDUP() macro
+https://lkml.org/lkml/2014/5/8/574
 
 -- 
 You are receiving this mail because:
