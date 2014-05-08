@@ -1,69 +1,72 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Thu, 08 May 2014 00:37:27 +0200
-Message-ID: <1628906.bvqGfBpWxn@vostro.rjw.lan>
-References: <535AC247.3070907@semaphore.gr> <4469396.zveA7sC36d@vostro.rjw.lan> <536A3654.20201@semaphore.gr>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH] cpufreq: Break out early when frequency equals target_freq
+Date: Thu, 08 May 2014 18:46:09 +0300
+Message-ID: <536BA6C1.5000200@semaphore.gr>
+References: <53600B71.2050904@semaphore.gr>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <536A3654.20201@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <53600B71.2050904@semaphore.gr>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="utf-8"
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>, Linux-sh list <linux-sh@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Wednesday, May 07, 2014 04:34:12 PM Stratos Karafotis wrote:
-> Hi Rafael,
+On 29/04/2014 11:28 =CE=BC=CE=BC, Stratos Karafotis wrote:
+> Many drivers keep frequencies in frequency table in ascending
+> or descending order. When governor tries to change to policy->min
+> or policy->max respectively then the cpufreq_frequency_table_target
+> could return on first iteration. This will save some iteration cycles=
+=2E
 >=20
-> On 07/05/2014 04:13 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
-> > On Wednesday, May 07, 2014 10:53:16 AM Viresh Kumar wrote:
-> >> On 6 May 2014 23:25, Stratos Karafotis <stratosk@semaphore.gr> wro=
-te:
-> >>> My bad. I'm sorry for this. :(
-> >>>
-> >>> Rafael,
-> >>> A solution could be to make cpufreq_next_valid an inline function=
- in cpufreq.h,
-> >>> but as Viresh mentioned this would be very inefficient because of=
- multiple copies.
-> >>
-> >> That statement was true when we didn't had this problem..
-> >>
-> >>> So, maybe it's better to revert the 2 patches that don't depend o=
-n CONFIG_CPU_FREQ:
-> >>>
-> >>> 4229e1c61a4a ("sh: clk: Use cpufreq_for_each_valid_entry macro fo=
-r iteration") and
-> >>> 04ae58645afa ("irda: sh_sir: Use cpufreq_for_each_valid_entry mac=
-ro for iteration").
-> >>
-> >> This doesn't look right. It can happen to some other drivers as we=
-ll in future.
-> >> So, there are two solutions I can think of:
-> >> 1. move cpufreq_next_valid and rename it to __cpufreq_next_valid()=
-=2E Also make it
-> >> inline. Then create two versions of cpufreq_next_valid(), one inli=
-ned (only when
-> >> CONFIG_CPU_FREQ=3Dn) and other one in cpufreq.c (non- inlined)..
-> >>
-> >> But probably that would be called ugly by some people :)
-> >>
-> >> 2. Make cpufreq_next_valid() inline and forget about extra space i=
-t takes :)
-> >>
-> >> @Rafel: Let me know which one you like :)
-> >=20
-> > 2.
-> >=20
-> >=20
+> So, break out early when a frequency in cpufreq_frequency_table
+> equals to target one.
 >=20
-> Do you want me to resend the entire patch set or only patch 1/8?
+> Testing this during kernel compilation using ondemand governor
+> with a frequency table in ascending order, the
+> cpufreq_frequency_table_target returned early on the first
+> iteration at about 30% of times called.
+>=20
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  drivers/cpufreq/freq_table.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_tabl=
+e.c
+> index 8e518c6..1632981 100644
+> --- a/drivers/cpufreq/freq_table.c
+> +++ b/drivers/cpufreq/freq_table.c
+> @@ -137,9 +137,13 @@ int cpufreq_frequency_table_target(struct cpufre=
+q_policy *policy,
+>  		i =3D pos - table;
+>  		if ((freq < policy->min) || (freq > policy->max))
+>  			continue;
+> +		if (freq =3D=3D target_freq) {
+> +			optimal.driver_data =3D i;
+> +			break;
+> +		}
+>  		switch (relation) {
+>  		case CPUFREQ_RELATION_H:
+> -			if (freq <=3D target_freq) {
+> +			if (freq < target_freq) {
+>  				if (freq >=3D optimal.frequency) {
+>  					optimal.frequency =3D freq;
+>  					optimal.driver_data =3D i;
+> @@ -152,7 +156,7 @@ int cpufreq_frequency_table_target(struct cpufreq=
+_policy *policy,
+>  			}
+>  			break;
+>  		case CPUFREQ_RELATION_L:
+> -			if (freq >=3D target_freq) {
+> +			if (freq > target_freq) {
+>  				if (freq <=3D optimal.frequency) {
+>  					optimal.frequency =3D freq;
+>  					optimal.driver_data =3D i;
+>=20
 
-It's already on a branch that cannot be rebased.  Please send me a fix =
-on top of it.
+Gentle reminder.
 
-
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks,
+Stratos
