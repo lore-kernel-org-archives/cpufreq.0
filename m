@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 72361] AMD APU reset infinite
-Date: Sun, 11 May 2014 15:02:19 +0000
-Message-ID: <bug-72361-12968-yqOq7TmZQa@https.bugzilla.kernel.org/>
+Date: Sun, 11 May 2014 15:04:57 +0000
+Message-ID: <bug-72361-12968-I8nQV4Pp2d@https.bugzilla.kernel.org/>
 References: <bug-72361-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,18 +14,10 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=72361
 
-Mika Hyttinen <mika.hyttinen@gmail.com> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |mika.hyttinen@gmail.com
-
---- Comment #1 from Mika Hyttinen <mika.hyttinen@gmail.com> ---
-I have this same issue on MSI FM2-A75IA-E53. This issue seems to be only on MSI
-motherboards (see https://github.com/OpenELEC/OpenELEC.tv/issues/3093).
-
-Disabling acpi_cpufreq is working, but one OpenELEC user found other solution
-which also works by adding radeon.dpm=0 to boot parameters.
+--- Comment #2 from Mika Hyttinen <mika.hyttinen@gmail.com> ---
+Created attachment 135781
+  --> https://bugzilla.kernel.org/attachment.cgi?id=135781&action=edit
+dmesg
 
 -- 
 You are receiving this mail because:
