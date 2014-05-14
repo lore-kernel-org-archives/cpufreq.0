@@ -1,52 +1,54 @@
 From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [RFC PATCH 4/5] ARM: zynq: dt: Use properly rounded frequencies in OPPs
-Date: Wed, 14 May 2014 15:30:54 -0700
-Message-ID: <1400106655-22465-5-git-send-email-soren.brinkmann@xilinx.com>
+Subject: [RFC PATCH 5/5] net: macb: Use clk_round_rate_nearest() API
+Date: Wed, 14 May 2014 15:30:55 -0700
+Message-ID: <1400106655-22465-6-git-send-email-soren.brinkmann@xilinx.com>
 References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=CWzT3GdvlbmS5HUHBtMAyjPBDaMB5qvAOvzTQP0KYz8=;
-        b=pvI3rzmwYOcDUgW6COBQsIf+tC7QWL+uLqqHbXABkQdCUgT8a/fkq+VMs9/JLXvHs6
-         3vG0O0/MLycXBdMDiVCHsyUD49cI5CnbRwQLybtaOyX6F1SKHeYeKIp6E7JKV2PLMLOy
-         dCIuoXGemiwZOWpLtG2w4WhwdlwUl2BHLWjQOpvRgD8Zaf+nB6i9RaxtnCHxvPITZDFH
-         0GB/e7ux4CUcHi+/JidURC7+NoZQYXNHo+DF4g0GAHaEGuYA971HHDJ+TqM2NNrRz4hl
-         TayMbiUdMp2VPTrCXpFCL+0L1uSNbKU759aSoIRx9m4kSPPcYvgfdeK1fujmlM39VguG
-         Bh5A==
+        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-type:content-transfer-encoding;
+        bh=nC4fiuXXQY1dWx+NvCUO9GqFAopY0WI11rEPDlKzpDc=;
+        b=dvH/SXQcdGOWSc8uDs238PPPjjcstiPIiHtjM2FzHJ8LoDoj9CO1Sq5bgCsF0uyltW
+         3jpFuTNd/sptDp96coXkOhBYzIoXvJ9iF7VOl1XbGGkpWYaxh3+7eOhxzc/tentmAK/2
+         VdjPmhIW9pCcxIRsn/lDmuaeJDjCH4aB68zRDi/sy78Jdt4RSVCJEcuOT0F3et5UiG0/
+         1mMDU2j14xkkH8pRXZQA6srJIjNDsUMm0Ne1d5SvkuotdgxPkA6YOi0UkvH22TcoCgrj
+         fVxGnpcwAXsw2ZRENqVRwiFGsbHeqxnEGLJMWsN1mBIQ187dQWFYUscrdyW15T+ENX51
+         QpqA==
 In-Reply-To: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
 Cc: Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Soren Brinkmann <soren.brinkmann@xilinx.com>
 
-Some issues in regards to rounding and different frequency resolution in
-the cpufreq and common clock frameworks have been resolved and allow
-specifying Zynq's OPPs with properly rounded values.
+The current way of rounding clock frequencies always rounds down and
+doesn't allow deviations above the requested frequency. For the Ethernet
+case though, it is more important to minimize deviations than not
+exceeding the requested frequency.
 
 Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
 ---
 
- arch/arm/boot/dts/zynq-7000.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+---
+ drivers/net/ethernet/cadence/macb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/zynq-7000.dtsi b/arch/arm/boot/dts/zynq-7000.dtsi
-index c1176abc34d9..06de3068ab21 100644
---- a/arch/arm/boot/dts/zynq-7000.dtsi
-+++ b/arch/arm/boot/dts/zynq-7000.dtsi
-@@ -28,8 +28,8 @@
- 			operating-points = <
- 				/* kHz    uV */
- 				666667  1000000
--				333334  1000000
--				222223  1000000
-+				333333  1000000
-+				222222  1000000
- 			>;
- 		};
+diff --git a/drivers/net/ethernet/cadence/macb.c b/drivers/net/ethernet/cadence/macb.c
+index e9daa072ebb4..4fdbfcbc38bc 100644
+--- a/drivers/net/ethernet/cadence/macb.c
++++ b/drivers/net/ethernet/cadence/macb.c
+@@ -223,7 +223,7 @@ static void macb_set_tx_clk(struct clk *clk, int speed, struct net_device *dev)
+ 		return;
+ 	}
+ 
+-	rate_rounded = clk_round_rate(clk, rate);
++	rate_rounded = clk_round_rate_nearest(clk, rate);
+ 	if (rate_rounded < 0)
+ 		return;
  
 -- 
 1.9.3.1.ga73a6ad
+
