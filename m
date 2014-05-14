@@ -1,128 +1,77 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: [PATCH 2/2] speedstep: clean up interrupt disabling
-Date: Wed, 14 May 2014 10:25:25 -0400 (EDT)
-Message-ID: <alpine.LRH.2.02.1405141024520.11670@file01.intranet.prod.int.rdu2.redhat.com>
-References: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v4 7/8] ARM: Exynos: switch to using generic cpufreq-cpu0 driver
+Date: Wed, 14 May 2014 16:33:46 +0200
+Message-ID: <11343238.VgTHVsC3iv@wuerfel>
+References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com> <61090198.zodNL4xIig@wuerfel> <CAL_JsqL0Yi=SjAm0BtS_2SO2xg8kOaLsydo9m6qcZgb+Pcpa8Q@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <CAL_JsqL0Yi=SjAm0BtS_2SO2xg8kOaLsydo9m6qcZgb+Pcpa8Q@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-arm-kernel@lists.infradead.org
+Cc: Rob Herring <robherring2@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>, Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Rob Herring <rob.herring@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Thomas P Abraham <thomas.ab@samsung.com>, Grant Likely <grant.likely@linaro.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
 
-This patch cleans up interrupt disabling in speedstep-smi and
-speedstep-lib. It doesn't fix any bug.
+On Wednesday 14 May 2014 08:45:23 Rob Herring wrote:
+> On Wed, May 14, 2014 at 8:18 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Wednesday 14 May 2014 18:44:46 Viresh Kumar wrote:
+> >> On 14 May 2014 18:41, Heiko St=FCbner <heiko@sntech.de> wrote:
+> >> > Am Mittwoch, 14. Mai 2014, 18:35:29 schrieb Viresh Kumar:
+> >> >> On 14 May 2014 18:20, Arnd Bergmann <arnd@arndb.de> wrote:
+> >> >> > Could we please come up with a way to probe this from DT in t=
+he
+> >> >> > cpufreq-cpu0 driver itself, so we don't have to add a device =
+in every
+> >> >> > platform using it?
+> >>
+> >> >> Its followed that way because DT Maintainers had strong objecti=
+ons
+> >> >> to creating virtual device nodes and haven't allowed creation o=
+f nodes
+> >> >> for cpufreq drivers.. For which there is no physical device, as=
+ CPU already
+> >> >> has a separate node..
+> >> >
+> >> > as we already have the "enable-method" property for enabling/dis=
+abling cpus,
+> >> > would something like a "scaling-method" be feasible?
+> >
+> > Good idea to put it as a property into the CPU node.
+>=20
+> We already have properties which indicate this driver can be used by =
+a
+> platform: opp table and a clock for the cpu. If this information is
+> not sufficient to determine whether you can use this driver or not,
+> then you simply need to match against the platform. Perhaps the match
+> list should be a blacklist rather than a whitelist, so new platforms
+> work without a kernel change.
 
-speedstep_get_freqs in speedstep-lib may be called from speedstep-smi or
-speedstep-ich. When it is called from speedstep-ich, it needs to calculate
-transition latency. When it is called from speedstep-smi, transition
-latency doesn't have to be calculated.
+We'd not only need a blacklist, but also a way to tell whether we
+want to use the cpu0 or the big/little implementation, which currently
+have indistinguishable bindings.
 
-The function speedstep_set_state in speedstep-smi needs to enable
-interrupts. Previously it enabled interrupts even if it was called with
-disabled interrupts, but it is dirty.
+> Alternatively, create a new OPP binding that addresses this and all
+> the other limitations in the current OPP binding.
 
-This patch changes speedstep_get_freqs so that it disables interrupts only
-when it is called from speedstep-ich and when it is measuring the
-transition latency. This avoids much of the code dirtiness.
+Yes.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> >> Lets see what DT maintainers have to say on this, I would rather g=
+o for a
+> >> more straight forward name: "scaling-driver"  ..
+> >
+> > Both sound fine to me.
+>=20
+> The fact that linux needs a way to create a platform device to enable
+> a certain driver is not a DT problem. I proposed a solution for how t=
+o
+> get this out of the platform code [1], but evidently we want people t=
+o
+> open code the exceptions and adding boilerplate helpers will just
+> encourage the exceptions.
 
----
- drivers/cpufreq/speedstep-lib.c |   13 ++++++-------
- drivers/cpufreq/speedstep-smi.c |   11 ++++-------
- 2 files changed, 10 insertions(+), 14 deletions(-)
+I think the only benefit we have from using platform devices at all
+for cpufreq (not for cpuidle, which has a similar problem) is module
+autoloading. I think your patch doesn't actually help with that.
 
-Index: linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c
-===================================================================
---- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-lib.c	2014-02-03 19:06:21.000000000 +0100
-+++ linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c	2014-02-03 19:06:26.000000000 +0100
-@@ -400,9 +400,6 @@ unsigned int speedstep_get_freqs(enum sp
- 
- 	pr_debug("previous speed is %u\n", prev_speed);
- 
--	preempt_disable();
--	local_irq_save(flags);
--
- 	/* switch to low state */
- 	set_state(SPEEDSTEP_LOW);
- 	*low_speed = speedstep_get_frequency(processor);
-@@ -414,15 +411,19 @@ unsigned int speedstep_get_freqs(enum sp
- 	pr_debug("low speed is %u\n", *low_speed);
- 
- 	/* start latency measurement */
--	if (transition_latency)
-+	if (transition_latency) {
-+		local_irq_save(flags);
- 		do_gettimeofday(&tv1);
-+	}
- 
- 	/* switch to high state */
- 	set_state(SPEEDSTEP_HIGH);
- 
- 	/* end latency measurement */
--	if (transition_latency)
-+	if (transition_latency) {
- 		do_gettimeofday(&tv2);
-+		local_irq_restore(flags);
-+	}
- 
- 	*high_speed = speedstep_get_frequency(processor);
- 	if (!*high_speed) {
-@@ -464,8 +465,6 @@ unsigned int speedstep_get_freqs(enum sp
- 	}
- 
- out:
--	local_irq_restore(flags);
--	preempt_enable();
- 
- 	return ret;
- }
-Index: linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c
-===================================================================
---- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-smi.c	2014-02-03 19:06:21.000000000 +0100
-+++ linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c	2014-02-03 19:06:26.000000000 +0100
-@@ -148,16 +148,16 @@ static int speedstep_smi_get_freqs(unsig
- static void speedstep_set_state(unsigned int state)
- {
- 	unsigned int result = 0, command, new_state, dummy;
--	unsigned long flags;
- 	unsigned int function = SET_SPEEDSTEP_STATE;
- 	unsigned int retry = 0;
- 
- 	if (state > 0x1)
- 		return;
- 
--	/* Disable IRQs */
-+	WARN_ON_ONCE(irqs_disabled());
-+
-+	/* Disable preemption so that other processes don't run */
- 	preempt_disable();
--	local_irq_save(flags);
- 
- 	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
- 
-@@ -177,9 +177,7 @@ static void speedstep_set_state(unsigned
- 			 */
- 			pr_debug("retry %u, previous result %u, waiting...\n",
- 					retry, result);
--			local_irq_enable();
- 			mdelay(retry * 50);
--			local_irq_disable();
- 		}
- 		retry++;
- 		__asm__ __volatile__(
-@@ -194,8 +192,7 @@ static void speedstep_set_state(unsigned
- 			);
- 	} while ((new_state != state) && (retry <= SMI_TRIES));
- 
--	/* enable IRQs */
--	local_irq_restore(flags);
-+	/* enable preemption */
- 	preempt_enable();
- 
- 	if (new_state == state)
-
+	Arnd
