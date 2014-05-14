@@ -1,58 +1,50 @@
 From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [RFC PATCH 1/5] cpufreq: stats: Allow small rounding errors
-Date: Wed, 14 May 2014 15:30:51 -0700
-Message-ID: <1400106655-22465-2-git-send-email-soren.brinkmann@xilinx.com>
+Subject: [RFC PATCH 3/5] cpufreq: cpu0: Use clk_round_rate_nearest()
+Date: Wed, 14 May 2014 15:30:53 -0700
+Message-ID: <1400106655-22465-4-git-send-email-soren.brinkmann@xilinx.com>
 References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
-Mime-Version: 1.0
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=N2ecVY63fkb2KkJVH4y6JVb97UmiYWfMu2ZTMsIXhns=;
+        b=u2n+/I+wOeEak2tqp++aXNJCTgAtGGYZYQ42ZVyMBBWtpgl81ARh9T58IqLqSyhvtK
+         BtI0aRnLUMOfmNybamLUSJGw61I7CwSDOuP9VYHT7fcT+sq9ejUGXQHfh/v66F1TRngc
+         qTrYMV6mafStgn1ZwOGaCICiZKqqo0eqyWadkr0nl7O3klQoBJL4BAgEUYXTDSUF9zhf
+         ue0+D8bT5tiyRPq75PC+4k4Y+RRsMA6sDy8IwouNEhArrrSJcAQpZuWHyd9VZEfvroXc
+         s40xHQTbETv1OMD+MxB53FWBkY7bEHyWiX/wIYAFadCQNC1CZu8zeItxvfba+U7kqxgg
+         9NHw==
+In-Reply-To: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20120113;
- h=sender:from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=kvKIocxKt0oC5Ih1hsJoje3JTMrM2IJBIZ5YmaL3Iq8=;
- b=s0ABvjeCtf9dbR/p4saliMtm+6fw6phdDEfRoi0CNapeqL7ZYykyjE+sVJilkosQPF
- rHcc7n0otwG4S244BnpCoseEvaEjIU4+Ke9MrzN4aNSG4464eULZElEUEz3K3XKX0Lj6
- 0YoYxtedwzcidcbwn0Vv6s6+PpGC2K0KPPhCktuqFB2HJLJlEIeGmh4uQdcGcoXiQUMX
- ANpGN0ZOLPYujYBV/q4m812mzER3KV3fJWV87FbzYxl8WqU7ZFVavDWKqaSemhWT9bII
- EZIafaSg1gtEVTjLzVs+9OLut8/Qb8PJl2FyVvII9KjD7iOzxoBJM4kNJBk1hOdssNb4
- Ya7w==
-In-Reply-To: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>, Soren Brinkmann <soren.brinkmann@xilinx.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linux-arm-kernel@lists.infradead.org
+Cc: Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Soren Brinkmann <soren.brinkmann@xilinx.com>
 
-When matching a frequency against the freq_table, allow small deviances to
-allow rounding errors. Rounding errors are likely to occur due to the
-differenct frequency resolutions used in the common clock vs cpufreq
-frameworks.
+Round clock frequencies to the nearest possible frequency. As opposed to
+the nearest that does not exceed the requested one.
 
 Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
 ---
 
- drivers/cpufreq/cpufreq_stats.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq-cpu0.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index ecaaebf969fc..37a34178ab3a 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -146,7 +146,7 @@ static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
- {
- 	int index;
- 	for (index = 0; index < stat->max_state; index++)
--		if (stat->freq_table[index] == freq)
-+		if (abs(stat->freq_table[index] - freq) < 2)
- 			return index;
- 	return -1;
- }
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 1bf6bbac3e03..e1de9dc46542 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -42,7 +42,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 	long freq_Hz, freq_exact;
+ 	int ret;
+ 
+-	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
++	freq_Hz = clk_round_rate_nearest(cpu_clk,
++			freq_table[index].frequency * 1000);
+ 	if (freq_Hz <= 0)
+ 		freq_Hz = freq_table[index].frequency * 1000;
+ 
 -- 
 1.9.3.1.ga73a6ad
