@@ -1,34 +1,25 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v4 0/8] cpufreq: use cpufreq-cpu0 driver for exynos based platforms
-Date: Wed, 14 May 2014 14:51:22 +0200
-Message-ID: <7170433.Ah6fefFrHR@wuerfel>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 7/8] ARM: Exynos: switch to using generic cpufreq-cpu0 driver
+Date: Wed, 14 May 2014 18:35:29 +0530
+Message-ID: <CAKohpom_zuQoJ9xABJ2nJGbrubR=_iuE7_EtY6b41mhuhEtMsg@mail.gmail.com>
 References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
+	<1400029876-5830-8-git-send-email-thomas.ab@samsung.com>
+	<6835645.2kTGeWTa9p@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <6835645.2kTGeWTa9p@wuerfel>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: linux-arm-kernel@lists.infradead.org
-Cc: Thomas Abraham <ta.omasab@gmail.com>, cpufreq@vger.kernel.org, devicetree@vger.kernel.org, l.majewski@samsung.com, kgene.kim@samsung.com, mturquette@linaro.org, heiko@sntech.de, viresh.kumar@linaro.org, t.figa@samsung.com, rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, thomas.ab@samsung.com, shawn.guo@linaro.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
 
-On Wednesday 14 May 2014 06:41:08 Thomas Abraham wrote:
-> 
-> The patch series removes the use of Exynos specific cpufreq driver and enables
-> the use of cpufreq-cpu0 driver for Exynos4210, Exynos4x12 and Exynos5250 based
-> platforms. This is being done for few reasons.
-> 
-> (a) The Exynos cpufreq driver reads/writes clock controller registers
->     bypassing the Exynos CCF driver which is sort of problematic.
-> (b) Removes the need for having clock controller register definitions
->     in the cpufreq driver and also removes the need for statically
->     io-remapping clock controller address space (helps in moving towards
->     multiplatform kernel).
-> 
+On 14 May 2014 18:20, Arnd Bergmann <arnd@arndb.de> wrote:
+> Could we please come up with a way to probe this from DT in the cpufreq-cpu0
+> driver itself, so we don't have to add a device in every platform using it?
 
-Thanks a lot for your continued effort. Looks great overall, but I have one
-comment about the general way the cpu0 cpufreq driver works, not specific
-to the exynos implementation. See my reply to patch 4.
-
-	Arnd
+Its followed that way because DT Maintainers had strong objections
+to creating virtual device nodes and haven't allowed creation of nodes
+for cpufreq drivers.. For which there is no physical device, as CPU already
+has a separate node..
