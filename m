@@ -1,62 +1,120 @@
 From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH 0/2] PM / OPP: move cpufreq specific helpers out of OPP layer
-Date: Tue, 13 May 2014 23:59:01 +0530
-Message-ID: <CAJuA9agOJyQ_2KOoyn=ohVOeO199aVqm_YXtpUVfETQiPk+ZTw@mail.gmail.com>
-References: <1399296830-13056-1-git-send-email-nm@ti.com>
+Subject: [PATCH v4 0/8] cpufreq: use cpufreq-cpu0 driver for exynos based platforms
+Date: Wed, 14 May 2014 06:41:08 +0530
+Message-ID: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=kc8dB155fCqgimby0khgqS4nKcNAKuV4jTigH4i8T5c=;
-        b=EF4YfyBGb8U3ZoPqRNSRW5N2XWWal8cJSbaSU7mQlNEzJS8YWbaaW95yyOqju2+bHX
-         t/R/JZ1pcwhQYPJWvmUz1hJUmxE6rnpZbsEX4DbSdUkzzOKbdwXymbUuuOLl9WDLtNM3
-         Egvg3tDWwFbTU0An+Vbilxrej9lGDwdOz0RSAIkS9yS3Fw6dO4Wc4+843/mxMJpKFWJk
-         E4bscPrTTs+TBinXS0sP8WURzZYHnPE1vvAWvC/URVZVEjDuNb97QuZ48otz0uoPgYB/
-         q7/EQ3jSsTyNJvsCJxF/XVEXdpYRzQYZVjYZhRYtVy3gGqtuWvF+aHzavednHgNyah61
-         sE8A==
-In-Reply-To: <1399296830-13056-1-git-send-email-nm@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
+        h=from:to:cc:subject:date:message-id:mime-version:content-type
+         :content-transfer-encoding;
+        bh=71+kmPAzl3Vj5Xb1bkp9tT6zM5sty5YDVfjS2KBkdyU=;
+        b=b5X5AJtWq1+KHbFGf+vJgtCZES2xiwGaqcH2QqDoaeySZ2Z0cBHdyD1JWzU4OeBwEe
+         T+hk2VnHTnnWk61K05SNrmJyZYNHWZAwq8tbfim1i/0DIbrZazs/Zlw7wX9TLhxPjQSn
+         unUv5fTw/iPiB13jq9vW1Ds/tXiC0Gw5cx7xbvD4q+HsaxFLxRunn6WGLAURokwJRTAR
+         xAiVv33smlqusJcfEYen4K3/GadkAkp9KS/6Pl2aze95n4M8E6qRiTHI4O3tnBZ6DcXE
+         obDPRZwKbjhYSpT9YtIP9/JIVggS3IvOYXAL0tocucWJGKDO96nVtfOUsELjtXChGUdS
+         jc2w==
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kevin Hilman <khilman@deeprootsystems.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="macroman"
+To: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: mturquette@linaro.org, shawn.guo@linaro.org, devicetree@vger.kernel.org, rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, thomas.ab@samsung.com
 
-On Mon, May 5, 2014 at 7:03 PM, Nishanth Menon <nm@ti.com> wrote:
-> CPUFreq usage of OPP should be independent of the ordering of type of
-> data storage inside OPP layer. The current operations can equally be
-> performed by generic operations.
->
-> [RFC]: https://patchwork.kernel.org/patch/4100811/
->
-> Series based on: v3.15-rc1
->
-> Nishanth Menon (2):
->   PM / OPP: Remove cpufreq wrapper dependency on internal data
->     organization
->   PM / OPP: Move cpufreq specific OPP functions out of generic OPP
->     library
->
->  Documentation/cpu-freq/core.txt |   29 +++++++++++
->  Documentation/power/opp.txt     |   40 ++------------
->  drivers/base/power/opp.c        |   91 --------------------------------
->  drivers/cpufreq/Makefile        |    2 +
->  drivers/cpufreq/cpufreq_opp.c   |  110 +++++++++++++++++++++++++++++++++++++++
->  include/linux/cpufreq.h         |   21 ++++++++
->  include/linux/pm_opp.h          |   20 -------
->  7 files changed, 167 insertions(+), 146 deletions(-)
->  create mode 100644 drivers/cpufreq/cpufreq_opp.c
+Changes since v3:
+- Addressed comments from Tomasz Figa <t.figa@samsung.com>
+  [http://www.spinics.net/lists/cpufreq/msg09290.html]
+- Rebased to v3.15-rc4
 
-Works fine on Exynos.
-Tested-by: Thomas Abraham <thomas.ab@samsung.com>
+Changes since v2:
+- Safe operating voltage is not required while switching APLL frequency
+  since the temporary parent's clock is divided down to keep armclk wit=
+hin
+  permissible limits. Thanks to Heiko St=C3=BCbner <heiko@sntech.de> fo=
+r this
+  suggesting this.
+- Rob had suggested to use max frequency for each of the divider clock
+  outputs instead of divider values. But due to certain SoC specific
+  characteristics, the divider values corresponding to the input clock
+  frequency for the CMU_CPU clock blocks have to be used.
 
->
-> --
-> 1.7.9.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Changes since v1:
+- Removes Exynos4x12 and Exynos5250 cpufreq driver also.
+- Device tree based clock configuration lookup as suggested by Lukasz
+  Majewski and Tomasz Figa.
+- safe operating point binding reworked as suggested by Shawn Guo.
+
+The patch series removes the use of Exynos specific cpufreq driver and =
+enables
+the use of cpufreq-cpu0 driver for Exynos4210, Exynos4x12 and Exynos525=
+0 based
+platforms. This is being done for few reasons.
+
+(a) The Exynos cpufreq driver reads/writes clock controller registers
+    bypassing the Exynos CCF driver which is sort of problematic.
+(b) Removes the need for having clock controller register definitions
+    in the cpufreq driver and also removes the need for statically
+    io-remapping clock controller address space (helps in moving toward=
+s
+    multiplatform kernel).
+
+Thomas Abraham (8):
+  cpufreq: cpufreq-cpu0: allow use of optional boost mode frequencies
+  clk: samsung: change scope of samsung clock lock to global
+  clk: samsung: add infrastructure to register cpu clocks
+  Documentation: devicetree: add cpu clock configuration data binding f=
+or Exynos4/5
+  clk: exynos: use cpu-clock provider type to represent arm clock
+  ARM: dts: Exynos: add cpu nodes, opp and cpu clock configuration data
+  ARM: Exynos: switch to using generic cpufreq-cpu0 driver
+  cpufreq: exynos: remove all exynos specific cpufreq driver support
+
+
+ .../devicetree/bindings/clock/exynos4-clock.txt    |   37 ++
+ .../devicetree/bindings/clock/exynos5250-clock.txt |   36 ++
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    2 +
+ arch/arm/boot/dts/exynos4210-origen.dts            |    6 +
+ arch/arm/boot/dts/exynos4210-trats.dts             |    6 +
+ arch/arm/boot/dts/exynos4210-universal_c210.dts    |    6 +
+ arch/arm/boot/dts/exynos4210.dtsi                  |   35 ++
+ arch/arm/boot/dts/exynos4212.dtsi                  |   18 +
+ arch/arm/boot/dts/exynos4412-odroidx.dts           |    6 +
+ arch/arm/boot/dts/exynos4412-origen.dts            |    6 +
+ arch/arm/boot/dts/exynos4412-trats2.dts            |    6 +
+ arch/arm/boot/dts/exynos4412.dtsi                  |   31 ++
+ arch/arm/boot/dts/exynos4x12.dtsi                  |   36 ++
+ arch/arm/boot/dts/exynos5250-arndale.dts           |    6 +
+ arch/arm/boot/dts/exynos5250-cros-common.dtsi      |    6 +
+ arch/arm/boot/dts/exynos5250-smdk5250.dts          |    6 +
+ arch/arm/boot/dts/exynos5250.dtsi                  |   41 ++
+ arch/arm/mach-exynos/exynos.c                      |    4 +-
+ drivers/clk/samsung/Makefile                       |    2 +-
+ drivers/clk/samsung/clk-cpu.c                      |  458 ++++++++++++=
+++++++++
+ drivers/clk/samsung/clk-exynos4.c                  |   25 +-
+ drivers/clk/samsung/clk-exynos5250.c               |   12 +-
+ drivers/clk/samsung/clk.c                          |   13 +-
+ drivers/clk/samsung/clk.h                          |    7 +
+ drivers/cpufreq/Kconfig                            |   11 +
+ drivers/cpufreq/Kconfig.arm                        |   52 ---
+ drivers/cpufreq/Makefile                           |    4 -
+ drivers/cpufreq/cpufreq-cpu0.c                     |    5 +
+ drivers/cpufreq/exynos-cpufreq.c                   |  209 ---------
+ drivers/cpufreq/exynos-cpufreq.h                   |   91 ----
+ drivers/cpufreq/exynos4210-cpufreq.c               |  157 -------
+ drivers/cpufreq/exynos4x12-cpufreq.c               |  211 ---------
+ drivers/cpufreq/exynos5250-cpufreq.c               |  183 --------
+ include/dt-bindings/clock/exynos5250.h             |    1 +
+ 34 files changed, 799 insertions(+), 936 deletions(-)
+ create mode 100644 drivers/clk/samsung/clk-cpu.c
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.h
+ delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos4x12-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
+
+--=20
+1.7.4.4
+
+
