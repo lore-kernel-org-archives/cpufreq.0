@@ -1,77 +1,51 @@
 From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v4 8/8] cpufreq: exynos: remove all exynos specific
- cpufreq driver support
-Date: Wed, 14 May 2014 19:23:02 +0530
-Message-ID: <CAJuA9ajVHivO1AdMDw3Ow=T2yV9QMw2sj0b72SN6a5HftNX5Kg@mail.gmail.com>
+Subject: Re: [PATCH v4 7/8] ARM: Exynos: switch to using generic cpufreq-cpu0 driver
+Date: Wed, 14 May 2014 19:33:56 +0530
+Message-ID: <CAJuA9agJg3w6gmYOcB3HKYEHCDMfotQ1htWNscWYL_ONFyFKTQ@mail.gmail.com>
 References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
-	<1400029876-5830-9-git-send-email-thomas.ab@samsung.com>
-	<20140514092010.02e16520@amdc2363>
+	<6835645.2kTGeWTa9p@wuerfel>
+	<CAKohpom_zuQoJ9xABJ2nJGbrubR=_iuE7_EtY6b41mhuhEtMsg@mail.gmail.com>
+	<1480209.xTrtNKOy7N@phil>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=WYHzQg/kCxt/NBpHV6iN4nNytr+5pXpF+hdy2yz6dPA=;
-        b=ail2cGcoM6XjDQ4mBkdAjXQ22dRky479kNGs6Uqj487fLPHofz1E6fTx7qMz/Ufhy2
-         m8LVtUWv9IKYWCXxJxEw82BCPGfG6Krs73Mnlp71JutdPA7MWocEJ66+QqgEhlUOl6P8
-         qaFFhG14GlYoiOycJX9D9cjogTyZZwELbDukt5mpAV0T4MNtX4YdR0qWJbpkap+S3SX9
-         sfPhdCm8RCa3vaEehzgBMTf8x4+uVgBAmTda7oQ+7HLsazXQCOiietPohbTeeZPOGaQj
-         gwEI7uoRnpmSpjDE06QZKyCOYYiSUP2UDjQ9YOwz7r5I2/D1Sa247YQZp3o5XnwzhC6X
-         BmRw==
-In-Reply-To: <20140514092010.02e16520@amdc2363>
-Sender: cpufreq-owner@vger.kernel.org
+         :cc:content-type:content-transfer-encoding;
+        bh=kls2zAYbY6KIST757kQVdx5DcL6YKJEkw0aGvTgevNw=;
+        b=Lk1i64upJJgO6Qcw73HPZWzeMh94NSQJaFsjnxcPsPs9F1CMOX1ctVyJgucjt/WOgp
+         B3xPOaSQM7vUO/w69yS+IeL0HduDjLVsI7mGGAJ/c4PysvuknZcYcHzXFEYrCoyZORmw
+         37TDBe3nJ2vc/Mcc5i8hnqH64ay5QJds0olyhYPxar9jWIWmOLchjYdZknmaXMAZAXpF
+         KVKzvK+ChDgiqgMbFHu42X3CqrI6TxnAMWbumm5v0AePIwdi/2+8gvZwkYGjJRoyaqH3
+         WGAmgj97wRdxnkEcOvCUICAYkHeWnrN0BM9bPnx8YjRLAL/VtP9SdTwulasgk6e0mZqK
+         U4ug==
+In-Reply-To: <1480209.xTrtNKOy7N@phil>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset="macroman"
+To: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 
-Hi Lukasz,
-
-On Wed, May 14, 2014 at 12:50 PM, Lukasz Majewski
-<l.majewski@samsung.com> wrote:
-> Hi Thomas,
+On Wed, May 14, 2014 at 6:41 PM, Heiko St=C3=BCbner <heiko@sntech.de> w=
+rote:
+> Am Mittwoch, 14. Mai 2014, 18:35:29 schrieb Viresh Kumar:
+>> On 14 May 2014 18:20, Arnd Bergmann <arnd@arndb.de> wrote:
+>> > Could we please come up with a way to probe this from DT in the
+>> > cpufreq-cpu0 driver itself, so we don't have to add a device in ev=
+ery
+>> > platform using it?
+>> Its followed that way because DT Maintainers had strong objections
+>> to creating virtual device nodes and haven't allowed creation of nod=
+es
+>> for cpufreq drivers.. For which there is no physical device, as CPU =
+already
+>> has a separate node..
 >
->> -config ARM_EXYNOS_CPU_FREQ_BOOST_SW
->> -     bool "EXYNOS Frequency Overclocking - Software"
->> -     depends on ARM_EXYNOS_CPUFREQ
->> -     select CPU_FREQ_BOOST_SW
->> -     select EXYNOS_THERMAL
->> -     help
->> -       This driver supports software managed overclocking (BOOST).
->> -       It allows usage of special frequencies for Samsung Exynos
->> -       processors if thermal conditions are appropriate.
->> -
->> -       It reguires, for safe operation, thermal framework with
->> properly
->> -       defined trip points.
->> -
->> -       If in doubt, say N.
->> -
+> as we already have the "enable-method" property for enabling/disablin=
+g cpus,
+> would something like a "scaling-method" be feasible?
 >
-> If I might ask, where this switch,to enable BOOST, will be moved? All
-> in all, I would like to be able to enable boost :-).
 
-The intent was to have a separate boost config option for cpufreq-cpu0
-driver, only available if cpufreq-cpu0 driver is selected, as done in
-the other patch.
-
->
-> In my opinion we should have the Kconfig option to enable/disable the
-> CPU_FREQ_BOOST_SW and this may be used with cpufreq-cpu0 driver as I've
-> pointed out in the other patch.
-
-Okay, this is how this patch series handles CPU_FREQ_BOOST_SW config option.
-
-Thanks,
-Thomas.
-
-
->
-> --
-> Best regards,
->
-> Lukasz Majewski
->
-> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+"scaling-method" also sounds like a software specific property. Would
+that be something that will be acceptable in dt?
