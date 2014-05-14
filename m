@@ -1,37 +1,108 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 1/8] cpufreq: cpufreq-cpu0: allow use of optional boost
- mode frequencies
-Date: Wed, 14 May 2014 19:50:56 +0530
-Message-ID: <CAKohpompE8dgE2uePvM52K+99CvRt2Z6kXkgSTi6_Bcd9OC2ZQ@mail.gmail.com>
-References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
-	<1400029876-5830-2-git-send-email-thomas.ab@samsung.com>
-	<CAKohpo=-duhJ-4iaqBG+eUCkoV_qwAu93FgUxmYS5erNTpLoMA@mail.gmail.com>
-	<20140514081739.0b66587e@amdc2363>
-	<CAKohpomdjDDBjuPcAsaCcavvVgcX5977gDWyjeqmULadq_Pw8w@mail.gmail.com>
-	<CAJuA9ajtCAGpBkSBH64bpTAbZKqPHTiDBFspuoXE1MSLyOyRPw@mail.gmail.com>
-	<CAKohpo=yLtGB=N2BrZuMGOrs_6Y06ULGfMwSkxQHV2r831bVgg@mail.gmail.com>
-	<CAJuA9ahiOz6heULQLaKZyB=2auXRmKmC6N1oMVTa3RENiPbR7g@mail.gmail.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: [PATCH 1/2] speedstep-smi: enable interrupts when waiting
+Date: Wed, 14 May 2014 10:24:44 -0400 (EDT)
+Message-ID: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAJuA9ahiOz6heULQLaKZyB=2auXRmKmC6N1oMVTa3RENiPbR7g@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On 14 May 2014 19:48, Thomas Abraham <ta.omasab@gmail.com> wrote:
-> Okay, I get the point about #ifdef in cpufreq-cpu0. What about your
-> earlier comment about the new Kconfig entry ("Get rid of this.. just
-> not required.")? The new Kconfig entry would be needed in that case.
+Hi Viresh
 
-The only place you used that ifdef was in cpufreq-cpu0, which we
-already decided should stay without any ifdefs..
+Some times ago, I sent these two cpufreq patches to fix frequency 
+transition problem on speedstep-smi, but you didn't put them to the 
+upstream kernel. I am resending the patches. If you would like a different 
+solution to this problem, please explain it.
 
-Now, you must enable CPU_FREQ_BOOST_SW from your defconfig.
+Mikulas
 
-Did I make it clear this time ?
 
---
-viresh
+On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
+speedstep-smi driver sometimes loads and sometimes doesn't load with
+"change to state X failed" message.
+
+The hardware sometimes refuses to change frequency and in this case, we 
+need to retry later. I found out that we need to enable interrupts while 
+waiting for retry. When we enable interrupts, the hardware blockage that 
+prevents frequency transition resolves and the transition is possible. 
+With disabled interrupts, the blockage doesn't resolve (no matter how long 
+do we wait). The exact reasons for this hardware behavior are unknown.
+
+This patch enables interrupts in the function speedstep_set_state that can
+be called with disabled interrupts. However, this function is called with
+disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
+any problem.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
+Cc: stable@vger.kernel.org
+
+---
+ drivers/cpufreq/speedstep-lib.c |    3 +++
+ drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
+ 2 files changed, 15 insertions(+)
+
+Index: linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c
+===================================================================
+--- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-smi.c	2014-02-03 18:56:44.000000000 +0100
++++ linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c	2014-02-03 19:06:21.000000000 +0100
+@@ -156,6 +156,7 @@ static void speedstep_set_state(unsigned
+ 		return;
+ 
+ 	/* Disable IRQs */
++	preempt_disable();
+ 	local_irq_save(flags);
+ 
+ 	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
+@@ -166,9 +167,19 @@ static void speedstep_set_state(unsigned
+ 
+ 	do {
+ 		if (retry) {
++			/*
++			 * We need to enable interrupts, otherwise the blockage
++			 * won't resolve.
++			 *
++			 * We disable preemption so that other processes don't
++			 * run. If other processes were running, they could
++			 * submit more DMA requests, making the blockage worse.
++			 */
+ 			pr_debug("retry %u, previous result %u, waiting...\n",
+ 					retry, result);
++			local_irq_enable();
+ 			mdelay(retry * 50);
++			local_irq_disable();
+ 		}
+ 		retry++;
+ 		__asm__ __volatile__(
+@@ -185,6 +196,7 @@ static void speedstep_set_state(unsigned
+ 
+ 	/* enable IRQs */
+ 	local_irq_restore(flags);
++	preempt_enable();
+ 
+ 	if (new_state == state)
+ 		pr_debug("change to %u MHz succeeded after %u tries "
+Index: linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c
+===================================================================
+--- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-lib.c	2014-02-03 18:54:39.000000000 +0100
++++ linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c	2014-02-03 19:06:21.000000000 +0100
+@@ -400,6 +400,7 @@ unsigned int speedstep_get_freqs(enum sp
+ 
+ 	pr_debug("previous speed is %u\n", prev_speed);
+ 
++	preempt_disable();
+ 	local_irq_save(flags);
+ 
+ 	/* switch to low state */
+@@ -464,6 +465,8 @@ unsigned int speedstep_get_freqs(enum sp
+ 
+ out:
+ 	local_irq_restore(flags);
++	preempt_enable();
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(speedstep_get_freqs);
