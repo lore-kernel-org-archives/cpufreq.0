@@ -1,25 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 1/8] cpufreq: cpufreq-cpu0: allow use of optional boost
- mode frequencies
-Date: Wed, 14 May 2014 11:50:42 +0530
-Message-ID: <CAKohpomdjDDBjuPcAsaCcavvVgcX5977gDWyjeqmULadq_Pw8w@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v4 8/8] cpufreq: exynos: remove all exynos specific cpufreq
+ driver support
+Date: Wed, 14 May 2014 09:20:10 +0200
+Message-ID: <20140514092010.02e16520@amdc2363>
 References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
-	<1400029876-5830-2-git-send-email-thomas.ab@samsung.com>
-	<CAKohpo=-duhJ-4iaqBG+eUCkoV_qwAu93FgUxmYS5erNTpLoMA@mail.gmail.com>
-	<20140514081739.0b66587e@amdc2363>
+ <1400029876-5830-9-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20140514081739.0b66587e@amdc2363>
+In-reply-to: <1400029876-5830-9-git-send-email-thomas.ab@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Thomas P Abraham <thomas.ab@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
+To: Thomas Abraham <ta.omasab@gmail.com>
+Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, kgene.kim@samsung.com, mturquette@linaro.org, heiko@sntech.de, viresh.kumar@linaro.org, t.figa@samsung.com, rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, thomas.ab@samsung.com, shawn.guo@linaro.org
 
-On 14 May 2014 11:47, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> I think that you can rely solely on the CPU_FREQ_BOOST_SW flag if the
-> original author of cpufreq-cpu0.c don't mind.
+Hi Thomas,
 
-We don't have to. struct cpufreq_driver: boost_supported is always available.
-Just update it without any ugly #ifdefs ..
+> -config ARM_EXYNOS_CPU_FREQ_BOOST_SW
+> -	bool "EXYNOS Frequency Overclocking - Software"
+> -	depends on ARM_EXYNOS_CPUFREQ
+> -	select CPU_FREQ_BOOST_SW
+> -	select EXYNOS_THERMAL
+> -	help
+> -	  This driver supports software managed overclocking (BOOST).
+> -	  It allows usage of special frequencies for Samsung Exynos
+> -	  processors if thermal conditions are appropriate.
+> -
+> -	  It reguires, for safe operation, thermal framework with
+> properly
+> -	  defined trip points.
+> -
+> -	  If in doubt, say N.
+> -
+
+If I might ask, where this switch,to enable BOOST, will be moved? All
+in all, I would like to be able to enable boost :-).
+
+In my opinion we should have the Kconfig option to enable/disable the
+CPU_FREQ_BOOST_SW and this may be used with cpufreq-cpu0 driver as I've
+pointed out in the other patch.
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
