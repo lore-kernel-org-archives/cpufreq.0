@@ -1,70 +1,44 @@
 From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v4 7/8] ARM: Exynos: switch to using generic cpufreq-cpu0 driver
-Date: Wed, 14 May 2014 19:39:58 +0530
-Message-ID: <CAJuA9aiHrM2VD-NzedowyFj0+dC8m_7QU+YgjmAe3yy-mjODRA@mail.gmail.com>
+Subject: Re: [PATCH v4 1/8] cpufreq: cpufreq-cpu0: allow use of optional boost
+ mode frequencies
+Date: Wed, 14 May 2014 19:48:06 +0530
+Message-ID: <CAJuA9ahiOz6heULQLaKZyB=2auXRmKmC6N1oMVTa3RENiPbR7g@mail.gmail.com>
 References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
-	<1400029876-5830-8-git-send-email-thomas.ab@samsung.com>
-	<6835645.2kTGeWTa9p@wuerfel>
+	<1400029876-5830-2-git-send-email-thomas.ab@samsung.com>
+	<CAKohpo=-duhJ-4iaqBG+eUCkoV_qwAu93FgUxmYS5erNTpLoMA@mail.gmail.com>
+	<20140514081739.0b66587e@amdc2363>
+	<CAKohpomdjDDBjuPcAsaCcavvVgcX5977gDWyjeqmULadq_Pw8w@mail.gmail.com>
+	<CAJuA9ajtCAGpBkSBH64bpTAbZKqPHTiDBFspuoXE1MSLyOyRPw@mail.gmail.com>
+	<CAKohpo=yLtGB=N2BrZuMGOrs_6Y06ULGfMwSkxQHV2r831bVgg@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type;
-        bh=VuOv+mRXR4y37v55kcNE7r5FxwvX65nlWkCTBNHvP/0=;
-        b=XkkojSWs/JUezRDkQYDtW4JH6MKjNzITCnG9AHdvUR4cqPprm4Pwkya8e7J+oDFV/d
-         vXyLG/BvVzB41QTN/eiGUPuQHAdi2ThNyEQJVgFJzdldHcxysJB5c+AzNupWzTlu1PnB
-         ZTzzofh43ysVNwdaofSdQFyToVyp4DO2Q1lYIwY49DelHNNDx3l051MW1/MC1zpLp9uO
-         yjea2rOEvm3MukOYwZRglsfmG7YSYUAdEgK7k8CW6ozzmTmpysljFZJm4psmdWm92H5t
-         FCaZkI68f2t70aZwKChi1u3eGvqYIZ+B2zaV0yFgdTL0ywwr26K+lE1R1FcYM6zFYq2r
-         s/Sg==
-In-Reply-To: <6835645.2kTGeWTa9p@wuerfel>
-Sender: cpufreq-owner@vger.kernel.org
+        bh=vl3omC+JzMoMRmG7Dc0a8Dx6JiVUSpVleh7yvvofQck=;
+        b=BcMA6SXSeHf7aHSGq44KIghJF69TTndZEAlntNClVZnILlHT5SfeWBhgih1eEE2pln
+         Hpth7v4zN877jmClwuzGujJJ/VWFvvqHZvr45GTnEG7LxgqUmtBHmB2vzwLseOQtNLC1
+         LcvpsBAL6MUhRcj3h4e2lyEVXLGrzI9SBNJO1zlG2FevhdiljhO9rVBasTAuQCQk7d/q
+         NZbmJx6Vgq3fK9BBX7zoXhomamdfwSqrlbautcrgSSFrlXbNYaH+NY9jbRUv3nlfQA5q
+         fw1uaiwPSzVMlq9i4WHjkvNOYZU2BcYjESrpjJzrpInA4BvCFcpnuSKEuo9tPgZz44lB
+         B1DA==
+In-Reply-To: <CAKohpo=yLtGB=N2BrZuMGOrs_6Y06ULGfMwSkxQHV2r831bVgg@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
 
-On Wed, May 14, 2014 at 6:20 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday 14 May 2014 06:41:15 Thomas Abraham wrote:
->> From: Thomas Abraham <thomas.ab@samsung.com>
->>
->> Remove the platform device instantiation for Exynos specific cpufreq
->> driver and add the platform device for cpufreq-cpu0 driver.
->>
->> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->> ---
->>  arch/arm/mach-exynos/exynos.c |    4 +++-
->>  1 files changed, 3 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
->> index b32a907..489a495 100644
->> --- a/arch/arm/mach-exynos/exynos.c
->> +++ b/arch/arm/mach-exynos/exynos.c
->> @@ -232,7 +232,9 @@ void __init exynos_cpuidle_init(void)
->>
->>  void __init exynos_cpufreq_init(void)
->>  {
->> -       platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
->> +       if (!(of_machine_is_compatible("samsung,exynos5420")) &&
->> +               !(of_machine_is_compatible("samsung,exynos5440")))
->> +               platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
->>  }
->>
+On Wed, May 14, 2014 at 7:20 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 14 May 2014 19:13, Thomas Abraham <ta.omasab@gmail.com> wrote:
+>> Okay, so you are suggesting that Kconfig entry used to select
+>> cpufreq-cpu0 should also enable CPU_FREQ_BOOST_SW config as well.
 >
-> Could we please come up with a way to probe this from DT in the cpufreq-cpu0
-> driver itself, so we don't have to add a device in every platform using it?
+> I never said that... That should be enabled by your defconfig instead.
+> What I said was, don't put code within any #ifdefs in cpufreq-cpu0.
 
-Okay, I don't have a solution for this as of now. Would this be
-considered as a blocker for this series? I hope we could just live
-with this for now.
-
-Thanks,
-Thomas.
-
->
-> I realize you copied it from the other platforms using this driver, but
-> it still seems really wrong.
->
->         Arnd
+Okay, I get the point about #ifdef in cpufreq-cpu0. What about your
+earlier comment about the new Kconfig entry ("Get rid of this.. just
+not required.")? The new Kconfig entry would be needed in that case.
