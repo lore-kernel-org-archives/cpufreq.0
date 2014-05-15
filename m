@@ -1,56 +1,29 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] speedstep-smi: enable interrupts when waiting
-Date: Thu, 15 May 2014 10:15:53 +0530
-Message-ID: <CAKohpo=h8cNbb2VbWzpDUPQDMK8QAs_sV=-SQyOaJWWFw4qKvA@mail.gmail.com>
-References: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
+Subject: Re: [RFC PATCH 0/5] Frequency resolution in CCF vs. cpufreq
+Date: Thu, 15 May 2014 11:42:09 +0530
+Message-ID: <CAKohpokm3WVnu_DggKc4PbhVAKNexrJ4051F-gnVFFTDOyz9ew@mail.gmail.com>
+References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 14 May 2014 19:54, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> Hi Viresh
+On 15 May 2014 04:00, Soren Brinkmann <soren.brinkmann@xilinx.com> wrote:
+> I have one or two problems with cpufreq and the CCF, which are caused by
+> rounding/different frequency resolutions.
 >
-> Some times ago, I sent these two cpufreq patches to fix frequency
-> transition problem on speedstep-smi, but you didn't put them to the
-> upstream kernel. I am resending the patches. If you would like a different
-> solution to this problem, please explain it.
+> cpufreq works with kHz, while the CCF uses Hz. On Zynq our default frequency is
+> 666666666 Hz which the CCF, due to rounding, reports as 666666660. And for
+> cpufreq, which simply divides values it obtains through clk_round_rate() by
+> 1000, 666666.
+> Since passing 666666 to clk_round_rate() does not result in 666666660
+> (clk_round_rate() always rounds down!), we chose to put 666667 in the OPP. This
+> causes issue 1: cpufreq stats are broken.
 
-Probably these are just missed by Rafael. The patches are fine but the
-above paragraph you wrote would get into kernel logs and must have
-been placed below the three dash lines: "---"
-
-> On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
-> speedstep-smi driver sometimes loads and sometimes doesn't load with
-> "change to state X failed" message.
->
-> The hardware sometimes refuses to change frequency and in this case, we
-> need to retry later. I found out that we need to enable interrupts while
-> waiting for retry. When we enable interrupts, the hardware blockage that
-> prevents frequency transition resolves and the transition is possible.
-> With disabled interrupts, the blockage doesn't resolve (no matter how long
-> do we wait). The exact reasons for this hardware behavior are unknown.
->
-> This patch enables interrupts in the function speedstep_set_state that can
-> be called with disabled interrupts. However, this function is called with
-> disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
-> any problem.
->
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
-> Cc: stable@vger.kernel.org
->
-> ---
-
-Here. And this will be skipped by tools (git, etc) while applying the patch.
-
->  drivers/cpufreq/speedstep-lib.c |    3 +++
->  drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
->  2 files changed, 15 insertions(+)
-
-For both the patches:
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I know it might a big exercise, but wouldn't it be worth to make cpufreq start
+using frequencies in Hz ?
