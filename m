@@ -1,50 +1,56 @@
-From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [RFC PATCH 3/5] cpufreq: cpu0: Use clk_round_rate_nearest()
-Date: Wed, 14 May 2014 15:30:53 -0700
-Message-ID: <1400106655-22465-4-git-send-email-soren.brinkmann@xilinx.com>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=N2ecVY63fkb2KkJVH4y6JVb97UmiYWfMu2ZTMsIXhns=;
-        b=u2n+/I+wOeEak2tqp++aXNJCTgAtGGYZYQ42ZVyMBBWtpgl81ARh9T58IqLqSyhvtK
-         BtI0aRnLUMOfmNybamLUSJGw61I7CwSDOuP9VYHT7fcT+sq9ejUGXQHfh/v66F1TRngc
-         qTrYMV6mafStgn1ZwOGaCICiZKqqo0eqyWadkr0nl7O3klQoBJL4BAgEUYXTDSUF9zhf
-         ue0+D8bT5tiyRPq75PC+4k4Y+RRsMA6sDy8IwouNEhArrrSJcAQpZuWHyd9VZEfvroXc
-         s40xHQTbETv1OMD+MxB53FWBkY7bEHyWiX/wIYAFadCQNC1CZu8zeItxvfba+U7kqxgg
-         9NHw==
-In-Reply-To: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] speedstep-smi: enable interrupts when waiting
+Date: Thu, 15 May 2014 10:15:53 +0530
+Message-ID: <CAKohpo=h8cNbb2VbWzpDUPQDMK8QAs_sV=-SQyOaJWWFw4qKvA@mail.gmail.com>
+References: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
+Mime-Version: 1.0
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
-Cc: Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Soren Brinkmann <soren.brinkmann@xilinx.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Round clock frequencies to the nearest possible frequency. As opposed to
-the nearest that does not exceed the requested one.
+On 14 May 2014 19:54, Mikulas Patocka <mpatocka@redhat.com> wrote:
+> Hi Viresh
+>
+> Some times ago, I sent these two cpufreq patches to fix frequency
+> transition problem on speedstep-smi, but you didn't put them to the
+> upstream kernel. I am resending the patches. If you would like a different
+> solution to this problem, please explain it.
 
-Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
----
+Probably these are just missed by Rafael. The patches are fine but the
+above paragraph you wrote would get into kernel logs and must have
+been placed below the three dash lines: "---"
 
- drivers/cpufreq/cpufreq-cpu0.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
+> speedstep-smi driver sometimes loads and sometimes doesn't load with
+> "change to state X failed" message.
+>
+> The hardware sometimes refuses to change frequency and in this case, we
+> need to retry later. I found out that we need to enable interrupts while
+> waiting for retry. When we enable interrupts, the hardware blockage that
+> prevents frequency transition resolves and the transition is possible.
+> With disabled interrupts, the blockage doesn't resolve (no matter how long
+> do we wait). The exact reasons for this hardware behavior are unknown.
+>
+> This patch enables interrupts in the function speedstep_set_state that can
+> be called with disabled interrupts. However, this function is called with
+> disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
+> any problem.
+>
+> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
+> Cc: stable@vger.kernel.org
+>
+> ---
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 1bf6bbac3e03..e1de9dc46542 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -42,7 +42,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
- 	long freq_Hz, freq_exact;
- 	int ret;
- 
--	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
-+	freq_Hz = clk_round_rate_nearest(cpu_clk,
-+			freq_table[index].frequency * 1000);
- 	if (freq_Hz <= 0)
- 		freq_Hz = freq_table[index].frequency * 1000;
- 
--- 
-1.9.3.1.ga73a6ad
+Here. And this will be skipped by tools (git, etc) while applying the patch.
+
+>  drivers/cpufreq/speedstep-lib.c |    3 +++
+>  drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
+>  2 files changed, 15 insertions(+)
+
+For both the patches:
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
