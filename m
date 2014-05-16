@@ -1,151 +1,81 @@
-From: Jonghwan Choi <jhbird.choi@samsung.com>
-Subject: [PATCH v3] cpufreq: exynos:  Fix the compile error
-Date: Fri, 16 May 2014 19:18:28 +0900
-Message-ID: <000001cf70f0$2e48f930$8adaeb90$@samsung.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: [PATCH] cpufreq: cpu0: drop wrong devm usage
+Date: Fri, 16 May 2014 12:20:42 +0200
+Message-ID: <1400235642-4124-1-git-send-email-l.stach@pengutronix.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-language: ko
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: 'Kukjin Kim' <kgene.kim@samsung.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, Jonghwan Choi <jhbird.choi@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, kernel@pengutronix.de
 
-Commit 7da83a80 ("ARM: EXYNOS: Migrate Exynos specific macros from plat to mach") which lands in samsung tree causes build breakage
-for cpufreq-exynos like following:
+This driver is using devres managed calls incorrectly, giving the cpu0
+device as first parameter instead of the cpufreq platform device.
+This results in resources not being freed if the cpufreq platform device
+is unbound, for example if probing has to be deferred for a missing
+regulator.
 
-drivers/cpufreq/exynos-cpufreq.c: In function 'exynos_cpufreq_probe':
-drivers/cpufreq/exynos-cpufreq.c:166:2: error: implicit declaration of function 'soc_is_exynos4210'
-[-Werror=implicit-function-declaration]
-drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration of function 'soc_is_exynos4212'
-[-Werror=implicit-function-declaration]
-drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration of function 'soc_is_exynos4412'
-[-Werror=implicit-function-declaration]
-drivers/cpufreq/exynos-cpufreq.c:170:2: error: implicit declaration of function 'soc_is_exynos5250'
-[-Werror=implicit-function-declaration]
-cc1: some warnings being treated as errors
-make[2]: *** [drivers/cpufreq/exynos-cpufreq.o] Error 1
-make[2]: *** Waiting for unfinished jobs....
-drivers/cpufreq/exynos4x12-cpufreq.c: In function 'exynos4x12_set_clkdiv':
-drivers/cpufreq/exynos4x12-cpufreq.c:118:2: error: implicit declaration of function 'soc_is_exynos4212'
-[-Werror=implicit-function-declaration]
-cc1: some warnings being treated as errors
-make[2]: *** [drivers/cpufreq/exynos4x12-cpufreq.o] Error 1
-make[1]: *** [drivers/cpufreq] Error 2
-This fixes above error with getting SoC information via of_machine_is_compatible() instead of soc_is_exynosXXXX().
-
-Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
+Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
 ---
- drivers/cpufreq/exynos-cpufreq.c     |   20 +++++++++++++++++---
- drivers/cpufreq/exynos-cpufreq.h     |    8 ++++++++
- drivers/cpufreq/exynos4x12-cpufreq.c |   11 ++++-------
- 3 files changed, 29 insertions(+), 10 deletions(-)
+ drivers/cpufreq/cpufreq-cpu0.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index f99cfe2..9aecffef 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -17,6 +17,7 @@
- #include <linux/regulator/consumer.h>
- #include <linux/cpufreq.h>
- #include <linux/platform_device.h>
-+#include <linux/of.h>
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 1bf6bbac3e03..09b9129c7bd3 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -130,7 +130,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 		return -ENOENT;
+ 	}
  
- #include <plat/cpu.h>
+-	cpu_reg = devm_regulator_get_optional(cpu_dev, "cpu0");
++	cpu_reg = regulator_get_optional(cpu_dev, "cpu0");
+ 	if (IS_ERR(cpu_reg)) {
+ 		/*
+ 		 * If cpu0 regulator supply node is present, but regulator is
+@@ -145,23 +145,23 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 			PTR_ERR(cpu_reg));
+ 	}
  
-@@ -163,11 +164,24 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 	if (!exynos_info)
- 		return -ENOMEM;
+-	cpu_clk = devm_clk_get(cpu_dev, NULL);
++	cpu_clk = clk_get(cpu_dev, NULL);
+ 	if (IS_ERR(cpu_clk)) {
+ 		ret = PTR_ERR(cpu_clk);
+ 		pr_err("failed to get cpu0 clock: %d\n", ret);
+-		goto out_put_node;
++		goto out_put_reg;
+ 	}
  
--	if (soc_is_exynos4210())
-+	if (of_machine_is_compatible("samsung,exynos4210")) {
-+		exynos_info->type = EXYNOS_SOC_4210;
-+	} else if (of_machine_is_compatible("samsung,exynos4212")) {
-+		exynos_info->type = EXYNOS_SOC_4212;
-+	} else if (of_machine_is_compatible("samsung,exynos4412")) {
-+		exynos_info->type = EXYNOS_SOC_4212;
-+	} else if (of_machine_is_compatible("samsung,exynos5250")) {
-+		exynos_info->type = EXYNOS_SOC_5250;
-+	} else {
-+		pr_err("%s: Unknown SoC type\n", __func__);
-+		return -ENODEV;
-+	}
-+
-+	if (exynos_info->type == EXYNOS_SOC_4210)
- 		ret = exynos4210_cpufreq_init(exynos_info);
--	else if (soc_is_exynos4212() || soc_is_exynos4412())
-+	else if (exynos_info->type == EXYNOS_SOC_4212 || exynos_info->type == EXYNOS_SOC_4412)
- 		ret = exynos4x12_cpufreq_init(exynos_info);
--	else if (soc_is_exynos5250())
-+	else if (exynos_info->type == EXYNOS_SOC_5250)
- 		ret = exynos5250_cpufreq_init(exynos_info);
- 	else
- 		return 0;
-diff --git a/drivers/cpufreq/exynos-cpufreq.h b/drivers/cpufreq/exynos-cpufreq.h
-index 3ddade8..f189547 100644
---- a/drivers/cpufreq/exynos-cpufreq.h
-+++ b/drivers/cpufreq/exynos-cpufreq.h
-@@ -17,6 +17,13 @@ enum cpufreq_level_index {
- 	L20,
- };
+ 	ret = of_init_opp_table(cpu_dev);
+ 	if (ret) {
+ 		pr_err("failed to init OPP table: %d\n", ret);
+-		goto out_put_node;
++		goto out_put_clk;
+ 	}
  
-+enum exynos_soc_type {
-+	EXYNOS_SOC_4210,
-+	EXYNOS_SOC_4212,
-+	EXYNOS_SOC_4412,
-+	EXYNOS_SOC_5250,
-+};
-+
- #define APLL_FREQ(f, a0, a1, a2, a3, a4, a5, a6, a7, b0, b1, b2, m, p, s) \
- 	{ \
- 		.freq = (f) * 1000, \
-@@ -34,6 +41,7 @@ struct apll_freq {
- };
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+ 	if (ret) {
+ 		pr_err("failed to init cpufreq table: %d\n", ret);
+-		goto out_put_node;
++		goto out_put_clk;
+ 	}
  
- struct exynos_dvfs_info {
-+	enum exynos_soc_type type;
- 	unsigned long	mpll_freq_khz;
- 	unsigned int	pll_safe_idx;
- 	struct clk	*cpu_clk;
-diff --git a/drivers/cpufreq/exynos4x12-cpufreq.c b/drivers/cpufreq/exynos4x12-cpufreq.c
-index 466c76a..63a3907 100644
---- a/drivers/cpufreq/exynos4x12-cpufreq.c
-+++ b/drivers/cpufreq/exynos4x12-cpufreq.c
-@@ -100,7 +100,6 @@ static struct apll_freq apll_freq_4412[] = {
- static void exynos4x12_set_clkdiv(unsigned int div_index)
- {
- 	unsigned int tmp;
--	unsigned int stat_cpu1;
+ 	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
+@@ -216,6 +216,12 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
  
- 	/* Change Divider - CPU0 */
- 
-@@ -115,13 +114,11 @@ static void exynos4x12_set_clkdiv(unsigned int div_index)
- 	tmp = apll_freq_4x12[div_index].clk_div_cpu1;
- 
- 	__raw_writel(tmp, EXYNOS4_CLKDIV_CPU1);
--	if (soc_is_exynos4212())
--		stat_cpu1 = 0x11;
--	else
--		stat_cpu1 = 0x111;
- 
--	while (__raw_readl(EXYNOS4_CLKDIV_STATCPU1) & stat_cpu1)
-+	do {
- 		cpu_relax();
-+		tmp = __raw_readl(EXYNOS4_CLKDIV_STATCPU1);
-+	} while (tmp != 0x0);
- }
- 
- static void exynos4x12_set_apll(unsigned int index)
-@@ -184,7 +181,7 @@ int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
- 	if (IS_ERR(mout_apll))
- 		goto err_mout_apll;
- 
--	if (soc_is_exynos4212())
-+	if (info->type == EXYNOS_SOC_4212)
- 		apll_freq_4x12 = apll_freq_4212;
- 	else
- 		apll_freq_4x12 = apll_freq_4412;
+ out_free_table:
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
++out_put_clk:
++	if (!IS_ERR(cpu_clk))
++		clk_put(cpu_clk);
++out_put_reg:
++	if (!IS_ERR(cpu_reg))
++		regulator_put(cpu_reg);
+ out_put_node:
+ 	of_node_put(np);
+ 	return ret;
 -- 
-1.7.10.4
+2.0.0.rc0
 
