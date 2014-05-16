@@ -1,28 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpu0: drop wrong devm usage
-Date: Fri, 16 May 2014 16:54:27 +0530
-Message-ID: <CAKohpo=nKkCnY2Kd0QGEWjgaiaSd=dxamwDnm-VFd27HC5i8MQ@mail.gmail.com>
-References: <1400235642-4124-1-git-send-email-l.stach@pengutronix.de>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCH v4 2/8] clk: samsung: change scope of samsung clock lock to
+ global
+Date: Fri, 16 May 2014 14:30:55 +0200
+Message-ID: <537604FF.2010106@samsung.com>
+References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
+ <1400029876-5830-3-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1400235642-4124-1-git-send-email-l.stach@pengutronix.de>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1400029876-5830-3-git-send-email-thomas.ab@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>
+To: Thomas Abraham <ta.omasab@gmail.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: mturquette@linaro.org, shawn.guo@linaro.org, devicetree@vger.kernel.org, rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, thomas.ab@samsung.com
 
-On 16 May 2014 15:50, Lucas Stach <l.stach@pengutronix.de> wrote:
-> This driver is using devres managed calls incorrectly, giving the cpu0
-> device as first parameter instead of the cpufreq platform device.
-> This results in resources not being freed if the cpufreq platform device
-> is unbound, for example if probing has to be deferred for a missing
-> regulator.
->
-> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+Hi Thomas,
+
+On 14.05.2014 03:11, Thomas Abraham wrote:
+> From: Thomas Abraham <thomas.ab@samsung.com>
+> 
+> Access to samsung clock lock is required to support newer samsung specific
+> clock types. So change the scope of the samsung clock lock to global. And
+> prefix 'samsung_clk_' to the existing name of the lock to prevent name space
+> pollution.
+> 
+> Cc: Tomasz Figa <t.figa@samsung.com>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
 > ---
->  drivers/cpufreq/cpufreq-cpu0.c | 16 +++++++++++-----
->  1 file changed, 11 insertions(+), 5 deletions(-)
+>  drivers/clk/samsung/clk.c |   13 ++++++++-----
+>  drivers/clk/samsung/clk.h |    2 ++
+>  2 files changed, 10 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/clk/samsung/clk.c b/drivers/clk/samsung/clk.c
+> index 91bec3e..c86c28c 100644
+> --- a/drivers/clk/samsung/clk.c
+> +++ b/drivers/clk/samsung/clk.c
+> @@ -14,7 +14,7 @@
+>  #include <linux/syscore_ops.h>
+>  #include "clk.h"
+>  
+> -static DEFINE_SPINLOCK(lock);
+> +DEFINE_SPINLOCK(samsung_clk_lock);
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I'm afraid this series needs to be rebased on top of samsung-clk-next
+branch of Samsung clock tree:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tfiga/samsung-clk.git
+
+You can find there patches adding Samsung clock context struct, which
+should be passed to Samsung clock helper functions and which replaces
+the global variables above.
+
+So changes introduced by this patch will be no longer necessary, as you
+will be able to just pass the context struct to registration function of
+your clock type.
+
+Best regards,
+Tomasz
