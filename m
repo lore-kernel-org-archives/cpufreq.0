@@ -1,149 +1,155 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
 Subject: Re: [PATCH v3] cpufreq: exynos: Fix the compile error
-Date: Sat, 17 May 2014 01:37:16 +0200
-Message-ID: <5376A12C.5010407@gmail.com>
-References: <000001cf70f0$2e48f930$8adaeb90$@samsung.com> <CAKohponFCpNThX1m9n+_96vN=WqN5zqA-+GWMLMLO_z-3p5okA@mail.gmail.com> <53769EBD.2000201@samsung.com>
+Date: Sat, 17 May 2014 08:44:42 +0900
+Message-ID: <5376A2EA.9050906@samsung.com>
+References: <000001cf70f0$2e48f930$8adaeb90$@samsung.com> <CAKohponFCpNThX1m9n+_96vN=WqN5zqA-+GWMLMLO_z-3p5okA@mail.gmail.com> <53769EBD.2000201@samsung.com> <5376A12C.5010407@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=rnwqV0u9WRW9gnn7698vFO2JEvhD5TbYl31B5xl2S44=;
-        b=eiSBO/zF393mwvHy+c9ATDvDL7MWXNghU7sQETetEkOMsPYmMSTV7NeDC2KmljEK2H
-         Vinqxpx+GQJnlpWDbha+n2sW7IKDmOSarxHLouNCTZScyiRpxZ6oXHkxysNKKeDx2E9v
-         zoWt5aBon+ooWycdsdpwuQ7xS5sMP+pkQaNXv0fpV/zuXcUGYuont5hDXagL2hlwm/lC
-         fML9m0AVZfhp59TQE9DpDyaDirF52hmYbIPFqyxXl++0i5Zz1dErslGTSqm++xgcl4Co
-         VpQpc6SRoOf176UTVhP2DG0RIYNdU+Xnp7oEmOH7FFfgFgdU3OISTGMrzY8Xk53NQodW
-         maBA==
-In-Reply-To: <53769EBD.2000201@samsung.com>
+        bh=oUEoqNpwBBbmLTUDlDwNz0IgvoxoIh9L5wD01tbwxsM=;
+        b=gN0vUPYjofvm+ejMjP9zamVVXdhowE2fxiD4MWfpGjEmbj5UqnAGGLHLbe3P+fG53i
+         6OOPhKVhSEQkVX3/BplHY6rb49I3LidNShwIVv3ThD53Ozuv8a/3tNS7PPOSvRhevosH
+         cGw2zbfrDqVn68NpnoAsT6E9ivVoUARqoTnKw5Iq4bskEv/Wgr74Bd+9cfC5lYitEASf
+         wqMCZIY+E1WvMzn9Zoyt3E1MSuJ13ngyB/sEUtKu8L0mvNIcQfIe2llhHO4klccMiQ3b
+         Y4Jr2IdklloNZfD13BBb47L5FrSW1emibH/6kaR9P1USWlzlNfXCYdm9WS3RSH/6Zcdr
+         4Olg==
+In-Reply-To: <5376A12C.5010407@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Kukjin Kim <kgene.kim@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jonghwan Choi <jhbird.choi@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jonghwan Choi <jhbird.choi@gmail.com>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jonghwan Choi <jhbird.choi@gmail.com>
 
-On 17.05.2014 01:26, Kukjin Kim wrote:
-> On 05/16/14 20:07, Viresh Kumar wrote:
->> On 16 May 2014 15:48, Jonghwan Choi<jhbird.choi@samsung.com>  wrote:
->>> Commit 7da83a80 ("ARM: EXYNOS: Migrate Exynos specific macros from
->>> plat to mach") which lands in samsung tree causes build breakage
->>> for cpufreq-exynos like following:
+On 05/17/14 08:37, Tomasz Figa wrote:
+> On 17.05.2014 01:26, Kukjin Kim wrote:
+>> On 05/16/14 20:07, Viresh Kumar wrote:
+>>> On 16 May 2014 15:48, Jonghwan Choi<jhbird.choi@samsung.com>   wrote:
+>>>> Commit 7da83a80 ("ARM: EXYNOS: Migrate Exynos specific macros from
+>>>> plat to mach") which lands in samsung tree causes build breakage
+>>>> for cpufreq-exynos like following:
+>>>>
+>>>> drivers/cpufreq/exynos-cpufreq.c: In function 'exynos_cpufreq_probe':
+>>>> drivers/cpufreq/exynos-cpufreq.c:166:2: error: implicit declaration
+>>>> of function 'soc_is_exynos4210'
+>>>> [-Werror=implicit-function-declaration]
+>>>> drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration
+>>>> of function 'soc_is_exynos4212'
+>>>> [-Werror=implicit-function-declaration]
+>>>> drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration
+>>>> of function 'soc_is_exynos4412'
+>>>> [-Werror=implicit-function-declaration]
+>>>> drivers/cpufreq/exynos-cpufreq.c:170:2: error: implicit declaration
+>>>> of function 'soc_is_exynos5250'
+>>>> [-Werror=implicit-function-declaration]
+>>>> cc1: some warnings being treated as errors
+>>>> make[2]: *** [drivers/cpufreq/exynos-cpufreq.o] Error 1
+>>>> make[2]: *** Waiting for unfinished jobs....
+>>>> drivers/cpufreq/exynos4x12-cpufreq.c: In function
+>>>> 'exynos4x12_set_clkdiv':
+>>>> drivers/cpufreq/exynos4x12-cpufreq.c:118:2: error: implicit
+>>>> declaration of function 'soc_is_exynos4212'
+>>>> [-Werror=implicit-function-declaration]
+>>>> cc1: some warnings being treated as errors
+>>>> make[2]: *** [drivers/cpufreq/exynos4x12-cpufreq.o] Error 1
+>>>> make[1]: *** [drivers/cpufreq] Error 2
 >>>
->>> drivers/cpufreq/exynos-cpufreq.c: In function 'exynos_cpufreq_probe':
->>> drivers/cpufreq/exynos-cpufreq.c:166:2: error: implicit declaration
->>> of function 'soc_is_exynos4210'
->>> [-Werror=implicit-function-declaration]
->>> drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration
->>> of function 'soc_is_exynos4212'
->>> [-Werror=implicit-function-declaration]
->>> drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration
->>> of function 'soc_is_exynos4412'
->>> [-Werror=implicit-function-declaration]
->>> drivers/cpufreq/exynos-cpufreq.c:170:2: error: implicit declaration
->>> of function 'soc_is_exynos5250'
->>> [-Werror=implicit-function-declaration]
->>> cc1: some warnings being treated as errors
->>> make[2]: *** [drivers/cpufreq/exynos-cpufreq.o] Error 1
->>> make[2]: *** Waiting for unfinished jobs....
->>> drivers/cpufreq/exynos4x12-cpufreq.c: In function
->>> 'exynos4x12_set_clkdiv':
->>> drivers/cpufreq/exynos4x12-cpufreq.c:118:2: error: implicit
->>> declaration of function 'soc_is_exynos4212'
->>> [-Werror=implicit-function-declaration]
->>> cc1: some warnings being treated as errors
->>> make[2]: *** [drivers/cpufreq/exynos4x12-cpufreq.o] Error 1
->>> make[1]: *** [drivers/cpufreq] Error 2
+>>> Blank line here..
+>>>
+>>>> This fixes above error with getting SoC information via
+>>>> of_machine_is_compatible() instead of soc_is_exynosXXXX().
+>>>>
+>>>> Signed-off-by: Jonghwan Choi<jhbird.choi@samsung.com>
+>>>> ---
+>>>>    drivers/cpufreq/exynos-cpufreq.c     |   20 +++++++++++++++++---
+>>>>    drivers/cpufreq/exynos-cpufreq.h     |    8 ++++++++
+>>>>    drivers/cpufreq/exynos4x12-cpufreq.c |   11 ++++-------
+>>>>    3 files changed, 29 insertions(+), 10 deletions(-)
+>>>>
+>>>> diff --git a/drivers/cpufreq/exynos-cpufreq.c
+>>>> b/drivers/cpufreq/exynos-cpufreq.c
+>>>> index f99cfe2..9aecffef 100644
+>>>> --- a/drivers/cpufreq/exynos-cpufreq.c
+>>>> +++ b/drivers/cpufreq/exynos-cpufreq.c
+>>>> @@ -17,6 +17,7 @@
+>>>>    #include<linux/regulator/consumer.h>
+>>>>    #include<linux/cpufreq.h>
+>>>>    #include<linux/platform_device.h>
+>>>> +#include<linux/of.h>
+>>>>
+>>>>    #include<plat/cpu.h>
+>>>>
+>>>> @@ -163,11 +164,24 @@ static int exynos_cpufreq_probe(struct
+>>>> platform_device *pdev)
+>>>>           if (!exynos_info)
+>>>>                   return -ENOMEM;
+>>>>
+>>>> -       if (soc_is_exynos4210())
+>>>> +       if (of_machine_is_compatible("samsung,exynos4210")) {
+>>>> +               exynos_info->type = EXYNOS_SOC_4210;
+>>>> +       } else if (of_machine_is_compatible("samsung,exynos4212")) {
+>>>> +               exynos_info->type = EXYNOS_SOC_4212;
+>>>> +       } else if (of_machine_is_compatible("samsung,exynos4412")) {
+>>>> +               exynos_info->type = EXYNOS_SOC_4212;
+>>>
+>>> 4412 ?
+>>>
+>> Yes, I will fix when I apply.
 >>
->> Blank line here..
+>>>> +       } else if (of_machine_is_compatible("samsung,exynos5250")) {
+>>>> +               exynos_info->type = EXYNOS_SOC_5250;
+>>>> +       } else {
+>>>> +               pr_err("%s: Unknown SoC type\n", __func__);
+>>>> +               return -ENODEV;
+>>>> +       }
+>>>> +
+>>>> +       if (exynos_info->type == EXYNOS_SOC_4210)
+>>>>                   ret = exynos4210_cpufreq_init(exynos_info);
+>>>> -       else if (soc_is_exynos4212() || soc_is_exynos4412())
+>>>> +       else if (exynos_info->type == EXYNOS_SOC_4212 ||
+>>>> exynos_info->type == EXYNOS_SOC_4412)
+>>>>                   ret = exynos4x12_cpufreq_init(exynos_info);
+>>>> -       else if (soc_is_exynos5250())
+>>>> +       else if (exynos_info->type == EXYNOS_SOC_5250)
+>>>>                   ret = exynos5250_cpufreq_init(exynos_info);
+>>>>           else
+>>>>                   return 0;
+>>>
+>>> Do this in the first if/else only..
 >>
->>> This fixes above error with getting SoC information via
->>> of_machine_is_compatible() instead of soc_is_exynosXXXX().
->>>
->>> Signed-off-by: Jonghwan Choi<jhbird.choi@samsung.com>
->>> ---
->>>   drivers/cpufreq/exynos-cpufreq.c     |   20 +++++++++++++++++---
->>>   drivers/cpufreq/exynos-cpufreq.h     |    8 ++++++++
->>>   drivers/cpufreq/exynos4x12-cpufreq.c |   11 ++++-------
->>>   3 files changed, 29 insertions(+), 10 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/exynos-cpufreq.c
->>> b/drivers/cpufreq/exynos-cpufreq.c
->>> index f99cfe2..9aecffef 100644
->>> --- a/drivers/cpufreq/exynos-cpufreq.c
->>> +++ b/drivers/cpufreq/exynos-cpufreq.c
->>> @@ -17,6 +17,7 @@
->>>   #include<linux/regulator/consumer.h>
->>>   #include<linux/cpufreq.h>
->>>   #include<linux/platform_device.h>
->>> +#include<linux/of.h>
->>>
->>>   #include<plat/cpu.h>
->>>
->>> @@ -163,11 +164,24 @@ static int exynos_cpufreq_probe(struct
->>> platform_device *pdev)
->>>          if (!exynos_info)
->>>                  return -ENOMEM;
->>>
->>> -       if (soc_is_exynos4210())
->>> +       if (of_machine_is_compatible("samsung,exynos4210")) {
->>> +               exynos_info->type = EXYNOS_SOC_4210;
->>> +       } else if (of_machine_is_compatible("samsung,exynos4212")) {
->>> +               exynos_info->type = EXYNOS_SOC_4212;
->>> +       } else if (of_machine_is_compatible("samsung,exynos4412")) {
->>> +               exynos_info->type = EXYNOS_SOC_4212;
+>> Probably, you mean following in above?
 >>
->> 4412 ?
+>>>> -       if (soc_is_exynos4210())
 >>
-> Yes, I will fix when I apply.
-> 
->>> +       } else if (of_machine_is_compatible("samsung,exynos5250")) {
->>> +               exynos_info->type = EXYNOS_SOC_5250;
->>> +       } else {
->>> +               pr_err("%s: Unknown SoC type\n", __func__);
->>> +               return -ENODEV;
->>> +       }
->>> +
->>> +       if (exynos_info->type == EXYNOS_SOC_4210)
->>>                  ret = exynos4210_cpufreq_init(exynos_info);
->>> -       else if (soc_is_exynos4212() || soc_is_exynos4412())
->>> +       else if (exynos_info->type == EXYNOS_SOC_4212 ||
->>> exynos_info->type == EXYNOS_SOC_4412)
->>>                  ret = exynos4x12_cpufreq_init(exynos_info);
->>> -       else if (soc_is_exynos5250())
->>> +       else if (exynos_info->type == EXYNOS_SOC_5250)
->>>                  ret = exynos5250_cpufreq_init(exynos_info);
->>>          else
->>>                  return 0;
->>
->> Do this in the first if/else only..
-> 
-> Probably, you mean following in above?
-> 
->>> -       if (soc_is_exynos4210())
-> 
-> I've applied this with fixing typo you mentioned just now, if any
-> concerns, please kindly let me know.
+>> I've applied this with fixing typo you mentioned just now, if any
+>> concerns, please kindly let me know.
+>
+> I think Viresh meant merging the two if/else blocks together, as follows:
+>
+> 	if (of_machine_is_compatible("samsung,exynos4210")) {
+> 		exynos_info->type = EXYNOS_SOC_4210;
+> 		ret = exynos4210_cpufreq_init(exynos_info);
+> 	} else if (of_machine_is_compatible("samsung,exynos4212")) {
+> 		exynos_info->type = EXYNOS_SOC_4212;
+> 		ret = exynos4x12_cpufreq_init(exynos_info);
+> 	} else if (of_machine_is_compatible("samsung,exynos4412")) {
+> 		exynos_info->type = EXYNOS_SOC_4412;
+> 		ret = exynos4x12_cpufreq_init(exynos_info);
+> 	} else if (of_machine_is_compatible("samsung,exynos5250")) {
+> 		exynos_info->type = EXYNOS_SOC_5250;
+> 		ret = exynos5250_cpufreq_init(exynos_info);
+> 	} else {
+> 		pr_err("%s: Unknown SoC type\n", __func__);
+> 		return -ENODEV;
+> 	}
+>
+Yeah, I just now realized same thing :(
 
-I think Viresh meant merging the two if/else blocks together, as follows:
+looks better, the SoC type is only used for 4212/4412 in other place 
+though...I will modify as per Viresh's suggestion.
 
-	if (of_machine_is_compatible("samsung,exynos4210")) {
-		exynos_info->type = EXYNOS_SOC_4210;
-		ret = exynos4210_cpufreq_init(exynos_info);
-	} else if (of_machine_is_compatible("samsung,exynos4212")) {
-		exynos_info->type = EXYNOS_SOC_4212;
-		ret = exynos4x12_cpufreq_init(exynos_info);
-	} else if (of_machine_is_compatible("samsung,exynos4412")) {
-		exynos_info->type = EXYNOS_SOC_4412;
-		ret = exynos4x12_cpufreq_init(exynos_info);
-	} else if (of_machine_is_compatible("samsung,exynos5250")) {
-		exynos_info->type = EXYNOS_SOC_5250;
-		ret = exynos5250_cpufreq_init(exynos_info);
-	} else {
-		pr_err("%s: Unknown SoC type\n", __func__);
-		return -ENODEV;
-	}
-
-Best regards,
-Tomasz
+Thanks,
+Kukjin
