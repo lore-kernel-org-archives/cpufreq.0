@@ -1,65 +1,118 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3] cpufreq: exynos:  Fix the compile error
-Date: Sat, 17 May 2014 01:04:29 +0200
-Message-ID: <2553916.Pl2B0tVZGR@vostro.rjw.lan>
-References: <000001cf70f0$2e48f930$8adaeb90$@samsung.com> <037e01cf70f5$25b374d0$711a5e70$@samsung.com>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH v4 6/8] ARM: dts: Exynos: add cpu nodes, opp and cpu clock
+ configuration data
+Date: Sat, 17 May 2014 01:16:50 +0200
+Message-ID: <53769C62.4060900@gmail.com>
+References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com> <1400029876-5830-7-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <037e01cf70f5$25b374d0$711a5e70$@samsung.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=BiUf0//Tt0F89Cnm83mH+i6QURlbKBkyBoiLYfOLQ/I=;
+        b=bFAL+F2gyNgCs5zhbmKQBIs56RWVNnB+GK++G8pzRcYcgBUGmxEjlwU11S4OQt2feF
+         CnpcFPP1mlOebKg+WscgXoC7H9m+q+WCYTy+ZqXAT7j3qCATJCLpMZGvkmQLO9yoamNP
+         TQyq/KERumvUw1l98Cf3ITxF8CnmOqYhKRL6/KPXE4/H5dH92acTe7zO28HPtLbisEU7
+         rECC+UvYfjr/pTqcyLVSxKwNniu6TmPYvUBrVb8NiDBW36vhL7gDKp2auoHooMevy81K
+         BwBUs38g7SMMfEXxJZdPBpM9L7YUiFWbYdl5BDXavQn9/jDjMkJkq3f9/m6w08X67VIF
+         HnXg==
+In-Reply-To: <1400029876-5830-7-git-send-email-thomas.ab@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: 'Jonghwan Choi' <jhbird.choi@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, cpufreq@vger.kernel.org, 'Jonghwan Choi' <jhbird.choi@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Tomasz Figa' <t.figa@samsung.com>
+To: Thomas Abraham <ta.omasab@gmail.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: mturquette@linaro.org, shawn.guo@linaro.org, devicetree@vger.kernel.org, rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, heiko@sntech.de, thomas.ab@samsung.com
 
-On Friday, May 16, 2014 07:54:01 PM Kukjin Kim wrote:
-> Jonghwan Choi wrote:
-> > 
-> > Commit 7da83a80 ("ARM: EXYNOS: Migrate Exynos specific macros from plat to
-> > mach") which lands in samsung tree causes build breakage
-> > for cpufreq-exynos like following:
-> > 
-> > drivers/cpufreq/exynos-cpufreq.c: In function 'exynos_cpufreq_probe':
-> > drivers/cpufreq/exynos-cpufreq.c:166:2: error: implicit declaration of
-> > function 'soc_is_exynos4210'
-> > [-Werror=implicit-function-declaration]
-> > drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration of
-> > function 'soc_is_exynos4212'
-> > [-Werror=implicit-function-declaration]
-> > drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration of
-> > function 'soc_is_exynos4412'
-> > [-Werror=implicit-function-declaration]
-> > drivers/cpufreq/exynos-cpufreq.c:170:2: error: implicit declaration of
-> > function 'soc_is_exynos5250'
-> > [-Werror=implicit-function-declaration]
-> > cc1: some warnings being treated as errors
-> > make[2]: *** [drivers/cpufreq/exynos-cpufreq.o] Error 1
-> > make[2]: *** Waiting for unfinished jobs....
-> > drivers/cpufreq/exynos4x12-cpufreq.c: In function 'exynos4x12_set_clkdiv':
-> > drivers/cpufreq/exynos4x12-cpufreq.c:118:2: error: implicit declaration of
-> > function 'soc_is_exynos4212'
-> > [-Werror=implicit-function-declaration]
-> > cc1: some warnings being treated as errors
-> > make[2]: *** [drivers/cpufreq/exynos4x12-cpufreq.o] Error 1
-> > make[1]: *** [drivers/cpufreq] Error 2
-> > This fixes above error with getting SoC information via
-> > of_machine_is_compatible() instead of soc_is_exynosXXXX().
-> > 
-> 
-> Probably,
-> Suggested-by: Tomasz Figa ?
-> 
-> > Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
-> 
-> Looks better.
-> 
-> Rafael, if you have no objection on this, shall I pick this into samsung
-> tree for 3.16 because of the current build breakage with enabling exynos
-> cpufreq?
+Hi Thomas,
 
-Please go ahead.
+Please see my comments inline.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+On 14.05.2014 03:11, Thomas Abraham wrote:
+> From: Thomas Abraham <thomas.ab@samsung.com>
+> 
+> For all Exynos based platforms, add CPU nodes, operating points and cpu
+> clock data for migrating from Exynos specific cpufreq driver to using
+> generic cpufreq-cpu0 driver.
+> 
+> Cc: Tomasz Figa <t.figa@samsung.com>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> ---
+>  arch/arm/boot/dts/exynos4210-origen.dts         |    6 +++
+>  arch/arm/boot/dts/exynos4210-trats.dts          |    6 +++
+>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    6 +++
+>  arch/arm/boot/dts/exynos4210.dtsi               |   35 +++++++++++++++++++
+>  arch/arm/boot/dts/exynos4212.dtsi               |   18 ++++++++++
+>  arch/arm/boot/dts/exynos4412-odroidx.dts        |    6 +++
+>  arch/arm/boot/dts/exynos4412-origen.dts         |    6 +++
+>  arch/arm/boot/dts/exynos4412-trats2.dts         |    6 +++
+>  arch/arm/boot/dts/exynos4412.dtsi               |   31 +++++++++++++++++
+>  arch/arm/boot/dts/exynos4x12.dtsi               |   36 ++++++++++++++++++++
+>  arch/arm/boot/dts/exynos5250-arndale.dts        |    6 +++
+>  arch/arm/boot/dts/exynos5250-cros-common.dtsi   |    6 +++
+>  arch/arm/boot/dts/exynos5250-smdk5250.dts       |    6 +++
+>  arch/arm/boot/dts/exynos5250.dtsi               |   41 +++++++++++++++++++++++
+>  14 files changed, 215 insertions(+), 0 deletions(-)
+
+[snip]
+
+> diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
+> index cacf614..22b967d 100644
+> --- a/arch/arm/boot/dts/exynos4210.dtsi
+> +++ b/arch/arm/boot/dts/exynos4210.dtsi
+> @@ -36,6 +36,33 @@
+>  		reg = <0x10023CA0 0x20>;
+>  	};
+>  
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		cpu@0 {
+
+style: Please add blank line between last property and first node.
+
+> +			device_type = "cpu";
+> +			compatible = "arm,cortex-a9";
+> +			reg = <0>;
+
+This is not the right value. The bottom 24-bits of MPIDR register on
+Exynos4210 are 0x900 and 0x901 for CPU0 and CPU1 respectively.
+
+Of course this won't work before fixing the GIC driver to not rely on
+wrong assumptions, but I have already posted patches [1] and need to
+address comments.
+
+[1] http://thread.gmane.org/gmane.linux.kernel.samsung-soc/29573
+
+> +			clocks = <&clock CLK_ARM_CLK>;
+> +			clock-names = "cpu";
+
+[snip]
+
+> diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
+> index 15d3c0a..85005d1 100644
+> --- a/arch/arm/boot/dts/exynos4412.dtsi
+> +++ b/arch/arm/boot/dts/exynos4412.dtsi
+> @@ -22,6 +22,37 @@
+>  / {
+>  	compatible = "samsung,exynos4412", "samsung,exynos4";
+>  
+> +	cpus {
+> +		cpu@2 {
+> +			device_type = "cpu";
+> +			compatible = "arm,cortex-a9";
+> +			reg = <2>;
+
+Same here. On Exynos4x12, the MPIDR values for CPUs are 0xa00, 0xa01,
+0xa02 and 0xa03 for CPU0, CPU1, CPU2 and CPU3 respectively.
+
+> +		};
+> +		cpu@3 {
+
+style: Please keep a single blank line of spacing between nodes.
+
+Otherwise looks good.
+
+Best regards,
+Tomasz
