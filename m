@@ -1,34 +1,64 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: cpu0: drop wrong devm usage
-Date: Sat, 17 May 2014 01:03:44 +0200
-Message-ID: <1736692.jETsUORUsl@vostro.rjw.lan>
-References: <1400235642-4124-1-git-send-email-l.stach@pengutronix.de> <CAKohpo=nKkCnY2Kd0QGEWjgaiaSd=dxamwDnm-VFd27HC5i8MQ@mail.gmail.com>
+Subject: Re: [PATCH v3] cpufreq: exynos:  Fix the compile error
+Date: Sat, 17 May 2014 01:04:29 +0200
+Message-ID: <2553916.Pl2B0tVZGR@vostro.rjw.lan>
+References: <000001cf70f0$2e48f930$8adaeb90$@samsung.com> <037e01cf70f5$25b374d0$711a5e70$@samsung.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=nKkCnY2Kd0QGEWjgaiaSd=dxamwDnm-VFd27HC5i8MQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <037e01cf70f5$25b374d0$711a5e70$@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lucas Stach <l.stach@pengutronix.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Sascha Hauer <kernel@pengutronix.de>
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: 'Jonghwan Choi' <jhbird.choi@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, cpufreq@vger.kernel.org, 'Jonghwan Choi' <jhbird.choi@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Tomasz Figa' <t.figa@samsung.com>
 
-On Friday, May 16, 2014 04:54:27 PM Viresh Kumar wrote:
-> On 16 May 2014 15:50, Lucas Stach <l.stach@pengutronix.de> wrote:
-> > This driver is using devres managed calls incorrectly, giving the cpu0
-> > device as first parameter instead of the cpufreq platform device.
-> > This results in resources not being freed if the cpufreq platform device
-> > is unbound, for example if probing has to be deferred for a missing
-> > regulator.
-> >
-> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> > ---
-> >  drivers/cpufreq/cpufreq-cpu0.c | 16 +++++++++++-----
-> >  1 file changed, 11 insertions(+), 5 deletions(-)
+On Friday, May 16, 2014 07:54:01 PM Kukjin Kim wrote:
+> Jonghwan Choi wrote:
+> > 
+> > Commit 7da83a80 ("ARM: EXYNOS: Migrate Exynos specific macros from plat to
+> > mach") which lands in samsung tree causes build breakage
+> > for cpufreq-exynos like following:
+> > 
+> > drivers/cpufreq/exynos-cpufreq.c: In function 'exynos_cpufreq_probe':
+> > drivers/cpufreq/exynos-cpufreq.c:166:2: error: implicit declaration of
+> > function 'soc_is_exynos4210'
+> > [-Werror=implicit-function-declaration]
+> > drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration of
+> > function 'soc_is_exynos4212'
+> > [-Werror=implicit-function-declaration]
+> > drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration of
+> > function 'soc_is_exynos4412'
+> > [-Werror=implicit-function-declaration]
+> > drivers/cpufreq/exynos-cpufreq.c:170:2: error: implicit declaration of
+> > function 'soc_is_exynos5250'
+> > [-Werror=implicit-function-declaration]
+> > cc1: some warnings being treated as errors
+> > make[2]: *** [drivers/cpufreq/exynos-cpufreq.o] Error 1
+> > make[2]: *** Waiting for unfinished jobs....
+> > drivers/cpufreq/exynos4x12-cpufreq.c: In function 'exynos4x12_set_clkdiv':
+> > drivers/cpufreq/exynos4x12-cpufreq.c:118:2: error: implicit declaration of
+> > function 'soc_is_exynos4212'
+> > [-Werror=implicit-function-declaration]
+> > cc1: some warnings being treated as errors
+> > make[2]: *** [drivers/cpufreq/exynos4x12-cpufreq.o] Error 1
+> > make[1]: *** [drivers/cpufreq] Error 2
+> > This fixes above error with getting SoC information via
+> > of_machine_is_compatible() instead of soc_is_exynosXXXX().
+> > 
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Probably,
+> Suggested-by: Tomasz Figa ?
+> 
+> > Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
+> 
+> Looks better.
+> 
+> Rafael, if you have no objection on this, shall I pick this into samsung
+> tree for 3.16 because of the current build breakage with enabling exynos
+> cpufreq?
 
-Is this -stable material?  If so, which -stable?
+Please go ahead.
 
 -- 
 I speak only for myself.
