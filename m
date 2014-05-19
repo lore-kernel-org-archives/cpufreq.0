@@ -1,69 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: powernv: make local function static
-Date: Tue, 20 May 2014 01:21:25 +0200
-Message-ID: <12636388.mIvbtR4O8Q@vostro.rjw.lan>
-References: <1399794680-22210-1-git-send-email-computersforpeace@gmail.com> <536FC254.2000702@linux.vnet.ibm.com> <20140512055406.GA3804@in.ibm.com>
+Subject: Re: [PATCH v3] cpufreq: exynos:  Fix the compile error
+Date: Tue, 20 May 2014 01:33 +0200
+Message-ID: <1655043.7FHqnunz6p@vostro.rjw.lan>
+References: <000001cf70f0$2e48f930$8adaeb90$@samsung.com> <037e01cf70f5$25b374d0$711a5e70$@samsung.com> <2553916.Pl2B0tVZGR@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140512055406.GA3804@in.ibm.com>
+In-Reply-To: <2553916.Pl2B0tVZGR@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: ego@linux.vnet.ibm.com
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Brian Norris <computersforpeace@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: 'Jonghwan Choi' <jhbird.choi@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, cpufreq@vger.kernel.org, 'Jonghwan Choi' <jhbird.choi@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Tomasz Figa' <t.figa@samsung.com>
 
-On Monday, May 12, 2014 11:24:06 AM Gautham R Shenoy wrote:
-> On Mon, May 12, 2014 at 12:02:52AM +0530, Srivatsa S. Bhat wrote:
-> > On 05/11/2014 01:21 PM, Brian Norris wrote:
-> > > powernv_cpufreq_get() is only referenced in this file.
+On Saturday, May 17, 2014 01:04:29 AM Rafael J. Wysocki wrote:
+> On Friday, May 16, 2014 07:54:01 PM Kukjin Kim wrote:
+> > Jonghwan Choi wrote:
 > > > 
-> > > Signed-off-by: Brian Norris <computersforpeace@gmail.com>
-> > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > Cc: cpufreq@vger.kernel.org
-> > > Cc: linux-pm@vger.kernel.org
-> > 
-> > Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> 
-> Thanks for this fix Brian.
-> 
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
-Queued up for 3.16, thanks!
-
-> 
-> --
-> Thanks and Regards
-> gautham.
-> 
-> > 
-> > Regards,
-> > Srivatsa S. Bhat
-> > 
-> > > ---
-> > >  drivers/cpufreq/powernv-cpufreq.c | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > Commit 7da83a80 ("ARM: EXYNOS: Migrate Exynos specific macros from plat to
+> > > mach") which lands in samsung tree causes build breakage
+> > > for cpufreq-exynos like following:
 > > > 
-> > > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> > > index af4968813e76..bb1d08dc8cc8 100644
-> > > --- a/drivers/cpufreq/powernv-cpufreq.c
-> > > +++ b/drivers/cpufreq/powernv-cpufreq.c
-> > > @@ -235,7 +235,7 @@ static void powernv_read_cpu_freq(void *arg)
-> > >   * firmware for CPU 'cpu'. This value is reported through the sysfs
-> > >   * file cpuinfo_cur_freq.
-> > >   */
-> > > -unsigned int powernv_cpufreq_get(unsigned int cpu)
-> > > +static unsigned int powernv_cpufreq_get(unsigned int cpu)
-> > >  {
-> > >  	struct powernv_smp_call_data freq_data;
+> > > drivers/cpufreq/exynos-cpufreq.c: In function 'exynos_cpufreq_probe':
+> > > drivers/cpufreq/exynos-cpufreq.c:166:2: error: implicit declaration of
+> > > function 'soc_is_exynos4210'
+> > > [-Werror=implicit-function-declaration]
+> > > drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration of
+> > > function 'soc_is_exynos4212'
+> > > [-Werror=implicit-function-declaration]
+> > > drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration of
+> > > function 'soc_is_exynos4412'
+> > > [-Werror=implicit-function-declaration]
+> > > drivers/cpufreq/exynos-cpufreq.c:170:2: error: implicit declaration of
+> > > function 'soc_is_exynos5250'
+> > > [-Werror=implicit-function-declaration]
+> > > cc1: some warnings being treated as errors
+> > > make[2]: *** [drivers/cpufreq/exynos-cpufreq.o] Error 1
+> > > make[2]: *** Waiting for unfinished jobs....
+> > > drivers/cpufreq/exynos4x12-cpufreq.c: In function 'exynos4x12_set_clkdiv':
+> > > drivers/cpufreq/exynos4x12-cpufreq.c:118:2: error: implicit declaration of
+> > > function 'soc_is_exynos4212'
+> > > [-Werror=implicit-function-declaration]
+> > > cc1: some warnings being treated as errors
+> > > make[2]: *** [drivers/cpufreq/exynos4x12-cpufreq.o] Error 1
+> > > make[1]: *** [drivers/cpufreq] Error 2
+> > > This fixes above error with getting SoC information via
+> > > of_machine_is_compatible() instead of soc_is_exynosXXXX().
 > > > 
+> > 
+> > Probably,
+> > Suggested-by: Tomasz Figa ?
+> > 
+> > > Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
+> > 
+> > Looks better.
+> > 
+> > Rafael, if you have no objection on this, shall I pick this into samsung
+> > tree for 3.16 because of the current build breakage with enabling exynos
+> > cpufreq?
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please go ahead.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Actually, this conflicts with one patch already in my tree.  The resoultion
+is quite obvious, but it would be better to avoid this conflict altogether.
+
+Rafael
+
