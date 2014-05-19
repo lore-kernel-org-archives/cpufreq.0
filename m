@@ -1,102 +1,249 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: remove race while accessing cur_policy
-Date: Mon, 19 May 2014 12:16:01 +0530
-Message-ID: <CAKohpo=F6ARNEOTX07d3OyVdKmq3pfsY3P87y3Ofbjqpj2X9zg@mail.gmail.com>
-References: <1400475241-21174-1-git-send-email-bbasu@nvidia.com>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Mon, 19 May 2014 18:19:49 +0200
+Message-ID: <20140519161949.GG16662@pengutronix.de>
+References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
+ <20140515073816.GI16662@pengutronix.de>
+ <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1400475241-21174-1-git-send-email-bbasu@nvidia.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bibek Basu <bbasu@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 19 May 2014 10:24, Bibek Basu <bbasu@nvidia.com> wrote:
-> While accessing cur_policy during executing events
-> CPUFREQ_GOV_START, CPUFREQ_GOV_STOP, CPUFREQ_GOV_LIMITS,
-> same mutex lock is not taken, dbs_data->mutex, which leads
-> to race and data corruption while running continious suspend
-> resume test. This is seen with ondemand governor with suspend
-> resume test using rtcwake.
->
-> [ 367.405875] Unable to handle kernel NULL pointer dereference at virtual address 00000028
-> [ 367.427534] pgd = ed610000
-> [ 367.427545] [00000028] *pgd=adf11831, *pte=00000000, *ppte=00000000
-> [ 367.427555] Internal error: Oops: 17 [#1] PREEMPT SMP ARM
-> [ 367.427564] Modules linked in: nvhost_vi
-> [ 367.427573] CPU: 1 PID: 3243 Comm: rtcwake Not tainted 3.10.24-gf5cf9e5 #1
-> [ 367.427578] task: ee708040 ti: ed61c000 task.ti: ed61c000
-> [ 367.427589] PC is at cpufreq_governor_dbs+0x400/0x634
-> [ 367.427594] LR is at cpufreq_governor_dbs+0x3f8/0x634
-> [ 367.427600] pc : [<c05652b8>] lr : [<c05652b0>] psr: 600f0013
-> [ 367.427600] sp : ed61dcb0 ip : 000493e0 fp : c1cc14f0
-> [ 367.427604] r10: 00000000 r9 : 00000000 r8 : 00000000
-> [ 367.427608] r7 : eb725280 r6 : c1cc1560 r5 : eb575200 r4 : ebad7740
-> [ 367.427612] r3 : ee708040 r2 : ed61dca8 r1 : 001ebd24 r0 : 00000000
-> [ 367.427618] Flags: nZCv IRQs on FIQs on Mode SVC_32 ISA ARM Segment user
-> [ 367.427622] Control: 10c5387d Table: ad61006a DAC: 00000015
-> [ 367.429201] [<c05652b8>] (cpufreq_governor_dbs+0x400/0x634) from [<c055f700>] (__cpufreq_governor+0x98/0x1b4)
-> [ 367.429216] [<c055f700>] (__cpufreq_governor+0x98/0x1b4) from [<c0560770>] (__cpufreq_set_policy+0x250/0x320)
-> [ 367.429226] [<c0560770>] (__cpufreq_set_policy+0x250/0x320) from [<c0561dcc>] (cpufreq_update_policy+0xcc/0x168)
-> [ 367.429235] [<c0561dcc>] (cpufreq_update_policy+0xcc/0x168) from [<c0561ed0>] (cpu_freq_notify+0x68/0xdc)
-> [ 367.429253] [<c0561ed0>] (cpu_freq_notify+0x68/0xdc) from [<c008eff8>] (notifier_call_chain+0x4c/0x8c)
-> [ 367.429270] [<c008eff8>] (notifier_call_chain+0x4c/0x8c) from [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68)
-> [ 367.429283] [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68) from [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28)
-> [ 367.429301] [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28) from [<c00aac6c>] (pm_qos_update_bounded_target+0xd8/0x310)
-> [ 367.429314] [<c00aac6c>] (pm_qos_update_bounded_target+0xd8/0x310) from [<c00ab3b0>] (__pm_qos_update_request+0x64/0x70)
-> [ 367.429328] [<c00ab3b0>] (__pm_qos_update_request+0x64/0x70) from [<c004b4b8>] (tegra_pm_notify+0x114/0x134)
-> [ 367.429342] [<c004b4b8>] (tegra_pm_notify+0x114/0x134) from [<c008eff8>] (notifier_call_chain+0x4c/0x8c)
-> [ 367.429355] [<c008eff8>] (notifier_call_chain+0x4c/0x8c) from [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68)
-> [ 367.429366] [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68) from [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28)
-> [ 367.429376] [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28) from [<c00ac228>] (pm_notifier_call_chain+0x1c/0x34)
-> [ 367.429389] [<c00ac228>] (pm_notifier_call_chain+0x1c/0x34) from [<c00ad38c>] (enter_state+0xec/0x128)
-> [ 367.429399] [<c00ad38c>] (enter_state+0xec/0x128) from [<c00ad400>] (pm_suspend+0x38/0xa4)
-> [ 367.429407] [<c00ad400>] (pm_suspend+0x38/0xa4) from [<c00ac114>] (state_store+0x70/0xc0)
-> [ 367.429423] [<c00ac114>] (state_store+0x70/0xc0) from [<c027b1e8>] (kobj_attr_store+0x14/0x20)
-> [ 367.429443] [<c027b1e8>] (kobj_attr_store+0x14/0x20) from [<c019cd9c>] (sysfs_write_file+0x104/0x184)
-> [ 367.429460] [<c019cd9c>] (sysfs_write_file+0x104/0x184) from [<c0143038>] (vfs_write+0xd0/0x19c)
-> [ 367.429472] [<c0143038>] (vfs_write+0xd0/0x19c) from [<c0143414>] (SyS_write+0x4c/0x78)
-> [ 367.429485] [<c0143414>] (SyS_write+0x4c/0x78) from [<c000f080>] (ret_fast_syscall+0x0/0x30)
-> [ 367.429495] Code: e1a00006 eb084346 e59b0020 e5951024 (e5903028)
-> [ 367.429533] ---[ end trace 0488523c8f6b0f9d ]---
->
-> Signed-off-by: Bibek Basu <bbasu@nvidia.com>
+Hi S=F6ren,
+
+On Sun, May 18, 2014 at 05:51:05PM -0700, S=F6ren Brinkmann wrote:
+> ------------------8<-----------------8<---------------------8<-------=
+------8<---
+> From: Soren Brinkmann <soren.brinkmann@xilinx.com>
+> Date: Tue, 2 Apr 2013 10:08:13 -0700
+> Subject: [PATCH] clk: Introduce 'clk_round_rate_nearest()'
+>=20
+> Introduce a new API function to round a rate to the closest possible
+> rate the HW clock can generate.
+> In contrast to 'clk_round_rate()' which works similar, but always ret=
+urns
+> a frequency <=3D its input rate.
+>=20
+> Cc: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
 > ---
->  drivers/cpufreq/cpufreq_governor.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index ba43991..e1c6433 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -366,6 +366,11 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->                 break;
->
->         case CPUFREQ_GOV_LIMITS:
-> +               mutex_lock(&dbs_data->mutex);
-> +               if (!cpu_cdbs->cur_policy) {
-> +                       mutex_unlock(&dbs_data->mutex);
-> +                       break;
-> +               }
->                 mutex_lock(&cpu_cdbs->timer_mutex);
->                 if (policy->max < cpu_cdbs->cur_policy->cur)
->                         __cpufreq_driver_target(cpu_cdbs->cur_policy,
-> @@ -375,6 +380,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->                                         policy->min, CPUFREQ_RELATION_L);
->                 dbs_check_cpu(dbs_data, cpu);
->                 mutex_unlock(&cpu_cdbs->timer_mutex);
-> +               mutex_unlock(&dbs_data->mutex);
->                 break;
->         }
->         return 0;
+>  drivers/clk/clk.c   | 43 +++++++++++++++++++++++++++++++++++++++++--
+>  include/linux/clk.h | 14 ++++++++++++--
+>  2 files changed, 53 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index dff0373f53c1..faf24d0569df 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -1011,8 +1011,9 @@ unsigned long __clk_round_rate(struct clk *clk,=
+ unsigned long rate)
+>   * @rate: the rate which is to be rounded
+>   *
+>   * Takes in a rate as input and rounds it to a rate that the clk can=
+ actually
+> - * use which is then returned.  If clk doesn't support round_rate op=
+eration
+> - * then the parent rate is returned.
+> + * use and does not exceed the requested frequency, which is then re=
+turned.
+> + * If clk doesn't support round_rate operation then the parent rate
+> + * is returned.
+>   */
+>  long clk_round_rate(struct clk *clk, unsigned long rate)
+>  {
+> @@ -1027,6 +1028,44 @@ long clk_round_rate(struct clk *clk, unsigned =
+long rate)
+>  EXPORT_SYMBOL_GPL(clk_round_rate);
+> =20
+>  /**
+> + * clk_round_rate_nearest - round the given rate for a clk
+> + * @clk: the clk for which we are rounding a rate
+> + * @rate: the rate which is to be rounded
+> + *
+> + * Takes in a rate as input and rounds it to the closest rate that t=
+he clk
+> + * can actually use which is then returned. If clk doesn't support
+> + * round_rate operation then the parent rate is returned.
+> + */
+> +long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
+Why does this function doesn't return an unsigned long when it never
+returns a negative value? Ditto for clk_round_rate?
 
-Thanks, makes sense.
+> +{
+> +	unsigned long lower, upper, cur, lower_last, upper_last;
+> +
+> +	lower =3D clk_round_rate(clk, rate);
+> +	if (lower >=3D rate)
+> +		return lower;
+Is the >-case worth a warning?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> +
+> +	upper =3D clk_round_rate(clk, rate + rate - lower);
+This was parenthesized in my original patch on purpose. If rate is big
 
-@Rafael: The most relevant patch I could find after which it broke badly
-: 419e172 cpufreq: don't leave stale policy pointer in cdbs->cur_policy
+	rate + rate - lower
 
-And so for stable: 3.11+
+might overflow when
+
+	rate + (rate - lower)
+
+doesn't. Thinking again, there is no real problem, because this is
+unsigned arithmetic. To be save we still need to check if rate + (rate =
+-
+lower) overflows.
+
+> +	if (upper =3D=3D lower)
+if (upper <=3D rate) is the better check here. (=3D would be a bug.)
+
+> +		return upper;
+> +
+> +	lower =3D rate + 1;
+ok, so your loop invariant is that the best freq is in [lower; upper].
+
+> +	do {
+> +		upper_last =3D upper;
+> +		lower_last =3D lower;
+> +
+> +		cur =3D clk_round_rate(clk, lower + ((upper - lower) >> 1));
+> +		if (cur < lower)
+> +			lower +=3D (upper - lower) >> 1;
+You already know that lower + ((upper - lower) >> 1) is too small, so
+you can better do
+
+	lower +=3D ((upper - lower) >> 1) + 1;
+
+> +		else
+> +			upper =3D cur;
+> +
+> +	} while (lower_last !=3D lower && upper_last !=3D upper);
+> +
+> +	return upper;
+> +}
+> +EXPORT_SYMBOL_GPL(clk_round_rate_nearest);
+I think the function still has potential for optimisation, what about:
+
+unsigned long clk_round_rate_nearest(struct clk *clk, unsigned long rat=
+e)
+{
+	unsigned long lower, upper, rounded;
+
+	rounded =3D clk_round_rate(clk, rate);
+
+	if (rounded >=3D rate)
+		return rounded;
+
+	/*
+	 * rounded is the best approximation for rate that is not
+	 * bigger than rate. If there is a better one, it must be in the
+	 * interval (rate; rate + (rate - rounded)).
+	 * Note that the upper limit isn't better than rate itself, so
+	 * that one doesn't need to be considered.
+	 */
+	=20
+	upper =3D rate + (rate - rounded) - 1;
+	if (upper < rate)
+		upper =3D ULONG_MAX;=20
+
+	upper =3D clk_round_rate(clk, upper);
+
+	lower =3D rate + 1;
+
+	/*
+	 * If there is a better approximation than clk_round_rate(clk,
+	 * rate), it is in the interval [lower, upper]. Otherwise all
+	 * values in this interval yield clk_round_rate(clk, rate).
+	 */
+	while (lower < upper) {
+		unsigned long mid;
+
+		mid =3D lower + (upper - lower) >> 1;
+		rounded =3D clk_round_rate(clk, mid);
+
+		if (rounded < rate) {
+			/* implies rounded =3D=3D clk_round_rate(clk, rate); */
+			lower =3D mid + 1;
+		} else {
+			/*
+			 * rounded is a better approximation than lower
+			 * assuming that rounded <=3D mid
+			 */
+			upper =3D rounded;
+		}
+	}
+
+	/*
+	 * upper is always assigned a return value from clk_round_rate,
+	 * so it's suitable for direct return.
+	 */
+	return upper;
+}
+
+? Note this is not even compile tested ...
+
+=09
+> +
+> +/**
+>   * __clk_notify - call clk notifier chain
+>   * @clk: struct clk * that is changing rate
+>   * @msg: clk notifier type (see include/linux/clk.h)
+> diff --git a/include/linux/clk.h b/include/linux/clk.h
+> index fb5e097d8f72..2f83bf030ac6 100644
+> --- a/include/linux/clk.h
+> +++ b/include/linux/clk.h
+> @@ -255,15 +255,25 @@ void devm_clk_put(struct device *dev, struct cl=
+k *clk);
+> =20
+> =20
+>  /**
+> - * clk_round_rate - adjust a rate to the exact rate a clock can prov=
+ide
+> + * clk_round_rate - round a rate to the exact rate a clock can provi=
+de not
+> + *		    exceeding @rate
+>   * @clk: clock source
+>   * @rate: desired clock rate in Hz
+>   *
+> - * Returns rounded clock rate in Hz, or negative errno.
+> + * Returns rounded clock rate in Hz, or parent rate
+>   */
+I'd put the changes in this hunk up to here into a separate patch.
+
+Best regards
+Uwe
+
+>  long clk_round_rate(struct clk *clk, unsigned long rate);
+> =20
+>  /**
+> + * clk_round_rate_nearest - round a rate to the exact rate a clock c=
+an provide
+> + * @clk: the clk for which we are rounding a rate
+> + * @rate: the rate which is to be rounded
+> + *
+> + * Returns rounded clock rate in Hz, or parent rate
+> + */
+> +long clk_round_rate_nearest(struct clk *clk, unsigned long rate);
+> +
+> +/**
+>   * clk_set_rate - set the clock rate for a clock source
+>   * @clk: clock source
+>   * @rate: desired clock rate in Hz
+> --=20
+> 1.9.3.1.ga73a6ad
+>=20
+>=20
+>=20
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
+    |
+Industrial Linux Solutions                 | http://www.pengutronix.de/=
+  |
