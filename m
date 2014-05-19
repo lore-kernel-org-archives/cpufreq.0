@@ -1,153 +1,100 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Sun, 18 May 2014 17:51:05 -0700
-Message-ID: <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
- <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
- <20140515073816.GI16662@pengutronix.de>
+From: Bibek Basu <bbasu@nvidia.com>
+Subject: [PATCH] cpufreq: remove race while accessing cur_policy
+Date: Mon, 19 May 2014 10:24:01 +0530
+Message-ID: <1400475241-21174-1-git-send-email-bbasu@nvidia.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140515073816.GI16662@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Bibek Basu <bbasu@nvidia.com>
 
-Hi,
+While accessing cur_policy during executing events
+CPUFREQ_GOV_START, CPUFREQ_GOV_STOP, CPUFREQ_GOV_LIMITS,
+same mutex lock is not taken, dbs_data->mutex, which leads
+to race and data corruption while running continious suspend
+resume test. This is seen with ondemand governor with suspend
+resume test using rtcwake.
 
-I spent some time finding an alternative implementation for
-clk_round_rate_nearest, the result can be found below.
-I hope this is closer to a working implementation.
+[ 367.405875] Unable to handle kernel NULL pointer dereference at virtual address 00000028
+[ 367.427534] pgd = ed610000
+[ 367.427545] [00000028] *pgd=adf11831, *pte=00000000, *ppte=00000000
+[ 367.427555] Internal error: Oops: 17 [#1] PREEMPT SMP ARM
+[ 367.427564] Modules linked in: nvhost_vi
+[ 367.427573] CPU: 1 PID: 3243 Comm: rtcwake Not tainted 3.10.24-gf5cf9e5 #1
+[ 367.427578] task: ee708040 ti: ed61c000 task.ti: ed61c000
+[ 367.427589] PC is at cpufreq_governor_dbs+0x400/0x634
+[ 367.427594] LR is at cpufreq_governor_dbs+0x3f8/0x634
+[ 367.427600] pc : [<c05652b8>] lr : [<c05652b0>] psr: 600f0013
+[ 367.427600] sp : ed61dcb0 ip : 000493e0 fp : c1cc14f0
+[ 367.427604] r10: 00000000 r9 : 00000000 r8 : 00000000
+[ 367.427608] r7 : eb725280 r6 : c1cc1560 r5 : eb575200 r4 : ebad7740
+[ 367.427612] r3 : ee708040 r2 : ed61dca8 r1 : 001ebd24 r0 : 00000000
+[ 367.427618] Flags: nZCv IRQs on FIQs on Mode SVC_32 ISA ARM Segment user
+[ 367.427622] Control: 10c5387d Table: ad61006a DAC: 00000015
+[ 367.429201] [<c05652b8>] (cpufreq_governor_dbs+0x400/0x634) from [<c055f700>] (__cpufreq_governor+0x98/0x1b4)
+[ 367.429216] [<c055f700>] (__cpufreq_governor+0x98/0x1b4) from [<c0560770>] (__cpufreq_set_policy+0x250/0x320)
+[ 367.429226] [<c0560770>] (__cpufreq_set_policy+0x250/0x320) from [<c0561dcc>] (cpufreq_update_policy+0xcc/0x168)
+[ 367.429235] [<c0561dcc>] (cpufreq_update_policy+0xcc/0x168) from [<c0561ed0>] (cpu_freq_notify+0x68/0xdc)
+[ 367.429253] [<c0561ed0>] (cpu_freq_notify+0x68/0xdc) from [<c008eff8>] (notifier_call_chain+0x4c/0x8c)
+[ 367.429270] [<c008eff8>] (notifier_call_chain+0x4c/0x8c) from [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68)
+[ 367.429283] [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68) from [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28)
+[ 367.429301] [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28) from [<c00aac6c>] (pm_qos_update_bounded_target+0xd8/0x310)
+[ 367.429314] [<c00aac6c>] (pm_qos_update_bounded_target+0xd8/0x310) from [<c00ab3b0>] (__pm_qos_update_request+0x64/0x70)
+[ 367.429328] [<c00ab3b0>] (__pm_qos_update_request+0x64/0x70) from [<c004b4b8>] (tegra_pm_notify+0x114/0x134)
+[ 367.429342] [<c004b4b8>] (tegra_pm_notify+0x114/0x134) from [<c008eff8>] (notifier_call_chain+0x4c/0x8c)
+[ 367.429355] [<c008eff8>] (notifier_call_chain+0x4c/0x8c) from [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68)
+[ 367.429366] [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68) from [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28)
+[ 367.429376] [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28) from [<c00ac228>] (pm_notifier_call_chain+0x1c/0x34)
+[ 367.429389] [<c00ac228>] (pm_notifier_call_chain+0x1c/0x34) from [<c00ad38c>] (enter_state+0xec/0x128)
+[ 367.429399] [<c00ad38c>] (enter_state+0xec/0x128) from [<c00ad400>] (pm_suspend+0x38/0xa4)
+[ 367.429407] [<c00ad400>] (pm_suspend+0x38/0xa4) from [<c00ac114>] (state_store+0x70/0xc0)
+[ 367.429423] [<c00ac114>] (state_store+0x70/0xc0) from [<c027b1e8>] (kobj_attr_store+0x14/0x20)
+[ 367.429443] [<c027b1e8>] (kobj_attr_store+0x14/0x20) from [<c019cd9c>] (sysfs_write_file+0x104/0x184)
+[ 367.429460] [<c019cd9c>] (sysfs_write_file+0x104/0x184) from [<c0143038>] (vfs_write+0xd0/0x19c)
+[ 367.429472] [<c0143038>] (vfs_write+0xd0/0x19c) from [<c0143414>] (SyS_write+0x4c/0x78)
+[ 367.429485] [<c0143414>] (SyS_write+0x4c/0x78) from [<c000f080>] (ret_fast_syscall+0x0/0x30)
+[ 367.429495] Code: e1a00006 eb084346 e59b0020 e5951024 (e5903028)
+[ 367.429533] ---[ end trace 0488523c8f6b0f9d ]---
 
-	Thanks,
-	S=C3=B6ren
-
-
-------------------8<-----------------8<---------------------8<---------=
-----8<---
-=46rom: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Date: Tue, 2 Apr 2013 10:08:13 -0700
-Subject: [PATCH] clk: Introduce 'clk_round_rate_nearest()'
-
-Introduce a new API function to round a rate to the closest possible
-rate the HW clock can generate.
-In contrast to 'clk_round_rate()' which works similar, but always retur=
-ns
-a frequency <=3D its input rate.
-
-Cc: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Signed-off-by: Bibek Basu <bbasu@nvidia.com>
 ---
- drivers/clk/clk.c   | 43 +++++++++++++++++++++++++++++++++++++++++--
- include/linux/clk.h | 14 ++++++++++++--
- 2 files changed, 53 insertions(+), 4 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-index dff0373f53c1..faf24d0569df 100644
---- a/drivers/clk/clk.c
-+++ b/drivers/clk/clk.c
-@@ -1011,8 +1011,9 @@ unsigned long __clk_round_rate(struct clk *clk, u=
-nsigned long rate)
-  * @rate: the rate which is to be rounded
-  *
-  * Takes in a rate as input and rounds it to a rate that the clk can a=
-ctually
-- * use which is then returned.  If clk doesn't support round_rate oper=
-ation
-- * then the parent rate is returned.
-+ * use and does not exceed the requested frequency, which is then retu=
-rned.
-+ * If clk doesn't support round_rate operation then the parent rate
-+ * is returned.
-  */
- long clk_round_rate(struct clk *clk, unsigned long rate)
- {
-@@ -1027,6 +1028,44 @@ long clk_round_rate(struct clk *clk, unsigned lo=
-ng rate)
- EXPORT_SYMBOL_GPL(clk_round_rate);
-=20
- /**
-+ * clk_round_rate_nearest - round the given rate for a clk
-+ * @clk: the clk for which we are rounding a rate
-+ * @rate: the rate which is to be rounded
-+ *
-+ * Takes in a rate as input and rounds it to the closest rate that the=
- clk
-+ * can actually use which is then returned. If clk doesn't support
-+ * round_rate operation then the parent rate is returned.
-+ */
-+long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
-+{
-+	unsigned long lower, upper, cur, lower_last, upper_last;
-+
-+	lower =3D clk_round_rate(clk, rate);
-+	if (lower >=3D rate)
-+		return lower;
-+
-+	upper =3D clk_round_rate(clk, rate + rate - lower);
-+	if (upper =3D=3D lower)
-+		return upper;
-+
-+	lower =3D rate + 1;
-+	do {
-+		upper_last =3D upper;
-+		lower_last =3D lower;
-+
-+		cur =3D clk_round_rate(clk, lower + ((upper - lower) >> 1));
-+		if (cur < lower)
-+			lower +=3D (upper - lower) >> 1;
-+		else
-+			upper =3D cur;
-+
-+	} while (lower_last !=3D lower && upper_last !=3D upper);
-+
-+	return upper;
-+}
-+EXPORT_SYMBOL_GPL(clk_round_rate_nearest);
-+
-+/**
-  * __clk_notify - call clk notifier chain
-  * @clk: struct clk * that is changing rate
-  * @msg: clk notifier type (see include/linux/clk.h)
-diff --git a/include/linux/clk.h b/include/linux/clk.h
-index fb5e097d8f72..2f83bf030ac6 100644
---- a/include/linux/clk.h
-+++ b/include/linux/clk.h
-@@ -255,15 +255,25 @@ void devm_clk_put(struct device *dev, struct clk =
-*clk);
-=20
-=20
- /**
-- * clk_round_rate - adjust a rate to the exact rate a clock can provid=
-e
-+ * clk_round_rate - round a rate to the exact rate a clock can provide=
- not
-+ *		    exceeding @rate
-  * @clk: clock source
-  * @rate: desired clock rate in Hz
-  *
-- * Returns rounded clock rate in Hz, or negative errno.
-+ * Returns rounded clock rate in Hz, or parent rate
-  */
- long clk_round_rate(struct clk *clk, unsigned long rate);
-=20
- /**
-+ * clk_round_rate_nearest - round a rate to the exact rate a clock can=
- provide
-+ * @clk: the clk for which we are rounding a rate
-+ * @rate: the rate which is to be rounded
-+ *
-+ * Returns rounded clock rate in Hz, or parent rate
-+ */
-+long clk_round_rate_nearest(struct clk *clk, unsigned long rate);
-+
-+/**
-  * clk_set_rate - set the clock rate for a clock source
-  * @clk: clock source
-  * @rate: desired clock rate in Hz
---=20
-1.9.3.1.ga73a6ad
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index ba43991..e1c6433 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -366,6 +366,11 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 		break;
+ 
+ 	case CPUFREQ_GOV_LIMITS:
++		mutex_lock(&dbs_data->mutex);
++		if (!cpu_cdbs->cur_policy) {
++			mutex_unlock(&dbs_data->mutex);
++			break;
++		}
+ 		mutex_lock(&cpu_cdbs->timer_mutex);
+ 		if (policy->max < cpu_cdbs->cur_policy->cur)
+ 			__cpufreq_driver_target(cpu_cdbs->cur_policy,
+@@ -375,6 +380,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 					policy->min, CPUFREQ_RELATION_L);
+ 		dbs_check_cpu(dbs_data, cpu);
+ 		mutex_unlock(&cpu_cdbs->timer_mutex);
++		mutex_unlock(&dbs_data->mutex);
+ 		break;
+ 	}
+ 	return 0;
+-- 
+1.8.1.5
 
+
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
