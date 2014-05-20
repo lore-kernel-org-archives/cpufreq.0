@@ -1,86 +1,72 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [PATCH v3] cpufreq: exynos:  Fix the compile error
-Date: Tue, 20 May 2014 09:29:36 +0900
-Message-ID: <013c01cf73c2$94289150$bc79b3f0$@samsung.com>
-References: <000001cf70f0$2e48f930$8adaeb90$@samsung.com>
- <037e01cf70f5$25b374d0$711a5e70$@samsung.com>
- <2553916.Pl2B0tVZGR@vostro.rjw.lan> <1655043.7FHqnunz6p@vostro.rjw.lan>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Tue, 20 May 2014 09:51:58 +0200
+Message-ID: <20140520075158.GK16662@pengutronix.de>
+References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
+ <20140515073816.GI16662@pengutronix.de>
+ <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
+ <20140519161949.GG16662@pengutronix.de>
+ <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
+ <df742b46-c630-49ea-b234-4d746bb66ec1@BL2FFO11FD040.protection.gbl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1655043.7FHqnunz6p@vostro.rjw.lan>
-Content-language: ko
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <df742b46-c630-49ea-b234-4d746bb66ec1@BL2FFO11FD040.protection.gbl>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Jonghwan Choi' <jhbird.choi@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, cpufreq@vger.kernel.org, 'Jonghwan Choi' <jhbird.choi@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Tomasz Figa' <t.figa@samsung.com>
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Rafael J. Wysocki wrote:
-> 
-> On Saturday, May 17, 2014 01:04:29 AM Rafael J. Wysocki wrote:
-> > On Friday, May 16, 2014 07:54:01 PM Kukjin Kim wrote:
-> > > Jonghwan Choi wrote:
-> > > >
-> > > > Commit 7da83a80 ("ARM: EXYNOS: Migrate Exynos specific macros from
-> plat to
-> > > > mach") which lands in samsung tree causes build breakage
-> > > > for cpufreq-exynos like following:
-> > > >
-> > > > drivers/cpufreq/exynos-cpufreq.c: In function 'exynos_cpufreq_probe':
-> > > > drivers/cpufreq/exynos-cpufreq.c:166:2: error: implicit declaration
-> of
-> > > > function 'soc_is_exynos4210'
-> > > > [-Werror=implicit-function-declaration]
-> > > > drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration
-> of
-> > > > function 'soc_is_exynos4212'
-> > > > [-Werror=implicit-function-declaration]
-> > > > drivers/cpufreq/exynos-cpufreq.c:168:2: error: implicit declaration
-> of
-> > > > function 'soc_is_exynos4412'
-> > > > [-Werror=implicit-function-declaration]
-> > > > drivers/cpufreq/exynos-cpufreq.c:170:2: error: implicit declaration
-> of
-> > > > function 'soc_is_exynos5250'
-> > > > [-Werror=implicit-function-declaration]
-> > > > cc1: some warnings being treated as errors
-> > > > make[2]: *** [drivers/cpufreq/exynos-cpufreq.o] Error 1
-> > > > make[2]: *** Waiting for unfinished jobs....
-> > > > drivers/cpufreq/exynos4x12-cpufreq.c: In function
-> 'exynos4x12_set_clkdiv':
-> > > > drivers/cpufreq/exynos4x12-cpufreq.c:118:2: error: implicit
-> declaration of
-> > > > function 'soc_is_exynos4212'
-> > > > [-Werror=implicit-function-declaration]
-> > > > cc1: some warnings being treated as errors
-> > > > make[2]: *** [drivers/cpufreq/exynos4x12-cpufreq.o] Error 1
-> > > > make[1]: *** [drivers/cpufreq] Error 2
-> > > > This fixes above error with getting SoC information via
-> > > > of_machine_is_compatible() instead of soc_is_exynosXXXX().
-> > > >
-> > >
-> > > Probably,
-> > > Suggested-by: Tomasz Figa ?
-> > >
-> > > > Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
-> > >
-> > > Looks better.
-> > >
-> > > Rafael, if you have no objection on this, shall I pick this into
-> samsung
-> > > tree for 3.16 because of the current build breakage with enabling
-> exynos
-> > > cpufreq?
-> >
-> > Please go ahead.
-> 
-> Actually, this conflicts with one patch already in my tree.  The
-> resoultion
-> is quite obvious, but it would be better to avoid this conflict altogether.
-> 
-Yeah. If you don't mind, shall I pick the patch (commit e5eaa445b0dc)into samsung tree with your ack?
+Hello,
 
-Thanks,
-Kukjin
+On Mon, May 19, 2014 at 10:29:05AM -0700, S=F6ren Brinkmann wrote:
+> With the improvements suggested by you I have this now:
+>=20
+> long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
+> {
+> 	unsigned long lower, upper;
+>=20
+> 	lower =3D clk_round_rate(clk, rate);
+> 	if (lower >=3D rate)
+> 		return lower;
+>=20
+> 	upper =3D clk_round_rate(clk, rate + (rate - lower) - 1);
+> 	if (upper =3D=3D lower)
+> 		return upper;
+>=20
+> 	lower =3D rate + 1;
+> 	while (lower < upper) {
+> 		unsigned long rounded, mid;
+>=20
+> 		mid =3D lower + ((upper - lower) >> 1);
+> 		rounded =3D clk_round_rate(clk, mid);
+> 		if (rounded < lower)
+> 			lower =3D mid + 1;
+> 		else
+> 			upper =3D rounded;
+> 	}
+>=20
+> 	return upper;
+> }
+This is nearly my version now. I just lacks the overflow check when
+calculating upper and I skipped the early return if (upper =3D=3D lower=
+).
+(Instead the while condition evaluates to false on the first hit and
+returns with the same result.)
 
+Other than that I added a few comments. :-)
+
+Something we still should resolve is the return type. It should match
+clk_round_rate, but should both be signed or unsigned?=20
+
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
+    |
+Industrial Linux Solutions                 | http://www.pengutronix.de/=
+  |
