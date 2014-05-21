@@ -1,95 +1,118 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Wed, 21 May 2014 09:34:57 +0200
-Message-ID: <20140521073457.GD31687@pengutronix.de>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
- <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
- <20140515073816.GI16662@pengutronix.de>
- <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
- <20140519161949.GG16662@pengutronix.de>
- <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
- <20140520073358.GJ16662@pengutronix.de>
- <4bb5f44a-60bb-4e34-8f88-f91b8419be8d@BL2FFO11FD050.protection.gbl>
- <537B957B.5010001@codeaurora.org>
- <668683e3-856e-4f30-9b11-8f3e91e12d1d@BL2FFO11FD038.protection.gbl>
+From: Johan Hovold <jhovold@gmail.com>
+Subject: Re: Performance regression in v3.14
+Date: Wed, 21 May 2014 11:00:51 +0200
+Message-ID: <20140521090051.GO21412@localhost>
+References: <20140506163559.GA5308@localhost>
+ <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
+ <536A3EE9.5050409@intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=uv3JoNV+MIon4TwnDWgKBi9ZhE5/n4fLC+qgkVi3ySs=;
+        b=CN06bEeiDHP/53UMFPpGbSOFCt6Oj8yo858fGCJjVcBO5Ts+dYxXKHxrbS1FP9CbSJ
+         nbhVGHr1oAwDujH5aWiqh1GLhZGE9IeWLdoviS2aJaRiLMwSfwlT3K9CpoYNcy4eCZfR
+         RkF6Sa6inMPHYzW0W/o4RPeO355hwMsXY6e37SM2AvVA9Grb97STt0VLSlIKCPuqxKKp
+         Wv1zfUqpKbcpB/iHfF3rteWV1wGYR2YJBCLz4DU+185R/yiFuspgxZpMiiWSbi2IwHjT
+         CAVNusHkmkk9KpctmjS2spn+tbQ0tIsW9+y72NNSQtVThmCRUfOcmF2p20EWHoeW45fk
+         g50w==
 Content-Disposition: inline
-In-Reply-To: <668683e3-856e-4f30-9b11-8f3e91e12d1d@BL2FFO11FD038.protection.gbl>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <536A3EE9.5050409@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Russell King <linux@arm.linux.org.uk>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Johan Hovold <jhovold@gmail.com>, dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hello,
+On Wed, May 07, 2014 at 07:10:49AM -0700, Dirk Brandewie wrote:
+> On 05/06/2014 10:40 PM, Viresh Kumar wrote:
+> > Cc'ing Dirk who is taking care of intel-pstate driver.
+> >
+> 
+> Thanks Viresh I had seen this thread.
+> 
+> I am looking into it
 
-On Tue, May 20, 2014 at 02:48:20PM -0700, S=F6ren Brinkmann wrote:
-> On Tue, 2014-05-20 at 10:48AM -0700, Stephen Boyd wrote:
-> > On 05/20/14 09:01, S=F6ren Brinkmann wrote:
-> > >
-> > >>>>> +{
-> > >>>>> +	unsigned long lower, upper, cur, lower_last, upper_last;
-> > >>>>> +
-> > >>>>> +	lower =3D clk_round_rate(clk, rate);
-> > >>>>> +	if (lower >=3D rate)
-> > >>>>> +		return lower;
-> > >>>> Is the >-case worth a warning?
-> > >>> No, it's correct behavior. If you request a rate that is way lo=
-wer than what the
-> > >>> clock can generate, returning something larger is perfectly val=
-id, IMHO.
-> > >>> Which reveals one problem in this whole discussion. The API doe=
-s not
-> > >>> require clk_round_rate() to round down. It is actually an imple=
-mentation
-> > >>> choice that had been made for clk-divider.
-> > >> I'm sure it's more than an implementation choice for clk-divider=
-=2E But I
-> > >> don't find any respective documentation (but I didn't try hard).
-> > > A similar discussion - without final conclusion:
-> > > https://lkml.org/lkml/2010/7/14/260
-> > >
-> > >
-> >=20
-> > Please call this new API something like clk_find_nearest_rate() or
-> > something. clk_round_rate() is supposed to return the rate that wil=
-l be
-> > set if you call clk_set_rate() with the same arguments. It's up to =
-the
-> > implementation to decide if that means rounding the rate up or down=
- or
-> > to the nearest value.
->=20
-> Sounds good to me. Are there any cases of clocks that round up? I thi=
-nk
-> that case would not be handled correctly. But I also don't see a use
-> case for such an implementation.
-I don't really care which semantic (i.e. round up, round down or round
-closest) is picked, but I'd vote that all should pick up the same. I
-think the least surprising definition is to choose rounding down and ad=
-d
-the function that is under discussion here to get a nearest match.
+Any updates on this, Dirk? 3.14 is still basically unusable with the
+intel_pstate driver.
 
-So I suggest:
+Any fixes or workarounds posted elsewhere that I can apply in the
+meantime?
 
-	- if round_rate is given a rate that is smaller than the
-	  smallest available rate, return 0
-	- add WARN_ONCE to round_rate and set_rate if they return with a
-	  rate bigger than requested
-	- change the return values to unsigned long
+Thanks,
+Johan
 
-Do we also need a round_up implementation?
-
-Mike? Russell? Any thoughts from your side?
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
-    |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
+> > On 6 May 2014 22:05, Johan Hovold <jhovold@gmail.com> wrote:
+> >> After updating my main system from v3.13 to v3.14.2, I found that the
+> >> git bash-completion was extremely sluggish. Completing a file name would
+> >> take roughly six rather than one second on this Haswell machine
+> >> (i7-4770). (Other things, such as git rebase, also felt slower, but
+> >> the completion issue was much more obvious and easy to measure).
+> >>
+> >> I managed to reproduce the problem using the following minimal construct
+> >>
+> >>          cat dmesg.repeat | while read x; do true; done
+> >>
+> >> where dmesg.repeat is simply dmesg concatenated together to an
+> >> equivalent number of lines as produced by git ls-files in the
+> >> kernel-source tree root (45k), and where the actual processing of each
+> >> line has been removed.
+> >>
+> >> Most of the time I get:
+> >>
+> >>          $ time cat dmesg.repeat | while read x; do true; done
+> >>
+> >>          real    0m6.091s
+> >>          user    0m3.674s
+> >>          sys     0m2.447s
+> >>
+> >> but sometimes it only takes one second.
+> >>
+> >>          $ time cat dmesg.repeat | while read x; do true; done
+> >>
+> >>          real    0m1.100s
+> >>          user    0m0.544s
+> >>          sys     0m0.570s
+> >>
+> >> I don't seem to be able to reproduce the problem on 3.13 where the pipe
+> >> always takes about one second to finish.
+> >>
+> >> Taking all but one core offline seems to make the problem go away, and so
+> >> does using the performance rather than powersave governor of the
+> >> intel_pstate cpufreq driver (on at least one of two online cores).
+> >>
+> >> Moving the mouse cursor makes to loop finish faster, and so does
+> >> switching to a another terminal to print cpufreq/cpuinfo_cur_freq which
+> >> was around cpuinfo_min_freq several times (when tracing, see below).
+> >>
+> >> I could not reproduce the problem when using perf record, but I can get
+> >> function-profile traces using ftrace (in which case the loop takes about
+> >> 60 seconds instead of six seconds to finish).
+> >>
+> >> Comparing the traces I see a lot of functions taking ten times longer to
+> >> finish, but I guess that's expected if this is indeed a cpufreq issue.
+> >>
+> >> Since this is my main machine (and only multi-core machine at the
+> >> moment) I'm not able to bisect this myself. And for the same reason I
+> >> have not verified that the problem persists in v3.15-rc.
+> >>
+> >> I don't see any cpufreq patches in the v3.14.3 stable queue nor anything
+> >> obviously related and marked for stable in v3.15-rc.
+> >>
+> >> Any ideas about what might be going on?
+> >
+> > I tried to take a look at the diff for cpufreq between 3.13 and 3.14.2 and
+> > couldn't pin point on any change which might cause it. Don't have a clue
+> > of what's going on. I don't know how to help you on this.
+> >
+> > Normally I test my stuff on a ARM board and I don't remember facing
+> > any such behavior there. There might be something wrong with intel-pstate
+> > as well..
+> >
+> > Also, can you try to use acpi-cpufreq instead? And see how that is behaving?
+> >
+> > --
+> > viresh
