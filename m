@@ -1,9 +1,8 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+From: Mike Turquette <mturquette@linaro.org>
 Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Thu, 22 May 2014 16:44:53 -0700
-Message-ID: <a86642cb-855f-455f-b07c-a52bc6aa426f@BN1BFFO11FD050.protection.gbl>
+Date: Thu, 22 May 2014 18:37:32 -0700
+Message-ID: <20140523013732.9521.70820@quantum>
 References: <537B957B.5010001@codeaurora.org>
- <668683e3-856e-4f30-9b11-8f3e91e12d1d@BL2FFO11FD038.protection.gbl>
  <20140521073457.GD31687@pengutronix.de>
  <e9090453-ce40-4662-a3ea-fbdaffdb2aa4@BN1AFFO11FD046.protection.gbl>
  <20140521182308.GN31687@pengutronix.de> <20140521203300.9521.67546@quantum>
@@ -11,213 +10,165 @@ References: <537B957B.5010001@codeaurora.org>
  <20140522182040.GB20155@pengutronix.de>
  <6612b069-1228-488f-81f7-ea8839f6c468@BN1BFFO11FD029.protection.gbl>
  <20140522210328.9521.34889@quantum>
+ <a86642cb-855f-455f-b07c-a52bc6aa426f@BN1BFFO11FD050.protection.gbl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140522210328.9521.34889@quantum>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="utf-8"
-To: Mike Turquette <mturquette@linaro.org>
-Cc: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <a86642cb-855f-455f-b07c-a52bc6aa426f@BN1BFFO11FD050.protection.gbl>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: =?utf-8?q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>
+Cc: Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, "Rafael  J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org
 
-On Thu, 2014-05-22 at 02:03PM -0700, Mike Turquette wrote:
-> Quoting S=C3=B6ren Brinkmann (2014-05-22 13:32:09)
-> > On Thu, 2014-05-22 at 08:20PM +0200, Uwe Kleine-K=C3=B6nig wrote:
-> > > Hello S=C3=B6ren,
-> > >=20
-> > > On Thu, May 22, 2014 at 11:03:00AM -0700, S=C3=B6ren Brinkmann wr=
-ote:
-> > > > On Wed, 2014-05-21 at 01:33PM -0700, Mike Turquette wrote:
-> > > > > Quoting Uwe Kleine-K=C3=B6nig (2014-05-21 11:23:08)
-> > > > > > Hello S=C3=B6ren,
-> > > > > >=20
-> > > > > > On Wed, May 21, 2014 at 08:58:10AM -0700, S=C3=B6ren Brinkm=
-ann wrote:
-> > > > > > > On Wed, 2014-05-21 at 09:34AM +0200, Uwe Kleine-K=C3=B6ni=
-g wrote:
-> > > > > > > > On Tue, May 20, 2014 at 02:48:20PM -0700, S=C3=B6ren Br=
-inkmann wrote:
-> > > > > > > > > On Tue, 2014-05-20 at 10:48AM -0700, Stephen Boyd wro=
-te:
-> > > > > > > > > > On 05/20/14 09:01, S=C3=B6ren Brinkmann wrote:
-> > > > > > > > > > >
-> > > > > > > > > > >>>>> +{
-> > > > > > > > > > >>>>> + unsigned long lower, upper, cur, lower_last=
-, upper_last;
-> > > > > > > > > > >>>>> +
-> > > > > > > > > > >>>>> + lower =3D clk_round_rate(clk, rate);
-> > > > > > > > > > >>>>> + if (lower >=3D rate)
-> > > > > > > > > > >>>>> +         return lower;
-> > > > > > > > > > >>>> Is the >-case worth a warning?
-> > > > > > > > > > >>> No, it's correct behavior. If you request a rat=
-e that is way lower than what the
-> > > > > > > > > > >>> clock can generate, returning something larger =
-is perfectly valid, IMHO.
-> > > > > > > > > > >>> Which reveals one problem in this whole discuss=
-ion. The API does not
-> > > > > > > > > > >>> require clk_round_rate() to round down. It is a=
-ctually an implementation
-> > > > > > > > > > >>> choice that had been made for clk-divider.
-> > > > > > > > > > >> I'm sure it's more than an implementation choice=
- for clk-divider. But I
-> > > > > > > > > > >> don't find any respective documentation (but I d=
-idn't try hard).
-> > > > > > > > > > > A similar discussion - without final conclusion:
-> > > > > > > > > > > https://lkml.org/lkml/2010/7/14/260
-> > > > > > > > > > >
-> > > > > > > > > > >
-> > > > > > > > > >=20
-> > > > > > > > > > Please call this new API something like clk_find_ne=
-arest_rate() or
-> > > > > > > > > > something. clk_round_rate() is supposed to return t=
-he rate that will be
-> > > > > > > > > > set if you call clk_set_rate() with the same argume=
-nts. It's up to the
-> > > > > > > > > > implementation to decide if that means rounding the=
- rate up or down or
-> > > > > > > > > > to the nearest value.
-> > > > > > > > >=20
-> > > > > > > > > Sounds good to me. Are there any cases of clocks that=
- round up? I think
-> > > > > > > > > that case would not be handled correctly. But I also =
-don't see a use
-> > > > > > > > > case for such an implementation.
-> > > > > > > > I don't really care which semantic (i.e. round up, roun=
-d down or round
-> > > > > > > > closest) is picked, but I'd vote that all should pick u=
-p the same. I
-> > > > > > > > think the least surprising definition is to choose roun=
-ding down and add
-> > > > > > > > the function that is under discussion here to get a nea=
-rest match.
-> > > > > > > >=20
-> > > > > > > > So I suggest:
-> > > > > > > >=20
-> > > > > > > >     - if round_rate is given a rate that is smaller tha=
-n the
-> > > > > > > >       smallest available rate, return 0
-> > > > > > > >     - add WARN_ONCE to round_rate and set_rate if they =
-return with a
-> > > > > > > >       rate bigger than requested
-> > > > > > >=20
-> > > > > > > Why do you think 0 is always valid? I think for a clock t=
-hat can
-> > > > > > > generate 40, 70, 120, clk_round_rate(20) should return 40=
-=2E
-> > > > > > I didn't say it's a valid value. It just makes the it possi=
-ble to check
-> > > > > > for clk_round_rate(clk, rate) <=3D rate.
-> > > > > >=20
-> > > > > > I grepped a bit around and found da850_round_armrate which =
-implements a
-> > > > > > round_rate callback returning the best match.
-> > > > > > omap1_clk_round_rate_ckctl_arm can return a value < 0.
-> > > > > > s3c2412_roundrate_usbsrc can return values that are bigger =
-than
-> > > > > > requested. (I wonder if that is a bug though.)
-> > > > > >=20
-> > > > > > > >     - change the return values to unsigned long
-> > > > > > >=20
-> > > > > > > Yep, I agree, this should happen.
-> > > > > > And we're using 0 as error value? e.g. for the case where
-> > > > > > omap1_clk_round_rate_ckctl_arm returns -EIO now?
-> > > > >=20
-> > > > > No. clk_round_rate returns long for a reason, which is that w=
-e can
-> > > > > provide an error code to the caller. From include/linux/clk.h=
-:
-> > > > >=20
-> > > > > /**
-> > > > >  * clk_round_rate - adjust a rate to the exact rate a clock c=
-an provide
-> > > > >  * @clk: clock source
-> > > > >  * @rate: desired clock rate in Hz
-> > > > >  *
-> > > > >  * Returns rounded clock rate in Hz, or negative errno.
-> > > > >  */
-> > > > >=20
-> > > > > This has the unfortunate side effect that the max value we ca=
-n return
-> > > > > safely is 2147483647 (~2GHz). So another issue here is conver=
-ting clock
-> > > > > rates to 64-bit values.
-> > > >=20
-> > > > So, let's assume
-> > > >  - a clock does either of these
-> > > >    - round down
-> > > >    - round nearest
-> > > >    - round up (is there any such case? I don't see a use-case f=
-or this)
-> > > >  - or return an error
-> > > >=20
-> > > > I think my latest try handles such cases, with the limitation o=
-f
-> > > > for a clock that rounds up, the up-rounded value is found inste=
-ad of the
-> > > > nearest.
-> > > >=20
-> > > >=20
-> > > > static long clk_find_nearest_rate(struct clk *clk, unsigned lon=
-g rate)
-> > > > {
-> > > >     long ret;
-> > > >     unsigned long lower, upper;
-> > > >=20
-> > > >     clk_prepare_lock();
-> > > >=20
-> > > >     lower =3D __clk_round_rate(clk, rate);
-> > > this is CCF specific while I don't see a need for it. (But yes, a
-> > > lock-less clk_find_nearest_rate is of course racy.)
-> > Do we have to support non-CCF implementations? Isn't switching to t=
-he
-> > CCF encouraged?
->=20
-> No we don't. If you check out the ifdeffery in include/linux/clk.h
-> you'll see more function declarations for CONFIG_COMMON_CLK then for
-> !CONFIG_COMMON_CLK, so we're not breaking any ground here.
->=20
-> >=20
-> > >=20
-> > > >     if (lower >=3D rate || (long)lower < 0) {
-> > > If you made lower and upper a signed long, you could drop the cas=
-ting
-> > > here. BTW, why does __clk_round_rate return an unsigned long??
-> > > There seem to be several more type mismatches in that area.
-> > > Maybe we should add a waring if rate is > LONG_MAX?
-> > >=20
-> > > (And ISTR that the C standard doesn't specify what the result of
-> > > (long)lower is given that lower is of type unsigned long and hold=
-ing a
-> > > value > LONG_MAX.)
-> > Looks like you're right. This probably needs some polishing to get =
-types
-> > sorted out.
-> > Mike/Russel: As Uwe pointed out, shouldn't __clk_round_rate return =
-a
-> > long as well?
-
-Sorry, Russell, of course.
-
->=20
-> Yeah. The strange thing is that .round_rate and .determine_rate both
-> return long. I think I was asleep at the wheel on this one.
->=20
-> I count about a dozen call sites that need to be fixed up for this
-> change to happen. As we approach 3.15-rc6 I'm a bit nervous about
-> introducing this change. How do you feel about dropping this change i=
-n
-> first thing after 3.16-rc1 and layering in your new clk_find_*_rate
-> stuff on top of it?
->=20
-> I'll take a stab at fixing up __clk_round_rate early next week.
-
-Yeah, at some point this 'fix cpufreq stats'-series grew a little out o=
-f
-control. Targeting the 3.16 cycle sounds reasonable. Then we could prob=
-ably
-also look at moving from (unsigned) long to some 64-bit type as well ;)
-
-	Thanks,
-	S=C3=B6ren
+UXVvdGluZyBTw7ZyZW4gQnJpbmttYW5uICgyMDE0LTA1LTIyIDE2OjQ0OjUzKQo+IE9uIFRodSwg
+MjAxNC0wNS0yMiBhdCAwMjowM1BNIC0wNzAwLCBNaWtlIFR1cnF1ZXR0ZSB3cm90ZToKPiA+IFF1
+b3RpbmcgU8O2cmVuIEJyaW5rbWFubiAoMjAxNC0wNS0yMiAxMzozMjowOSkKPiA+ID4gT24gVGh1
+LCAyMDE0LTA1LTIyIGF0IDA4OjIwUE0gKzAyMDAsIFV3ZSBLbGVpbmUtS8O2bmlnIHdyb3RlOgo+
+ID4gPiA+IEhlbGxvIFPDtnJlbiwKPiA+ID4gPiAKPiA+ID4gPiBPbiBUaHUsIE1heSAyMiwgMjAx
+NCBhdCAxMTowMzowMEFNIC0wNzAwLCBTw7ZyZW4gQnJpbmttYW5uIHdyb3RlOgo+ID4gPiA+ID4g
+T24gV2VkLCAyMDE0LTA1LTIxIGF0IDAxOjMzUE0gLTA3MDAsIE1pa2UgVHVycXVldHRlIHdyb3Rl
+Ogo+ID4gPiA+ID4gPiBRdW90aW5nIFV3ZSBLbGVpbmUtS8O2bmlnICgyMDE0LTA1LTIxIDExOjIz
+OjA4KQo+ID4gPiA+ID4gPiA+IEhlbGxvIFPDtnJlbiwKPiA+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
+ID4gPiBPbiBXZWQsIE1heSAyMSwgMjAxNCBhdCAwODo1ODoxMEFNIC0wNzAwLCBTw7ZyZW4gQnJp
+bmttYW5uIHdyb3RlOgo+ID4gPiA+ID4gPiA+ID4gT24gV2VkLCAyMDE0LTA1LTIxIGF0IDA5OjM0
+QU0gKzAyMDAsIFV3ZSBLbGVpbmUtS8O2bmlnIHdyb3RlOgo+ID4gPiA+ID4gPiA+ID4gPiBPbiBU
+dWUsIE1heSAyMCwgMjAxNCBhdCAwMjo0ODoyMFBNIC0wNzAwLCBTw7ZyZW4gQnJpbmttYW5uIHdy
+b3RlOgo+ID4gPiA+ID4gPiA+ID4gPiA+IE9uIFR1ZSwgMjAxNC0wNS0yMCBhdCAxMDo0OEFNIC0w
+NzAwLCBTdGVwaGVuIEJveWQgd3JvdGU6Cj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBPbiAwNS8yMC8x
+NCAwOTowMSwgU8O2cmVuIEJyaW5rbWFubiB3cm90ZToKPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4K
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4+Pj4+ICt7Cj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+Pj4+
+PiArIHVuc2lnbmVkIGxvbmcgbG93ZXIsIHVwcGVyLCBjdXIsIGxvd2VyX2xhc3QsIHVwcGVyX2xh
+c3Q7Cj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+Pj4+PiArCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+Pj4+PiArIGxvd2VyID0gY2xrX3JvdW5kX3JhdGUoY2xrLCByYXRlKTsKPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4+Pj4+ICsgaWYgKGxvd2VyID49IHJhdGUpCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+Pj4+PiArICAgICAgICAgcmV0dXJuIGxvd2VyOwo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPj4+PiBJ
+cyB0aGUgPi1jYXNlIHdvcnRoIGEgd2FybmluZz8KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4+PiBO
+bywgaXQncyBjb3JyZWN0IGJlaGF2aW9yLiBJZiB5b3UgcmVxdWVzdCBhIHJhdGUgdGhhdCBpcyB3
+YXkgbG93ZXIgdGhhbiB3aGF0IHRoZQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPj4+IGNsb2NrIGNh
+biBnZW5lcmF0ZSwgcmV0dXJuaW5nIHNvbWV0aGluZyBsYXJnZXIgaXMgcGVyZmVjdGx5IHZhbGlk
+LCBJTUhPLgo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPj4+IFdoaWNoIHJldmVhbHMgb25lIHByb2Js
+ZW0gaW4gdGhpcyB3aG9sZSBkaXNjdXNzaW9uLiBUaGUgQVBJIGRvZXMgbm90Cj4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+Pj4gcmVxdWlyZSBjbGtfcm91bmRfcmF0ZSgpIHRvIHJvdW5kIGRvd24uIEl0
+IGlzIGFjdHVhbGx5IGFuIGltcGxlbWVudGF0aW9uCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+Pj4g
+Y2hvaWNlIHRoYXQgaGFkIGJlZW4gbWFkZSBmb3IgY2xrLWRpdmlkZXIuCj4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+PiBJJ20gc3VyZSBpdCdzIG1vcmUgdGhhbiBhbiBpbXBsZW1lbnRhdGlvbiBjaG9p
+Y2UgZm9yIGNsay1kaXZpZGVyLiBCdXQgSQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPj4gZG9uJ3Qg
+ZmluZCBhbnkgcmVzcGVjdGl2ZSBkb2N1bWVudGF0aW9uIChidXQgSSBkaWRuJ3QgdHJ5IGhhcmQp
+Lgo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBBIHNpbWlsYXIgZGlzY3Vzc2lvbiAtIHdpdGhvdXQg
+ZmluYWwgY29uY2x1c2lvbjoKPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gaHR0cHM6Ly9sa21sLm9y
+Zy9sa21sLzIwMTAvNy8xNC8yNjAKPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+UGxlYXNlIGNhbGwgdGhpcyBuZXcgQVBJIHNvbWV0aGluZyBsaWtlIGNsa19maW5kX25lYXJlc3Rf
+cmF0ZSgpIG9yCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBzb21ldGhpbmcuIGNsa19yb3VuZF9yYXRl
+KCkgaXMgc3VwcG9zZWQgdG8gcmV0dXJuIHRoZSByYXRlIHRoYXQgd2lsbCBiZQo+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gc2V0IGlmIHlvdSBjYWxsIGNsa19zZXRfcmF0ZSgpIHdpdGggdGhlIHNhbWUg
+YXJndW1lbnRzLiBJdCdzIHVwIHRvIHRoZQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gaW1wbGVtZW50
+YXRpb24gdG8gZGVjaWRlIGlmIHRoYXQgbWVhbnMgcm91bmRpbmcgdGhlIHJhdGUgdXAgb3IgZG93
+biBvcgo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gdG8gdGhlIG5lYXJlc3QgdmFsdWUuCj4gPiA+ID4g
+PiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+ID4gPiA+ID4gU291bmRzIGdvb2QgdG8gbWUuIEFyZSB0
+aGVyZSBhbnkgY2FzZXMgb2YgY2xvY2tzIHRoYXQgcm91bmQgdXA/IEkgdGhpbmsKPiA+ID4gPiA+
+ID4gPiA+ID4gPiB0aGF0IGNhc2Ugd291bGQgbm90IGJlIGhhbmRsZWQgY29ycmVjdGx5LiBCdXQg
+SSBhbHNvIGRvbid0IHNlZSBhIHVzZQo+ID4gPiA+ID4gPiA+ID4gPiA+IGNhc2UgZm9yIHN1Y2gg
+YW4gaW1wbGVtZW50YXRpb24uCj4gPiA+ID4gPiA+ID4gPiA+IEkgZG9uJ3QgcmVhbGx5IGNhcmUg
+d2hpY2ggc2VtYW50aWMgKGkuZS4gcm91bmQgdXAsIHJvdW5kIGRvd24gb3Igcm91bmQKPiA+ID4g
+PiA+ID4gPiA+ID4gY2xvc2VzdCkgaXMgcGlja2VkLCBidXQgSSdkIHZvdGUgdGhhdCBhbGwgc2hv
+dWxkIHBpY2sgdXAgdGhlIHNhbWUuIEkKPiA+ID4gPiA+ID4gPiA+ID4gdGhpbmsgdGhlIGxlYXN0
+IHN1cnByaXNpbmcgZGVmaW5pdGlvbiBpcyB0byBjaG9vc2Ugcm91bmRpbmcgZG93biBhbmQgYWRk
+Cj4gPiA+ID4gPiA+ID4gPiA+IHRoZSBmdW5jdGlvbiB0aGF0IGlzIHVuZGVyIGRpc2N1c3Npb24g
+aGVyZSB0byBnZXQgYSBuZWFyZXN0IG1hdGNoLgo+ID4gPiA+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
+ID4gPiA+ID4gU28gSSBzdWdnZXN0Ogo+ID4gPiA+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gPiA+
+ID4gICAgIC0gaWYgcm91bmRfcmF0ZSBpcyBnaXZlbiBhIHJhdGUgdGhhdCBpcyBzbWFsbGVyIHRo
+YW4gdGhlCj4gPiA+ID4gPiA+ID4gPiA+ICAgICAgIHNtYWxsZXN0IGF2YWlsYWJsZSByYXRlLCBy
+ZXR1cm4gMAo+ID4gPiA+ID4gPiA+ID4gPiAgICAgLSBhZGQgV0FSTl9PTkNFIHRvIHJvdW5kX3Jh
+dGUgYW5kIHNldF9yYXRlIGlmIHRoZXkgcmV0dXJuIHdpdGggYQo+ID4gPiA+ID4gPiA+ID4gPiAg
+ICAgICByYXRlIGJpZ2dlciB0aGFuIHJlcXVlc3RlZAo+ID4gPiA+ID4gPiA+ID4gCj4gPiA+ID4g
+PiA+ID4gPiBXaHkgZG8geW91IHRoaW5rIDAgaXMgYWx3YXlzIHZhbGlkPyBJIHRoaW5rIGZvciBh
+IGNsb2NrIHRoYXQgY2FuCj4gPiA+ID4gPiA+ID4gPiBnZW5lcmF0ZSA0MCwgNzAsIDEyMCwgY2xr
+X3JvdW5kX3JhdGUoMjApIHNob3VsZCByZXR1cm4gNDAuCj4gPiA+ID4gPiA+ID4gSSBkaWRuJ3Qg
+c2F5IGl0J3MgYSB2YWxpZCB2YWx1ZS4gSXQganVzdCBtYWtlcyB0aGUgaXQgcG9zc2libGUgdG8g
+Y2hlY2sKPiA+ID4gPiA+ID4gPiBmb3IgY2xrX3JvdW5kX3JhdGUoY2xrLCByYXRlKSA8PSByYXRl
+Lgo+ID4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiA+IEkgZ3JlcHBlZCBhIGJpdCBhcm91bmQgYW5k
+IGZvdW5kIGRhODUwX3JvdW5kX2FybXJhdGUgd2hpY2ggaW1wbGVtZW50cyBhCj4gPiA+ID4gPiA+
+ID4gcm91bmRfcmF0ZSBjYWxsYmFjayByZXR1cm5pbmcgdGhlIGJlc3QgbWF0Y2guCj4gPiA+ID4g
+PiA+ID4gb21hcDFfY2xrX3JvdW5kX3JhdGVfY2tjdGxfYXJtIGNhbiByZXR1cm4gYSB2YWx1ZSA8
+IDAuCj4gPiA+ID4gPiA+ID4gczNjMjQxMl9yb3VuZHJhdGVfdXNic3JjIGNhbiByZXR1cm4gdmFs
+dWVzIHRoYXQgYXJlIGJpZ2dlciB0aGFuCj4gPiA+ID4gPiA+ID4gcmVxdWVzdGVkLiAoSSB3b25k
+ZXIgaWYgdGhhdCBpcyBhIGJ1ZyB0aG91Z2guKQo+ID4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiA+
+ID4gPiAgICAgLSBjaGFuZ2UgdGhlIHJldHVybiB2YWx1ZXMgdG8gdW5zaWduZWQgbG9uZwo+ID4g
+PiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+ID4gPiBZZXAsIEkgYWdyZWUsIHRoaXMgc2hvdWxkIGhh
+cHBlbi4KPiA+ID4gPiA+ID4gPiBBbmQgd2UncmUgdXNpbmcgMCBhcyBlcnJvciB2YWx1ZT8gZS5n
+LiBmb3IgdGhlIGNhc2Ugd2hlcmUKPiA+ID4gPiA+ID4gPiBvbWFwMV9jbGtfcm91bmRfcmF0ZV9j
+a2N0bF9hcm0gcmV0dXJucyAtRUlPIG5vdz8KPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IE5vLiBj
+bGtfcm91bmRfcmF0ZSByZXR1cm5zIGxvbmcgZm9yIGEgcmVhc29uLCB3aGljaCBpcyB0aGF0IHdl
+IGNhbgo+ID4gPiA+ID4gPiBwcm92aWRlIGFuIGVycm9yIGNvZGUgdG8gdGhlIGNhbGxlci4gRnJv
+bSBpbmNsdWRlL2xpbnV4L2Nsay5oOgo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gLyoqCj4gPiA+
+ID4gPiA+ICAqIGNsa19yb3VuZF9yYXRlIC0gYWRqdXN0IGEgcmF0ZSB0byB0aGUgZXhhY3QgcmF0
+ZSBhIGNsb2NrIGNhbiBwcm92aWRlCj4gPiA+ID4gPiA+ICAqIEBjbGs6IGNsb2NrIHNvdXJjZQo+
+ID4gPiA+ID4gPiAgKiBAcmF0ZTogZGVzaXJlZCBjbG9jayByYXRlIGluIEh6Cj4gPiA+ID4gPiA+
+ICAqCj4gPiA+ID4gPiA+ICAqIFJldHVybnMgcm91bmRlZCBjbG9jayByYXRlIGluIEh6LCBvciBu
+ZWdhdGl2ZSBlcnJuby4KPiA+ID4gPiA+ID4gICovCj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiBU
+aGlzIGhhcyB0aGUgdW5mb3J0dW5hdGUgc2lkZSBlZmZlY3QgdGhhdCB0aGUgbWF4IHZhbHVlIHdl
+IGNhbiByZXR1cm4KPiA+ID4gPiA+ID4gc2FmZWx5IGlzIDIxNDc0ODM2NDcgKH4yR0h6KS4gU28g
+YW5vdGhlciBpc3N1ZSBoZXJlIGlzIGNvbnZlcnRpbmcgY2xvY2sKPiA+ID4gPiA+ID4gcmF0ZXMg
+dG8gNjQtYml0IHZhbHVlcy4KPiA+ID4gPiA+IAo+ID4gPiA+ID4gU28sIGxldCdzIGFzc3VtZQo+
+ID4gPiA+ID4gIC0gYSBjbG9jayBkb2VzIGVpdGhlciBvZiB0aGVzZQo+ID4gPiA+ID4gICAgLSBy
+b3VuZCBkb3duCj4gPiA+ID4gPiAgICAtIHJvdW5kIG5lYXJlc3QKPiA+ID4gPiA+ICAgIC0gcm91
+bmQgdXAgKGlzIHRoZXJlIGFueSBzdWNoIGNhc2U/IEkgZG9uJ3Qgc2VlIGEgdXNlLWNhc2UgZm9y
+IHRoaXMpCj4gPiA+ID4gPiAgLSBvciByZXR1cm4gYW4gZXJyb3IKPiA+ID4gPiA+IAo+ID4gPiA+
+ID4gSSB0aGluayBteSBsYXRlc3QgdHJ5IGhhbmRsZXMgc3VjaCBjYXNlcywgd2l0aCB0aGUgbGlt
+aXRhdGlvbiBvZgo+ID4gPiA+ID4gZm9yIGEgY2xvY2sgdGhhdCByb3VuZHMgdXAsIHRoZSB1cC1y
+b3VuZGVkIHZhbHVlIGlzIGZvdW5kIGluc3RlYWQgb2YgdGhlCj4gPiA+ID4gPiBuZWFyZXN0Lgo+
+ID4gPiA+ID4gCj4gPiA+ID4gPiAKPiA+ID4gPiA+IHN0YXRpYyBsb25nIGNsa19maW5kX25lYXJl
+c3RfcmF0ZShzdHJ1Y3QgY2xrICpjbGssIHVuc2lnbmVkIGxvbmcgcmF0ZSkKPiA+ID4gPiA+IHsK
+PiA+ID4gPiA+ICAgICBsb25nIHJldDsKPiA+ID4gPiA+ICAgICB1bnNpZ25lZCBsb25nIGxvd2Vy
+LCB1cHBlcjsKPiA+ID4gPiA+IAo+ID4gPiA+ID4gICAgIGNsa19wcmVwYXJlX2xvY2soKTsKPiA+
+ID4gPiA+IAo+ID4gPiA+ID4gICAgIGxvd2VyID0gX19jbGtfcm91bmRfcmF0ZShjbGssIHJhdGUp
+Owo+ID4gPiA+IHRoaXMgaXMgQ0NGIHNwZWNpZmljIHdoaWxlIEkgZG9uJ3Qgc2VlIGEgbmVlZCBm
+b3IgaXQuIChCdXQgeWVzLCBhCj4gPiA+ID4gbG9jay1sZXNzIGNsa19maW5kX25lYXJlc3RfcmF0
+ZSBpcyBvZiBjb3Vyc2UgcmFjeS4pCj4gPiA+IERvIHdlIGhhdmUgdG8gc3VwcG9ydCBub24tQ0NG
+IGltcGxlbWVudGF0aW9ucz8gSXNuJ3Qgc3dpdGNoaW5nIHRvIHRoZQo+ID4gPiBDQ0YgZW5jb3Vy
+YWdlZD8KPiA+IAo+ID4gTm8gd2UgZG9uJ3QuIElmIHlvdSBjaGVjayBvdXQgdGhlIGlmZGVmZmVy
+eSBpbiBpbmNsdWRlL2xpbnV4L2Nsay5oCj4gPiB5b3UnbGwgc2VlIG1vcmUgZnVuY3Rpb24gZGVj
+bGFyYXRpb25zIGZvciBDT05GSUdfQ09NTU9OX0NMSyB0aGVuIGZvcgo+ID4gIUNPTkZJR19DT01N
+T05fQ0xLLCBzbyB3ZSdyZSBub3QgYnJlYWtpbmcgYW55IGdyb3VuZCBoZXJlLgo+ID4gCj4gPiA+
+IAo+ID4gPiA+IAo+ID4gPiA+ID4gICAgIGlmIChsb3dlciA+PSByYXRlIHx8IChsb25nKWxvd2Vy
+IDwgMCkgewo+ID4gPiA+IElmIHlvdSBtYWRlIGxvd2VyIGFuZCB1cHBlciBhIHNpZ25lZCBsb25n
+LCB5b3UgY291bGQgZHJvcCB0aGUgY2FzdGluZwo+ID4gPiA+IGhlcmUuIEJUVywgd2h5IGRvZXMg
+X19jbGtfcm91bmRfcmF0ZSByZXR1cm4gYW4gdW5zaWduZWQgbG9uZz8/Cj4gPiA+ID4gVGhlcmUg
+c2VlbSB0byBiZSBzZXZlcmFsIG1vcmUgdHlwZSBtaXNtYXRjaGVzIGluIHRoYXQgYXJlYS4KPiA+
+ID4gPiBNYXliZSB3ZSBzaG91bGQgYWRkIGEgd2FyaW5nIGlmIHJhdGUgaXMgPiBMT05HX01BWD8K
+PiA+ID4gPiAKPiA+ID4gPiAoQW5kIElTVFIgdGhhdCB0aGUgQyBzdGFuZGFyZCBkb2Vzbid0IHNw
+ZWNpZnkgd2hhdCB0aGUgcmVzdWx0IG9mCj4gPiA+ID4gKGxvbmcpbG93ZXIgaXMgZ2l2ZW4gdGhh
+dCBsb3dlciBpcyBvZiB0eXBlIHVuc2lnbmVkIGxvbmcgYW5kIGhvbGRpbmcgYQo+ID4gPiA+IHZh
+bHVlID4gTE9OR19NQVguKQo+ID4gPiBMb29rcyBsaWtlIHlvdSdyZSByaWdodC4gVGhpcyBwcm9i
+YWJseSBuZWVkcyBzb21lIHBvbGlzaGluZyB0byBnZXQgdHlwZXMKPiA+ID4gc29ydGVkIG91dC4K
+PiA+ID4gTWlrZS9SdXNzZWw6IEFzIFV3ZSBwb2ludGVkIG91dCwgc2hvdWxkbid0IF9fY2xrX3Jv
+dW5kX3JhdGUgcmV0dXJuIGEKPiA+ID4gbG9uZyBhcyB3ZWxsPwo+IAo+IFNvcnJ5LCBSdXNzZWxs
+LCBvZiBjb3Vyc2UuCj4gCj4gPiAKPiA+IFllYWguIFRoZSBzdHJhbmdlIHRoaW5nIGlzIHRoYXQg
+LnJvdW5kX3JhdGUgYW5kIC5kZXRlcm1pbmVfcmF0ZSBib3RoCj4gPiByZXR1cm4gbG9uZy4gSSB0
+aGluayBJIHdhcyBhc2xlZXAgYXQgdGhlIHdoZWVsIG9uIHRoaXMgb25lLgo+ID4gCj4gPiBJIGNv
+dW50IGFib3V0IGEgZG96ZW4gY2FsbCBzaXRlcyB0aGF0IG5lZWQgdG8gYmUgZml4ZWQgdXAgZm9y
+IHRoaXMKPiA+IGNoYW5nZSB0byBoYXBwZW4uIEFzIHdlIGFwcHJvYWNoIDMuMTUtcmM2IEknbSBh
+IGJpdCBuZXJ2b3VzIGFib3V0Cj4gPiBpbnRyb2R1Y2luZyB0aGlzIGNoYW5nZS4gSG93IGRvIHlv
+dSBmZWVsIGFib3V0IGRyb3BwaW5nIHRoaXMgY2hhbmdlIGluCj4gPiBmaXJzdCB0aGluZyBhZnRl
+ciAzLjE2LXJjMSBhbmQgbGF5ZXJpbmcgaW4geW91ciBuZXcgY2xrX2ZpbmRfKl9yYXRlCj4gPiBz
+dHVmZiBvbiB0b3Agb2YgaXQ/Cj4gPiAKPiA+IEknbGwgdGFrZSBhIHN0YWIgYXQgZml4aW5nIHVw
+IF9fY2xrX3JvdW5kX3JhdGUgZWFybHkgbmV4dCB3ZWVrLgo+IAo+IFllYWgsIGF0IHNvbWUgcG9p
+bnQgdGhpcyAnZml4IGNwdWZyZXEgc3RhdHMnLXNlcmllcyBncmV3IGEgbGl0dGxlIG91dCBvZgo+
+IGNvbnRyb2wuIFRhcmdldGluZyB0aGUgMy4xNiBjeWNsZSBzb3VuZHMgcmVhc29uYWJsZS4gVGhl
+biB3ZSBjb3VsZCBwcm9iYWJseQo+IGFsc28gbG9vayBhdCBtb3ZpbmcgZnJvbSAodW5zaWduZWQp
+IGxvbmcgdG8gc29tZSA2NC1iaXQgdHlwZSBhcyB3ZWxsIDspCgpBZ3JlZWQgb24gdGhlIDY0LWJp
+dCB0aGluZy4KClRoYW5rcywKTWlrZQoKPiAKPiAgICAgICAgIFRoYW5rcywKPiAgICAgICAgIFPD
+tnJlbgo+IAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+bGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
+YWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
+dXgtYXJtLWtlcm5lbAo=
