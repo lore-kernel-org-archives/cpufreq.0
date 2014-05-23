@@ -1,33 +1,52 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v4 3/8] clk: samsung: add infrastructure to register cpu
- clocks
-Date: Fri, 23 May 2014 16:50:45 +0200
-Message-ID: <537F6045.3050600@samsung.com>
-References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
- <1400029876-5830-4-git-send-email-thomas.ab@samsung.com>
- <53764818.5080602@samsung.com>
- <CAJuA9aho9voY=YKm7mTNA-6vvbDqsp-jDTd=n67_5DvgvPtBDA@mail.gmail.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: [PATCH v2] cpufreq: s5pv210: drop check for CONFIG_PM_VERBOSE
+Date: Fri, 23 May 2014 17:05:00 +0200
+Message-ID: <1400857500.31526.52.camel@x220>
+References: <1400702036.30334.6.camel@x220>
+	 <CAK9yfHz2kdfkf+o7fKMRu=nMXxbcHJ227bjpvA=WXt6ptH3QRA@mail.gmail.com>
+	 <1400740894.21254.8.camel@x220>
+	 <CAK9yfHzf-Z3AQ4+-sF7xqqUw4dN8aULkCNvLQnmusp_ZiOg+Rw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAJuA9aho9voY=YKm7mTNA-6vvbDqsp-jDTd=n67_5DvgvPtBDA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAK9yfHzf-Z3AQ4+-sF7xqqUw4dN8aULkCNvLQnmusp_ZiOg+Rw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sachin Kamat <sachin.kamat@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Thomas,
+A pr_err() was added in v3.1. It was guarded by a check for
+CONFIG_PM_VERBOSE. The Kconfig symbol PM_VERBOSE was removed in v3.0. So
+this pr_err() has never been used. Drop that check and clean up the
+message a bit.
 
-On 23.05.2014 16:41, Thomas Abraham wrote:
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+v1 was called "cpufreq: s5pv210: remove unused call of pr_err()". v2
+keeps the pr_err() and trims down its arguments, as Sachin requested.
 
-[snip]
+Still untested.
 
-> Thanks for your detailed review. I have made all the changes that you
-> have suggested.
+ drivers/cpufreq/s5pv210-cpufreq.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Unfortunately it seems like you have missed quite a lot of my comments,
-especially those regarding patch 4/8, which adds DT binding.
-
-Best regards,
-Tomasz
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index ab2c1a40d437..19a10b89fef7 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -175,10 +175,8 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 	mutex_lock(&set_freq_lock);
+ 
+ 	if (no_cpufreq_access) {
+-#ifdef CONFIG_PM_VERBOSE
+-		pr_err("%s:%d denied access to %s as it is disabled"
+-				"temporarily\n", __FILE__, __LINE__, __func__);
+-#endif
++		pr_err("Denied access to %s as it is disabled temporarily\n",
++		       __func__);
+ 		ret = -EINVAL;
+ 		goto exit;
+ 	}
+-- 
+1.9.0
