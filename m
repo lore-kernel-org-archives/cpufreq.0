@@ -1,138 +1,42 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH v4 4/8] Documentation: devicetree: add cpu clock configuration
- data binding for Exynos4/5
-Date: Mon, 26 May 2014 13:02:06 +0200
-Message-ID: <53831F2E.8000501@gmail.com>
-References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>	<1400029876-5830-5-git-send-email-thomas.ab@samsung.com>	<53769E1F.1090706@gmail.com> <CAJuA9aikGp=_Vgv+qGyRJhSo1a0Qpb_KLE9a63wtbRNbrxYBYQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Mon, 26 May 2014 13:22:32 +0200
+Message-ID: <9956925.Qsz2bH3rDg@vostro.rjw.lan>
+References: <20140521073457.GD31687@pengutronix.de> <00f65d1c-a375-40e7-b30a-cd8cb3ca87fc@BN1BFFO11FD020.protection.gbl> <CAKohpomb+h6ZNDgJ8AwJ_J9DjMB7AP_v-cp8coG3CACo5Wt4vQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=8n6lpBTBzhBTe5tbnnrCMs3vEEA4hGULTIn6hFGXJns=;
-        b=ZTedFgy4qSlOFhBgCNrACBbCwWpQK3G59w2PQ4VzDWkmBTB2Cxbxh7NdcX4Yte00BI
-         IZJK4WvpZ4An9D/0qW6AWZ/hwPculALvd/NBsRkb4vqn3hpbQtBq+jT0o/pv3NO8Okkx
-         g4byzK736DdOtgG2SGH3OHgqONCvL6XO57mbuICep3lpW34vInHEKBhlrE2aSGvkNvfI
-         mnhKCuDHWV/yMN61FbVPW6QxKIp6GJGVlEBvyG7pvC8nX0+ym3H0bbRA0sbCn1BvYr1a
-         1qG02DPj+F2LbJUDeNmoCVwVlIDhvNX42vvxWz4t5FA91sLv19fn9MTsuOdVg4fahyFf
-         e6Hw==
-In-Reply-To: <CAJuA9aikGp=_Vgv+qGyRJhSo1a0Qpb_KLE9a63wtbRNbrxYBYQ@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomb+h6ZNDgJ8AwJ_J9DjMB7AP_v-cp8coG3CACo5Wt4vQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: =?ISO-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Uwe =?ISO-8859-1?Q?Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Thomas,
+On Monday, May 26, 2014 11:59:09 AM Viresh Kumar wrote:
+> On 23 May 2014 21:44, S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.co=
+m> wrote:
+> > Viresh: Could you imagine something similar for cpufreq? You sugges=
+ted
+> > migrating to Hz resolution. I guess that would ideally mean to foll=
+ow
+> > the CCF to a 64-bit type for frequencies and increasing the resolut=
+ion.
+> > I have a messy patch migrating cpufreq and OPP to Hz and unsigned l=
+ong
+> > that works on Zynq. But cpufreq has so many users that it would bec=
+ome
+> > quite an undertaking.
+> > And we'd need some new/amended OPP DT binding.
+>=20
+> If we are going to migrate to Hz from KHz, I think we must consider t=
+he
+> 64 bit stuff right now, otherwise it will bite us later.
+>=20
+> @Rafael: What do you think?
 
-On 26.05.2014 08:05, Thomas Abraham wrote:
-> Hi Tomasz,
-> 
-> Thanks for your comments. Please see inline reply.
-> 
-> On Sat, May 17, 2014 at 4:54 AM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
->> Hi Thomas,
->>
->> Please see my comments inline.
->>
->> On 14.05.2014 03:11, Thomas Abraham wrote:
->>> From; Thomas Abraham <thomas.ab@samsung.com>
->>>
->>> The clock blocks within the CMU_CPU clock domain are put together into a
->>> new composite clock type called the cpu clock. This clock type requires
->>> configuration data that will be atomically programmed in the multiple
->>> clock blocks encapsulated within the cpu clock type when the parent clock
->>> frequency is changed. This configuration data is held in the clock controller
->>> node. Update clock binding documentation about this configuration data format
->>> for Samsung Exynos4 and Exynos5 platforms.
->>>
->>> Cc: Tomasz Figa <t.figa@samsung.com>
->>> Cc: Rob Herring <robh+dt@kernel.org>
->>> Cc: Pawel Moll <pawel.moll@arm.com>
->>> Cc: Mark Rutland <mark.rutland@arm.com>
->>> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
->>> Cc: Kumar Gala <galak@codeaurora.org>
->>> Cc: <devicetree@vger.kernel.org>
->>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->>> ---
->>>  .../devicetree/bindings/clock/exynos4-clock.txt    |   37 ++++++++++++++++++++
->>>  .../devicetree/bindings/clock/exynos5250-clock.txt |   36 +++++++++++++++++++
->>>  2 files changed, 73 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/Documentation/devicetree/bindings/clock/exynos4-clock.txt b/Documentation/devicetree/bindings/clock/exynos4-clock.txt
->>> index f5a5b19..0934e02 100644
->>> --- a/Documentation/devicetree/bindings/clock/exynos4-clock.txt
->>> +++ b/Documentation/devicetree/bindings/clock/exynos4-clock.txt
->>> @@ -15,6 +15,35 @@ Required Properties:
->>>
->>>  - #clock-cells: should be 1.
->>>
->>> +- samsung,armclk-divider-table: when the frequency of the APLL is changed
->>> +  the divider clocks in CMU_CPU clock domain also need to be updated. These
->>> +  divider clocks have SoC specific divider clock output requirements for a
->>> +  specific APLL clock speeds. When APLL clock rate is changed, these divider
->>> +  clocks are reprogrammed with pre-determined values in order to maintain the
->>> +  SoC specific divider clock outputs. This property lists the divider values
->>> +  for divider clocks in the CMU_CPU block for supported APLL clock speeds.
->>> +  The format of each entry included in the arm-frequency-table should be
->>> +  as defined below
->>
->> As far as I understand, the relation is not between the APLL frequency
->> and particular clocks in CPU domain, but rather between the latter and
->> input clock to CPU domain, which is _after_ the two dividers (called
->> DIV_CORE and DIV_CORE2 or ARM_DIV1 and ARM_DIV2), which is also exactly
->> the output frequency of ARMCLK.
->>
->>> +
->>> +  - for Exynos4210 and Exynos4212 based platforms:
->>> +      cell #1: arm clock parent frequency
->>
->> Considering my comment above, this should be rather ARMCLK frequency.
-> 
-> The clocks SCLK_APLL, SCLK_HPM, ATCLK and PCLK_DBG have no relation to
-> the ARMCLK frequency. These clocks are directly derived from the PLL
-> clock and so it would not be correct to have them related to ARMCLK.
+I agree as far as the 64-bit thing goes, but is switching to Hz really
+necessary?
 
-Oh, right, the old driver was changing DIV_APLL, DIV_ATB and
-DIV_PCLK_DBG as well. Somehow I was under an impression that we need to
-care only about those dividers on the path after DIV_CORE and DIV_CORE2.
-In this case the parent rate is the key here, although I'd call it "CPU
-block parent rate (usually APLL)".
+Rafael
 
-However this means that the trick with using DIV_CORE and DIV_CORE2 to
-divide the rate of temporary parent clock is not enough, because DIV_ATB
-is sourced directly from MOUT_CORE.
-
-> 
-> So, I see two solutions to this, first being preferred solution.
-> 
-> [A] Cell #1 should define PLL (parent of armclk) clock speed. Cell #2
-> and Cell #3  should define divider values for ARMCLK clock speed. The
-> hardware does support PLL frequency != ARMCLK frequency and so DT
-> binding should allow that (even though implementation in the linux
-> kernel does not use this feature). BTW, this was what was done in v2
-> of this series.
-> 
-> [B] Embedded this data with the code and don't get this from DT. The
-> reason for doing this is, these are SoC specific values and not board
-> specific. And when we are clear about what we want to put in DT, have
-> a provision to lookup DT first and if DT values are not found,
-> fallback on data embedded with the code.
-
-Well, they are not that generic as they might appear. I've seen
-different values for the same SoC in different vendor kernels, depending
-on device the kernel was targeted for. Also they will likely differ
-between SoC revisions.
-
-However it might be a good idea indeed to keep the table in the code as
-a first step to get the driver running without creating new DT bindings.
-
-By the way, I'm not fully convinced if there is really a need for such
-hardcoded look-up tables at all. Those divisors certainly look like they
-are calculated based on some upper bounds for certain clocks and the
-driver could simply find them out itself if those limits were provided.
-
-Best regards,
-Tomasz
