@@ -1,171 +1,79 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH v4 4/8] Documentation: devicetree: add cpu clock
- configuration data binding for Exynos4/5
-Date: Mon, 26 May 2014 11:35:08 +0530
-Message-ID: <CAJuA9aikGp=_Vgv+qGyRJhSo1a0Qpb_KLE9a63wtbRNbrxYBYQ@mail.gmail.com>
-References: <1400029876-5830-1-git-send-email-thomas.ab@samsung.com>
-	<1400029876-5830-5-git-send-email-thomas.ab@samsung.com>
-	<53769E1F.1090706@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 1/7] cpufreq: cpufreq-cpu0: allow use of optional boost
+ mode frequencies
+Date: Mon, 26 May 2014 11:42:58 +0530
+Message-ID: <CAKohpo=MhUdYK8jEmuOB=Nj9JPBqEoUnQB6SY3vQ35yfkduUVA@mail.gmail.com>
+References: <1400855260-6807-1-git-send-email-thomas.ab@samsung.com>
+	<1400855260-6807-2-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=hQcNU5eb805VkBuERwMXST0o5/Tqs0IniI5RbcVUZpI=;
-        b=YJ9wJtUf6IjOAoL93HAalIE1xgkOcfZ964wUTDsJ8wK3v9H+rEWKx+V2UevsRAEedP
-         QaRZK7yb519Y1mZPf6vEKfE1t47X0cyUX5070OcwIjwk1OhNHYv2QfAWfOHbfe7pvD+z
-         dTbc3SVl+1X8WXdhSN/SGhLgsuMZOhjvSwW0B5v8SF8+2joj3uAaRHgCOP+QHCqwgnzm
-         nTwNG3bFLU6OVu5I9hJCzeFFDoWUuZVWSPZkW8bEJJicMIVb2u8ZI5cV/T+wzv3BYDHU
-         fEkh0xxbajXyPaiOI+exZK8vtYWURKI0o0NZK9kXGT5rNI+Pj8XbviwKtu7i+1ModB3H
-         QHQQ==
-In-Reply-To: <53769E1F.1090706@gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1400855260-6807-2-git-send-email-thomas.ab@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+To: Thomas Abraham <thomas.ab@samsung.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
 
-Hi Tomasz,
+On 23 May 2014 19:57, Thomas Abraham <thomas.ab@samsung.com> wrote:
+> From: Thomas Abraham <thomas.ab@samsung.com>
+>
+> Lookup for the optional boost-frequency property in cpu0 node and if
+> available, enable support for boost mode frequencies. The frequencies
+> usable in boost mode are determined while preparing the cpufreq table
+> from the list of operating points available.
+>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> ---
+>  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    2 ++
+>  drivers/cpufreq/Kconfig                            |    1 +
+>  drivers/cpufreq/cpufreq-cpu0.c                     |    3 +++
+>  3 files changed, 6 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> index f055515..60f321a 100644
+> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> @@ -19,6 +19,8 @@ Optional properties:
+>  - cooling-min-level:
+>  - cooling-max-level:
+>       Please refer to Documentation/devicetree/bindings/thermal/thermal.txt.
+> +- boost-frequency:
+> +     Please refer to Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
+>
+>  Examples:
+>
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index 1fbe11f..52741b9 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -187,6 +187,7 @@ config GENERIC_CPUFREQ_CPU0
+>         tristate "Generic CPU0 cpufreq driver"
+>         depends on HAVE_CLK && REGULATOR && OF && THERMAL && CPU_THERMAL
+>         select PM_OPP
+> +       select CPU_FREQ_BOOST_SW
 
-Thanks for your comments. Please see inline reply.
+Drop this. Select it from your platform driver if you want.
 
-On Sat, May 17, 2014 at 4:54 AM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
-> Hi Thomas,
+>         help
+>           This adds a generic cpufreq driver for CPU0 frequency management.
+>           It supports both uniprocessor (UP) and symmetric multiprocessor (SMP)
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index 1bf6bba..93d3d6d 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -194,6 +194,9 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>                         transition_latency += ret * 1000;
+>         }
 >
-> Please see my comments inline.
+> +       if (of_find_property(cpu_dev->of_node, "boost-frequencies", NULL))
+> +               cpu0_cpufreq_driver.boost_supported = true;
+> +
+>         ret = cpufreq_register_driver(&cpu0_cpufreq_driver);
+>         if (ret) {
+>                 pr_err("failed register driver: %d\n", ret);
+> --
+> 1.7.9.5
 >
-> On 14.05.2014 03:11, Thomas Abraham wrote:
->> From; Thomas Abraham <thomas.ab@samsung.com>
->>
->> The clock blocks within the CMU_CPU clock domain are put together into a
->> new composite clock type called the cpu clock. This clock type requires
->> configuration data that will be atomically programmed in the multiple
->> clock blocks encapsulated within the cpu clock type when the parent clock
->> frequency is changed. This configuration data is held in the clock controller
->> node. Update clock binding documentation about this configuration data format
->> for Samsung Exynos4 and Exynos5 platforms.
->>
->> Cc: Tomasz Figa <t.figa@samsung.com>
->> Cc: Rob Herring <robh+dt@kernel.org>
->> Cc: Pawel Moll <pawel.moll@arm.com>
->> Cc: Mark Rutland <mark.rutland@arm.com>
->> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
->> Cc: Kumar Gala <galak@codeaurora.org>
->> Cc: <devicetree@vger.kernel.org>
->> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->> ---
->>  .../devicetree/bindings/clock/exynos4-clock.txt    |   37 ++++++++++++++++++++
->>  .../devicetree/bindings/clock/exynos5250-clock.txt |   36 +++++++++++++++++++
->>  2 files changed, 73 insertions(+), 0 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/clock/exynos4-clock.txt b/Documentation/devicetree/bindings/clock/exynos4-clock.txt
->> index f5a5b19..0934e02 100644
->> --- a/Documentation/devicetree/bindings/clock/exynos4-clock.txt
->> +++ b/Documentation/devicetree/bindings/clock/exynos4-clock.txt
->> @@ -15,6 +15,35 @@ Required Properties:
->>
->>  - #clock-cells: should be 1.
->>
->> +- samsung,armclk-divider-table: when the frequency of the APLL is changed
->> +  the divider clocks in CMU_CPU clock domain also need to be updated. These
->> +  divider clocks have SoC specific divider clock output requirements for a
->> +  specific APLL clock speeds. When APLL clock rate is changed, these divider
->> +  clocks are reprogrammed with pre-determined values in order to maintain the
->> +  SoC specific divider clock outputs. This property lists the divider values
->> +  for divider clocks in the CMU_CPU block for supported APLL clock speeds.
->> +  The format of each entry included in the arm-frequency-table should be
->> +  as defined below
->
-> As far as I understand, the relation is not between the APLL frequency
-> and particular clocks in CPU domain, but rather between the latter and
-> input clock to CPU domain, which is _after_ the two dividers (called
-> DIV_CORE and DIV_CORE2 or ARM_DIV1 and ARM_DIV2), which is also exactly
-> the output frequency of ARMCLK.
->
->> +
->> +  - for Exynos4210 and Exynos4212 based platforms:
->> +      cell #1: arm clock parent frequency
->
-> Considering my comment above, this should be rather ARMCLK frequency.
-
-The clocks SCLK_APLL, SCLK_HPM, ATCLK and PCLK_DBG have no relation to
-the ARMCLK frequency. These clocks are directly derived from the PLL
-clock and so it would not be correct to have them related to ARMCLK.
-
-So, I see two solutions to this, first being preferred solution.
-
-[A] Cell #1 should define PLL (parent of armclk) clock speed. Cell #2
-and Cell #3  should define divider values for ARMCLK clock speed. The
-hardware does support PLL frequency != ARMCLK frequency and so DT
-binding should allow that (even though implementation in the linux
-kernel does not use this feature). BTW, this was what was done in v2
-of this series.
-
-[B] Embedded this data with the code and don't get this from DT. The
-reason for doing this is, these are SoC specific values and not board
-specific. And when we are clear about what we want to put in DT, have
-a provision to lookup DT first and if DT values are not found,
-fallback on data embedded with the code.
-
-Thanks,
-Thomas.
-
->
->> +      cell #2 ~ cell 9#: value of clock divider in the following order
->> +             corem0_ratio, corem1_ratio, periph_ratio, atb_ratio,
->> +             pclk_dbg_ratio, apll_ratio, copy_ratio, hpm_ratio.
->> +
->> +  - for Exynos4412 based platforms:
->> +      cell #1: expected arm clock parent frequency
->
-> Ditto.
->
->> +      cell #2 ~ cell #10: value of clock divider in the following order
->> +            corem0_ratio, corem1_ratio, periph_ratio, atb_ratio,
->> +               pclk_dbg_ratio, apll_ratio, copy_ratio, hpm_ratio, cores_ratio
->> +
->> +- samsung,armclk-cells: defines the number of cells in
->> +  samsung,armclk-divider-table property. The value of this property depends on
->> +  the SoC type.
->
-> To follow conventions used by all other bindings with variable number of
-> cells, the property should be called "#samsung,armclk-cells". AFAIK the
-> "#" should be interpreted as "number of" and so accents the meaning of
-> the property.
->
->> +
->> +  - for Exynos4210 and Exynos4212: the value should be 9.
->> +  - for Exynos4412: the value should be 10.
->> +
->>  Each clock is assigned an identifier and client nodes can use this identifier
->>  to specify the clock which they consume.
->>
->> @@ -28,6 +57,14 @@ Example 1: An example of a clock controller node is listed below.
->>               compatible = "samsung,exynos4210-clock";
->>               reg = <0x10030000 0x20000>;
->>               #clock-cells = <1>;
->> +
->> +             samsung,armclk-cells = <9>;
->> +             samsung,armclk-divider-table = <1200000 3 7 3 4 1 7 5 0>,
->> +                                            <1000000 3 7 3 4 1 7 4 0>,
->> +                                            < 800000 3 7 3 3 1 7 3 0>,
->> +                                            < 500000 3 7 3 3 1 7 3 0>,
->> +                                            < 400000 3 7 3 3 1 7 3 0>,
->> +                                            < 200000 1 3 1 1 1 0 3 0>;
->>       };
->>
->>  Example 2: UART controller node that consumes the clock generated by the clock
->> diff --git a/Documentation/devicetree/bindings/clock/exynos5250-clock.txt b/Documentation/devicetree/bindings/clock/exynos5250-clock.txt
->> index 536eacd..3d63d09 100644
->> --- a/Documentation/devicetree/bindings/clock/exynos5250-clock.txt
->> +++ b/Documentation/devicetree/bindings/clock/exynos5250-clock.txt
->> @@ -13,6 +13,24 @@ Required Properties:
->
-> Same comments apply to this file as well.
->
-> Also, shouldn't you also extend exynos5420-clock.txt in the same way?
->
-> Best regards,
-> Tomasz
