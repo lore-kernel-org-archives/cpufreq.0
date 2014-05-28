@@ -1,32 +1,51 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 75121] Intel Pstate driver - powersave mode - CPU frequency too
- low
-Date: Wed, 28 May 2014 21:22:55 +0000
-Message-ID: <bug-75121-12968-3U8kcVbMxk@https.bugzilla.kernel.org/>
-References: <bug-75121-12968@https.bugzilla.kernel.org/>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: Performance regression in v3.14
+Date: Thu, 29 May 2014 00:53:38 +0800
+Message-ID: <20140528165337.GB2296@intel.com>
+References: <20140506163559.GA5308@localhost>
+ <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
+ <536A3EE9.5050409@intel.com>
+ <20140521090051.GO21412@localhost>
+ <20140528075945.GA21705@localhost>
+ <20140528003540.GA2296@intel.com>
+ <002401cf7a8d$fc6d9090$f548b1b0$@net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-75121-12968@https.bugzilla.kernel.org/>
+Content-Disposition: inline
+In-Reply-To: <002401cf7a8d$fc6d9090$f548b1b0$@net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Johan Hovold' <jhovold@gmail.com>, 'Dirk Brandewie' <dirk.brandewie@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=75121
+> That is not true. Yes, and due to the setpoint being less than
+> 100, which is needed or the driver won't work at all, there is
+> a tendency to drive the target pstate upwards.
+> However that is tempered by both the PID proportional gain,
+> and ultimately integer math. More importantly, the CPU
+> itself tells the driver when it is operating below the target
+> pstate and driver responds.
+> 
+> Additionally, the tendency to drive up the target pstate
+> too much is exasperated by some extra rounding up at a
+> couple of spots. Dirk has a pending fix.
+> 
+> > And a few iterations
+> > later, we will reach max (possible) frequency,
+> > then we are effectively performance governor
+> > (highest frequency all the time).
+> 
+> Please do not confuse highest target pstate with
+> highest frequency. They are not the same. The processor
+> itself can back off.
+> 
+Hi Doug,
 
---- Comment #21 from Doug Smythies <dsmythies@telus.net> ---
-Created attachment 137641
-  --> https://bugzilla.kernel.org/attachment.cgi?id=137641&action=edit
-Just showing Performance mode CPU frequency response curve
+All you said is about the hardware will not give whatever software wants
+(e.g., requested freq too high). Agreed.
 
-The graph just shows performance mode response curve (done twice) with
-powersave, but min set to 100%, response curve (done twice) with normal
-powersave mode, but the C0 reduced or removed (two versions).
+But does it matter to this discussion?
 
-I mentioned I would post this graph in
-http://www.spinics.net/lists/cpufreq/msg10167.html
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Yuyang 
