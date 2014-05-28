@@ -1,65 +1,80 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Tue, 27 May 2014 19:05:31 -0700
-Message-ID: <20140528020531.7816.5349@quantum>
-References: <20140521073457.GD31687@pengutronix.de>
- <00f65d1c-a375-40e7-b30a-cd8cb3ca87fc@BN1BFFO11FD020.protection.gbl>
- <CAKohpomb+h6ZNDgJ8AwJ_J9DjMB7AP_v-cp8coG3CACo5Wt4vQ@mail.gmail.com>
- <9956925.Qsz2bH3rDg@vostro.rjw.lan>
+From: Johan Hovold <jhovold@gmail.com>
+Subject: Re: Performance regression in v3.14
+Date: Wed, 28 May 2014 09:59:45 +0200
+Message-ID: <20140528075945.GA21705@localhost>
+References: <20140506163559.GA5308@localhost>
+ <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
+ <536A3EE9.5050409@intel.com>
+ <20140521090051.GO21412@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <9956925.Qsz2bH3rDg@vostro.rjw.lan>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=6LBcR8wn8FlDlQd/w/4U1esG49uq2hGtcSgLsyQ58EQ=;
+        b=FBRR/5i/2xi99HMsXiujZZy6TVR2yY5GFy/IrJM+LT+uKpscQVBifa0dObXQk+Ksn+
+         SuSO5GGigU4mNHWRZOp5PNQuKFfcjKitNZVO/xQcAUJAfSIdHw7aFya9dps/K2lndcqI
+         mUt3l7jIfNwio6Yj33uXiYBH4rNtc0b58DBbEZ3VpQ3CF6wyzlLsY9bm2cvtvn9pa+x1
+         kb6F/OQA4XBxvjw3gmc29y/CNuqKoZbh7WS+riY3lmpSqKZI3JVMsoJ6gm3BJzyIiP8D
+         eorMPjO+IrzrYweJsHECjwwlMtgnMiUzvlD13Emkp3333gihuzCn5DfHytnprVH7yW1+
+         ZPKA==
+Content-Disposition: inline
+In-Reply-To: <20140521090051.GO21412@localhost>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: =?utf-8?q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>, =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Johan Hovold <jhovold@gmail.com>, dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Doug Smythies <dsmythies@telus.net>, Yuyang Du <yuyang.du@intel.com>, Stratos Karafotis <stratosk@semaphore.gr>
 
-Quoting Rafael J. Wysocki (2014-05-26 04:22:32)
-> On Monday, May 26, 2014 11:59:09 AM Viresh Kumar wrote:
-> > On 23 May 2014 21:44, S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.=
-com> wrote:
-> > > Viresh: Could you imagine something similar for cpufreq? You sugg=
-ested
-> > > migrating to Hz resolution. I guess that would ideally mean to fo=
-llow
-> > > the CCF to a 64-bit type for frequencies and increasing the resol=
-ution.
-> > > I have a messy patch migrating cpufreq and OPP to Hz and unsigned=
- long
-> > > that works on Zynq. But cpufreq has so many users that it would b=
-ecome
-> > > quite an undertaking.
-> > > And we'd need some new/amended OPP DT binding.
-> >=20
-> > If we are going to migrate to Hz from KHz, I think we must consider=
- the
-> > 64 bit stuff right now, otherwise it will bite us later.
-> >=20
-> > @Rafael: What do you think?
->=20
-> I agree as far as the 64-bit thing goes, but is switching to Hz reall=
-y
-> necessary?
+[ +CC: Greg, Doug, Stratos, Yuyang ]
 
-Rafael,
+On Wed, May 21, 2014 at 11:00:51AM +0200, Johan Hovold wrote:
+> On Wed, May 07, 2014 at 07:10:49AM -0700, Dirk Brandewie wrote:
+> > On 05/06/2014 10:40 PM, Viresh Kumar wrote:
+> > > Cc'ing Dirk who is taking care of intel-pstate driver.
+> > >
+> > 
+> > Thanks Viresh I had seen this thread.
+> > 
+> > I am looking into it
+> 
+> Any updates on this, Dirk? 3.14 is still basically unusable with the
+> intel_pstate driver.
+> 
+> Any fixes or workarounds posted elsewhere that I can apply in the
+> meantime?
 
-Why should CPUfreq migrate to 64-bit if not switching to Hz? CPU clock
-rates are specified as KHz in CPUfreq via an unsigned int. On 32-bit
-systems that comes out to a max of 4.29THz (terahertz!)!
+Another week and still no reply, Dirk?
 
-Or maybe you meant, "I agree that the clock framework should switch to
-the 64-bit thing"?
+I tried applying your (rejected) patch "intel_pstate: Remove C0
+tracking" posted here:
 
-Personally I'd like to see the clock framework and cpufreq get on the
-same page (data type) for specifying clock rates, and the clock
-framework really should not use a granularity like KHz. In fact we have
-some fractional rates like 13.25Hz ...
+	https://lkml.org/lkml/2014/5/8/574
 
-Thanks,
-Mike
+to v3.14.4 and it fixes the problem as expected.
 
->=20
-> Rafael
->=20
+So we have a commit fcb6a15c2e7e ("intel_pstate: Take core C0 time into
+account for core busy calculation") that went into v3.14-rc2 (and was
+even marked for *stable*) that first broke Greg KH's system:
+
+	https://lkml.org/lkml/2014/2/19/626
+
+That was apparently fixed by e66c17683746 ("intel_pstate: Change
+busy calculation to use fixed point math."), but still left v3.14
+basically unusable for lower-intensity workloads such as my
+bash-completion example and other reported regressions:
+
+	https://bugzilla.kernel.org/show_bug.cgi?id=75121
+
+Sure there may be issues with v3.13 not hitting the lowest frequencies
+but at least the system was *usable*.
+
+In my opinion there's really no other option than to restore the 3.13
+behaviour by effectively reverting fcb6a15c2e7e ("intel_pstate: Take
+core C0 time into account for core busy calculation") until you have
+figured out a way to take C0 into account without breaking things too
+badly.
+
+Johan
