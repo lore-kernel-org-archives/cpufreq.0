@@ -1,97 +1,32 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: Performance regression in v3.14
-Date: Wed, 28 May 2014 09:00:43 -0700
-Message-ID: <002401cf7a8d$fc6d9090$f548b1b0$@net>
-References: <20140506163559.GA5308@localhost> <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com> <536A3EE9.5050409@intel.com> <20140521090051.GO21412@localhost> <20140528075945.GA21705@localhost> <20140528003540.GA2296@intel.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 75121] Intel Pstate driver - powersave mode - CPU frequency too
+ low
+Date: Wed, 28 May 2014 21:22:55 +0000
+Message-ID: <bug-75121-12968-3U8kcVbMxk@https.bugzilla.kernel.org/>
+References: <bug-75121-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140528003540.GA2296@intel.com>
-Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-75121-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: 'Yuyang Du' <yuyang.du@intel.com>, 'Johan Hovold' <jhovold@gmail.com>
-Cc: 'Dirk Brandewie' <dirk.brandewie@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>, Doug Smythies <dsmythies@telus.net>
+To: cpufreq@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=75121
 
-On 2014.05.27 01:40 Yuyang Du wrote:
->> On 2014.05.27 01:00, Johan Hovold wrote:
->> I tried applying your (rejected) patch "intel_pstate: Remove C0
->> tracking" posted here:
->> 
->> 	https://lkml.org/lkml/2014/5/8/574
->> 
->> to v3.14.4 and it fixes the problem as expected.
->> 
->> So we have a commit fcb6a15c2e7e ("intel_pstate: Take core C0 time into
->> account for core busy calculation") that went into v3.14-rc2 (and was
->> even marked for *stable*) that first broke Greg KH's system:
->> 
->> 	https://lkml.org/lkml/2014/2/19/626
->> 
->> That was apparently fixed by e66c17683746 ("intel_pstate: Change
->> busy calculation to use fixed point math."), but still left v3.14
->> basically unusable for lower-intensity workloads such as my
->> bash-completion example and other reported regressions:
->> 
->> 	https://bugzilla.kernel.org/show_bug.cgi?id=75121
->> 
->> Sure there may be issues with v3.13 not hitting the lowest frequencies
->> but at least the system was *usable*.
->> 
->> In my opinion there's really no other option than to restore the 3.13
->> behaviour by effectively reverting fcb6a15c2e7e ("intel_pstate: Take
->> core C0 time into account for core busy calculation") until you have
->> figured out a way to take C0 into account without breaking things too
->> badly.
+--- Comment #21 from Doug Smythies <dsmythies@telus.net> ---
+Created attachment 137641
+  --> https://bugzilla.kernel.org/attachment.cgi?id=137641&action=edit
+Just showing Performance mode CPU frequency response curve
 
-> Hi all,
+The graph just shows performance mode response curve (done twice) with
+powersave, but min set to 100%, response curve (done twice) with normal
+powersave mode, but the C0 reduced or removed (two versions).
 
-> My posts before and now are only relevant to why C0 tracking can't be
-> removed. Maybe I need to elaborate on it a little bit more.
+I mentioned I would post this graph in
+http://www.spinics.net/lists/cpufreq/msg10167.html
 
-> In a nutshell, without C0 tracking, the intel_pstate is effectively
-> performance governor in terms of frequency control.
-
-That is not true. The CPU Frequency Verses Load response curve
-is different and considerably more aggressive for performance mode
-when compared to powersave mode with C0 tracking removed.
-
-I'll add a relevant graph to the bugzilla report referenced above.
-(but it will be a few hours before I do.)
-
-> Why? Without C0 trakcing, the machinery of the freq control
-> is as I formed:
-> last_freq_average / last_requested_freq ==> setpoint
-> which can be virtually formed into:
-> last_freq_average / last_requested_freq * last_C0_pct ==>
-> setpoint * last_C0_pct
-
-> which said, the control machinery will increase the frequency
-> at ANY frequency at ANY C0_pct (which is the CPU utilization),
-> since setpoint is less then 100 percent.
-
-That is not true. Yes, and due to the setpoint being less than
-100, which is needed or the driver won't work at all, there is
-a tendency to drive the target pstate upwards.
-However that is tempered by both the PID proportional gain,
-and ultimately integer math. More importantly, the CPU
-itself tells the driver when it is operating below the target
-pstate and driver responds.
-
-Additionally, the tendency to drive up the target pstate
-too much is exasperated by some extra rounding up at a
-couple of spots. Dirk has a pending fix.
-
-> And a few iterations
-> later, we will reach max (possible) frequency,
-> then we are effectively performance governor
-> (highest frequency all the time).
-
-Please do not confuse highest target pstate with
-highest frequency. They are not the same. The processor
-itself can back off.
-
-... Doug
-
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
