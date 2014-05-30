@@ -1,51 +1,75 @@
-From: Yuyang Du <yuyang.du@intel.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Subject: Re: Performance regression in v3.14
-Date: Thu, 29 May 2014 00:53:38 +0800
-Message-ID: <20140528165337.GB2296@intel.com>
+Date: Thu, 29 May 2014 19:27:34 -0700
+Message-ID: <20140530022734.GC19080@kroah.com>
 References: <20140506163559.GA5308@localhost>
  <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
  <536A3EE9.5050409@intel.com>
  <20140521090051.GO21412@localhost>
  <20140528075945.GA21705@localhost>
- <20140528003540.GA2296@intel.com>
- <002401cf7a8d$fc6d9090$f548b1b0$@net>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <002401cf7a8d$fc6d9090$f548b1b0$@net>
+In-Reply-To: <20140528075945.GA21705@localhost>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Johan Hovold' <jhovold@gmail.com>, 'Dirk Brandewie' <dirk.brandewie@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>
+To: Johan Hovold <jhovold@gmail.com>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Yuyang Du <yuyang.du@intel.com>, Stratos Karafotis <stratosk@semaphore.gr>
 
-> That is not true. Yes, and due to the setpoint being less than
-> 100, which is needed or the driver won't work at all, there is
-> a tendency to drive the target pstate upwards.
-> However that is tempered by both the PID proportional gain,
-> and ultimately integer math. More importantly, the CPU
-> itself tells the driver when it is operating below the target
-> pstate and driver responds.
+On Wed, May 28, 2014 at 09:59:45AM +0200, Johan Hovold wrote:
+> [ +CC: Greg, Doug, Stratos, Yuyang ]
 > 
-> Additionally, the tendency to drive up the target pstate
-> too much is exasperated by some extra rounding up at a
-> couple of spots. Dirk has a pending fix.
+> On Wed, May 21, 2014 at 11:00:51AM +0200, Johan Hovold wrote:
+> > On Wed, May 07, 2014 at 07:10:49AM -0700, Dirk Brandewie wrote:
+> > > On 05/06/2014 10:40 PM, Viresh Kumar wrote:
+> > > > Cc'ing Dirk who is taking care of intel-pstate driver.
+> > > >
+> > > 
+> > > Thanks Viresh I had seen this thread.
+> > > 
+> > > I am looking into it
+> > 
+> > Any updates on this, Dirk? 3.14 is still basically unusable with the
+> > intel_pstate driver.
+> > 
+> > Any fixes or workarounds posted elsewhere that I can apply in the
+> > meantime?
 > 
-> > And a few iterations
-> > later, we will reach max (possible) frequency,
-> > then we are effectively performance governor
-> > (highest frequency all the time).
+> Another week and still no reply, Dirk?
 > 
-> Please do not confuse highest target pstate with
-> highest frequency. They are not the same. The processor
-> itself can back off.
+> I tried applying your (rejected) patch "intel_pstate: Remove C0
+> tracking" posted here:
 > 
-Hi Doug,
+> 	https://lkml.org/lkml/2014/5/8/574
+> 
+> to v3.14.4 and it fixes the problem as expected.
+> 
+> So we have a commit fcb6a15c2e7e ("intel_pstate: Take core C0 time into
+> account for core busy calculation") that went into v3.14-rc2 (and was
+> even marked for *stable*) that first broke Greg KH's system:
+> 
+> 	https://lkml.org/lkml/2014/2/19/626
+> 
+> That was apparently fixed by e66c17683746 ("intel_pstate: Change
+> busy calculation to use fixed point math."), but still left v3.14
+> basically unusable for lower-intensity workloads such as my
+> bash-completion example and other reported regressions:
+> 
+> 	https://bugzilla.kernel.org/show_bug.cgi?id=75121
+> 
+> Sure there may be issues with v3.13 not hitting the lowest frequencies
+> but at least the system was *usable*.
+> 
+> In my opinion there's really no other option than to restore the 3.13
+> behaviour by effectively reverting fcb6a15c2e7e ("intel_pstate: Take
+> core C0 time into account for core busy calculation") until you have
+> figured out a way to take C0 into account without breaking things too
+> badly.
 
-All you said is about the hardware will not give whatever software wants
-(e.g., requested freq too high). Agreed.
+Dirk has posted some patches, do they fix the problem for you?
 
-But does it matter to this discussion?
+thanks,
 
-Yuyang 
+greg k-h
