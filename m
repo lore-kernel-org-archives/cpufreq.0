@@ -1,36 +1,19 @@
-From: Johan Hovold <jhovold@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: Performance regression in v3.14
-Date: Fri, 30 May 2014 10:49:26 +0200
-Message-ID: <20140530084926.GA2044@localhost>
-References: <20140506163559.GA5308@localhost>
- <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
- <536A3EE9.5050409@intel.com>
- <20140521090051.GO21412@localhost>
- <20140528075945.GA21705@localhost>
- <20140530022734.GC19080@kroah.com>
+Date: Fri, 30 May 2014 14:29:47 +0200
+Message-ID: <77867612.qQW44bBzL9@vostro.rjw.lan>
+References: <20140506163559.GA5308@localhost> <20140528075945.GA21705@localhost> <20140530022734.GC19080@kroah.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        bh=h3pf4QYhQZfOQPpWv5u+Q3Q0XMVsAXMFs9m7VU84Nvs=;
-        b=hn6hGoGSV71ZYOYXIAo/e+biVGprVuE7/cwEYL27gkqWPJ7U+83VGvf2onYfrxFkAQ
-         mJoiKjS4hZkNT67E4ksoSdJ+h8RUpf+wEKfeavjjW9DUmGg6sw23X3wvZEyXbW7Kq8op
-         R/VtHJeClSDY/QdpKf1yjdJJSRwV0T+BxpO44W+Re71Oili09FCDlXZYV3ziAWo9jqKR
-         f7kEYbJSfh98XOf8XIB5tbiwG+cExAnwSrnIvIpzo1Gwe3vhNIEDli/uhkIb4gGnrQLM
-         igPmsqStgcuWuJKeTDxQm+iKrImhOpKpjRXY8XDZpG9A9Ijm4iS9L2zLqCAO1QaZQE3/
-         pm0w==
-Content-Disposition: inline
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <20140530022734.GC19080@kroah.com>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Johan Hovold <jhovold@gmail.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Yuyang Du <yuyang.du@intel.com>, Stratos Karafotis <stratosk@semaphore.gr>
 
-On Thu, May 29, 2014 at 07:27:34PM -0700, Greg Kroah-Hartman wrote:
+On Thursday, May 29, 2014 07:27:34 PM Greg Kroah-Hartman wrote:
 > On Wed, May 28, 2014 at 09:59:45AM +0200, Johan Hovold wrote:
 > > [ +CC: Greg, Doug, Stratos, Yuyang ]
 > > 
@@ -83,74 +66,7 @@ On Thu, May 29, 2014 at 07:27:34PM -0700, Greg Kroah-Hartman wrote:
 > 
 > Dirk has posted some patches, do they fix the problem for you?
 
-Thanks for letting me know.
+I'm queuing up this series for 3.16, BTW.
 
-As the series posted yesterday includes the effective revert
-"intel_pstate: Remove C0 tracking" mentioned above, they do.  
+Rafael
 
-The series does not apply at all to v3.14.4, and I choose to include
-d37e2b764499 ("intel_pstate: remove unneeded sample buffers") in order
-to ease backporting slightly.
-
-I don't see much difference from applying only the revert patch or all
-of them. I've included turbostat output from when running my
-bash-construct on an idle system (running X, though) below.
-
-With 3.14.4 all cores appear stuck at minimum frequency. With the
-revert patch (with or without the remaining patches) frequencies are
-around 3.7Ghz for all cores.
-
-As at least one of the new patches has already raised some discussion:
-
-	http://marc.info/?l=linux-pm&m=140141648726863&w=2
-
-perhaps we should consider simply applying and backporting the revert
-(and fixed-point rounding fix) to restore v3.13 behaviour and un-break
-v3.14 in the meantime?
-
-Thanks,
-Johan
-
-
-v3.14.4 (with "intel_pstate: Remove C0 tracking" and a version of
-"intel_pstate: Fix fixed point rounding macro" from two weeks ago):
-
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         12.63 3.88 3.39   0  13.32   0.02   0.06  73.96   41   41   0.00   0.00   0.00   0.00  18.69  10.70  0.00
-  0   0   0.50 3.88 3.39   0   3.28   0.10   0.24  95.88   31   41   0.00   0.00   0.00   0.00  18.69  10.70  0.00
-  0   4   0.57 3.87 3.39   0   3.22
-  1   1   0.09 3.61 3.39   0   0.03   0.00   0.00  99.88   31
-  1   5   0.01 3.74 3.39   0   0.11
-  2   2   0.02 3.61 3.39   0   0.02   0.00   0.00  99.96   31
-  2   6   0.01 3.80 3.39   0   0.04
-  3   3  99.85 3.89 3.39   0   0.04   0.00   0.00   0.12   41
-  3   7   0.01 3.81 3.39   0  99.87
-1.194291 sec
-
-v3.14.4 (with patches from yesterday):
-
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         12.63 3.88 3.39   0  13.33   0.04   0.04  73.95   44   45   0.00   0.00   0.00   0.00  18.65  10.70  0.00
-  0   0   0.52 3.88 3.39   0   3.28   0.17   0.16  95.88   33   45   0.00   0.00   0.00   0.00  18.65  10.70  0.00
-  0   4   0.58 3.87 3.39   0   3.22
-  1   1   0.10 3.45 3.39   0   0.05   0.00   0.00  99.85   34
-  1   5   0.01 3.67 3.39   0   0.14
-  2   2   0.02 3.56 3.39   0   0.04   0.00   0.00  99.94   34
-  2   6   0.01 3.63 3.39   0   0.05
-  3   3  99.82 3.89 3.39   0   0.05   0.00   0.00   0.13   44
-  3   7   0.01 3.70 3.39   0  99.86
-1.197190 sec
-
-v3.14.4 (current stable):
-
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         12.86 0.82 3.39   0  14.16   0.00   0.00  72.97   32   32   0.00   0.00   0.00   0.00   5.55   0.61  0.00
-  0   0   2.26 0.82 3.39   0   5.74   0.01   0.02  91.98   32   32   0.00   0.00   0.00   0.00   5.55   0.61  0.00
-  0   4   0.58 0.82 3.39   0   7.42
-  1   1   0.09 0.82 3.39   0   0.03   0.00   0.00  99.88   31
-  1   5   0.01 0.85 3.39   0   0.10
-  2   2   0.02 0.83 3.39   0   0.06   0.00   0.00  99.92   31
-  2   6   0.03 0.86 3.39   0   0.05
-  3   3  99.89 0.82 3.39   0   0.01   0.00   0.00   0.09   31
-  3   7   0.02 0.89 3.39   0  99.89
-5.675564 sec
