@@ -1,72 +1,30 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Performance regression in v3.14
-Date: Fri, 30 May 2014 14:29:47 +0200
-Message-ID: <77867612.qQW44bBzL9@vostro.rjw.lan>
-References: <20140506163559.GA5308@localhost> <20140528075945.GA21705@localhost> <20140530022734.GC19080@kroah.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 62551] The system freezes for a moment when the CPU scaling is
+ enabled
+Date: Tue, 03 Jun 2014 05:24:45 +0000
+Message-ID: <bug-62551-12968-yeBVOLH2bq@https.bugzilla.kernel.org/>
+References: <bug-62551-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140530022734.GC19080@kroah.com>
+In-Reply-To: <bug-62551-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Johan Hovold <jhovold@gmail.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Yuyang Du <yuyang.du@intel.com>, Stratos Karafotis <stratosk@semaphore.gr>
+To: cpufreq@vger.kernel.org
 
-On Thursday, May 29, 2014 07:27:34 PM Greg Kroah-Hartman wrote:
-> On Wed, May 28, 2014 at 09:59:45AM +0200, Johan Hovold wrote:
-> > [ +CC: Greg, Doug, Stratos, Yuyang ]
-> > 
-> > On Wed, May 21, 2014 at 11:00:51AM +0200, Johan Hovold wrote:
-> > > On Wed, May 07, 2014 at 07:10:49AM -0700, Dirk Brandewie wrote:
-> > > > On 05/06/2014 10:40 PM, Viresh Kumar wrote:
-> > > > > Cc'ing Dirk who is taking care of intel-pstate driver.
-> > > > >
-> > > > 
-> > > > Thanks Viresh I had seen this thread.
-> > > > 
-> > > > I am looking into it
-> > > 
-> > > Any updates on this, Dirk? 3.14 is still basically unusable with the
-> > > intel_pstate driver.
-> > > 
-> > > Any fixes or workarounds posted elsewhere that I can apply in the
-> > > meantime?
-> > 
-> > Another week and still no reply, Dirk?
-> > 
-> > I tried applying your (rejected) patch "intel_pstate: Remove C0
-> > tracking" posted here:
-> > 
-> > 	https://lkml.org/lkml/2014/5/8/574
-> > 
-> > to v3.14.4 and it fixes the problem as expected.
-> > 
-> > So we have a commit fcb6a15c2e7e ("intel_pstate: Take core C0 time into
-> > account for core busy calculation") that went into v3.14-rc2 (and was
-> > even marked for *stable*) that first broke Greg KH's system:
-> > 
-> > 	https://lkml.org/lkml/2014/2/19/626
-> > 
-> > That was apparently fixed by e66c17683746 ("intel_pstate: Change
-> > busy calculation to use fixed point math."), but still left v3.14
-> > basically unusable for lower-intensity workloads such as my
-> > bash-completion example and other reported regressions:
-> > 
-> > 	https://bugzilla.kernel.org/show_bug.cgi?id=75121
-> > 
-> > Sure there may be issues with v3.13 not hitting the lowest frequencies
-> > but at least the system was *usable*.
-> > 
-> > In my opinion there's really no other option than to restore the 3.13
-> > behaviour by effectively reverting fcb6a15c2e7e ("intel_pstate: Take
-> > core C0 time into account for core busy calculation") until you have
-> > figured out a way to take C0 into account without breaking things too
-> > badly.
-> 
-> Dirk has posted some patches, do they fix the problem for you?
+https://bugzilla.kernel.org/show_bug.cgi?id=62551
 
-I'm queuing up this series for 3.16, BTW.
+Zhang Rui <rui.zhang@intel.com> changed:
 
-Rafael
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |NEEDINFO
+                 CC|                            |rui.zhang@intel.com
 
+--- Comment #1 from Zhang Rui <rui.zhang@intel.com> ---
+please attach the output of "grep . /sys/class/thermal/*/*"
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
