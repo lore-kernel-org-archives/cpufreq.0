@@ -1,100 +1,72 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 3.14 003/228] MIPS/loongson2_cpufreq: Fix CPU clock rate setting
-Date: Wed,  4 Jun 2014 16:20:32 -0700
-Message-ID: <20140604232348.187603019@linuxfoundation.org>
-References: <20140604232347.966798903@linuxfoundation.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: ppc-corenet-cpu-freq: do_div use quotient
+Date: Thu, 5 Jun 2014 10:53:52 +0530
+Message-ID: <CAKohpo=iDXJCpgLpYBGL-i8Kz2J=UiZt488rgfRcEy0qqA6w0Q@mail.gmail.com>
+References: <1398701898-68201-1-git-send-email-tim.gardner@canonical.com>
+	<1401917713-20792-1-git-send-email-Ed.Swarthout@freescale.com>
 Mime-Version: 1.0
-Return-path: <linux-mips-bounce@linux-mips.org>
-In-Reply-To: <20140604232347.966798903@linuxfoundation.org>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-Id: <cpufreq.vger.kernel.org>
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1401917713-20792-1-git-send-email-Ed.Swarthout@freescale.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-mips@linux-mips.org, cpufreq@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>
+To: Ed Swarthout <Ed.Swarthout@freescale.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@lists.ozlabs.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, scottwood@freescale.com
 
-3.14-stable review patch.  If anyone has any objections, please let me know.
+On 5 June 2014 03:05, Ed Swarthout <Ed.Swarthout@freescale.com> wrote:
+> 6712d2931933ada259b82f06c03a855b19937074 (cpufreq:
+> ppc-corenet-cpufreq: Fix __udivdi3 modpost error) used the remainder
+> from do_div instead of the quotient. Fix that and add one to ensure
+> minimum is met.
 
-------------------
+This should have been caught with reviews, I remember I saw the
+change but didn't bother checking implementation of do_div()..
 
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
+I get a '-1' for this review, bad.
 
-commit 8e8acb32960f42c81b1d50deac56a2c07bb6a18a upstream.
+> Signed-off-by: Ed Swarthout <Ed.Swarthout@freescale.com>
+> ---
+>
+> Tested on t4240qds and p4080ds.
+>
+> https://patchwork.kernel.org/patch/4296811/
+> http://patchwork.ozlabs.org/patch/356096/
+>
+>  drivers/cpufreq/ppc-corenet-cpufreq.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> index 0af618a..3607070 100644
+> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
+> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> @@ -138,7 +138,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         struct cpufreq_frequency_table *table;
+>         struct cpu_data *data;
+>         unsigned int cpu = policy->cpu;
+> -       u64 transition_latency_hz;
+> +       u64 u64temp;
 
-Loongson2 has been using (incorrectly) kHz for cpu_clk rate. This has
-been unnoticed, as loongson2_cpufreq was the only place where the rate
-was set/get. After commit 652ed95d5fa6074b3c4ea245deb0691f1acb6656
-(cpufreq: introduce cpufreq_generic_get() routine) things however broke,
-and now loops_per_jiffy adjustments are incorrect (1000 times too long).
-The patch fixes this by changing cpu_clk rate to Hz.
+Why do you want to rename this?
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-mips@linux-mips.org
-Cc: linux-kernel@vger.kernel.org
-Cc: cpufreq@vger.kernel.org
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
-Patchwork: https://patchwork.linux-mips.org/patch/6678/
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>         np = of_get_cpu_node(cpu, NULL);
+>         if (!np)
+> @@ -206,9 +206,10 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         for_each_cpu(i, per_cpu(cpu_mask, cpu))
+>                 per_cpu(cpu_data, i) = data;
+>
+> -       transition_latency_hz = 12ULL * NSEC_PER_SEC;
+> -       policy->cpuinfo.transition_latency =
+> -               do_div(transition_latency_hz, fsl_get_sys_freq());
+> +       /* Minimum transition latency is 12 platform clocks */
+> +       u64temp = 12ULL * NSEC_PER_SEC;
+> +       do_div(u64temp, fsl_get_sys_freq());
+> +       policy->cpuinfo.transition_latency = u64temp + 1;
 
----
- arch/mips/loongson/lemote-2f/clock.c |    5 +++--
- drivers/cpufreq/loongson2_cpufreq.c  |    4 ++--
- 2 files changed, 5 insertions(+), 4 deletions(-)
+Why this + 1 here ?
 
---- a/arch/mips/loongson/lemote-2f/clock.c
-+++ b/arch/mips/loongson/lemote-2f/clock.c
-@@ -91,6 +91,7 @@ EXPORT_SYMBOL(clk_put);
- 
- int clk_set_rate(struct clk *clk, unsigned long rate)
- {
-+	unsigned int rate_khz = rate / 1000;
- 	int ret = 0;
- 	int regval;
- 	int i;
-@@ -111,10 +112,10 @@ int clk_set_rate(struct clk *clk, unsign
- 		if (loongson2_clockmod_table[i].frequency ==
- 		    CPUFREQ_ENTRY_INVALID)
- 			continue;
--		if (rate == loongson2_clockmod_table[i].frequency)
-+		if (rate_khz == loongson2_clockmod_table[i].frequency)
- 			break;
- 	}
--	if (rate != loongson2_clockmod_table[i].frequency)
-+	if (rate_khz != loongson2_clockmod_table[i].frequency)
- 		return -ENOTSUPP;
- 
- 	clk->rate = rate;
---- a/drivers/cpufreq/loongson2_cpufreq.c
-+++ b/drivers/cpufreq/loongson2_cpufreq.c
-@@ -62,7 +62,7 @@ static int loongson2_cpufreq_target(stru
- 	set_cpus_allowed_ptr(current, &cpus_allowed);
- 
- 	/* setting the cpu frequency */
--	clk_set_rate(policy->clk, freq);
-+	clk_set_rate(policy->clk, freq * 1000);
- 
- 	return 0;
- }
-@@ -92,7 +92,7 @@ static int loongson2_cpufreq_cpu_init(st
- 	     i++)
- 		loongson2_clockmod_table[i].frequency = (rate * i) / 8;
- 
--	ret = clk_set_rate(cpuclk, rate);
-+	ret = clk_set_rate(cpuclk, rate * 1000);
- 	if (ret) {
- 		clk_put(cpuclk);
- 		return ret;
-
-
-
+>         of_node_put(np);
+>
+> --
+> 1.9.1
+>
