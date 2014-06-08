@@ -1,10 +1,11 @@
 From: Ben Hutchings <ben@decadent.org.uk>
-Subject: [PATCH 1/2] longhaul: Mark it as dangerous in Kconfig
-Date: Mon, 09 Jun 2014 00:20:42 +0100
-Message-ID: <1402269642.23860.48.camel@deadeye.wl.decadent.org.uk>
+Subject: [PATCH 2/2] e_powersaver: Require setting a module parameter to
+ enable it
+Date: Mon, 09 Jun 2014 00:22:21 +0100
+Message-ID: <1402269741.23860.50.camel@deadeye.wl.decadent.org.uk>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg="pgp-sha512";
-	protocol="application/pgp-signature"; boundary="=-qdRQW9Z+PhGupbTSkfnL"
+	protocol="application/pgp-signature"; boundary="=-vWYZQn6x06Cm0n+5/FlK"
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
@@ -12,68 +13,84 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.o
 Cc: cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>, =?UTF-8?Q?Rafa=C5=82?= Bilski <rafalbilski@interia.pl>
 
 
---=-qdRQW9Z+PhGupbTSkfnL
+--=-vWYZQn6x06Cm0n+5/FlK
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-longhaul quickly caused hard lockups and possibly killed the memory
-module on my EPIA-PD board.  It is commented as:
+The Kconfig text and comment at the top of the file say this is
+DANGEROUS.  According to Rafa=C5=82 Bilski it is not so bad as it used to
+be, but he still didn't think it should be auto-loaded.
 
-'BIG FAT DISCLAIMER: Work in progress code. Possibly *dangerous*'
+Rafa=C5=82 already made a similar change to longhaul.
 
-Let's put another warning where people are more likely to see it.
-
-References: https://bugs.debian.org/707047
+References: http://www.spinics.net/lists/cpufreq/msg02919.html
 Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
- drivers/cpufreq/Kconfig.x86 | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/cpufreq/e_powersaver.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index d369349..a3877c6 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -247,12 +247,13 @@ config X86_LONGRUN
- 	  If in doubt, say N.
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.=
+c
+index a0d2a42..880be39 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -45,6 +45,7 @@ static struct eps_cpu_data *eps_cpu[NR_CPUS];
+ static int freq_failsafe_off;
+ static int voltage_failsafe_off;
+ static int set_max_voltage;
++static int enable;
 =20
- config X86_LONGHAUL
--	tristate "VIA Cyrix III Longhaul"
-+	tristate "VIA Cyrix III Longhaul (DANGEROUS)"
- 	depends on X86_32 && ACPI_PROCESSOR
- 	help
- 	  This adds the CPUFreq driver for VIA Samuel/CyrixIII,
- 	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T
--	  processors.
-+	  processors.  It does not work with all motherboards and may
-+	  cause hardware damage.
+ #if defined CONFIG_ACPI_PROCESSOR || defined CONFIG_ACPI_PROCESSOR_MODULE
+ static int ignore_acpi_limit;
+@@ -410,6 +411,10 @@ static int __init eps_init(void)
+ {
+ 	if (!x86_match_cpu(eps_cpu_id) || boot_cpu_data.x86_model < 10)
+ 		return -ENODEV;
++	if (!enable) {
++		printk(KERN_ERR "eps: Option \"enable\" not set. Aborting.\n");
++		return -ENODEV;
++	}
+ 	if (cpufreq_register_driver(&eps_driver))
+ 		return -EINVAL;
+ 	return 0;
+@@ -432,6 +437,10 @@ MODULE_PARM_DESC(ignore_acpi_limit, "Don't check ACPI'=
+s processor speed limit");
+ #endif
+ module_param(set_max_voltage, int, 0644);
+ MODULE_PARM_DESC(set_max_voltage, "Set maximum CPU voltage (mV) C7-M only"=
+);
++/* By default driver is disabled to prevent incompatible
++ * system freeze. */
++module_param(enable, int, 0644);
++MODULE_PARM_DESC(enable, "Enable driver");
 =20
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
-=20
+ MODULE_AUTHOR("Rafal Bilski <rafalbilski@interia.pl>");
+ MODULE_DESCRIPTION("Enhanced PowerSaver driver for VIA C7 CPU's.");
 
 --=20
 Ben Hutchings
 One of the nice things about standards is that there are so many of them.
 
---=-qdRQW9Z+PhGupbTSkfnL
+--=-vWYZQn6x06Cm0n+5/FlK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIVAwUAU5Tv1ue/yOyVhhEJAQoV7g/9HAd176B9uczqXmeeL7v6CHaWbIZQtYHo
-1ygHh54kYWaF8NRkWWXdDr+7+qML4ZimM3blmDZZ4/dVXap6K0EGEELtAVGWdhyT
-p74RLlyNFZ+9XvTltMrhKeuefsDhO5DWNWZSqHgKtYQGV33nMx6ZavybhdbY5Q7j
-eCABhCQDRqCcaf+NywJ8AffpPgnc9kfgPommQ+EM0gVhWJLJYJS8mDkZ+DgRrM8y
-Z3FbLweJwyaJnh0u4ZS5diiz91L80av3s1K6u5Bmx05Yd0ZMcXwQflpe5cpa+vvo
-FsWQgGgLXp8QvEW5bAwer93R+RvqlKe02+NeBv9rmP1xMQLDsGcm6DTmzolD/HqO
-clTbzKq6nGcjA8rqQuOpawMU+2fNpR3dBszmPct9AjocnbCFavJK8T3k3IY3jrMN
-CjSlN4od7BcAAmx8Xe0Y0QKOSaQuuEuql3NkBA2oCVm7eRaL4RlqB9/2L5//27sY
-RgMMca4fe7xavRje469QO/qvG/b7rw+75qTNLGQLXeJvkEXCPNcF62oRruWDNbmg
-t8ckmzpCYeUTL+YR28SIJFVy/TLNXIthteBJLzXin2UgFGfuQj4Xn/VrR6BrfzfP
-7GEYxYeif7ATNqNX7mIgkQBg9LTiJBaEK5PHZPeItOTTNpuQb4SP93R+7+sg+ior
-h4v8sP0JmdI=
-=lrBd
+iQIVAwUAU5TwLee/yOyVhhEJAQqv5BAAtWf9ycqIntlwxrJds5hhbDruCww+ePFH
+Os4ViFWgKHpXBV/OjQRfAAWq535J6wt2OI4Wie6sSYWlJVZSR0z35tVhTSzMku5m
+pF2Jt1Wxkfig8A9QJqFhiu+e5EMVtHMnLZ9lmwcAYDlBO+o1JqUxiIGCU2zGCJt1
+8HjXwJKcQ8PMQqeKjP1COJUXLXbC7hsJv+2rGQlj4NK7WBfLiy8UM3hKKf6WQdLH
+LfAJMsSeQqEjTAgc6Ii3gaS6VSq5JnPFVfyd8BGoOajNpR2BcrGM1Se6wiSY2iSh
+HINPhSSdIjgYnfSFIqwEql8m6iPZsaFe9xmZCS/nWDEeJYW/3/agLTl6aZfOT4bP
+6WKYb0Ei7sq/t8/6TPkgwQ6hcTKxs0H/iHlMHcfETo4h/OwfPkgOkXWcBJZJskD/
+eTM9IqCIMhGbP3oAy31tUSfkwmixR/QyyRuos7pXflUd08rQvZDFqDA50lLdPv7x
+9p+SC2KrvuPZfiqhcGUFaIVFiY7a0i2HyFWq6s6MSzQnew3TkQFHcxr2RYL+w1sb
+TLRI9gvx9dlqSziKUAuNsN1fs466OhxKCkEE/a/wURTGkbx+D5Xm6e9zB7BwdLp7
+lccX1jjM8P/auGBi6sV/fbRrPWL1DwWQJ41zIyyYZWoG5YLNnuD5p9jlCcXVnvm0
+lUKz6e/Um4I=
+=j+9I
 -----END PGP SIGNATURE-----
 
---=-qdRQW9Z+PhGupbTSkfnL--
+--=-vWYZQn6x06Cm0n+5/FlK--
