@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 77201] CPU online hangs, works when powernow-k8 is UN-loaded
-Date: Tue, 10 Jun 2014 14:06:01 +0000
-Message-ID: <bug-77201-12968-7Iha5zWT0x@https.bugzilla.kernel.org/>
+Date: Tue, 10 Jun 2014 14:42:22 +0000
+Message-ID: <bug-77201-12968-FzGTZy90p8@https.bugzilla.kernel.org/>
 References: <bug-77201-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,38 +14,25 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=77201
 
---- Comment #22 from Viresh Kumar <viresh.kumar@linaro.org> ---
-Hi,
+--- Comment #23 from registosites@hotmail.com ---
+> Hi,
+> 
+> Have you missed the most important log? Offline/online with
+> Hang..
+> 
+> In your case both CPUs share clock line and so it doesn't matter
+> which cpu you play with.
 
-Have you missed the most important log? Offline/online with
-Hang..
+I don't know how to get the log from when the machine hangs, I've tried:
 
-In your case both CPUs share clock line and so it doesn't matter
-which cpu you play with.
+echo 1 > /sys/devices/system/cpu/cpu1/online ; dmesg > hang.log
 
-Sent from my iPad
+When trying to execute that the machine hangs and I have to do a hard reset.
+After booting and fsck I don't have any traces of hang.log in the filesystem.
 
-> On 10-Jun-2014, at 6:14 pm, bugzilla-daemon@bugzilla.kernel.org wrote:
-> 
-> https://bugzilla.kernel.org/show_bug.cgi?id=77201
-> 
-> --- Comment #17 from registosites@hotmail.com ---
-> I have done as asked and added the ccflags-y to the top of
-> drivers/cpufreq/Makefile and enabled the specified config options.
-> 
-> I have separated the logs in 3 files: boot log, governor change
-> (ondemand->performance) log and cpu offline/online log.
-> 
-> When using the performance governor, cpu offline/online works fine, but if
-> afterterwards I try to change the governor back to ondemand the machine hangs,
-> it doesn't matter for which cpu I try to change the governor first.
-> 
-> I'm also attaching the config I used, just in case anyone wants to check which
-> config options were used.
-> 
-> -- 
-> You are receiving this mail because:
-> You are on the CC list for the bug.
+If there is any other way to get the logs I'll need guidance or pointers on how
+to do it. In any case  I'm attaching the log of cpu offline with the ondemand
+cpu governor and powernow-k8 loaded.
 
 -- 
 You are receiving this mail because:
