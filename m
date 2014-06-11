@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 77201] CPU online hangs, works when powernow-k8 is UN-loaded
-Date: Wed, 11 Jun 2014 19:42:28 +0000
-Message-ID: <bug-77201-12968-t7yktQc9kc@https.bugzilla.kernel.org/>
+Date: Wed, 11 Jun 2014 19:43:00 +0000
+Message-ID: <bug-77201-12968-Iz0lmXs6UI@https.bugzilla.kernel.org/>
 References: <bug-77201-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,13 +14,18 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=77201
 
---- Comment #51 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
-(In reply to Srivatsa S. Bhat from comment #49)
-> By the way, another approach I have in mind is to remove the usage of
-> work_on_cpu() from the powernow-k8 driver (since that's the only noticeably
-> different thing about this driver), and check if it solves the problem.
+--- Comment #52 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
+(In reply to registosites from comment #50)
+> (In reply to Srivatsa S. Bhat from comment #48)
+> 
+> Should I also test
+> 
+> e0b3165ba521 (cpufreq: add 'freq_table' in struct cpufreq_policy)
+> 12478cf0c55e (cpufreq: Make sure frequency transitions are serialized)
+> 
+> in case the previous ones work/don't work?
 
-That is a good idea.  At least we could narrow down the issue this way.
+Yes, please.
 
 -- 
 You are receiving this mail because:
