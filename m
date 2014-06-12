@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 77201] CPU online hangs, works when powernow-k8 is UN-loaded
-Date: Thu, 12 Jun 2014 02:36:51 +0000
-Message-ID: <bug-77201-12968-emvxugcAPL@https.bugzilla.kernel.org/>
+Date: Thu, 12 Jun 2014 02:48:11 +0000
+Message-ID: <bug-77201-12968-IVMz9wnaWB@https.bugzilla.kernel.org/>
 References: <bug-77201-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,37 +14,43 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=77201
 
---- Comment #53 from Viresh Kumar <viresh.kumar@linaro.org> ---
-(In reply to Srivatsa S. Bhat from comment #48)
-> Meanwhile, can the bug reporter please test these commits that I mentioned
-> earlier? (6f1e4efd882 is my first suspect commit after 3.13.8)
-> 
-> 6f1e4efd882 (cpufreq: Fix timer/workqueue corruption by protecting reading
-> governor_enabled)
+--- Comment #54 from Viresh Kumar <viresh.kumar@linaro.org> ---
+(In reply to Srivatsa S. Bhat from comment #49)
+> By the way, another approach I have in mind is to remove the usage of
+> work_on_cpu() from the powernow-k8 driver (since that's the only noticeably
+> different thing about this driver), and check if it solves the problem.
 
-It was already reverted in my branch
+I wouldn't bet my 10 cents on that :). Also I am not sure if people added a
+work there just for fun, there must be some constraints and we might see
+crashes or hangs..
 
-> 1c0ca90207 (cpufreq: don't call cpufreq_update_policy() on CPU addition)
+But yeah, maybe we can try that as well..
 
-Went in 3.15
+I was thinking about this earlier but never shared as I thought it might not be
+worth.
 
-> 4e97b631f24 (cpufreq: Initialize governor for a new policy under
-> policy->rwsem)
+Logs shared by $reporter of this problem clears that cpufreq and governors did
+all good, more or less. And it was the target_index() which never came back.. I
+will try having a closer look again though. $reporter also reported that
+offline/online works fine with performance gov but switching back to ondemand
+again crashes it. Which makes me believe that cpufreq core is doing everything
+correctly and there is some problem while switching freq after offline/online.
 
-Also reverted in my branch
+@Reporter (sorry we don't know your name :( ), Can you please try this?
 
-> I know that the issue might not be in cpufreq (especially after your test
-> results from Viresh's branch). But I still I have some tiny hope that we
-> might have missed something in cpufreq... Besides, bisecting within the
-> cpufreq commits is a lot faster than bisecting everything between 3.13.8 and
-> 3.14, in case the bug is really in cpufreq.
-> 
-> By the way, testing the above commits means that you need to test 1 commit
-> before the commits mentioned above and see if it works, and then go to the
-> mentioned commit and see if it fails.
+Keep the prints as you shared in last hang pic. Set governor to userspace, 
+set any cpu to min freq, offline/online cpu1, change freq to any freq (and
+later max freq if earlier one works) and see how things behave.. I am quite
+sure it wouldn't last.
 
-Actually I couldn't understand how this may help? Sorry for missing what you
-had in mind :(
+If you still see a hang you might want to do this:
+- Add many debug prints in your target_index() path (as gov is userspace you
+wouldn't see them again and again).
+- And see where exactly you hang .. 
+- I am quite sure work will get scheduled and so try adding as many debug
+prints as possible on the first go only.
+
+HTH :)
 
 -- 
 You are receiving this mail because:
