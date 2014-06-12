@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 77201] CPU online hangs, works when powernow-k8 is UN-loaded
-Date: Thu, 12 Jun 2014 15:14:55 +0000
-Message-ID: <bug-77201-12968-uCnOuJT6og@https.bugzilla.kernel.org/>
+Date: Thu, 12 Jun 2014 15:29:42 +0000
+Message-ID: <bug-77201-12968-46WvAXPPux@https.bugzilla.kernel.org/>
 References: <bug-77201-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,21 +14,37 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=77201
 
---- Comment #63 from Viresh Kumar <viresh.kumar@linaro.org> ---
-(In reply to Mauro from comment #62)
-> Created attachment 139471 [details]
-> Frequency transition hang
-> 
-> This one is what happens when I try to do the second frequency transition,
-> that is, after:
-> 
-> boot -> 800M -> cpu offline/online -> 2.2G ->(1) 1.8G
-> 
-> (1) machine hangs here.
+--- Comment #64 from Viresh Kumar <viresh.kumar@linaro.org> ---
+(In reply to Viresh Kumar from comment #63)
+> Let me try some more hacks :)
 
-Strange that we didn't got any prints at all :(
+Okay, I can understand that its taking more time than it should have but its
+probably more tricky that we actually thought..
 
-Let me try some more hacks :)
+Don't loose hope, we can still crack this :)
+
+I have added one more commit now. Idea is to stop ongoing frequency transition
+at any point of time we want.
+
+By default everything will work as it was working. So, continue upto the last
+step, where you crashed, 1.8G ..
+
+Before changing last freq do this:
+
+echo 1 > /sys/kernel/debug/stop_transition
+
+
+Follow this in code:
+
++       /* HACK THIS */
++       if (stop_transition)
++               return 0;
+
+So, we will return from whichever part of powernowk8_target_fn() we  want.
+I have placed it at some point now, you can drag it in whichever direction you
+want.
+
+If it works, then drag it later into the code.
 
 -- 
 You are receiving this mail because:
