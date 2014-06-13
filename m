@@ -1,68 +1,31 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 77771] New: Intel P-State: Constantly changing CPU frequencies
- on idle system.
-Date: Fri, 13 Jun 2014 05:49:56 +0000
-Message-ID: <bug-77771-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH 0/4] cpufreq: Use cpufreq-cpu0 driver for Exynos3250
+Date: Fri, 13 Jun 2014 15:08:09 +0900
+Message-ID: <1402639693-31108-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, shawn.guo@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, heiko@sntech.de, kyungmin.park@samsung.com, cw00.choi@samsung.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=77771
+This patchset use cpufreq-cpu0 driver to support Exynos3250 cpufreq. So, this
+patchset is based on following patchset[1] by Thomas Abraham.
+ [1] http://www.spinics.net/lists/linux-samsung-soc/msg31593.html
 
-            Bug ID: 77771
-           Summary: Intel P-State: Constantly changing CPU frequencies on
-                    idle system.
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 3.14.7, 3.15-rc8 - 3.15
-          Hardware: x86-64
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: cpufreq@vger.kernel.org
-          Reporter: harn-solo@gmx.de
-        Regression: No
+Chanwoo Choi (4):
+  clk: samsung: exynos3250: Use cpu-clock provider type to support cpufreq
+  clk: samsung: Add support for cpu clocks of Exynos3250
+  Documentation: devicetree: Add cpu clock configuration data binding for Exynos3250
+  ARM: dts: Exynos: Add cpu clock table and armclk divider table for Exynos3250
 
-With the introduction of the kernel patch 3.14.7 and around the release of
-3.15-rc8 the idle CPU frequency of each core in an idle system is changing
-erratically.
-
-Before the patch the output of grep MHz /proc/cpuinfo looked like this:
-
-cpu MHz         : 813.625
-cpu MHz         : 813.625
-cpu MHz         : 813.625
-cpu MHz         : 813.625
-
-After the patch:
-
-cpu MHz         : 1600.207
-cpu MHz         : 1600.207
-cpu MHz         : 1599.847
-cpu MHz         : 2342.675
-
-The CPU clocks are wildly changing over the complete spectrum of available
-frequencies. I can reproduce the phenomenon on at least three systems:
-
-Desktop PC with Sandy-Bridge CPU: Intel i7-2600 (non-K)
-Lenovo T530 with Ivy-Bridge CPU: i7-3610QM
-Sony VAIO Pro 13 (example above) with Haswell CPU: i5-4200U
-
-For me it is not clear whether this is expected behavior and I just hit some
-kind of heisenbug or something is going wrong. Primarily I report this because
-I noticed a significant sudden change. I haven't done any tests regarding
-performance, battery run-time or heat implications yet.
-
-Note: I've seen this kind of behavior in earlier kernel releases before, but
-with 3.14 it vanished completely. So this might be a regression.
+ .../devicetree/bindings/clock/exynos3250-clock.txt | 32 ++++++++++++++++++++++
+ arch/arm/boot/dts/exynos3250.dtsi                  | 28 +++++++++++++++++++
+ drivers/clk/samsung/clk-cpu.c                      | 31 +++++++++++++++++----
+ drivers/clk/samsung/clk-exynos3250.c               | 14 +++++++---
+ 4 files changed, 96 insertions(+), 9 deletions(-)
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.8.0
