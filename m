@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 77201] CPU online hangs, works when powernow-k8 is UN-loaded
-Date: Fri, 13 Jun 2014 10:49:52 +0000
-Message-ID: <bug-77201-12968-YHKQ94XM2B@https.bugzilla.kernel.org/>
+Date: Fri, 13 Jun 2014 21:23:01 +0000
+Message-ID: <bug-77201-12968-7ZUkE3JZu7@https.bugzilla.kernel.org/>
 References: <bug-77201-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,21 +14,18 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=77201
 
---- Comment #73 from Srivatsa S. Bhat <srivatsa@mit.edu> ---
-(In reply to Viresh Kumar from comment #71)
-> (In reply to Mauro from comment #68)
-> > I have started what Viresh requested and the first try worked, but I haven't
-> > started moving the debug code to try to find where things go wrong.
+--- Comment #74 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
+(In reply to Viresh Kumar from comment #72)
+> (In reply to Viresh Kumar from comment #45)
+> > I don't have a clue why does it depend on that :(
 > 
-> Great, and we reach here only after work is scheduled.
+> Now, I know why. This can very much be some ACPI issue considering so much
+> dependency it has on it and I am not good at ACPI :(
 > 
-> So. Srivatsa lost his bet :) and its not scheduler as well..
-> 
+> 631e8ac powernow-k8: Add a kconfig dependency on acpi-cpufreq
 
-Haha :-) Good to know we have made some more progress :-)
-
-Regards,
-Srivatsa S. Bhat
+It looks like the relevant routine doesn't do anything ACPI-related
+at all.  It accesses MSRs directly  it seems.
 
 -- 
 You are receiving this mail because:
