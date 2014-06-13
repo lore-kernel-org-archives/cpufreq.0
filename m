@@ -1,75 +1,35 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 4/4] ARM: dts: Exynos: Add cpu clock table and armclk divider
- table for Exynos3250
-Date: Fri, 13 Jun 2014 15:08:13 +0900
-Message-ID: <1402639693-31108-5-git-send-email-cw00.choi@samsung.com>
-References: <1402639693-31108-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1402639693-31108-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 77771] Intel P-State: Constantly changing CPU frequencies on
+ idle system.
+Date: Fri, 13 Jun 2014 06:20:56 +0000
+Message-ID: <bug-77771-12968-ZDM0skdXKy@https.bugzilla.kernel.org/>
+References: <bug-77771-12968@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, shawn.guo@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, heiko@sntech.de, kyungmin.park@samsung.com, cw00.choi@samsung.com
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-77771-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-This patch add cpu clock table and armclk divier table to support
-generic cpufreq-cpu0 driver for Exynos3250.
+https://bugzilla.kernel.org/show_bug.cgi?id=77771
 
-Cc: Tomas Abraham <thomas.ab@samsung.com>
-Cc: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/arm/boot/dts/exynos3250.dtsi | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+Doug Smythies <dsmythies@telus.net> changed:
 
-diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dts/exynos3250.dtsi
-index 3e678fa..df0efd0 100644
---- a/arch/arm/boot/dts/exynos3250.dtsi
-+++ b/arch/arm/boot/dts/exynos3250.dtsi
-@@ -50,6 +50,21 @@
- 			compatible = "arm,cortex-a7";
- 			reg = <0>;
- 			clock-frequency = <1000000000>;
-+			clocks = <&cmu CLK_DIV_CORE2>;
-+			clock-names = "cpu";
-+
-+			operating-points = <
-+				1000000 1150000
-+				900000  1112500
-+				800000  1075000
-+				700000  1037500
-+				600000  1000000
-+				500000  962500
-+				400000  925000
-+				300000  887500
-+				200000  850000
-+				100000  850000
-+			>;
- 		};
- 
- 		cpu1: cpu@1 {
-@@ -159,6 +174,19 @@
- 			compatible = "samsung,exynos3250-cmu";
- 			reg = <0x10030000 0x20000>;
- 			#clock-cells = <1>;
-+
-+			samsung,armclk-cells = <7>;
-+			samsung,armclk-divider-table =
-+				<1000000 1 4 7 1 7 7>,
-+				<900000  1 3 7 1 7 7>,
-+				<800000  1 3 7 1 7 7>,
-+				<700000  1 3 7 1 7 7>,
-+				<600000  1 3 7 1 7 7>,
-+				<500000  1 3 7 1 7 7>,
-+				<400000  1 3 7 1 7 7>,
-+				<300000  1 3 5 1 7 7>,
-+				<200000  1 3 3 1 7 7>,
-+				<100000  1 1 1 1 7 7>;
- 		};
- 
- 		rtc: rtc@10070000 {
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |dsmythies@telus.net
+
+--- Comment #1 from Doug Smythies <dsmythies@telus.net> ---
+Please define "an idle system". I ask because an "idle" linux server computer
+can be quite different than and "idle" linux computer with some sort of gui
+desktop, the latter being, in reality, actually considerably less "idle".
+
+That being said, your frequencies do seem a little high now. Your previous
+frequencies were unduly being forced low and there was a change with respect to
+that issue.
+
 -- 
-1.8.0
+You are receiving this mail because:
+You are the assignee for the bug.
