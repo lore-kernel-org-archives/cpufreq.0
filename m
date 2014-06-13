@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 77201] CPU online hangs, works when powernow-k8 is UN-loaded
-Date: Thu, 12 Jun 2014 23:41:39 +0000
-Message-ID: <bug-77201-12968-4FGFIcoVAg@https.bugzilla.kernel.org/>
+Date: Fri, 13 Jun 2014 04:14:17 +0000
+Message-ID: <bug-77201-12968-j6o1tfWyX1@https.bugzilla.kernel.org/>
 References: <bug-77201-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,31 +14,11 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=77201
 
---- Comment #69 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
-(In reply to Mauro from comment #68)
-> (In reply to Rafael J. Wysocki from comment #67)
-> > For completeness, the commit immediately preceding the one chosen by
-> > Srivatsa is
-> > 
-> > fada94ee64e6 workqueue: add args to workqueue lockdep name
-> > 
-> > so Mauro, please check if fada94ee64e6 works and then if 5bdfff96c69a fails.
-> 
-> I have tested both, and both hang. I have used the latest test method of
-> using the userspace governor and both hang on the second frequency change
-> attempt.
+--- Comment #70 from Viresh Kumar <viresh.kumar@linaro.org> ---
+(In reply to Rafael J. Wysocki from comment #69)
+> Well, the scheduler changes are left then.
 
-Well, the scheduler changes are left then.
-
-> I'd say my initial bisect might be very close to the source of the problem,
-> the reason I say this is because the machine goes into suspend just fine,
-> but when trying to resume it hangs (that was my initial testing procedure),
-> knowing what I know now I'd say a good guess is it hangs when trying to
-> bring the cpu online.
-
-Oh, we know that for sure. :-)
-
-That's why I asked whether or not CPU online worked via sysfs.
+Maybe some ACPI stuff as well ?
 
 -- 
 You are receiving this mail because:
