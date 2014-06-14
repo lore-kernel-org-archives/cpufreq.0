@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 77201] CPU online hangs, works when powernow-k8 is UN-loaded
-Date: Sat, 14 Jun 2014 20:11:57 +0000
-Message-ID: <bug-77201-12968-o0xNFLMR49@https.bugzilla.kernel.org/>
+Date: Sat, 14 Jun 2014 20:13:07 +0000
+Message-ID: <bug-77201-12968-4Uxu79FC4K@https.bugzilla.kernel.org/>
 References: <bug-77201-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,13 +14,12 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=77201
 
---- Comment #78 from Mauro <registosites@hotmail.com> ---
-Created attachment 139741
-  --> https://bugzilla.kernel.org/attachment.cgi?id=139741&action=edit
-Log from commit 5bdfff96c69a
+--- Comment #79 from Mauro <registosites@hotmail.com> ---
+Created attachment 139751
+  --> https://bugzilla.kernel.org/attachment.cgi?id=139751&action=edit
+Log from commit fada94ee64e6
 
-This one hangs, might not have anything interesting but there seems to be some
-"fireworks" going on.
+Same as the one from commit 5bdfff96c69a.
 
 -- 
 You are receiving this mail because:
