@@ -1,26 +1,24 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 77951] "intel_pstate: Set turbo VID for BayTrail" causes stall
- on Intel NUC DN2820FYKH
-Date: Sun, 15 Jun 2014 13:46:34 +0000
-Message-ID: <bug-77951-12968-b88HqheO7V@https.bugzilla.kernel.org/>
-References: <bug-77951-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 77201] CPU online hangs, works when powernow-k8 is UN-loaded
+Date: Sun, 15 Jun 2014 23:13:05 +0000
+Message-ID: <bug-77201-12968-ArNlqsLkjg@https.bugzilla.kernel.org/>
+References: <bug-77201-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-77951-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-77201-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=77951
+https://bugzilla.kernel.org/show_bug.cgi?id=77201
 
-Rune Petersen <rune@megahurts.dk> changed:
+--- Comment #85 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
+It looks like one of the notifiers crashes in srcu_notifier_call_chain() called
+from __cpufreq_notify_transition().
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |rune@megahurts.dk
-         Regression|No                          |Yes
+We need to figure out which one.
 
 -- 
 You are receiving this mail because:
