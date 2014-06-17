@@ -1,33 +1,76 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 77771] Intel P-State: Constantly changing CPU frequencies on
- idle system.
-Date: Tue, 17 Jun 2014 03:34:18 +0000
-Message-ID: <bug-77771-12968-zmaJ5GLajf@https.bugzilla.kernel.org/>
-References: <bug-77771-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Thomas Abraham <thomas.ab@samsung.com>
+Subject: [PATCH v6 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
+Date: Tue, 17 Jun 2014 20:55:26 +0530
+Message-ID: <1403018733-4187-1-git-send-email-thomas.ab@samsung.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-77771-12968@https.bugzilla.kernel.org/>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=sender:from:to:cc:subject:date:message-id;
+        bh=VrmSAh6IEq6VkLzFwCjqb4/2kK5WyrPBeGNSe+80wrk=;
+        b=A7U2u/BJhK38Sxa/Y5jDlfmq1uFlycGqD0uF4jnw7Fq6cad66j87HUvtN9LkcX69bh
+         qeEovKwOo4LD0KQNsnzZD044OfWvBpazpKIpzr9A7MmQpz5GJp0OmwYaoGJL/bxyLzyf
+         QRvbm92EeBX87jSLM8vfUfasrpruxJ3vKh3yCPKjsvUPGhFKpzAYXM4gxEmR1gv1V/kg
+         tUdPiqwrxLnbdBRa+QthBgnFek10d+J8sLF21875bAdc1OxUtV7/RHB19oJMHvnJFgdA
+         +ORbDBFio9HulpAOK89L0Vb0s16VIbYEhEkBri6Z35bHa9RDFM1r7/0oCyOg12kKSFt9
+         o8uQ==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org, mturquette@linaro.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, heiko@sntech.de, cw00.choi@samsung.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=77771
+Changes since v5:
+- Configuration data for cpu clock block is embedded with the code. The cpu clock
+  logic can later to extended to obtain this data from DT.
+- Excluded the support for Exynos4x12 SoC since the work on boost OPP bindings is
+  still incomplete.
+- Included cpufreq support for Exynos5420 SoC.
+- Many other minor changes (and so dropped Ack's for some of the patches in v5)
 
---- Comment #8 from Doug Smythies <dsmythies@telus.net> ---
-Created attachment 140031
-  --> https://bugzilla.kernel.org/attachment.cgi?id=140031&action=edit
-two turbostats runs with grep running
+This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+series also enabled cpufreq support for Exynos5420 using arm_big_little cpufreq
+driver.
 
-Is your turbostat listing for your Haswell computer? I.E. the one where the
-minimum CPU frequency is about 800 MHz?
+Thomas Abraham (6):
+  clk: samsung: add infrastructure to register cpu clocks
+  clk: samsung: register exynos5420 apll/kpll configuration data
+  clk: exynos: use cpu-clock provider type to represent arm clock
+  ARM: dts: Exynos: add cpu nodes, opp and cpu clock configuration data
+  ARM: Exynos: switch to using generic cpufreq driver for exynos4210/5250
+  cpufreq: exynos: remove exynos4210/5250 specific cpufreq driver support
 
-I am unable to repeat your "for i in {1..99}; do grep MHz /proc/cpuinfo; sleep
-1; done" results on my computer. I wish that I could. Attached are two
-turbostat runs done while that command was running (the 2nd one is probably of
-no use to anyone else). My minimum CPU frequency is about 1600 MHz.
+ arch/arm/boot/dts/exynos4210-origen.dts         |    6 +
+ arch/arm/boot/dts/exynos4210-trats.dts          |    6 +
+ arch/arm/boot/dts/exynos4210-universal_c210.dts |    6 +
+ arch/arm/boot/dts/exynos4210.dtsi               |   27 ++
+ arch/arm/boot/dts/exynos5250-arndale.dts        |    6 +
+ arch/arm/boot/dts/exynos5250-cros-common.dtsi   |    6 +
+ arch/arm/boot/dts/exynos5250-smdk5250.dts       |    6 +
+ arch/arm/boot/dts/exynos5250.dtsi               |   23 +
+ arch/arm/boot/dts/exynos5420-smdk5420.dts       |    6 +
+ arch/arm/boot/dts/exynos5420.dtsi               |   32 ++
+ arch/arm/mach-exynos/exynos.c                   |   15 +-
+ drivers/clk/samsung/Makefile                    |    2 +-
+ drivers/clk/samsung/clk-cpu.c                   |  577 +++++++++++++++++++++++
+ drivers/clk/samsung/clk-exynos4.c               |   25 +-
+ drivers/clk/samsung/clk-exynos5250.c            |   16 +-
+ drivers/clk/samsung/clk-exynos5420.c            |   59 ++-
+ drivers/clk/samsung/clk.h                       |    5 +
+ drivers/cpufreq/Kconfig.arm                     |   22 -
+ drivers/cpufreq/Makefile                        |    2 -
+ drivers/cpufreq/exynos4210-cpufreq.c            |  184 --------
+ drivers/cpufreq/exynos5250-cpufreq.c            |  210 ---------
+ include/dt-bindings/clock/exynos5250.h          |    1 +
+ include/dt-bindings/clock/exynos5420.h          |    2 +
+ 23 files changed, 802 insertions(+), 442 deletions(-)
+ create mode 100644 drivers/clk/samsung/clk-cpu.c
+ delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.7.9.5
+
+
