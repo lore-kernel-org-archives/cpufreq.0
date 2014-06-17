@@ -1,19 +1,21 @@
 From: Thomas Abraham <thomas.ab@samsung.com>
 Subject: [PATCH v6 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
-Date: Tue, 17 Jun 2014 20:55:26 +0530
-Message-ID: <1403018733-4187-1-git-send-email-thomas.ab@samsung.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Date: Tue, 17 Jun 2014 20:55:27 +0530
+Message-ID: <1403018733-4187-2-git-send-email-thomas.ab@samsung.com>
+References: <1403018733-4187-1-git-send-email-thomas.ab@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=sender:from:to:cc:subject:date:message-id;
+        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references;
         bh=VrmSAh6IEq6VkLzFwCjqb4/2kK5WyrPBeGNSe+80wrk=;
-        b=A7U2u/BJhK38Sxa/Y5jDlfmq1uFlycGqD0uF4jnw7Fq6cad66j87HUvtN9LkcX69bh
-         qeEovKwOo4LD0KQNsnzZD044OfWvBpazpKIpzr9A7MmQpz5GJp0OmwYaoGJL/bxyLzyf
-         QRvbm92EeBX87jSLM8vfUfasrpruxJ3vKh3yCPKjsvUPGhFKpzAYXM4gxEmR1gv1V/kg
-         tUdPiqwrxLnbdBRa+QthBgnFek10d+J8sLF21875bAdc1OxUtV7/RHB19oJMHvnJFgdA
-         +ORbDBFio9HulpAOK89L0Vb0s16VIbYEhEkBri6Z35bHa9RDFM1r7/0oCyOg12kKSFt9
-         o8uQ==
-Sender: cpufreq-owner@vger.kernel.org
+        b=rz1hl2Y8qRL8qPTbdPrqxQtNOPA1flsiuIENUpnjA/QBvd4uYlHYr1u/OBEsbezUUS
+         F/YRF8K9pwesz9cyezuoZIwXGvO2RydBZNhJAJrHgW0IfGdHqEkyjgZ9R2L19RZLA0ry
+         1RAiZF4NUF5BmeX6iOGL0F2xLIZ9rGVMwKDMs2DAtgY8s8M7/Ori4iiA2e3T5u6YvzdP
+         KSKmK9cbtrGyxisPOWko2zLcvjcFcSytU0fVZVO1r/Cttfw6EkgiW/EBA6PL91vy6JTw
+         8gW0VFlfPAZKUSsUuqYCDBoBnKZ3oqU3GlETAk5ySCjguYGvITwmKVbNNaOGX9Hj6ilM
+         mAZA==
+In-Reply-To: <1403018733-4187-1-git-send-email-thomas.ab@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -72,5 +74,3 @@ Thomas Abraham (6):
 
 -- 
 1.7.9.5
-
-
