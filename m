@@ -1,34 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Thomas Abraham <ta.omasab@gmail.com>
 Subject: Re: [PATCH v6 0/6] cpufreq: use generic cpufreq drivers for exynos platforms
-Date: Wed, 18 Jun 2014 13:21:24 +0530
-Message-ID: <CAKohpomt4M_V7rMAoh=+UFon3CxnZjVY_9DuVtQW9ddtTTj7Fg@mail.gmail.com>
+Date: Thu, 19 Jun 2014 09:43:48 +0530
+Message-ID: <CAJuA9ajzUTRL7An-BGEAro7cyFO8YXQnBVPBx7LyOd-tLGuc1w@mail.gmail.com>
 References: <1403018733-4187-1-git-send-email-thomas.ab@samsung.com>
+	<CAKohpomt4M_V7rMAoh=+UFon3CxnZjVY_9DuVtQW9ddtTTj7Fg@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1403018733-4187-1-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        bh=aPtwjSQRYZtYpNldq8j4ESmGwhsoiWid5Q07lEYLoGA=;
+        b=RGEGe+UaHtJWoyUo9FXIrXK26fhpFrbbdciThBaFvSeu2lL0TWMfEJjzgN/SHDqxRX
+         jQ/lXwLTCDxlBGHzTuIlefKt7v7cgq7ShDIPyPryMBsHvJAFjQBgqFj/ET1fSGfr30X2
+         LoCnu5I/07zB7/EgwLd2zWCIHUg8xBX+bvcLY4mC6lLl3jrwDWnwsVUgWXGErwhH/ZNZ
+         RvFiaQ7h1Aq/X1mOA3W2q6cvDgRLCqKEe2f++CTvJaUauHSJqBtGUkQnJLkHMVru4The
+         Rl5EEGYCV4IGA3uO8DXT2N+oqMJW8kq1M48Pi2tZu1bOXpJ3VdC63pGqn+WLX8EcrlSY
+         7xWg==
+In-Reply-To: <CAKohpomt4M_V7rMAoh=+UFon3CxnZjVY_9DuVtQW9ddtTTj7Fg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Abraham <thomas.ab@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>
 
-On 17 June 2014 20:55, Thomas Abraham <thomas.ab@samsung.com> wrote:
-> Changes since v5:
-> - Configuration data for cpu clock block is embedded with the code. The cpu clock
->   logic can later to extended to obtain this data from DT.
-> - Excluded the support for Exynos4x12 SoC since the work on boost OPP bindings is
->   still incomplete.
-> - Included cpufreq support for Exynos5420 SoC.
-> - Many other minor changes (and so dropped Ack's for some of the patches in v5)
+On Wed, Jun 18, 2014 at 1:21 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 17 June 2014 20:55, Thomas Abraham <thomas.ab@samsung.com> wrote:
+>> Changes since v5:
+>> - Configuration data for cpu clock block is embedded with the code. The cpu clock
+>>   logic can later to extended to obtain this data from DT.
+>> - Excluded the support for Exynos4x12 SoC since the work on boost OPP bindings is
+>>   still incomplete.
+>> - Included cpufreq support for Exynos5420 SoC.
+>> - Many other minor changes (and so dropped Ack's for some of the patches in v5)
+>>
+>> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
+>> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
+>> series also enabled cpufreq support for Exynos5420 using arm_big_little cpufreq
+>> driver.
 >
-> This patch series removes the use of Exynos4210 and Exynos5250 specific cpufreq
-> drivers and enables the use of cpufreq-cpu0 driver for these platforms. This
-> series also enabled cpufreq support for Exynos5420 using arm_big_little cpufreq
-> driver.
+> cpufreq@vger.kernel.org list is deprecated now: dec102a, use linux-pm instead.
 
-cpufreq@vger.kernel.org list is deprecated now: dec102a, use linux-pm instead.
+Ok. Will take care next time.
 
-For patch 5 and 6:
+>
+> For patch 5 and 6:
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Thanks Viresh.
+
+Regards,
+Thomas.
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
