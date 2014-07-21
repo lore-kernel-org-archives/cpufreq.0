@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 80651] [intel_pstate] pstate settings are lost during
  suspend/resume cycle
-Date: Sun, 20 Jul 2014 10:43:44 +0000
-Message-ID: <bug-80651-12968-WjGLmmJZBN@https.bugzilla.kernel.org/>
+Date: Mon, 21 Jul 2014 02:19:26 +0000
+Message-ID: <bug-80651-12968-MDsn9acukr@https.bugzilla.kernel.org/>
 References: <bug-80651-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,13 +15,13 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=80651
 
---- Comment #3 from Tobias Jakobi <liquid.acid@gmx.net> ---
-I realized that changing and restoring the values doesn't quite do it. The
-issue seems related to the fact that I usually have two of the four cores
-disabled (by offlining the cpus that are associated to core ids 2 and 3).
+Lan Tianyu <tianyu.lan@intel.com> changed:
 
-I have to bring all cores online again, then set the values, and then I can
-take core 2 and 3 offline again.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |ASSIGNED
+                 CC|                            |tianyu.lan@intel.com
+           Assignee|cpufreq@vger.kernel.org     |dirk.brandewie@gmail.com
 
 -- 
 You are receiving this mail because:
