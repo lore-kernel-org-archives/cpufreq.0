@@ -1,132 +1,82 @@
-From: Sachin Kamat <spk.linux@gmail.com>
-Subject: Re: [PATCH] cpufreq: tests: Providing cpufreq regression test
-Date: Tue, 22 Jul 2014 09:43:45 +0530
-Message-ID: <CAK5sBcGdrmfkc_hyV3DewwLjGa3=1xjctzqcTNC9C2yPFmEFCg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: tests: Providing cpufreq regression test
+Date: Wed, 23 Jul 2014 10:36:15 +0530
+Message-ID: <CAKohpondk7Cty8MhTcjyzZW8Z0o4AVupYE0rRnG4YJf+SmDyjg@mail.gmail.com>
 References: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
-	<CAK5sBcH=L-7=BHNPQUjuoQfQx5QeFmBSdwdow+RXBExgCOP0Ww@mail.gmail.com>
-	<20140718135933.0837e094@amdc2363>
+	<1405926154-27214-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=fsyuM0hUKrEZ55GYXmmgMUBpKmlAzuLoUU8OYtWr4mE=;
-        b=ZjbhWIF3C+U3reGo4+WwPbgITt+pBZUCC17UaRqXD3OJZmnMCc9rllykD4Ibhzjiqf
-         J4SqXuxwj95tkXTt20UDvpEX48wNqTgcp80HEGbQwRruV+5yFPxBp+3bxlwrBiUD/paN
-         yNVyIE/keNEmoXQn1pFJpzkEaSVF/OIVGb5X87QBK+ActcxyPRdPXHPBRhg6eFgkmrgQ
-         CZQtnGAIVyhyynz2rO2JO0PRlc2knK/brHdBFL5GUB75DvxGDF7yn7wA3efVGiFdj6A7
-         nLbI5ICkjK989BPPIyrHITPVTfbeJTvZI4EAFv/P0O2zP/9YIWrnJ3m9qY8q/7YRPbur
-         YJEQ==
-In-Reply-To: <20140718135933.0837e094@amdc2363>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1405926154-27214-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <t.figa@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <spk.linux@gmail.com>
 
 Hi Lukasz,
 
-On Fri, Jul 18, 2014 at 5:29 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Hi Sachin,
->
->> Hi Lukasz,
->>
->> I tested this script on 4210 based Origen board.
->> This is the output:
->> ./cpufreq_freq_test.sh
->> CURRENT GOVERNOR: performance
->> SET GOVERNOR: performance
->> ######################################
->> TEST AVAILABLE FREQS
->> ######################################
->> FREQ: 1200000 sleep: invalid number '0.1'
->> [    5.918347] random: gzip urandom read with 61 bits of entropy
->> available OK
->> FREQ: 1000000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 800000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 500000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 200000 sleep: invalid number '0.1'
->>          OK
->> ######################################
->> TEST FREQS SWITCHING
->> ######################################
->> REFERENCE FREQ: 1200000
->> FREQ: 1200000 ----> FREQ: 1200000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 1200000 ----> FREQ: 1000000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 1200000 ----> FREQ: 800000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 1200000 ----> FREQ: 500000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 1200000 ----> FREQ: 200000 sleep: invalid number '0.1'
->>          OK
->> REFERENCE FREQ: 1000000
->> FREQ: 1000000 ----> FREQ: 1200000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 1000000 ----> FREQ: 1000000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 1000000 ----> FREQ: 800000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 1000000 ----> FREQ: 500000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 1000000 ----> FREQ: 200000 sleep: invalid number '0.1'
->>          OK
->> REFERENCE FREQ: 800000
->> FREQ: 800000 ----> FREQ: 1200000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 800000 ----> FREQ: 1000000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 800000 ----> FREQ: 800000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 800000 ----> FREQ: 500000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 800000 ----> FREQ: 200000 sleep: invalid number '0.1'
->>          OK
->> REFERENCE FREQ: 500000
->> FREQ: 500000 ----> FREQ: 1200000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 500000 ----> FREQ: 1000000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 500000 ----> FREQ: 800000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 500000 ----> FREQ: 500000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 500000 ----> FREQ: 200000 sleep: invalid number '0.1'
->>          OK
->> REFERENCE FREQ: 200000
->> FREQ: 200000 ----> FREQ: 1200000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 200000 ----> FREQ: 1000000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 200000 ----> FREQ: 800000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 200000 ----> FREQ: 500000 sleep: invalid number '0.1'
->>          OK
->> FREQ: 200000 ----> FREQ: 200000 sleep: invalid number '0.1'
->>          OK
->> ######################################
->> ERRORS: 0
->> ######################################
->>
->> Though it says 0 errors, what does the "invalid number..." signify?
->
-> I guess that this message is caused by your default sleep
-> implementation.
->
-> Could you type 'sleep 0.1' and then 'sleep 1' in your console on the
-> target system?
-> Is the "invalid number" not present with the second case?
+I haven't replied yet as I wanted to see what the general feed of Rafael
+is going to be :)
 
-Only with first case (sleep 0.1) I get the "invalid number" message.
-sleep 1 seems to be OK.
+As this is something new and wasn't sure if we really want this..
 
+On 21 July 2014 12:32, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> This commit adds first regression test "cpufreq_freq_test.sh" for the
+> cpufreq subsystem.
 
--- 
-Regards,
-Sachin.
+That's not enough, Tell us why we should continue reading this mail..
+
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+>
+> ---
+> Changes for v2:
+> - Replace *_PATCH with *_PATH for variables names
+> - Corrected mistakes in the README file
+> - Providing detailed explanation of the patch in the README file
+> ---
+>  drivers/cpufreq/tests/README               |  33 +++++++
+>  drivers/cpufreq/tests/cpufreq_freq_test.sh | 149 +++++++++++++++++++++++++++++
+
+Probably a better place would be tools/power/cpufreq/
+
+@Rafael?
+
+>  2 files changed, 182 insertions(+)
+>  create mode 100644 drivers/cpufreq/tests/README
+>  create mode 100755 drivers/cpufreq/tests/cpufreq_freq_test.sh
+>
+> diff --git a/drivers/cpufreq/tests/README b/drivers/cpufreq/tests/README
+> new file mode 100644
+> index 0000000..3e9cd80
+> --- /dev/null
+> +++ b/drivers/cpufreq/tests/README
+> @@ -0,0 +1,33 @@
+> +This file contains list of cpufreq's available regression tests with a short
+> +usage description.
+> +
+> +1. cpufreq_freq_test.sh
+> +
+> +Description:
+> +------------
+> +This script is supposed to test if cpufreq attributes exported by sysfs are
+> +exposing correct values.
+> +
+> +To achieve this goal it saves the current governor and changes it to
+> +"performance". Afterwards, it reads the "scaling_available_frequencies"
+> +property. With the list of supported frequencies it is able to enforce each of
+> +them by writing to "scaling_max_freq" attribute. To make the test more reliable
+> +a superfluous load with gzip is created to be sure that we are running with
+> +highest possible frequency. This high load is regulated with the 'sleep'
+> +duration. After this time the "cpufreq_cur_freq" is read and compared with the
+> +original value. As the last step the original governor is restored.
+
+I couldn't make out the purpose of this test and why we need it. How do
+we ensure that "cpufreq attributes exported by sysfs are exposing
+correct values"?
+
+And actually what do we mean by this statement even? What kind of errors can
+be there in exposing these values.
+
+I want to understand the purpose of this script very clearly first and then only
+will look at the details.
