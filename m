@@ -1,47 +1,78 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [PATCH v2] cpufreq: tests: Providing cpufreq regression test
-Date: Thu, 24 Jul 2014 11:05:52 +0100
-Message-ID: <20140724100551.GA2697@e104805>
-References: <1405678985-21677-1-git-send-email-l.majewski@samsung.com>
- <1405926154-27214-1-git-send-email-l.majewski@samsung.com>
- <CAKohpondk7Cty8MhTcjyzZW8Z0o4AVupYE0rRnG4YJf+SmDyjg@mail.gmail.com>
- <20140723093824.5e51918f@amdc2363>
- <CAKohpok++gPcNk9-E4MsFdNBy8qL7oLYvatk1EvcW1OHwroZXQ@mail.gmail.com>
- <20140723121042.5b6f49e3@amdc2363>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 81021] New: AMD CPUs w/ Integrated Graphics (APUs) And Turbo
+ Core Only Boost If "fglrx" Module Is Loaded
+Date: Thu, 24 Jul 2014 12:31:38 +0000
+Message-ID: <bug-81021-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140723121042.5b6f49e3@amdc2363>
-Content-Disposition: inline
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Abraham <ta.omasab@gmail.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <spk.linux@gmail.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: cpufreq@vger.kernel.org
 
-On Wed, Jul 23, 2014 at 11:10:42AM +0100, Lukasz Majewski wrote:
-> Hi Viresh,
-> 
-> > On 23 July 2014 13:08, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > > Do you want to say that we have enough tests and we don't need
-> > > more ?
-> > 
-> > No. We don't have any tests at all :)
-> 
-> Then we should encourage as many developers as possible to share their
-> private tests with us.
+https://bugzilla.kernel.org/show_bug.cgi?id=81021
 
-Linaro publishes their regression tests here:
+            Bug ID: 81021
+           Summary: AMD CPUs w/ Integrated Graphics (APUs) And Turbo Core
+                    Only Boost If "fglrx" Module Is Loaded
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.13.11.4
+          Hardware: x86-64
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: andre.d@gmx.net
+        Regression: No
 
-https://git.linaro.org/tools/pm-qa.git
+Several reports out there, on distribution forums as well as on kernel.org
+Bugzilla, gravitate around the point that Turbo Core is not deployed by Linux.
 
-Description:
+While in many cases, people seem to be unaware that /proc/ and
+/sys/dev/system/cpu/ information will not reflect boosts, doubts remained for
+me.
 
-https://wiki.linaro.org/WorkingGroups/PowerManagement/Resources/TestSuite/PmQaSpecification#Cpufreq
+Using Ubuntu 14.04 Server and an AMD A10-6700, I analysed the phenomenon and
+came to an interesting observation.
 
-I have only used the thermal ones, I can't comment on the cpufreq
-tests.
+The system I set up was a bare server with no X / graphics installed /
+configured.
 
-Cheers,
-Javi
+First, I made sure that "cpupower frequency-info" listed the avalable boost
+states correctly. 4300 MHz (Pb0), 4200 MHz (Pb1) and 3900 MHz (Pb2) were shown
+in addition to the regular 3700, 3400, 2700, 2300 and 1800 MHz.
 
+Then, I used "stress --cpu 2" and "cpupower monitor". No boost. I also backed
+this observation by tests with "time dd if=/dev/tero of=/dev/null
+count=10000000".
+
+I installed the "radeon" driver and made sure it was loaded in the kernel. No
+difference.
+
+Finally, I downloaded, compiled and installed the latest AMD Radeon driver.
+From the results, I only took the "fglrx" module and made sure that it got
+loaded.
+
+And alas, "cpupower monitor" showed boosts as expected. Additionally, the
+execution time of the "dd" command mentioned above was reduced to 85% as
+compared to before.
+
+My suspicion is that the chips will not make their autonomous boost decision
+unless the graphics unit is initialised in a certain way, such that all the
+power dissipation information is available for the decision.
+
+The question is, could there be any way how the kernel could initialise these
+APUs such that they can make boost decisions right away, without having to load
+the proprietary AMD/ATI driver.
+
+Credits go to user M132 over at askubuntu.com who, in a brief comment on May 5,
+provided an indication that such a correlation may possibly exist.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
