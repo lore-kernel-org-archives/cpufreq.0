@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 81701] OOPS in cpufreq driver with AMD Kaveri CPU
-Date: Fri, 08 Aug 2014 14:52:22 +0000
-Message-ID: <bug-81701-12968-CujZE5ehIQ@https.bugzilla.kernel.org/>
+Date: Fri, 08 Aug 2014 14:54:43 +0000
+Message-ID: <bug-81701-12968-hTC6lsUYM5@https.bugzilla.kernel.org/>
 References: <bug-81701-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,10 +14,12 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=81701
 
---- Comment #4 from Oleksandr Natalenko <oleksandr@natalenko.name> ---
-Created attachment 145811
-  --> https://bugzilla.kernel.org/attachment.cgi?id=145811&action=edit
-lspci output
+--- Comment #5 from Oleksandr Natalenko <oleksandr@natalenko.name> ---
+Disabling cpufreq section in kernel configuration seems to work around this
+issue.
+
+Using NOHZ_IDLE instead of NOHZ_FULL doesn't fix the issue (I also suspected
+RCU bugs or so).
 
 -- 
 You are receiving this mail because:
