@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 81701] OOPS in cpufreq driver with AMD Kaveri CPU
-Date: Fri, 08 Aug 2014 17:22:02 +0000
-Message-ID: <bug-81701-12968-0s0SfYyApY@https.bugzilla.kernel.org/>
+Date: Fri, 08 Aug 2014 17:24:19 +0000
+Message-ID: <bug-81701-12968-2kVBnUTjeJ@https.bugzilla.kernel.org/>
 References: <bug-81701-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,10 +14,9 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=81701
 
---- Comment #13 from Oleksandr Natalenko <oleksandr@natalenko.name> ---
-Created attachment 145891
-  --> https://bugzilla.kernel.org/attachment.cgi?id=145891&action=edit
-/proc/scsi/scsi
+--- Comment #14 from Oleksandr Natalenko <oleksandr@natalenko.name> ---
+Also the issue happens no matter whether acpi-cpufreq is built-in or compiled
+as module.
 
 -- 
 You are receiving this mail because:
