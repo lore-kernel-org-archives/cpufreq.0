@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 81701] OOPS in cpufreq driver with AMD Kaveri CPU
-Date: Fri, 08 Aug 2014 15:09:59 +0000
-Message-ID: <bug-81701-12968-C96GMt36Tj@https.bugzilla.kernel.org/>
+Date: Fri, 08 Aug 2014 17:20:58 +0000
+Message-ID: <bug-81701-12968-P6o35BZqBZ@https.bugzilla.kernel.org/>
 References: <bug-81701-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,10 +14,10 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=81701
 
---- Comment #8 from Oleksandr Natalenko <oleksandr@natalenko.name> ---
-Launchpad bugreport:
-
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1352567
+--- Comment #9 from Oleksandr Natalenko <oleksandr@natalenko.name> ---
+Created attachment 145851
+  --> https://bugzilla.kernel.org/attachment.cgi?id=145851&action=edit
+.config
 
 -- 
 You are receiving this mail because:
