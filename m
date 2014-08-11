@@ -1,22 +1,22 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 81701] OOPS in cpufreq driver with AMD Kaveri CPU
-Date: Fri, 08 Aug 2014 17:24:19 +0000
-Message-ID: <bug-81701-12968-2kVBnUTjeJ@https.bugzilla.kernel.org/>
-References: <bug-81701-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 62551] AMD Phenom II 955.: The system freezes for a moment when
+ the CPU scaling is enabled
+Date: Mon, 11 Aug 2014 07:48:38 +0000
+Message-ID: <bug-62551-12968-nt1WbQRpIT@https.bugzilla.kernel.org/>
+References: <bug-62551-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-81701-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-62551-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=81701
+https://bugzilla.kernel.org/show_bug.cgi?id=62551
 
---- Comment #14 from Oleksandr Natalenko <oleksandr@natalenko.name> ---
-Also the issue happens no matter whether acpi-cpufreq is built-in or compiled
-as module.
+--- Comment #2 from Zhang Rui <rui.zhang@intel.com> ---
+ping ...
 
 -- 
 You are receiving this mail because:
