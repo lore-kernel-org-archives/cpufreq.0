@@ -1,66 +1,75 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
 Subject: Re: [RFC 0/3] Experimental patchset for CPPC
-Date: Thu, 14 Aug 2014 22:51:43 +0200
-Message-ID: <20140814205143.GY6758@twins.programming.kicks-ass.net>
+Date: Thu, 14 Aug 2014 17:56:10 -0400
+Message-ID: <CAJ5Y-ebgJi8Ngxg1X+h7KMundGZPFhYC0hr0Sog6htj=czszgQ@mail.gmail.com>
 References: <1408046230-16439-1-git-send-email-ashwin.chaugule@linaro.org>
+	<20140814205143.GY6758@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PC0PHm7MMXIrr506"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1408046230-16439-1-git-send-email-ashwin.chaugule@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20140814205143.GY6758@twins.programming.kicks-ass.net>
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: linux-kernel@vger.kernel.org, catalin.marinas@arm.com, mike.turquette@linaro.org, morten.rasmussen@arm.com, arjan@linux.intel.com, mingo@kernel.org, len.brown@intel.com, rjw@rjwysocki.net, linaro-acpi@lists.linaro.org, arnd@arndb.de, linux-acpi@vger.kernel.org, cpufreq@vger.kernel.org, patches@linaro.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Mike Turquette <mike.turquette@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, arjan@linux.intel.com, mingo@kernel.org, len.brown@intel.com, rjw@rjwysocki.net, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, Arnd Bergmann <arnd@arndb.de>, linux-acpi@vger.kernel.org, cpufreq@vger.kernel.org, Patch Tracking <patches@linaro.org>, dirk.brandewie@gmail.com
 
+Hi Peter,
 
---PC0PHm7MMXIrr506
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 14 August 2014 16:51, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, Aug 14, 2014 at 03:57:07PM -0400, Ashwin Chaugule wrote:
+>>
+>>
+>> What is CPPC:
+>> =============
+>>
+>> CPPC is the new interface for CPU performance control between the OS and the
+>> platform defined in ACPI 5.0+. The interface is built on an abstract
+>> representation of CPU performance rather than raw frequency.  Basic operation
+>> consists of:
+>
+> Why do we want this? Typically we've ignored ACPI and gone straight to
+> MSR access, intel_pstate and intel_idle were created especially to avoid
+> ACPI, so why return to it.
+>
+> Also, the whole interface sounds like trainwreck (one would not expect
+> anything else from ACPI).
+>
+> So _why_?
 
-On Thu, Aug 14, 2014 at 03:57:07PM -0400, Ashwin Chaugule wrote:
->=20
->=20
-> What is CPPC:
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> CPPC is the new interface for CPU performance control between the OS and =
-the
-> platform defined in ACPI 5.0+. The interface is built on an abstract
-> representation of CPU performance rather than raw frequency.  Basic opera=
-tion
-> consists of:
+The overall idea is that tying the notion of CPU performance to CPU
+frequency is no longer true these days.[1]. So, using some direction
+from an OS , the platforms want to be able to decide how to adjust CPU
+performance by using knowledge that may be very platform specific.
+e.g. through the use of performance counters, thermal budgets and
+other system specific constraints. So, CPPC describes a way for the OS
+to request performance within certain bounds and then letting the
+platform optimize it within those constraints. Expressing CPU
+performance in an abstract way, should also help keep things uniform
+across various architecture implementations.
 
-Why do we want this? Typically we've ignored ACPI and gone straight to
-MSR access, intel_pstate and intel_idle were created especially to avoid
-ACPI, so why return to it.
+I dont see CPPC as necessarily an ACPI specific thing. If the platform
+can provide the information which CPPC lays out via MSRs or other
+system IO, then the higher algorithms should still work. The CPPC
+table itself is nothing but register descriptions. It describes how
+and where to access the registers. The registers can be anything, from
+system I/O addresses, MSRs, CP15, or Mailbox type addresses(PCC). CPPC
+doesn't even you tell what to do with that information. So its really
+just a descriptor.
 
-Also, the whole interface sounds like trainwreck (one would not expect
-anything else from ACPI).
+If you see the example in [2], the aperf and mperf reads directly go
+to MSR addresses as parsed from the tables. If the platform does not
+have ACPI, but knows how to provide the same information, then it can
+directly read its MSRs or other sys regs. e.g. as in the case of
+core_get_{min,max}_pstate(), which are used to get highest and lowest
+performance values.
 
-So _why_?
+But I think the problem is that we dont have an algorithm that can
+make use of the information that CPPC supported platforms can provide,
+nor can we provide CPPC related information back to the platform.
 
---PC0PHm7MMXIrr506
-Content-Type: application/pgp-signature
+Cheers,
+Ashwin
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJT7SFfAAoJEHZH4aRLwOS6JDMP/A+qgY83dqBOG/f2GSj6cUpF
-TL2HoAN4wNrXHf0Qs5IfCto7a68mRw7ghvvKe7szpFZL9Sh/UkOyZHjHqrE50ZDQ
-Zjs2JWXyoJN0bwH4pVfDgAUDymzUPc0uhX06iQ6OYk/OoOnIs+TiUONg/jDlEPmQ
-IL7dNd8+tgsZfKQ/s7LmkA7RN6f3Xqd2Npsm3tdA3XDzwG9UuNvlAC1DzOy5xEZm
-vEeG3zhMHmPLzrHwN9DoE4qIPQwC70XM4qvM4AwIXDmJbWtQM2zjGjNm8FbyMxPY
-ggY5aONzLuymsHTA7HiVzgleR5Nvl5pvhyiEB0WDbayaTuhEgNoBE+cxBId0GL+E
-0/JttU2wJ3KJMqoIlkfwWkosOfcjLfXqKItTtcgh8w4NVn1wpufImH0AmN4onQ30
-U4+G0D/pzUz6SV2BJfXyBrvlYvjmPpRIur3dkBAfRvIDPPL2ofmiDkOKHqeOp/SF
-loLqJ+X4FTMkUqFfvzSxokWCyS489EIC+vPdxAgCmx+qQ81iCai/hVSxm17C0VxT
-nebeKszuhV8964e/5QCV9TQ7JRJcSAOzb/YflNbd4uSmReTrAjUpRPSlrW/88DRI
-5TGFaBZ78n9VA5XflcXSv6i4ybV1iDGPTYqkBIOi/+HZHL7swnXcal0Bdso+OJW4
-/ygZfv+7UuaT/jHB5Mil
-=maYp
------END PGP SIGNATURE-----
-
---PC0PHm7MMXIrr506--
+[1]- https://plus.google.com/+ArjanvandeVen/posts/dLn9T4ehywL
+[2] - http://git.linaro.org/people/ashwin.chaugule/leg-kernel.git/blob/236d901d31fb06fda798880c9ca09d65123c5dd9:/drivers/cpufreq/cppc_x86.c
