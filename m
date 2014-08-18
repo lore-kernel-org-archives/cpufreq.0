@@ -1,41 +1,29 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [RFC 0/3] Experimental patchset for CPPC
-Date: Mon, 18 Aug 2014 11:04:53 -0400
-Message-ID: <CAJ5Y-ebhE4-9WpB9Z+PO80qZJ2G4+UeK9Q3gk00XL=oO89esbA@mail.gmail.com>
-References: <1408046230-16439-1-git-send-email-ashwin.chaugule@linaro.org>
-	<20140814205143.GY6758@twins.programming.kicks-ass.net>
-	<CAJ5Y-ebgJi8Ngxg1X+h7KMundGZPFhYC0hr0Sog6htj=czszgQ@mail.gmail.com>
-	<20140815061917.GX19379@twins.programming.kicks-ass.net>
-	<CAJ5Y-eaLxCG7dDao00pozXBL2dxPS7tf=xGfaz3O_xfRHtQZnA@mail.gmail.com>
-	<53EE0E5B.3050004@linux.intel.com>
-	<53EE10CB.7040001@linux.intel.com>
-	<CAJ5Y-eZiRyGroems7J2oH05ybbbivM-okm3gFz7Mkuu8ceeCDQ@mail.gmail.com>
-	<53EE2BAA.1020603@linux.intel.com>
-	<CAJ5Y-eZZz=SrkONt029eZ0AsEZ6xFhW4cmcaEVZ8=8Ls9r5+zA@mail.gmail.com>
-	<CAJvTdKn-NsubOqK9_BOvvmnF9C6cK5tUF22VbWXEaPyXzb0huQ@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 72361] AMD APU reset infinite
+Date: Mon, 18 Aug 2014 15:30:51 +0000
+Message-ID: <bug-72361-12968-1Qg4g5g7Re@https.bugzilla.kernel.org/>
+References: <bug-72361-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJvTdKn-NsubOqK9_BOvvmnF9C6cK5tUF22VbWXEaPyXzb0huQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-72361-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Len Brown <lenb@kernel.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Mike Turquette <mike.turquette@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@kernel.org>, "Brown, Len" <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, Arnd Bergmann <arnd@arndb.de>, linux acpi <linux-acpi@vger.kernel.org>, cpufreq@vger.kernel.org, Patch Tracking <patches@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>
+To: cpufreq@vger.kernel.org
 
-Hi Len,
+https://bugzilla.kernel.org/show_bug.cgi?id=72361
 
-On 15 August 2014 18:11, Len Brown <lenb@kernel.org> wrote:
-> The Linux team at Intel did not implement ACPI CPPC support
-> because we see no benefit to it over the native hardware interface on x86.
->
+ArLi Weng <arliweng@gmail.com> changed:
 
-Thanks for sharing Intels observations. I had looked at the SDM [1]
-and found all the CPPC MSRs. I suppose X86 will not use a majority of
-it.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|VERIFIED                    |CLOSED
+         Resolution|PATCH_ALREADY_AVAILABLE     |CODE_FIX
 
-Cheers,
-Ashwin
+--- Comment #13 from ArLi Weng <arliweng@gmail.com> ---
+fixed in the kernel 3.16
 
-[1] - HWP section 14.4
-http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-3b-part-2-manual.pdf
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
