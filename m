@@ -1,29 +1,31 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 72361] AMD APU reset infinite
-Date: Mon, 18 Aug 2014 15:30:51 +0000
-Message-ID: <bug-72361-12968-1Qg4g5g7Re@https.bugzilla.kernel.org/>
-References: <bug-72361-12968@https.bugzilla.kernel.org/>
+From: Stefan Wahren <info@lategoodbye.de>
+Subject: ARM: mx28: cpufreq-cpu0 support?
+Date: Sun, 24 Aug 2014 11:47:43 +0200
+Message-ID: <53F9B4BF.2050802@lategoodbye.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-72361-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=72361
+Hi,
 
-ArLi Weng <arliweng@gmail.com> changed:
+could you please tell me, is i.MX28 supported by cpufreq-cpu0?
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|VERIFIED                    |CLOSED
-         Resolution|PATCH_ALREADY_AVAILABLE     |CODE_FIX
+Do we need only the necessary DT entries like operating points or is it 
+more?
 
---- Comment #13 from ArLi Weng <arliweng@gmail.com> ---
-fixed in the kernel 3.16
+Thanks in advance
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Stefan
