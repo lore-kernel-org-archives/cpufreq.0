@@ -1,48 +1,28 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 83151] New: Intel Turbo can't be disabled/enabled under certain
- condictions
-Date: Sun, 24 Aug 2014 19:26:46 +0000
-Message-ID: <bug-83151-12968@https.bugzilla.kernel.org/>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: ARM: mx28: cpufreq-cpu0 support?
+Date: Mon, 25 Aug 2014 16:01:25 +0800
+Message-ID: <20140825080123.GA12289@dragon>
+References: <53F9B4BF.2050802@lategoodbye.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <53F9B4BF.2050802@lategoodbye.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Stefan Wahren <info@lategoodbye.de>
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=83151
+On Sun, Aug 24, 2014 at 11:47:43AM +0200, Stefan Wahren wrote:
+> Hi,
+> 
+> could you please tell me, is i.MX28 supported by cpufreq-cpu0?
+> 
+> Do we need only the necessary DT entries like operating points or is
+> it more?
 
-            Bug ID: 83151
-           Summary: Intel Turbo can't be disabled/enabled under certain
-                    condictions
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 3.16
-          Hardware: x86-64
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: cpufreq@vger.kernel.org
-          Reporter: gabriele.mzt@gmail.com
-        Regression: No
+Clock might as simple as adding DT entries, but I'm not sure we have
+voltage scaling support for i.MX28 in kernel.
 
-On my laptop (Dell XPS 13 9333) MSR_IA32_MISC_ENABLE_TURBO_DISABLE is 0 when AC
-is present, 1 otherwise.
-Because of this, setting turbo_disabled on init leads to some issues:
-* If I turn on the laptop while the AC is present, the sysfs interface always
-allows me to change the state of no_turbo. However, the changes are only
-effective when the AC is present.
-* If I turn on the laptop while on battery, the sysfs interface doesn't allow
-me to change the state of no_turbo. That means I'm not able to disable it when
-it's automatically enabled when I plug the AC.
-
-Note that I don't have the possibility to disable Intel Turbo from the BIOS
-settings.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Shawn
