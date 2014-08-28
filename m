@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 83151] Intel Turbo can't be disabled/enabled under certain
  condictions
-Date: Wed, 27 Aug 2014 17:24:52 +0000
-Message-ID: <bug-83151-12968-eyUoLXUMya@https.bugzilla.kernel.org/>
+Date: Thu, 28 Aug 2014 05:04:14 +0000
+Message-ID: <bug-83151-12968-FF3NSWZdWI@https.bugzilla.kernel.org/>
 References: <bug-83151-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,15 +15,13 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=83151
 
-Dirk Brandewie <dirk.brandewie@gmail.com> changed:
+Lan Tianyu <tianyu.lan@intel.com> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |dirk.brandewie@gmail.com
-
---- Comment #2 from Dirk Brandewie <dirk.brandewie@gmail.com> ---
-I am just back from vacation give me a couple of days to dig out of the inbox
-to review/test
+             Status|NEW                         |ASSIGNED
+                 CC|                            |tianyu.lan@intel.com
+           Assignee|cpufreq@vger.kernel.org     |dirk.brandewie@gmail.com
 
 -- 
 You are receiving this mail because:
