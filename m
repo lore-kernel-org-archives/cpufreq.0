@@ -1,67 +1,70 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 83701] New: divide error 0000 in intel_pstate_set_pstate
-Date: Mon, 01 Sep 2014 21:15:01 +0000
-Message-ID: <bug-83701-12968@https.bugzilla.kernel.org/>
+From: Stefan Wahren <info@lategoodbye.de>
+Subject: Re: ARM: mx28: cpufreq-cpu0 support?
+Date: Tue, 02 Sep 2014 07:09:42 +0200
+Message-ID: <54055116.4030608@lategoodbye.de>
+References: <53F9B4BF.2050802@lategoodbye.de>	<20140825080123.GA12289@dragon>	<53FB1041.5010208@lategoodbye.de>	<CAOMZO5CG7mw5W4D3fRPE3TGxQ6-3pTtDJrsNnieN8XKE9dGofQ@mail.gmail.com>	<CAOMZO5CnuWJ9EaLUW8DYFU1Dzeh=92tux0zoUBKoW-L=VWZhhg@mail.gmail.com>	<540412A9.4090806@lategoodbye.de> <CAOMZO5A7-66LJtv4O2TghN3gVzme4N6JFMYd8TV7zXhUhsXedQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOMZO5A7-66LJtv4O2TghN3gVzme4N6JFMYd8TV7zXhUhsXedQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Fabio Estevam <festevam@gmail.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, Fabio Estevam <fabio.estevam@freescale.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Otavio Salvador <otavio@ossystems.com.br>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=83701
+Hello Fabio,
 
-            Bug ID: 83701
-           Summary: divide error 0000 in intel_pstate_set_pstate
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 3.14.6
-          Hardware: All
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: cpufreq@vger.kernel.org
-          Reporter: gdm85@iragan.org
-        Regression: No
+Am 01.09.2014 15:33, schrieb Fabio Estevam:
+> Hi Stefan,
+>
+> On Mon, Sep 1, 2014 at 3:31 AM, Stefan Wahren <info@lategoodbye.de> wrote:
+>
+>> thanks. Okay, that leads to more questions:
+>>
+>> How can i test a ported mxs-regulator driver, that it's really working? Is
+>> there any userspace interface?
+>
+> After you ported the mxs regulator you can check whether it probed
+> correctly and if the reported voltages in the kernel log match the
+> register settings. You can also check if the voltages are really in
+> the correct reported value with a scope.
+>
+> On mx6q we have the following:
+>
+> [    0.070554] vdd1p1: 800 <--> 1375 mV at 1100 mV
+> [    0.071521] vdd3p0: 2800 <--> 3150 mV at 3000 mV
+> [    0.072397] vdd2p5: 2000 <--> 2750 mV at 2400 mV
+> [    0.073369] vddarm: 725 <--> 1450 mV at 1150 mV
+> [    0.074282] vddpu: 725 <--> 1450 mV at 1150 mV
+> [    0.075247] vddsoc: 725 <--> 1450 mV at 1200 mV
+>
+> and you should get something like that in your kernel log after you
+> ported the mxs regulator driver.
+>
+>> Is there a good DT implementation of a similiar regulator driver, so i can
+>> orientate on?
+>
+> You could take a look at the drivers/regulator/anatop-regulator.c
+> driver, which handles the internal regulators on mx6.
+>
+> The dts is arch/arm/boot/dts/imx6qdl.dtsi . Search for "anatop-regulator"
+>
 
-Created attachment 148991
-  --> https://bugzilla.kernel.org/attachment.cgi?id=148991&action=edit
-photo of terminal with divide error: 0000 kernel panic
+thanks again. Now i unterstand much more, but otherwise the portation 
+won't be straight forward. The old source in 
+drivers/regulator/mxs-regulator.c needs a low level part located in 
+arch/arm/plat-mx28/power.c . As far as i know, the low level part needs 
+to move into the devicetree binding and into the mxs-regulator.c . Am i 
+right?
 
-I left this Arch Linux NAS running for about 20 days and all of a sudden it
-died; I checked the terminal window today and found kernel panic in attachment.
-By searching online I found a bug report for same kernel panic that is
-mistakenly attributed to VirtualBox (https://www.virtualbox.org/ticket/12070),
-however I am running on bare metal here (Intel i3-4340).
+Yesterday i had looked into the mx28 reference manual and into the low 
+level part of the mxs regulator. The reference manual defines four 
+voltage regulators: vddd, vdda, vddio and vddmem plus a overall current 
+regulator. But the low level part make use of vddd, vdda, vddio, 
+vddio_bo and the overall current.
 
-Never seen this before and I am afraid it will be a bit difficult to trigger it
-again; I wanted to contribute with this bug report as I thought it is a rare
-kernel panic.
+Do i need the brown out regulator (vddio_bo) and the vddmem?
 
-Sorry for the bad quality of the screenshot, it's the best I could do as I
-don't normally connect a serial tty to this box. A section of photo (related to
-modules) was removed because of the flash flare. If it can be of help, these
-are the modules currently loaded (and there's no reason to suspect they would
-be any different at time of incident):
+Stefan
 
-ext4 crc16 mbcache jbd2 snd_hda_codec_hdmi fuse nls_iso8859_1 nls_cp437 vfat
-fat coretemp hwmon joydev mousedev x86_pkg_temp_thermal intel_powerclamp
-kvm_intel iTCO_wdt i915 iTCO_vendor_support evdev mac_hid kvm
-snd_hda_codec_realtek psmouse snd_hda_codec_generic microcode serio_raw pcspkr
-i2c_i801 drm_kms_helper tpm_tis alx tpm snd_hda_intel mdio drm snd_hda_codec
-snd_hwdep battery nuvoton_cir snd_pcm intel_gtt rc_core i2c_algo_bit snd_timer
-lpc_ich i2c_core video snd shpchp soundcore mei_me button mei processor xpad
-ff_memless led_class nfs lockd sunrpc fscache loop dm_crypt hid_logitech_dj
-sd_mod crc_t10dif hid_generic usbhid hid atkbd libps2 ahci libahci libata
-crct10dif_pclmul crct10dif_common crc32_pclmul crc32c_intel ghash_clmulni_intel
-aesni_intel aes_x86_64 lrw gf128mul glue_helper ablk_helper cryptd ehci_pci
-xhci_hcd ehci_hcd scsi_mod usbcore usb_common i8042 serio crc32c btrfs raid6_pq
-xor dm_mod
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
