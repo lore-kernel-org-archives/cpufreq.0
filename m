@@ -1,57 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq-info
-Date: Tue, 2 Sep 2014 10:24:21 +0530
-Message-ID: <CAOh2x=kWjNZo5_xaSqoAhhFY6Dgbbs5qhwM8tHGUHdjD1hhO+g@mail.gmail.com>
-References: <5404D70B.4000407@soaringmeteo.ch>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: ARM: mx28: cpufreq-cpu0 support?
+Date: Tue, 2 Sep 2014 10:13:01 -0300
+Message-ID: <CAOMZO5A3n6HV_A+U5pjzbHQMhcpmq7gw0e0aT87GGTyTZKeZ9A@mail.gmail.com>
+References: <53F9B4BF.2050802@lategoodbye.de>
+	<20140825080123.GA12289@dragon>
+	<53FB1041.5010208@lategoodbye.de>
+	<CAOMZO5CG7mw5W4D3fRPE3TGxQ6-3pTtDJrsNnieN8XKE9dGofQ@mail.gmail.com>
+	<CAOMZO5CnuWJ9EaLUW8DYFU1Dzeh=92tux0zoUBKoW-L=VWZhhg@mail.gmail.com>
+	<540412A9.4090806@lategoodbye.de>
+	<CAOMZO5A7-66LJtv4O2TghN3gVzme4N6JFMYd8TV7zXhUhsXedQ@mail.gmail.com>
+	<54055116.4030608@lategoodbye.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=ZJnult5Vi1fDGW+qiFj+3tS91NOb4ncJQzOj5pVUogM=;
-        b=V0/F1yue1oapQj5ZaQkBu+nvnKKOTILkFo4lyzOEMppLY9xRZQ8KhI2kd6+VXr22/V
-         1YD1m6odsZWeBU+48U0RzVIMHzqiS3MegO1cHIcOoPCT0QUAMsXcm2SAYr+6cgGRzdWq
-         LuaXpJTxtYRsr/fGO5aZu7ZQ8ZDO9mtvALuIdiGW7Zdbubsk32ekiiD6ZAFK/zjxVDi5
-         uJEuztUmKv+x+sLLrylwiE+7ox0D5O0B6Fx1kX3zW5GZjRq7f4iXigJ7/qH21mczvYYb
-         6BiAfaHkIE2oksMaz8oMUMM6sNcN3eWQjqCMnd/6/NEjNdbC/EcQv9s1IwDTFRF0lurA
-         KaxA==
-In-Reply-To: <5404D70B.4000407@soaringmeteo.ch>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        bh=PEITkIcHR7tJ8WdU6u+dlR6gnO2Opu8Y7y+HsCRZtHw=;
+        b=JQ/GIPQ4z80Hx/G9mfbydQ+hUyLW9LOp5FkHR3LGk7Huq1Sxzf+8BYYkr8B01zTXHT
+         8v+80IEpuid8/8+h08dVTyOUYlD7HgeH9k3wqt8dhcRjuWWsvWuzPDW01GMClsTZojGZ
+         S/1XYqAUDw12uJWuCvdcqKaRBr+V/LAGGRWnO23luPqwGbRuFh6VnynCcZeeUjW73FsZ
+         XFqOTX641vuP8OQLVPD7jeyBFZ5q7EvnLl0VqmTdKL6c67h7Tg0dM2nUWVgT4ZqGGaQl
+         hAuTX7L/fxrGEaAb9pbEIwLxZnyR7sb3JmxT/XJfQQSceBRP8KqTrs4MVx+RF4xZQB3A
+         6/Jw==
+In-Reply-To: <54055116.4030608@lategoodbye.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean Oberson <jo@soaringmeteo.ch>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+To: Stefan Wahren <info@lategoodbye.de>
+Cc: Shawn Guo <shawn.guo@linaro.org>, Fabio Estevam <fabio.estevam@freescale.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Otavio Salvador <otavio@ossystems.com.br>
 
-On Tue, Sep 2, 2014 at 1:58 AM, Jean Oberson <jo@soaringmeteo.ch> wrote:
->  Hello
->
-> I am working on a dedicated dual core Intel ATOM serveur on ubuntu
->
-> uname -a
->
-> 3.2.0-23-generic #36-Ubuntu SMP Tue Apr 10 20:39:51 UTC 2012 x86_64 x86_64
-> x86_64 GNU/Linux
->
-> Results :
->
-> $>cpufreq-info
-> cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-> Report errors and bugs to cpufreq@vger.kernel.org, please.
-> analyzing CPU 0:
->   no or unknown cpufreq driver is active on this CPU
->   maximum transition latency: 4294.55 ms.
-> analyzing CPU 1:
->   no or unknown cpufreq driver is active on this CPU
->   maximum transition latency: 4294.55 ms.
-> analyzing CPU 2:
->   no or unknown cpufreq driver is active on this CPU
->   maximum transition latency: 4294.55 ms.
-> analyzing CPU 3:
->   no or unknown cpufreq driver is active on this CPU
->   maximum transition latency: 4294.55 ms.
->
-> Helps please
+On Tue, Sep 2, 2014 at 2:09 AM, Stefan Wahren <info@lategoodbye.de> wrote:
 
-Bootlogs might be interesting to see what went wrong.
+> thanks again. Now i unterstand much more, but otherwise the portation won't
+> be straight forward. The old source in drivers/regulator/mxs-regulator.c
+> needs a low level part located in arch/arm/plat-mx28/power.c . As far as i
+> know, the low level part needs to move into the devicetree binding and into
+> the mxs-regulator.c . Am i right?
+
+Yes, I think you are right.
+
+> Yesterday i had looked into the mx28 reference manual and into the low level
+> part of the mxs regulator. The reference manual defines four voltage
+> regulators: vddd, vdda, vddio and vddmem plus a overall current regulator.
+> But the low level part make use of vddd, vdda, vddio, vddio_bo and the
+> overall current.
+>
+> Do i need the brown out regulator (vddio_bo) and the vddmem?
+
+As far as I understand vddmem is not used on mx28evk. From the mx28
+reference manual;
+
+"11.12.8 VDDMEM Supply Targets Control Register
+(HW_POWER_VDDMEMCTRL)
+This register controls the voltage target for a memory supply
+generated from VDDA. This
+supply is intended for use with external memories such as LV-DDR that
+have unique voltage
+requirements not compatible with VDDIO, VDDA , or VDDD."
