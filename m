@@ -1,70 +1,57 @@
-From: Stefan Wahren <info@lategoodbye.de>
-Subject: Re: ARM: mx28: cpufreq-cpu0 support?
-Date: Tue, 02 Sep 2014 07:09:42 +0200
-Message-ID: <54055116.4030608@lategoodbye.de>
-References: <53F9B4BF.2050802@lategoodbye.de>	<20140825080123.GA12289@dragon>	<53FB1041.5010208@lategoodbye.de>	<CAOMZO5CG7mw5W4D3fRPE3TGxQ6-3pTtDJrsNnieN8XKE9dGofQ@mail.gmail.com>	<CAOMZO5CnuWJ9EaLUW8DYFU1Dzeh=92tux0zoUBKoW-L=VWZhhg@mail.gmail.com>	<540412A9.4090806@lategoodbye.de> <CAOMZO5A7-66LJtv4O2TghN3gVzme4N6JFMYd8TV7zXhUhsXedQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq-info
+Date: Tue, 2 Sep 2014 10:24:21 +0530
+Message-ID: <CAOh2x=kWjNZo5_xaSqoAhhFY6Dgbbs5qhwM8tHGUHdjD1hhO+g@mail.gmail.com>
+References: <5404D70B.4000407@soaringmeteo.ch>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOMZO5A7-66LJtv4O2TghN3gVzme4N6JFMYd8TV7zXhUhsXedQ@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type;
+        bh=ZJnult5Vi1fDGW+qiFj+3tS91NOb4ncJQzOj5pVUogM=;
+        b=V0/F1yue1oapQj5ZaQkBu+nvnKKOTILkFo4lyzOEMppLY9xRZQ8KhI2kd6+VXr22/V
+         1YD1m6odsZWeBU+48U0RzVIMHzqiS3MegO1cHIcOoPCT0QUAMsXcm2SAYr+6cgGRzdWq
+         LuaXpJTxtYRsr/fGO5aZu7ZQ8ZDO9mtvALuIdiGW7Zdbubsk32ekiiD6ZAFK/zjxVDi5
+         uJEuztUmKv+x+sLLrylwiE+7ox0D5O0B6Fx1kX3zW5GZjRq7f4iXigJ7/qH21mczvYYb
+         6BiAfaHkIE2oksMaz8oMUMM6sNcN3eWQjqCMnd/6/NEjNdbC/EcQv9s1IwDTFRF0lurA
+         KaxA==
+In-Reply-To: <5404D70B.4000407@soaringmeteo.ch>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Fabio Estevam <festevam@gmail.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, Fabio Estevam <fabio.estevam@freescale.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Otavio Salvador <otavio@ossystems.com.br>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean Oberson <jo@soaringmeteo.ch>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-Hello Fabio,
+On Tue, Sep 2, 2014 at 1:58 AM, Jean Oberson <jo@soaringmeteo.ch> wrote:
+>  Hello
+>
+> I am working on a dedicated dual core Intel ATOM serveur on ubuntu
+>
+> uname -a
+>
+> 3.2.0-23-generic #36-Ubuntu SMP Tue Apr 10 20:39:51 UTC 2012 x86_64 x86_64
+> x86_64 GNU/Linux
+>
+> Results :
+>
+> $>cpufreq-info
+> cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
+> Report errors and bugs to cpufreq@vger.kernel.org, please.
+> analyzing CPU 0:
+>   no or unknown cpufreq driver is active on this CPU
+>   maximum transition latency: 4294.55 ms.
+> analyzing CPU 1:
+>   no or unknown cpufreq driver is active on this CPU
+>   maximum transition latency: 4294.55 ms.
+> analyzing CPU 2:
+>   no or unknown cpufreq driver is active on this CPU
+>   maximum transition latency: 4294.55 ms.
+> analyzing CPU 3:
+>   no or unknown cpufreq driver is active on this CPU
+>   maximum transition latency: 4294.55 ms.
+>
+> Helps please
 
-Am 01.09.2014 15:33, schrieb Fabio Estevam:
-> Hi Stefan,
->
-> On Mon, Sep 1, 2014 at 3:31 AM, Stefan Wahren <info@lategoodbye.de> wrote:
->
->> thanks. Okay, that leads to more questions:
->>
->> How can i test a ported mxs-regulator driver, that it's really working? Is
->> there any userspace interface?
->
-> After you ported the mxs regulator you can check whether it probed
-> correctly and if the reported voltages in the kernel log match the
-> register settings. You can also check if the voltages are really in
-> the correct reported value with a scope.
->
-> On mx6q we have the following:
->
-> [    0.070554] vdd1p1: 800 <--> 1375 mV at 1100 mV
-> [    0.071521] vdd3p0: 2800 <--> 3150 mV at 3000 mV
-> [    0.072397] vdd2p5: 2000 <--> 2750 mV at 2400 mV
-> [    0.073369] vddarm: 725 <--> 1450 mV at 1150 mV
-> [    0.074282] vddpu: 725 <--> 1450 mV at 1150 mV
-> [    0.075247] vddsoc: 725 <--> 1450 mV at 1200 mV
->
-> and you should get something like that in your kernel log after you
-> ported the mxs regulator driver.
->
->> Is there a good DT implementation of a similiar regulator driver, so i can
->> orientate on?
->
-> You could take a look at the drivers/regulator/anatop-regulator.c
-> driver, which handles the internal regulators on mx6.
->
-> The dts is arch/arm/boot/dts/imx6qdl.dtsi . Search for "anatop-regulator"
->
-
-thanks again. Now i unterstand much more, but otherwise the portation 
-won't be straight forward. The old source in 
-drivers/regulator/mxs-regulator.c needs a low level part located in 
-arch/arm/plat-mx28/power.c . As far as i know, the low level part needs 
-to move into the devicetree binding and into the mxs-regulator.c . Am i 
-right?
-
-Yesterday i had looked into the mx28 reference manual and into the low 
-level part of the mxs regulator. The reference manual defines four 
-voltage regulators: vddd, vdda, vddio and vddmem plus a overall current 
-regulator. But the low level part make use of vddd, vdda, vddio, 
-vddio_bo and the overall current.
-
-Do i need the brown out regulator (vddio_bo) and the vddmem?
-
-Stefan
-
+Bootlogs might be interesting to see what went wrong.
