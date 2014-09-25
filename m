@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 58001] "ondemand" CPU governor never raises frequency (Dell XPS
  12)
-Date: Thu, 25 Sep 2014 00:16:56 +0000
-Message-ID: <bug-58001-12968-cddyAXya9o@https.bugzilla.kernel.org/>
+Date: Thu, 25 Sep 2014 00:59:15 +0000
+Message-ID: <bug-58001-12968-ryHMkllMpZ@https.bugzilla.kernel.org/>
 References: <bug-58001-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,20 +15,26 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=58001
 
-Doug Smythies <dsmythies@telus.net> changed:
+--- Comment #21 from Raymond Auge <rotty3000@gmail.com> ---
+Ok this seems to give working governance (2 levels only powersave, performance)
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |dsmythies@telus.net
+and I'm apparently seeing CPU frequencies beyond those previously available,
+which were 800MHz-2000MHz
 
---- Comment #20 from Doug Smythies <dsmythies@telus.net> ---
-intel_pstate=enable on the proper grub line should work. Here is an example
-from mine (/etc/default/grub):
+Now I see:
 
-GRUB_CMDLINE_LINUX_DEFAULT="ipv6.disable=1 intel_pstate=enable
-crashkernel=384M-:128M"
+~]$ sudo dmidecode -t processor | grep MHz
+    External Clock: 100 MHz
+    Max Speed: 4000 MHz
+    Current Speed: 2000 MHz
 
-Of course, run "sudo update-grub" afterwards.
+and the cpu speed in powersave hovers around:
+
+~]$ grep MHz /proc/cpuinfo
+cpu MHz        : 1553.320
+cpu MHz        : 1560.644
+cpu MHz        : 2186.230
+cpu MHz        : 1757.519
 
 -- 
 You are receiving this mail because:
