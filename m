@@ -1,58 +1,64 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: Potential cpufreq backports for v3.10 LTS
-Date: Wed, 8 Oct 2014 00:07:19 +0100
-Message-ID: <20141007230719.GP4609@sirena.org.uk>
-References: <20141007114844.GT4609@sirena.org.uk>
- <20141007164643.GA3748@kroah.com>
- <20141007170800.GL4609@sirena.org.uk>
- <20141007200458.GA12028@kroah.com>
- <54345CFB.7070101@semaphore.gr>
+From: Fengguang Wu <fengguang.wu@intel.com>
+Subject: 48ed83b84da: scaling_governor write error
+Date: Fri, 17 Oct 2014 10:25:47 +0800
+Message-ID: <20141017022547.GA8005@wfg-t540p.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="NsYpzUZ4z5mp8BBz"
+Content-Type: multipart/mixed; boundary="rwEMma7ioTxnRzrJ"
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <54345CFB.7070101@semaphore.gr>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Xiaoguang Chen <chenxg@marvell.com>, Andreas Schwab <schwab@linux-m68k.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Amit Kucheria <amit.kucheria@linaro.org>, stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, lkp@01.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
 
---NsYpzUZ4z5mp8BBz
+--rwEMma7ioTxnRzrJ
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Wed, Oct 08, 2014 at 12:36:59AM +0300, Stratos Karafotis wrote:
+Hi Viresh,
 
-> For your information, commits:
+FYI, our test script is broken by a commit from you:
 
-> - 61c63e5ed3b9 cpufreq: Remove unused APERF/MPERF support
-> - cffe4e0e7413 cpufreq: Remove unused function __cpufreq_driver_getavg()
+https://git.linaro.org/people/vireshk/linux cpufreq/governor-fixes
+commit 48ed83b84da331d010c5bd10b9d2f72d5308bddd ("cpufreq: Track governor-state to disallow invalid state requests")
 
-> remove unused code (no other functional changes) as a result of
-> commit dfa5bb622555. They all were part of the same patch set.
 
-> I'm not familiar with the procedure of patch inclusion in stable trees,
-> so please forgive me if this mail is just noise.
+ee46f1592843a04d  48ed83b84da331d010c5bd10b9 
+----------------  -------------------------- 
+       fail:runs  %reproduction    fail:runs
+           |             |             |
+           :5          100%           5:5     TOTAL stderr./lkp/lkp/src/setup/cpufreq_governor:line#:echo:write_error:Invalid_argument
 
-If they're just cleanups and not producing a functional change then the
-standard thing would be to leave them out of stable.
+The error messages are:
 
---NsYpzUZ4z5mp8BBz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+ /lkp/wfg/src/setup/cpufreq_governor: line 9: echo: write error: Device or resource busy
+ /lkp/wfg/src/setup/cpufreq_governor: line 9: echo: write error: Device or resource busy
+ /lkp/wfg/src/setup/cpufreq_governor: line 9: echo: write error: Device or resource busy
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+where the cpufreq_governor script is
+ 
+        #!/bin/bash
 
-iQEcBAEBAgAGBQJUNHInAAoJECTWi3JdVIfQOB8IAIJGtQeG5wj0/eMMWXyDeQir
-c4rpD8yGRsRXYYXWBYqAcabkQbsyrRLSBZ86EBgMmnl98N1QtswWjO8ivFUHeR25
-OxqE/AOCov6EMSAaOfguxdi2ufFuNY64B+65qlDl1/ADMjDyTFpQJP0ln7+eA0cU
-1yqdKrv5lanAOMq08vbwAnq/Za0DbLB9sPqWknWBbBwYQIQlqDXiJFTP1ZZ7TUiO
-Vi37Y6TI7qrYSd224yVKSugcOFVjLF0HxUrc1aRHPqz7gfG3ounHCeUdKgYg7IzU
-sqEdX3sSJB3u8xoTnwtYYIOsKydW0Zc6Af/cCYH0PnCQq4uRCnmnINS8xGAIl1U=
-=USVq
------END PGP SIGNATURE-----
+        scaling_governor=$1
+        [[ $scaling_governor ]] || exit 0
 
---NsYpzUZ4z5mp8BBz--
+        for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+        do
+                note "echo $scaling_governor > $file"
+==>             echo $scaling_governor > $file
+        done
+
+Thanks,
+Fengguang
+
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=reproduce
+
+echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+echo performance > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
+echo performance > /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
+echo performance > /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor
+
+--rwEMma7ioTxnRzrJ--
