@@ -1,64 +1,93 @@
-From: Fengguang Wu <fengguang.wu@intel.com>
-Subject: 48ed83b84da: scaling_governor write error
-Date: Fri, 17 Oct 2014 10:25:47 +0800
-Message-ID: <20141017022547.GA8005@wfg-t540p.sh.intel.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 86461] New: intel_pstate does not obey min/max frequencies set
+ by user
+Date: Fri, 17 Oct 2014 09:21:52 +0000
+Message-ID: <bug-86461-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="rwEMma7ioTxnRzrJ"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, lkp@01.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
+
+https://bugzilla.kernel.org/show_bug.cgi?id=86461
+
+            Bug ID: 86461
+           Summary: intel_pstate does not obey min/max frequencies set by
+                    user
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.17-rc5
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: patrakov@gmail.com
+        Regression: No
+
+# uname -a    
+Linux aep-vaio 3.17.0-rc5 #1 SMP PREEMPT Thu Sep 18 23:13:08 YEKT 2014 x86_64
+Intel(R) Core(TM) i7-2640M CPU @ 2.80GHz GenuineIntel GNU/Linu
+
+# echo 2400000 | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq
+
+# cpufreq-info
+cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
+Report errors and bugs to cpufreq@vger.kernel.org, please.
+analyzing CPU 0:
+  driver: intel_pstate
+  CPUs which run at the same hardware frequency: 0
+  CPUs which need to have their frequency coordinated by software: 0
+  maximum transition latency: 0.97 ms.
+  hardware limits: 800 MHz - 3.50 GHz
+  available cpufreq governors: performance, powersave
+  current policy: frequency should be within 2.40 GHz and 3.50 GHz.
+                  The governor "powersave" may decide which speed to use
+                  within this range.
+  current CPU frequency is 804 MHz (asserted by call to hardware).
+analyzing CPU 1:
+  driver: intel_pstate
+  CPUs which run at the same hardware frequency: 1
+  CPUs which need to have their frequency coordinated by software: 1
+  maximum transition latency: 0.97 ms.
+  hardware limits: 800 MHz - 3.50 GHz
+  available cpufreq governors: performance, powersave
+  current policy: frequency should be within 2.40 GHz and 3.50 GHz.
+                  The governor "powersave" may decide which speed to use
+                  within this range.
+  current CPU frequency is 885 MHz (asserted by call to hardware).
+analyzing CPU 2:
+  driver: intel_pstate
+  CPUs which run at the same hardware frequency: 2
+  CPUs which need to have their frequency coordinated by software: 2
+  maximum transition latency: 0.97 ms.
+  hardware limits: 800 MHz - 3.50 GHz
+  available cpufreq governors: performance, powersave
+  current policy: frequency should be within 2.40 GHz and 3.50 GHz.
+                  The governor "powersave" may decide which speed to use
+                  within this range.
+  current CPU frequency is 800 MHz (asserted by call to hardware).
+analyzing CPU 3:
+  driver: intel_pstate
+  CPUs which run at the same hardware frequency: 3
+  CPUs which need to have their frequency coordinated by software: 3
+  maximum transition latency: 0.97 ms.
+  hardware limits: 800 MHz - 3.50 GHz
+  available cpufreq governors: performance, powersave
+  current policy: frequency should be within 2.40 GHz and 3.50 GHz.
+                  The governor "powersave" may decide which speed to use
+                  within this range.
+  current CPU frequency is 822 MHz (asserted by call to hardware).
 
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+As you see, my attempt to force the minimum frequency to 2.4 GHz has been
+ignored.
 
-Hi Viresh,
-
-FYI, our test script is broken by a commit from you:
-
-https://git.linaro.org/people/vireshk/linux cpufreq/governor-fixes
-commit 48ed83b84da331d010c5bd10b9d2f72d5308bddd ("cpufreq: Track governor-state to disallow invalid state requests")
-
-
-ee46f1592843a04d  48ed83b84da331d010c5bd10b9 
-----------------  -------------------------- 
-       fail:runs  %reproduction    fail:runs
-           |             |             |
-           :5          100%           5:5     TOTAL stderr./lkp/lkp/src/setup/cpufreq_governor:line#:echo:write_error:Invalid_argument
-
-The error messages are:
-
- /lkp/wfg/src/setup/cpufreq_governor: line 9: echo: write error: Device or resource busy
- /lkp/wfg/src/setup/cpufreq_governor: line 9: echo: write error: Device or resource busy
- /lkp/wfg/src/setup/cpufreq_governor: line 9: echo: write error: Device or resource busy
-
-where the cpufreq_governor script is
- 
-        #!/bin/bash
-
-        scaling_governor=$1
-        [[ $scaling_governor ]] || exit 0
-
-        for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-        do
-                note "echo $scaling_governor > $file"
-==>             echo $scaling_governor > $file
-        done
-
-Thanks,
-Fengguang
-
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=reproduce
-
-echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-echo performance > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
-echo performance > /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
-echo performance > /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor
-
---rwEMma7ioTxnRzrJ--
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
