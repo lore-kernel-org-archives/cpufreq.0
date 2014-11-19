@@ -1,71 +1,62 @@
-From: Arun KS <arunks.linux@gmail.com>
-Subject: Race condition in cpufreq
-Date: Wed, 19 Nov 2014 11:25:21 +0530
-Message-ID: <CAKZGPAMLm0iHRgfojbxP+Tzbt4eUFovM3NYz83Lnexw3G2QiYA@mail.gmail.com>
+From: Mason <mpeg.blue@free.fr>
+Subject: How many frequencies would cpufreq optimally like to manage?
+Date: Thu, 20 Nov 2014 00:24:30 +0100
+Message-ID: <546D26AE.50601@free.fr>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:date:message-id:subject:from:to:content-type;
-        bh=8yy4qnhsJ2nQtLKgJwj4Npo2tG8kDXN8sGVClBoWsrU=;
-        b=bW0ZSYgU0DfuOyGj6i5KoNtAqJT/OtbaLXME9kyfccTCXibFogbKvZfdHCbu99yMgE
-         BDIMj9f9NJkKCwMNvXmsJRrUzH1ArSSf1knmQoSnXSvmjkYxuu//TI4wTX8DRmUW6jMK
-         Nozj5yxC9+icTCTUAseKqFx6wvrYa/SEmxmizkZ2JRyeD+VymJpvpXSF7raIaHswmuD7
-         zw02THjy7l1gk2yy3Bfu/sTit0TwALObU2zimjPM93et7FQbSwngb8rQEhAXQ5bTfPB/
-         3oTnauPfplTFgNZj6Wn35NpZCteqiSC2I7W0v6lFGxzd9wty2UVmz7d1+b4xIarUWDkP
-         ed0g==
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq <cpufreq@vger.kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hello,
+Hello everyone,
 
-Seen a race condition in cpufrequency driver.
+I'm running kernel 3.14 on an ARM Cortex-A9 based SoC.
+The baseline frequency for the ARM CPU is 999 MHz.
 
-cpu2 is being hot-plugged out. And this started at say, 20th msec.
--000|context_switch(inline)
--000|need_resched()
--001|preempt_schedule(inline)
--001|preempt_schedule()
--002|static_key_false(inline)
--002|trace_sched_cpu_hotplug(inline)
--002|cpu_down(cpu = 2, ?)
--003|cpu_down(cpu = 2)
--004|update_offline_cores(?)
--005|do_hotplug(?)
--006|kthread(_create = 0xEE85BEBC)
+The SoC provides a way to dynamically change the CPU frequency,
+dividing it by N/16 (N=32..4095) [Actually, I think there are
+also ways to divide by 1.x, but I need to read the docs again.]
 
-cpu1 is updating the governor at say 60th msec.
-echo "some_governor" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-at 60th msec, cpu2 is already hot-plugged but CPU_POST_DEAD has not
-called because __cpu_down was scheduled out at cpu_hotplug_done(while
-unlocking mutex)
+I'm writing the platform-specific cpufreq driver.
+I could expose hundreds of frequencies to cpufreq, but I don't
+think that would be very productive. Correct?
+(Note: I can't offer ANY frequency.)
 
-now store_scaling_governor calls cpufreq_set_policy
-CPUFREQ_GOV_START iterates through all cpus in policy->cpus(which is
-not the correct one now, because cpu2 is already hot-plugged out(DEAD)
-but not updated in policy->cpus).
+My question is: how many frequencies should I expose for "optimal"
+behavior of cpufreq?
 
-One suggestion is to use CPU_DEAD instead of CPU_POST_DEAD in cpufreq.c
+I'm thinking I would only expose div={2,3,5} meaning the available
+scaled frequencies would be {500,333,200} MHz. Are these enough?
+Should there be more? Should I go lower than 200 MHz?
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 644b54e..5fdaf06 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2325,7 +2325,7 @@ static int cpufreq_cpu_callback(struct
-notifier_block *nfb,
-                        __cpufreq_remove_dev_prepare(dev, NULL);
-                        break;
+I'm also wondering about the cpuinfo_transition_latency variable.
+It seems to be a constant. On my SoC, the latency depends on the
+"width" of the frequency jump. Specifically, the CPU will change
+frequency at 15 MHz/us. So if we're jumping from 1000 to 500 MHz,
+it will take 33 us. From 500 to 333 will take 11 us.
 
--               case CPU_POST_DEAD:
-+               case CPU_DEAD:
-                        __cpufreq_remove_dev_finish(dev, NULL);
-                        break;
+Should I document the max latency? (i.e. for the "widest" jump)
+Can the governor request to jump from cpuinfo_min_freq to
+cpuinfo_max_freq directly, skipping intermediate frequencies?
+If so, should I just program
 
-Or add a mutex to serialize the context.
-Appreciate your valuable comments.
+cpuinfo_transition_latency =
+  (((cpuinfo_max_freq - cpuinfo_min_freq) / 1000) / 15) * 1000
 
-Thanks,
-Arun
+= (cpuinfo_max_freq - cpuinfo_min_freq) / 15 (in ns)
+= 53280 ns in my example
+
+Since governors.txt suggests a sampling rate of 10 ms, I suppose
+a transition_latency of 50 us is acceptable?
+
+Regards.
