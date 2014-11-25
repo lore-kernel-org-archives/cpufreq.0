@@ -1,49 +1,65 @@
-From: Magdalena Dobosz <maj.dobosz@gmail.com>
-Subject: cpufreq-info and acpi-cpufreq: reporting MSR_IA32_PERF_CTL as "actual frequency"
-Date: Tue, 25 Nov 2014 18:21:12 +0100
-Message-ID: <CAHOOexvOXKr4s-mg20VdUOAR3o7EN5iAS-ModAk6-vNKbhwT=g@mail.gmail.com>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: How many frequencies would cpufreq optimally like to manage?
+Date: Tue, 25 Nov 2014 22:52:31 +0100
+Message-ID: <5474FA1F.50603@free.fr>
+References: <546D26AE.50601@free.fr>
+	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>
+	<546DF891.2050401@free.fr>
+	<CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
+	<54747DFA.3040802@free.fr>
+	<CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        bh=65t3za2TcXjQEKoyutK7TUDbMJ2Aa8751b0c2ajBh4I=;
-        b=GZhsBAJBGlQ/QZbHP9b/XQT+1L01wjB8HO+96gwBM0CfKpiybkGDb5z5QtMl5VOkuX
-         QbkQEjhmGCBEitqtnHXrzzIn+m6jHuJuTeHXcOK9ZKsD3zRHpPp/sN9jc2PrWgnCTC9m
-         okfwbAUSCps7+7vNXMUDH55Lrqx5gkTkGFALrNcdvS8EJaL9wZcAuN9X259V3r49F9ku
-         RrBY6sOHLdxvQW69dpPwA9pKK0TtCw49NthcF0UpS95IHp1bq5y6GtDzoWmr+tN89mpS
-         CRGIk9xlEgikwZqYyEnEYTcKNOj6o6BGjAXSc+oBKTflLgjpz1+tzAiH8QrXSM9nFQO1
-         ajbg==
+In-Reply-To: <CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: CPUFREQ@vger.kernel.org
-Cc: Ross Lagerwall <rosslagerwall@gmail.com>, rjw@rjwysocki.net, viresh.kumar@linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-Hi,
-I was analyzing the code and behaviour of cpufrequtils (kernel 3.13).
-I noticed that the value reported by cpufreq-info as the frequency
-"asserted by call to hardware" (exported to sysfs as
-"cpuinfo_cur_freq") is always the same as the value reported as the
-frequency requested by a governor (exported to sysfs as "freq", stored
-in policy->cur).
-It was not the case for kernel 3.2 (these two values tend to differ).
+On 25/11/2014 16:19, Viresh Kumar wrote:
 
-I found a reason: while using acpi-cpufreq driver, the value reported
-as hardware frequency is retrieved using  get_cur_freq_on_cpu function
-(defined in acpi-cpufreq). Now, in kernel version 3.2 this function
-reads a value from MSR_IA32_PERF_STATUS, while in kernel 3.13 it reads
-MSR_IA32_PERF_CTL.
-It is a result of the patch shown below:
-https://lists.ubuntu.com/archives/kernel-team/2013-June/029493.html
+> On 25 November 2014 at 18:32, Mason <mpeg.blue@free.fr> wrote:
+>
+>> As far as I can tell, on my SoC, the timer runs at 27 MHz.
+>> But I have no idea how often it fires an interrupt.
+> 
+> 27 MHz is the freq it runs at, but we get interrupt based on the value
+> programmed in the timer counter.
+> 
+> Look for CONFIG_HZ in your .config, that will tell you number of ticks
+> you are getting per second.
+> 
+> But cpufreq works in another level and so it doesn't depend on both
+> these.
 
-It looks like a bug for me - we take a requested frequency (control
-register) and we report it as "cpuinfo_cur_freq - Current frequency of
-the CPU as obtained from the hardware, in KHz. This is the frequency
-the CPU actually runs at." (as desribed in cpufrequtils documentation:
-https://www.kernel.org/doc/Documentation/cpu-freq/user-guide.txt". I
-believe we should read status register (MSR_IA32_PERF_STATUS) instead.
+If I remember correctly (please correct me if I am mistaken),
+the kernel keeps a list of timers, ordered by deadline, and
+dynamically configures the system timer to fire at the next
+deadline.
 
-Best regards,
-Magdalena Dobosz
+> Look for: /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+> this is the rate at which cpufreq core checks if cpu's freq require revisiting.
+
+I think setting the sampling rate to 50 ms should make the
+system reactive enough to load swings?
+
+>> This 'struct clk' is an elusive beast.
+>> Where is it defined? I only run into forward declarations.
+> 
+> Its architecture specific. What's the architecture you are working on?
+> You may implement your own routine instead of cpufreq_generic_get().
+
+The SoC is made by Sigma Designs. It is based on the ARM Cortex-A9.
+
+> Yes. Documentation/clk.txt.
+
+Oh boy! platform, device tree, cpu-freq, cpuidle, clk, ... so much
+to learn, so few hours in a day.
+
+> Yeah. You should be able to get some call from your architecture.
+
+OK, I have to fix that function along with the cpufreq update.
+
+Regards.
