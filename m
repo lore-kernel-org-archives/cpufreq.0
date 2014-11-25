@@ -1,119 +1,75 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Race condition in cpufreq
-Date: Fri, 21 Nov 2014 10:18:59 +0530
-Message-ID: <CAOh2x=kcpe1RC2L_P8g=gzKP+T-v+w4sYicCtXFAp_mM2uc_VQ@mail.gmail.com>
-References: <CAKZGPAMLm0iHRgfojbxP+Tzbt4eUFovM3NYz83Lnexw3G2QiYA@mail.gmail.com>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: How many frequencies would cpufreq optimally like to manage?
+Date: Tue, 25 Nov 2014 14:02:50 +0100
+Message-ID: <54747DFA.3040802@free.fr>
+References: <546D26AE.50601@free.fr>	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>	<546DF891.2050401@free.fr> <CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=rCQTWbBzrfjwcbUOwcKQ9bVkzrgW9+NsD1b+4UoJvpk=;
-        b=PgbBWBSBP2iO7WtDLELNschSG3YJvGgwwxqSTaQtUKk7vilUvxhvndf6uw2n++VUsF
-         jl/JhoNzOcMoMrsJei0G5alwRUcN6atM7o8FPmrHR9LLzwFdPGLca5QGwo4W52l1xE7h
-         ViKOs3r9kJepoC8noxOSVbVKYikpNcHyRjyQVki/jUkpN0OEgkhiOU5XAXt7Ol6X5rsx
-         IsyuV5vFjTHMAEPDpYZ063EFLKdgSl2uawf/i8KhVUQOR2rKY8dqWKcfv1ONMgkYyE/r
-         APiObfXWFfhfFiZbK77e0dvUBpnnB8N9RSEC7xKgRgrveDagZl/M2uriR81I0jJnKb2D
-         mJjw==
-In-Reply-To: <CAKZGPAMLm0iHRgfojbxP+Tzbt4eUFovM3NYz83Lnexw3G2QiYA@mail.gmail.com>
+In-Reply-To: <CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Arun KS <arunks.linux@gmail.com>
-Cc: cpufreq <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-please use the right list for cpufreq stuff. Also, cc maintainers if
-you want quick replies to your mail.
+On 21/11/2014 04:36, Viresh Kumar wrote:
 
-On Wed, Nov 19, 2014 at 11:25 AM, Arun KS <arunks.linux@gmail.com> wrote:
-> Hello,
->
-> Seen a race condition in cpufrequency driver.
->
-> cpu2 is being hot-plugged out. And this started at say, 20th msec.
-> -000|context_switch(inline)
-> -000|need_resched()
-> -001|preempt_schedule(inline)
-> -001|preempt_schedule()
-> -002|static_key_false(inline)
-> -002|trace_sched_cpu_hotplug(inline)
-> -002|cpu_down(cpu = 2, ?)
-> -003|cpu_down(cpu = 2)
-> -004|update_offline_cores(?)
-> -005|do_hotplug(?)
-> -006|kthread(_create = 0xEE85BEBC)
->
-> cpu1 is updating the governor at say 60th msec.
-> echo "some_governor" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> at 60th msec, cpu2 is already hot-plugged but CPU_POST_DEAD has not
-> called because __cpu_down was scheduled out at cpu_hotplug_done(while
-> unlocking mutex)
->
-> now store_scaling_governor calls cpufreq_set_policy
-> CPUFREQ_GOV_START iterates through all cpus in policy->cpus(which is
-> not the correct one now, because cpu2 is already hot-plugged out(DEAD)
-> but not updated in policy->cpus).
->
-> One suggestion is to use CPU_DEAD instead of CPU_POST_DEAD in cpufreq.c
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 644b54e..5fdaf06 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2325,7 +2325,7 @@ static int cpufreq_cpu_callback(struct
-> notifier_block *nfb,
->                         __cpufreq_remove_dev_prepare(dev, NULL);
->                         break;
->
-> -               case CPU_POST_DEAD:
-> +               case CPU_DEAD:
->                         __cpufreq_remove_dev_finish(dev, NULL);
->                         break;
->
-> Or add a mutex to serialize the context.
-> Appreciate your valuable comments.
+> All current governors depend on background timers for their functionality.
+> These timers run at some sampling rate (in ms) and that time we change
+> CPU's frequency depending on existing load on system.. So, that might
+> not be fast enough.
 
-What kernel version are you using? Sometime back this patch
-addressed this problem:
+As far as I can tell, on my SoC, the timer runs at 27 MHz.
+But I have no idea how often it fires an interrupt.
 
-commit 4f750c930822b92df74327a4d1364eff87701360
-Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Date:   Sat Sep 7 01:23:43 2013 +0530
+I've been studying other cpufreq drivers, especially the OMAP driver.
+I noticed that there is a lot of generic infrastructure that our driver
+wasn't using, such as...
 
-    cpufreq: Synchronize the cpufreq store_*() routines with CPU hotplug
+   cpufreq_generic_init
+   cpufreq_generic_exit
+   cpufreq_generic_frequency_table_verify
+   cpufreq_generic_attr
 
-    The functions that are used to write to cpufreq sysfs files (such as
-    store_scaling_max_freq()) are not hotplug safe. They can race with CPU
-    hotplug tasks and lead to problems such as trying to acquire an already
-    destroyed timer-mutex etc.
+I've changed our driver to use those.
 
-    Eg:
+I'm still confused about cpufreq_generic_get.
+This is not a typical get/put type function, right?
 
-        __cpufreq_remove_dev()
-         __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-           policy->governor->governor(policy, CPUFREQ_GOV_STOP);
-            cpufreq_governor_dbs()
-             case CPUFREQ_GOV_STOP:
-              mutex_destroy(&cpu_cdbs->timer_mutex)
-              cpu_cdbs->cur_policy = NULL;
-          <PREEMPT>
-        store()
-         __cpufreq_set_policy()
-          __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-            policy->governor->governor(policy, CPUFREQ_GOV_LIMITS);
-             case CPUFREQ_GOV_LIMITS:
-              mutex_lock(&cpu_cdbs->timer_mutex); <-- Warning (destroyed mutex)
-               if (policy->max < cpu_cdbs->cur_policy->cur) <-
-cur_policy == NULL
+What is it supposed to get?
+Apparently, the actual frequency of the 'cpu-th' CPU?
+I see that it calls clk_get_rate(policy->clk)
 
-    So use get_online_cpus()/put_online_cpus() in the store_*() functions, to
-    synchronize with CPU hotplug. However, there is an additional point to note
-    here: some parts of the CPU teardown in the cpufreq subsystem are done in
-    the CPU_POST_DEAD stage, with cpu_hotplug.lock *released*. So, using the
-    get/put_online_cpus() functions alone is insufficient; we should also ensure
-    that we don't race with those latter steps in the hotplug sequence. We can
-    easily achieve this by checking if the CPU is online before proceeding with
-    the store, since the CPU would have been marked offline by the time the
-    CPU_POST_DEAD notifiers are executed.
+This 'struct clk' is an elusive beast.
+Where is it defined? I only run into forward declarations.
+
+On my platform, clk_get_accuracy returns -524 unconditionally,
+and clk_prepare just returns 0.
+
+of_clk_get and of_clk_get_by_name both return ERR_PTR(-2)
+
+I suppose all this means I can't use this infrastructure "as-is",
+correct? Where can I read more about it?
+
+How is the kernel supposed to know what frequency each core is running at?
+I imagine that's what the .get method override is for?
+
+One more question (for now). Is the .get method supposed to return numbers
+that match in freq_table, or can they be slightly different? For example,
+I've defined my freq_table like this:
+
+static struct cpufreq_frequency_table freq_table[] = {
+	{ .driver_data = REG_VAL(1,0), .frequency = 999000 },
+	{ .driver_data = REG_VAL(1,8), .frequency = 750000 },
+	{ .driver_data = REG_VAL(2,0), .frequency = 500000 },
+	{ .driver_data = REG_VAL(4,0), .frequency = 250000 },
+	{ .driver_data = REG_VAL(8,0), .frequency = 125000 },
+	{ .frequency = CPUFREQ_TABLE_END },
+};
+
+but the 3rd frequency is actually 999/2 MHz, not 500 MHz, etc.
+Will that be a problem?
+
+Regards.
+
