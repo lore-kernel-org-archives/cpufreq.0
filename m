@@ -1,75 +1,104 @@
-From: Mason <mpeg.blue@free.fr>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: How many frequencies would cpufreq optimally like to manage?
-Date: Tue, 25 Nov 2014 14:02:50 +0100
-Message-ID: <54747DFA.3040802@free.fr>
-References: <546D26AE.50601@free.fr>	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>	<546DF891.2050401@free.fr> <CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
+Date: Tue, 25 Nov 2014 20:49:32 +0530
+Message-ID: <CAKohponats3ZNqaRq+2ff4Vd=iMZHVy17Vs1K+Zmc_D47Br2+A@mail.gmail.com>
+References: <546D26AE.50601@free.fr>
+	<CAOh2x==KZzq1wbQxGwsJjZW+=fBJDzcnmRoaZMh0UYH-=yBJ=g@mail.gmail.com>
+	<546DF891.2050401@free.fr>
+	<CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
+	<54747DFA.3040802@free.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomzxnCy7X+cPsVdDvi0cMRMp2Am1O-S5BeQtTr1CqBhEw@mail.gmail.com>
+In-Reply-To: <54747DFA.3040802@free.fr>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Mason <mpeg.blue@free.fr>
 Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 21/11/2014 04:36, Viresh Kumar wrote:
+On 25 November 2014 at 18:32, Mason <mpeg.blue@free.fr> wrote:
+> As far as I can tell, on my SoC, the timer runs at 27 MHz.
+> But I have no idea how often it fires an interrupt.
 
-> All current governors depend on background timers for their functionality.
-> These timers run at some sampling rate (in ms) and that time we change
-> CPU's frequency depending on existing load on system.. So, that might
-> not be fast enough.
+27 MHz is the freq it runs at, but we get interrupt based on the value
+programmed in the timer counter.
 
-As far as I can tell, on my SoC, the timer runs at 27 MHz.
-But I have no idea how often it fires an interrupt.
+Look for CONFIG_HZ in your .config, that will tell you number of ticks
+you are getting per second.
 
-I've been studying other cpufreq drivers, especially the OMAP driver.
-I noticed that there is a lot of generic infrastructure that our driver
-wasn't using, such as...
+But cpufreq works in another level and so it doesn't depend on both
+these.
 
-   cpufreq_generic_init
-   cpufreq_generic_exit
-   cpufreq_generic_frequency_table_verify
-   cpufreq_generic_attr
+Look for: /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
 
-I've changed our driver to use those.
+this is the rate at which cpufreq core checks if cpu's freq require revisiting.
 
-I'm still confused about cpufreq_generic_get.
-This is not a typical get/put type function, right?
+> I've been studying other cpufreq drivers, especially the OMAP driver.
+> I noticed that there is a lot of generic infrastructure that our driver
+> wasn't using, such as...
+>
+>   cpufreq_generic_init
+>   cpufreq_generic_exit
+>   cpufreq_generic_frequency_table_verify
+>   cpufreq_generic_attr
+>
+> I've changed our driver to use those.
 
-What is it supposed to get?
-Apparently, the actual frequency of the 'cpu-th' CPU?
-I see that it calls clk_get_rate(policy->clk)
+Gud.
 
-This 'struct clk' is an elusive beast.
-Where is it defined? I only run into forward declarations.
+> I'm still confused about cpufreq_generic_get.
+> This is not a typical get/put type function, right?
 
-On my platform, clk_get_accuracy returns -524 unconditionally,
-and clk_prepare just returns 0.
+Correct, this should return the current frequency the CPU is running at.
 
-of_clk_get and of_clk_get_by_name both return ERR_PTR(-2)
+> What is it supposed to get?
+> Apparently, the actual frequency of the 'cpu-th' CPU?
+> I see that it calls clk_get_rate(policy->clk)
 
-I suppose all this means I can't use this infrastructure "as-is",
-correct? Where can I read more about it?
+Yes.
 
-How is the kernel supposed to know what frequency each core is running at?
-I imagine that's what the .get method override is for?
+> This 'struct clk' is an elusive beast.
+> Where is it defined? I only run into forward declarations.
 
-One more question (for now). Is the .get method supposed to return numbers
-that match in freq_table, or can they be slightly different? For example,
-I've defined my freq_table like this:
+Its architecture specific. What's the architecture you are working on?
+You may implement your own routine instead of cpufreq_generic_get().
 
-static struct cpufreq_frequency_table freq_table[] = {
-	{ .driver_data = REG_VAL(1,0), .frequency = 999000 },
-	{ .driver_data = REG_VAL(1,8), .frequency = 750000 },
-	{ .driver_data = REG_VAL(2,0), .frequency = 500000 },
-	{ .driver_data = REG_VAL(4,0), .frequency = 250000 },
-	{ .driver_data = REG_VAL(8,0), .frequency = 125000 },
-	{ .frequency = CPUFREQ_TABLE_END },
-};
+> On my platform, clk_get_accuracy returns -524 unconditionally,
 
-but the 3rd frequency is actually 999/2 MHz, not 500 MHz, etc.
-Will that be a problem?
+That might be an error.
 
-Regards.
+> and clk_prepare just returns 0.
+>
+> of_clk_get and of_clk_get_by_name both return ERR_PTR(-2)
+>
+> I suppose all this means I can't use this infrastructure "as-is",
+> correct? Where can I read more about it?
 
+Yes. Documentation/clk.txt.
+
+> How is the kernel supposed to know what frequency each core is running at?
+> I imagine that's what the .get method override is for?
+
+Yeah. You should be able to get some call from your architecture.
+
+> One more question (for now). Is the .get method supposed to return numbers
+> that match in freq_table, or can they be slightly different? For example,
+
+They should match.
+
+> I've defined my freq_table like this:
+>
+> static struct cpufreq_frequency_table freq_table[] = {
+>         { .driver_data = REG_VAL(1,0), .frequency = 999000 },
+>         { .driver_data = REG_VAL(1,8), .frequency = 750000 },
+>         { .driver_data = REG_VAL(2,0), .frequency = 500000 },
+>         { .driver_data = REG_VAL(4,0), .frequency = 250000 },
+>         { .driver_data = REG_VAL(8,0), .frequency = 125000 },
+>         { .frequency = CPUFREQ_TABLE_END },
+> };
+>
+> but the 3rd frequency is actually 999/2 MHz, not 500 MHz, etc.
+> Will that be a problem?
+
+Maybe, but it depends on what your ->get() returns.
