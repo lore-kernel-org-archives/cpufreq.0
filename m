@@ -1,130 +1,256 @@
-From: Magdalena Dobosz <maj.dobosz@gmail.com>
-Subject: Re: cpufreq-info and acpi-cpufreq: reporting MSR_IA32_PERF_CTL as
- "actual frequency"
-Date: Thu, 27 Nov 2014 17:38:23 +0100
-Message-ID: <CAHOOextX=QK1-x7SbgKG9_zSUaZFLBX5FU5+iCFzJaqeJ7BYrg@mail.gmail.com>
-References: <CAHOOexvOXKr4s-mg20VdUOAR3o7EN5iAS-ModAk6-vNKbhwT=g@mail.gmail.com>
-	<5475F1EA.7020003@intel.com>
-	<CAHOOexses3--hwcL5Mz=hnk+e1O32T8NXH=y+Se24-VXkWWAcw@mail.gmail.com>
-	<3849711.qUm3dg8PlV@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 91141] New: acpi-cpufreq cannot be loaded.
+Date: Sun, 11 Jan 2015 04:00:59 +0000
+Message-ID: <bug-91141-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=FxzcZWnV9rvjEtQk0Mebl3FQohsbqXp5UuW8c7Ij0q0=;
-        b=ml1xl+QUsvvzhPkQaDbxXrxhz0EKxYDl85xrSLpIdeS4OC+k+rp3QhraNjQ87yTWBQ
-         LQNCckojhWApsUtysvCqdCyB9Go3Gal7QdAyU8ebOVjL+I+hYSJn2pvHXHvJhLhR0yYe
-         R9cGjw1QzMCx/vjyrKsyBUInjNDsDTq+z2RV//oOMSX6NWyVnpNoh0fgR/InJU6Bwsev
-         GLUxTLUGDCKS0SH/AjZoj5wJr+iUjC0JeU1J65xq6439xzb14sEfq8K+5YQLML/91dW2
-         F/ujTLBkq68X7oQ/zOvHv3rZey3K/aYO29M1LCBrILEc7PLVrYliCAulSI4aiX42fBU6
-         24ZQ==
-In-Reply-To: <3849711.qUm3dg8PlV@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "cpufreq@vger.kernel.org" <CPUFREQ@vger.kernel.org>, Ross Lagerwall <rosslagerwall@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>
+To: cpufreq@vger.kernel.org
 
-It can be already stale? Why is that?
+https://bugzilla.kernel.org/show_bug.cgi?id=91141
 
-Anyway, cpufreq documentation is misleading: it says "cpuinfo_cur_freq
-: Current frequency of the CPU as obtained from the hardware, in KHz.
-This is the frequency the CPU actually runs at.", while the value is
-read from MSR_IA32_PERF_STATUS (or MSR_IA32_PERF_CTL in newer
-kernels).
+            Bug ID: 91141
+           Summary: acpi-cpufreq cannot be loaded.
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.14
+          Hardware: Intel
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: spam@brettcave.net
+                CC: celeonar@gmail.com, katoh@mikage.ne.jp,
+                    l.majewski@samsung.com, smf.linux@ntlworld.com,
+                    tianyu.lan@intel.com, viresh.kumar@linaro.org
+        Regression: Yes
 
-Best regards,
-Magdalena
++++ This bug was initially created as a clone of Bug #73781 +++
 
-2014-11-26 23:37 GMT+01:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> On Wednesday, November 26, 2014 09:41:02 PM Magdalena Dobosz wrote:
->> Dirk: I understand that it does not say about current frequency (it
->> does not take into account such factors as c-states and turbo boost
->> for instance). Yet, if it does say about a current p-state of a core,
->> then it is a valid and useful piece of information. For instance,
->
-> You can't trust it, though, because the moment you've read the value
-> and are now going to use it, it may be already stale.
->
->> while testing cpufrequtils on Intel i7, Intel i5 and Core 2 duo cpus,
->> I observed that while the requested frequency (policy->cur) for
->> different cores may be different, the frequency reported on the basis
->> of the current p-state (read from MSR_IA32_PERF_STATUS) is all the
->> time the same for all the cores. This suggests that all the cores are
->> in the same frequency domain (hardware coordinated).
->
-> Which usually is the case for (current) desktop processors, but may not
-> be the case for server ones.
->
->> Viresh, why is it ill-conceived? As I said above, I think the
->> information concerning current p-state can be useful - as long as it
->> is accurate. Do you have any premises to say that it is not accurate
->> in terms of the current p-state of a core?
->
-> Please see above.
->
-> Kind regards,
-> Rafael
->
->
->> 2014-11-26 16:29 GMT+01:00 Dirk Brandewie <dirk.brandewie@gmail.com>:
->> > On 11/25/2014 10:07 PM, Viresh Kumar wrote:
->> >>
->> >> On 25 November 2014 at 22:51, Magdalena Dobosz <maj.dobosz@gmail.com>
->> >> wrote:
->> >>>
->> >>> Hi,
->> >>> I was analyzing the code and behaviour of cpufrequtils (kernel 3.13).
->> >>> I noticed that the value reported by cpufreq-info as the frequency
->> >>> "asserted by call to hardware" (exported to sysfs as
->> >>> "cpuinfo_cur_freq") is always the same as the value reported as the
->> >>> frequency requested by a governor (exported to sysfs as "freq", stored
->> >>> in policy->cur).
->> >>> It was not the case for kernel 3.2 (these two values tend to differ).
->> >>>
->> >>> I found a reason: while using acpi-cpufreq driver, the value reported
->> >>> as hardware frequency is retrieved using  get_cur_freq_on_cpu function
->> >>> (defined in acpi-cpufreq). Now, in kernel version 3.2 this function
->> >>> reads a value from MSR_IA32_PERF_STATUS, while in kernel 3.13 it reads
->> >>> MSR_IA32_PERF_CTL.
->> >>> It is a result of the patch shown below:
->> >>> https://lists.ubuntu.com/archives/kernel-team/2013-June/029493.html
->> >>>
->> >>> It looks like a bug for me - we take a requested frequency (control
->> >>> register) and we report it as "cpuinfo_cur_freq - Current frequency of
->> >>> the CPU as obtained from the hardware, in KHz. This is the frequency
->> >>> the CPU actually runs at." (as desribed in cpufrequtils documentation:
->> >>> https://www.kernel.org/doc/Documentation/cpu-freq/user-guide.txt". I
->> >>> believe we should read status register (MSR_IA32_PERF_STATUS) instead.
->> >>
->> >>
->> >> Fixed list and cc'd few more.
->> >>
->> >> This is what Len Brown said to that patch:
->> >>
->> >> Ack -- MSR_IA32_PERF_STATUS is ill-conceived.  It is un-reliable
->> >> by its very definition.  Any code that depends on it should be
->> >> questioned...
->> >>
->> >> @Dirk: Can you help ?
->> >
->> >
->> > Not really. This issue is one of the reasons that intel_pstate returns a
->> > measured/effective frequency.  There is no way that I know of to get the
->> > instantaneous frequency that the core is running at in the presence of
->> > hardware coordination and idle.  The best you can do is measure the
->> > effective
->> > frequency over a sample time.  This is what turbostat and intel_pstate
->> > report.
->> >
->> > --Dirk
->> >
->> >>
->> >
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+I'm having the same issue as bug 73781 with Pentium 4 processors instead of the
+Pentium M processor mentioned in the ticket I cloned. The following lists the
+steps I have tried to get the P4 cpufreq properly working. I'm being a little
+more descriptive than usual so the web search engines can point people with the
+same problem here as the cloned bug did with me. There's hardly anything useful
+out there besides the cloned bug ticket.
+
+I'm in the process of upgrading some old hardware to Ubuntu 14.04.1 LTS
+(trusty) from various old Debian distributions running a 2.6 kernel (more
+specific details to follow).
+
+The 2 kernel.org kernels I have used are 3.14.27 and the recent 3.14.28.
+
+Note that I have done successful 64bit upgrades using Ubuntu 14.04.1 and
+3.14.28 to:
+* quad (dual-dual config) 2.2GHz AMD K8 Opteron 1u server, scaling_driver:
+powernow-k8 / ondemand
+* dual core 2.2GHz AMD K10e laptop, scaling_driver: acpi-cpufreq / ondemand
+CPU power management seems to be working correctly in both without the need for
+any separate configuration. I use these 2 as an example to contrast my 32bit P4
+problems.
+
+I prefer the "vanilla" kernel.org kernels compared to the distro kernels. My
+kernel.org kernels mentioned here are straight and unpatched. If I mention an
+Ubuntu kernel, I'll have "ubuntu" beside it for clarity. I do not run the
+ubuntu distro kernels except for testing and comparisons. I know the kernel.org
+team doesn't support the ubuntu kernels, but these are mentioned for historical
+time line comparisons.
+
+When I first compile kernels on a new install, I'll use auto-apt to find the
+missing packages that aren't commonly mentioned in the how-to's. This leads me
+to believe my compiler environment isn't missing anything critical. Normally
+auto-apt will find a couple dozen perl module packages and nothing major. Note
+that I usually do not install the 1g of laytex packages for documentation.
+
+Back before my health took a major dump and I was doing small business coloc
+related stuff, I would remaster the Ubuntu Rescue Remix utility Live CD (a
+stripped down variation of the main Ubuntu Live CD). This was mainly for some
+extended tests and upgraded packages. Note that these remasters are custom and
+not the versions available from the web site. The kernels are ubuntu. The 2
+versions I'll reference are:
+Ubuntu Rescue Remix 11.10 Custom using ubuntu kernel 3.0.0-14-generic-pae
+Ubuntu Rescue Remix 12.04 LTS Custom using ubuntu kernel 3.2.0-74-generic-pae
+
+When I installed 3.14.27 and 3.14.28 onto my P4 systems, the usual cpufreq
+interface would show up in /sys. It would be using the scaling_driver
+p4-clockmod. The only scaling_governor's that would work are performance
+(default) and powersave. ondemand and conservative would not be accepted. This
+is a problem for me as P4's are known to be mini oven burners.
+
+Some google searching (and the menuconfig help page) mentioned that p4-clockmod
+shouldn't be used anymore like it was in the 2.6 kernel days. It was replaced
+with acpi-cpufreq. One web search mentioned that p4-clockmod would somehow be
+loaded before acpi-cpufreq. The solution was to not compile p4-clockmod into
+the kernel, which I did. The results were that the cpufreq interface in /sys
+was removed.
+
+I normally configure key components of the kernel to be compiled straight in
+and not as modules. Since I couldn't see anything, I recompiled CPU power
+management as modules.
+
+acpi-cpufreq wouldn't load in the lsmod list. Manual loading failed.
+
+Some further web searching hinted that it might work in uniprocessor mode. I
+recompiled the kernel without SMP (by default removing hyperthreading), but the
+results were the same.
+
+That's about when I found the bug I cloned this ticket from. At the end is a
+patch. As far as I can tell, that patch is properly in 3.14.27. Apparently it
+worked for the original Pentium M, but it doesn't work for Pentium 4's.
+
+I have half a rack of old P4 1u's, but I'll focus on the blackhole01 backup
+server (2.8GHz) since it has the Ubuntu 14.04.1 32bit install.
+
+Here's the output of some common commands I've seen listed elsewhere that most
+will want to see:
+
+root@blackhole01:~# uname -a
+Linux blackhole01 3.14.28vqbfvm-32bit-p4smp #1 SMP PREEMPT Fri Jan 9 13:14:40
+CST 2015 i686 i686 i686 GNU/Linux
+
+First processor from...
+root@blackhole01:~# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 3
+model name      : Intel(R) Pentium(R) 4 CPU 2.80GHz
+stepping        : 3
+microcode       : 0xb
+cpu MHz         : 2795.032
+cache size      : 1024 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 1
+apicid          : 0
+initial apicid  : 0
+fdiv_bug        : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 5
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe constant_tsc pebs bts
+pni dtes64 monitor ds_cpl cid
+bogomips        : 5592.98
+clflush size    : 64
+cache_alignment : 128
+address sizes   : 36 bits physical, 32 bits virtual
+power management:
+
+(Note: next "processor: 1" is the hyperthread and left off for space reasons.)
+
+root@blackhole01:~# cpufreq-info
+cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
+Report errors and bugs to cpufreq@vger.kernel.org, please.
+analyzing CPU 0:
+  no or unknown cpufreq driver is active on this CPU
+  maximum transition latency: 0.00 ms.
+analyzing CPU 1:
+  no or unknown cpufreq driver is active on this CPU
+  maximum transition latency: 0.00 ms.
+
+(NOTE: dual CPU listed is a hyperthread response)
+
+root@blackhole01:~# find /sys/devices/ | grep -i cpufreq
+
+(NOTE: nothing returned)
+
+root@blackhole01:~# modprobe -v acpi-cpufreq
+insmod
+/lib/modules/3.14.28vqbfvm-32bit-p4smp/kernel/drivers/cpufreq/acpi-cpufreq.ko
+modprobe: ERROR: could not insert 'acpi_cpufreq': No such device
+
+root@blackhole01:~# ll
+/lib/modules/3.14.28vqbfvm-32bit-p4smp/kernel/drivers/cpufreq/acpi-cpufreq.ko
+-rw-r--r-- 1 root root 14104 Jan  9 18:30
+/lib/modules/3.14.28vqbfvm-32bit-p4smp/kernel/drivers/cpufreq/acpi-cpufreq.ko
+
+root@blackhole01:~# modprobe -vf acpi-cpufreq
+insmod
+/lib/modules/3.14.28vqbfvm-32bit-p4smp/kernel/drivers/cpufreq/acpi-cpufreq.ko
+modprobe: ERROR: could not insert 'acpi_cpufreq': Exec format error
+
+NOTE: nothing gets reported in dmesg
+
+The reason I listed the Ubuntu Rescue Remix Live CD's above is to show that
+cpufreq seems to have broken sometime between the listed 2.6 kernels (below)
+and the 3.0 kernels.
+
+My other P4 hardware showing this cpufreq problem goes beyond more than a
+single processor version...
+
+The processors I list here are in the format of:
+ClockFrequency ProcessorType CPUFamily-Model-Stepping
+as seen from /proc/cpuinfo
+
+Desktop server name: paradox
+3.0GHz single P4 15-3-4
+Fails: Ubuntu Rescue Remix 12.04 LTS Custom using ubuntu kernel
+3.2.0-74-generic-pae
+Originally worked under debian/lenny kernel 2.6.28.10
+
+1u server name: blackhole01 (mentioned above)
+2.8GHz single P4 15-3-3
+Fails: Ubuntu Rescue Remix 11.10 Custom using ubuntu kernel
+3.0.0-14-generic-pae
+Fails: Ubuntu Rescue Remix 12.04 LTS Custom using ubuntu kernel
+3.2.0-74-generic-pae
+As this was the first 32bit reinstall, I didn't write down the OS specs.
+
+1u server name: confidence:
+2.4GHz dual P4 Xeon 15-2-5
+Fails: Ubuntu Rescue Remix 11.10 Custom using ubuntu kernel
+3.0.0-14-generic-pae
+Originally worked under debian 4.0 kernel 2.6.25.15 (p4-clockmod / ondemand)
+
+1u server name: cluster02
+2.4GHz single P4 15-2-7
+Fails: Ubuntu Rescue Remix 11.10 Custom using ubuntu kernel
+3.0.0-14-generic-pae
+Originally worked under debian 3.1 kernel 2.6.17.9 (p4-clockmod / ondemand)
+
+1u server name: fs1
+2.4GHz dual P4 Xeon 15-2-7
+Fails: Ubuntu Rescue Remix 11.10 Custom using ubuntu kernel
+3.0.0-14-generic-pae
+Originally worked under debian 3.1 kernel 2.6.21.7 (p4-clockmod / ondemand)
+
+1u server name: windoze
+2.0GHz dual P4 Xeon 15-2-4
+Fails: Ubuntu Rescue Remix 11.10 Custom using ubuntu kernel
+3.0.0-14-generic-pae
+
+One or 2 more of these was tested with:
+Ubuntu Rescue Remix 12.04 LTS Custom using ubuntu kernel 3.2.0-74-generic-pae
+...but I didn't write down which. The 3.2.0-ubuntu kernels faild. The tests can
+be re-run if desired.
+
+My last debian kernel I compiled was 2.6.28.10. Sometime between that and
+3.0.0-ubuntu, it seems something P4 was broken. I'm not sure why someone else
+hasn't brought it up before now.
+
+I'm not sure how hard getting acpi-cpufreq running with a 3.14.x P4 kernel
+would be since there have been some changes. I can offer a developer a login
+to:
+blackhole01: 2.8GHz single P4 15-3-3
+since this box is upgraded to Ubuntu 14.04.1 32bit and has been properly wiped
+of old client backup data. I have the 3.14.28 kernel source compiled in a
+directory that can be viewed/modified if needed. So long as the partition
+tables stay put, this computer can be modified at will. I can restore the OS
+backup when finished.
+
+Thanks for the help. Let me know what's next.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
