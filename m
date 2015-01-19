@@ -1,52 +1,25 @@
-From: Mason <mpeg.blue@free.fr>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: RFC on cpufreq implementation
-Date: Fri, 16 Jan 2015 15:00:14 +0100
-Message-ID: <54B9196E.1030302@free.fr>
-References: <54B7F7CD.7030903@free.fr> <1421399293.11224.7.camel@AMDC1943> <54B8F19F.8060108@free.fr>
+Date: Mon, 19 Jan 2015 13:22:52 +0530
+Message-ID: <CAKohponGjLkniP2=Aj-Jsg7hfAEnW3p0+EwtrobdCymgT-yqgg@mail.gmail.com>
+References: <54B7F7CD.7030903@free.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <54B8F19F.8060108@free.fr>
+In-Reply-To: <54B7F7CD.7030903@free.fr>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Mason <mpeg.blue@free.fr>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 16/01/2015 12:10, Mason wrote:
+On 15 January 2015 at 22:54, Mason <mpeg.blue@free.fr> wrote:
+> I decided to expose only a small subset of frequencies (namely
+> {999,500,333,111} MHz) because, in my tests, the ondemand gov
+> chose mostly min and max, and the intermediate frequencies not
+> so much; so I figured "2 intermediate freqs" is good enough.
+> (I'm ready to hear otherwise.)
 
-> I didn't find where WFI is called :-(
->
-> In kernel/cpu/idle.c (file seems to have been removed in 3.15)
-> cpu_idle_loop() calls arch_cpu_idle()
-> http://lxr.free-electrons.com/source/kernel/cpu/idle.c?v=3.14#L98
->
-> In arch/kernel/process.c
-> http://lxr.free-electrons.com/source/arch/arm/kernel/process.c?v=3.14#L173
-> /*
->   * Called from the core idle loop.
->   */
-> void arch_cpu_idle(void)
-> {
->      if (cpuidle_idle_call())
->          default_idle();
-> }
->
-> default_idle calls cpu_do_idle (by default), a macro for cpu_v7_do_idle
-> which executes dsb+wfi, BUT...
->
-> ifndef CONFIG_CPU_IDLE then
-> static inline int cpuidle_idle_call(void) { return -ENODEV; }
->
-> Does that mean I MUST define CONFIG_CPU_IDLE if I want the idle
-> loop to call wfi (to save power), even if I don't have a cpuidle
-> driver?
+Following patch solved this issue in 3.17..
 
-For the record, I read the code wrong.
-
-cpuidle_idle_call() always returns -ENODEV, so the test
-"if (cpuidle_idle_call())" is always true, and we always
-call default_idle() and everything works as expected.
-
-Sorry for the noise.
-
+6393d6a1027e cpufreq: ondemand: Eliminate the deadband effect
