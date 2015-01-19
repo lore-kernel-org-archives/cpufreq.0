@@ -1,56 +1,43 @@
-From: Amit Kucheria <amit.kucheria@verdurent.com>
+From: Mason <mpeg.blue@free.fr>
 Subject: Re: RFC on cpufreq implementation
-Date: Mon, 19 Jan 2015 14:52:52 +0530
-Message-ID: <CAHLCerMq0HnhS3ki3U1te5A8+NiDwpFNL_5_bm-CR4LoYFLo=A@mail.gmail.com>
+Date: Mon, 19 Jan 2015 23:03:54 +0100
+Message-ID: <54BD7F4A.6020605@free.fr>
 References: <54B7F7CD.7030903@free.fr>
+ <CAKohponGjLkniP2=Aj-Jsg7hfAEnW3p0+EwtrobdCymgT-yqgg@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <54B7F7CD.7030903@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAKohponGjLkniP2=Aj-Jsg7hfAEnW3p0+EwtrobdCymgT-yqgg@mail.gmail.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Thu, Jan 15, 2015 at 10:54 PM, Mason <mpeg.blue@free.fr> wrote:
-> Hello,
->
-> This is a follow-up to my previous thread.
-> "How many frequencies would cpufreq optimally like to manage?"
-> http://thread.gmane.org/gmane.linux.ports.arm.kernel/373669
->
-> As I originally wrote, I'm running 3.14 on an ARM Cortex-A9
-> based SoC (namely Tango4 from Sigma Designs). I'd like to get
-> some feedback on the cpufreq driver I wrote for that platform.
->
-> I decided to expose only a small subset of frequencies (namely
-> {999,500,333,111} MHz) because, in my tests, the ondemand gov
-> chose mostly min and max, and the intermediate frequencies not
-> so much; so I figured "2 intermediate freqs" is good enough.
-> (I'm ready to hear otherwise.)
+On 19/01/2015 08:52, Viresh Kumar wrote:
+> On 15 January 2015 at 22:54, Mason wrote:
+>> I decided to expose only a small subset of frequencies (namely
+>> {999,500,333,111} MHz) because, in my tests, the ondemand gov
+>> chose mostly min and max, and the intermediate frequencies not
+>> so much; so I figured "2 intermediate freqs" is good enough.
+>> (I'm ready to hear otherwise.)
+> 
+> Following patch solved this issue in 3.17..
+> 
+> 6393d6a1027e cpufreq: ondemand: Eliminate the deadband effect
 
-How many states are really enough depends on the main workloads
-running on your system. In a closed system (limited number of
-applications) you can easily characterise your workloads and see what
-operating points (OPP = voltage, frequency pair) the system spends
-most of its time in (CPU_FREQ_STAT_DETAILS) and optimize out the
-remaining OPPs.
+Good to know, thanks! (I'm on 3.14)
 
-In an open-ended system where you don't control what applications will
-run on the system (e.g. android phone), it is probably a good idea to
-expose more OPPs while keeping in mind that exposing 50 frequencies is
-probably overkill (and silly) since you're spending more time reaching
-the "optimum" OPP. Pick some high-impact ones e.g. ones that allow you
-to lower your voltage.
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=6393d6a1027ec1d69ec6246f6c7c2186f76c2abb
 
-> I tried to use as much generic framework as possible, but I've
-> read about the clk framework, and it looks to be an even greater
-> generalization. Are new platforms encouraged to use that, rather
-> than provide a cpufreq driver? Does it work when voltage scaling
-> comes in play? (This SoC doesn't have it, but the next will.)
->
-> I'm also wondering how cpufreq and cpuidle interact? Is one a
-> subset of the other? Are they orthogonal?
+Do you have other comments/suggestions regarding my code?
 
-These queries have been answered by Krzysztof.
+Regards.
