@@ -1,192 +1,146 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: linux-next: tidy up of trees
-Date: Wed, 21 Jan 2015 15:10:09 +1100
-Message-ID: <20150121151009.0cb88a21@canb.auug.org.au>
+From: Mason <mpeg.blue@free.fr>
+Subject: Delays, clocks, timers, hrtimers, etc
+Date: Wed, 28 Jan 2015 14:16:21 +0100
+Message-ID: <54C8E125.3070905@free.fr>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/049JUzqsR+tEC6nh5fa6big"; protocol="application/pgp-signature"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DT <devicetree@vger.kernel.org>
 
---Sig_/049JUzqsR+tEC6nh5fa6big
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
-Hi all,
+I am swimming in a sea of confusion, and am hoping someone would toss
+me a life-jacket (of enlightenment). Please forgive me if some of my
+questions are poorly asked or appear in seemingly random order.
 
-[affected tree contacts are bcc'd on this email]
+Working on a Cortex A9 based SoC, I set out to "clean up" the platform
+specific timer code, by using as much generic framework as possible.
+(Right now, there's a lot of "redundant" code in the mach dir.)
 
-I have decided to do a bit of a tidy up of the trees in linux-next and
-my first pass is to remove any tree that has not been updated on over a
-year (since next-20140120).  The following 29 trees have been removed
-today (of these, 13 have not been updated for more than 2 years).  If
-you want a tree restored, just drop me a line - it is easy to do.
 
-Most if the trees are empty, but for the others I have included a
-diffstat.
+Q1. the {n,u,m}delay function family
 
-configfs
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/jlbec/configfs.git#l=
-inux-next
+arch/arm/include/asm/delay.h mentions
+"Delay routines, using a pre-computed "loops_per_second" value."
+*BUT* if the frequency changes dynamically (thanks to cpufreq)
+the "loops_per_second" value cannot be pre-computed, as it would
+change dynamically too, right?
 
-cpupowerutils
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/brodo/cpupowerutils.=
-git#master
+Looking at arch/arm/lib/delay.c it seems the default implementation
+is a busy loop (in delay-loop.S) which looks up "loops_per_jiffy"
+in the prolog to determine the number of times to loop, right?
 
-dwmw2
-Git URL: git://git.infradead.org/users/dwmw2/random-2.6.git#master
+http://lxr.free-electrons.com/source/arch/arm/lib/delay-loop.S
 
-embedded
-Git URL: git://git.infradead.org/embedded-2.6.git#master
+(Side issue, why is the loop unrolled in __loop_delay? What is the
+point of unrolling a busy loop? This is commented code however.)
 
-ep93xx
-Git URL: git://github.com/RyanMallon/linux-ep93xx.git#ep93xx-for-next
- arch/arm/mach-ep93xx/Kconfig                 |   1 +
- arch/arm/mach-ep93xx/core.c                  | 110 +++++++++++++++++++++++=
-+++-
- arch/arm/mach-ep93xx/include/mach/platform.h |   3 +-
- 3 files changed, 111 insertions(+), 3 deletions(-)
+What happens if loops_per_jiffy changes while one core is in the
+busy loop? It seems we might exit the loop too early, which could
+break some drivers with some weird heisenbug, no?
 
-fbdev
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/plagnioj/linux-fbdev=
-.git#for-next
+Also, is the update of loops_per_jiffy atomic? Is it possible that
+if one core reads it while another updates it, we get garbage?
 
-firmware
-Git URL: git://git.infradead.org/users/dwmw2/firmware-2.6.git#master
+I suppose this is one reason why the default functions are overridden
+by register_current_timer_delay(&arch_delay_timer) right? I think the
+property of a timer is that its frequency doesn't change, even if the
+CPU's frequency changes? So we are still busy looping, but we are
+checking the actual time spent in the loop, whatever the cpufreq?
 
-fsnotify
-Git URL: git://git.infradead.org/users/eparis/notify.git#for-next
+Reference
+https://www.kernel.org/doc/Documentation/timers/timers-howto.txt
 
-fw-nohz
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/frederic/linux-dynti=
-cks.git#nohz/next
 
-hwspinlock
-Git URL: git://github.com/ohadbc/hwspinlock-next.git#linux-next
+Q2. Cortex A9 global and private timers
 
-input-mt
-Git URL: git://github.com/rydberg/linux.git#for-next
+http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0407f/CIHGECHJ.html
 
-ixp4xx
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/chris/linux.git#next
+(What are private timers used for?)
 
-kconfig
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-kconfi=
-g.git#for-next
+In my platform-specific code, there is a config option to choose between
 
-logfs
-Git URL: git://github.com/prasad-joshi/logfs_upstream.git#master
- fs/logfs/dev_mtd.c | 2 +-
- fs/logfs/super.c   | 6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+1) the ARM global timer
+2) a platform-specific timer (timer0)
 
-lzo-update
-Git URL: git://github.com/markus-oberhumer/linux.git#lzo-update
- lib/lzo/lzo1x_decompress_safe.c | 4 ++++
- lib/lzo/lzodefs.h               | 6 ++++++
- 2 files changed, 10 insertions(+)
+I noticed that there is generic code to support the global timer in
+drivers/clocksource/arm_global_timer.c
 
-md-current
-Git URL: git://neil.brown.name/md#for-linus
+config ARM_GLOBAL_TIMER
+	bool
+	select CLKSRC_OF if OF
+	help
+	  This options enables support for the ARM global timer unit
 
-msm
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/davidb/linux-msm.git=
-#for-next
+config CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
+	bool
+	depends on ARM_GLOBAL_TIMER
+	default y
+	help
+	 Use ARM global timer clock source as sched_clock
 
-omfs
-Git URL: git://github.com/bcopeland/omfs.git#for-next
+I was thinking it would be better to use the "standard" option (ARM global timer)
+as it is "officially" supported in the vanilla kernel. So less code to write and
+to debug, and it has likely received more testing. Why would one rely on
+platform-specific timers then?
 
-openrisc
-Git URL: git://openrisc.net/jonas/linux#for-upstream
+Are high-resolution timers supported with the global timer?
 
-oprofile
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git#fo=
-r-next
 
-parisc
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/jejb/parisc-2.6.git#=
-for-next
+Q3. Using the generic global timer implementation
 
-pcmcia
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia.git#mas=
-ter
+So, how do I use that implementation?
+(Is someone other than STMicro using it?)
 
-signal
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/viro/signal.git#for-=
-next
+I see:
 
-sysctl
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/ebiederm/sysctl.git#=
-master
+static void __init global_timer_of_register(struct device_node *np)
+CLOCKSOURCE_OF_DECLARE(arm_gt, "arm,cortex-a9-global-timer", global_timer_of_register);
 
-uclinux
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/gerg/uclinux.git#for=
--next
+OF stands for open firmware, yes?
+So is this related to device tree?
 
-uml
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/rw/uml.git#next
- arch/um/include/asm/Kbuild                  |   1 +
- arch/um/include/asm/processor-generic.h     |   3 -
- arch/um/include/shared/os.h                 |   2 -
- arch/um/include/shared/skas/proc_mm.h       |  44 ------
- arch/um/include/shared/skas/skas.h          |   3 -
- arch/um/include/shared/skas_ptrace.h        |  14 --
- arch/um/kernel/ptrace.c                     |  32 ----
- arch/um/kernel/reboot.c                     |  35 ++---
- arch/um/kernel/skas/mmu.c                   |  68 +++------
- arch/um/kernel/skas/process.c               |  27 ----
- arch/um/kernel/trap.c                       |   2 +-
- arch/um/kernel/um_arch.c                    |  10 --
- arch/um/os-Linux/process.c                  |  16 --
- arch/um/os-Linux/skas/mem.c                 | 100 ++----------
- arch/um/os-Linux/skas/process.c             | 200 ++++++------------------
- arch/um/os-Linux/start_up.c                 | 154 -------------------
- arch/um/sys-ia64/sysdep/skas_ptrace.h       |  22 ---
- arch/um/sys-ppc/shared/sysdep/skas_ptrace.h |  22 ---
- arch/x86/um/ldt.c                           | 227 ++++++------------------=
-----
- arch/x86/um/shared/sysdep/faultinfo_32.h    |   3 -
- arch/x86/um/shared/sysdep/faultinfo_64.h    |   3 -
- arch/x86/um/shared/sysdep/skas_ptrace.h     |  22 ---
- 22 files changed, 149 insertions(+), 861 deletions(-)
+http://lxr.free-electrons.com/source/Documentation/devicetree/bindings/arm/global_timer.txt
 
-uprobes
-Git URL: git://github.com/srikard/linux.git#for-next
+This file makes no sense to me.
 
-viafb
-Git URL: git://github.com/schandinat/linux-2.6.git#viafb-next
+- interrupts : One interrupt to each core
+interrupts = <1 13 0xf01>;
+what are 1 13 0xf01 ??
 
-writeback
-Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/wfg/linux.git#writeb=
-ack-for-next
+- clocks : Should be phandle to a clock.
+clocks = <&arm_periph_clk>;
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+For my (old) 3.14 kernel, I found this:
 
---Sig_/049JUzqsR+tEC6nh5fa6big
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+     /*
+      * ARM Peripheral clock for timers
+      */
+     arm_periph_clk: arm_periph_clk {
+       #clock-cells = <0>;
+       compatible = "fixed-clock";
+       clock-frequency = <600000000>;
+     };
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+But it looks like the definitions have moved around since then?
 
-iQIcBAEBCAAGBQJUvyanAAoJEMDTa8Ir7ZwV+SsP/2i0QOH0OPg3WVJlWwOx/XO7
-MxdXxyKkNoMSaSrY0RcAaPwbYM8pem8utLds7sBTc6wQIvshZ+qXH6i0QaxC97h6
-NkZT+/PF5i1PcI5P/DFV1tO7lWDDK3JSjpnFicftEjZFXPsBH1mDIZJVjn27B620
-FtJBJPNR5wpXUXJSy/Qz7vIvSO2PDMk7DQN4OwVDw2nBig6Uzlubw228/cxxKR4k
-tDCxD1h+PfQKhfI0AepsHoDmx5cru3vIG5kOfZ6QklkoXXry98RGAalrKN9OBh9W
-i5JOFSSCEvHF9UwrO4j6u05h3QIQi+EeTO7T95Np++y+kkgQ43prdqXXl3JLse3/
-uEbsnZ7K7Qx7gNIp155WHzo0C5h5ZKTX5FoLXA3ruSdO9W9JbTH6bQnwZw2Gczmv
-2kyCLN3zs6DO+zzjxwlVDktum0umiEqM1oZBIOPbrTip0cZ0w3Dxwn708KP5/AXM
-gWND1Me9jfucnHqu2bEwHDOJIcsFTilM13tkqa9icC1g5McTeWA9S+MKcozgnk2h
-Nw68hi3mewzG5UynFNHwLUKZfphzSZlpmuHWcR09aLduKb/Yhu4GyTFSfA7MMpRM
-R0G1IewnqtODXFbvlKis8ZL2c3D9TwhFmcTEOPIwUv1MWJ4fqqrNxgJBJfC3nKMU
-4M0WPDEL4MLHNoFh52sc
-=Z2Vy
------END PGP SIGNATURE-----
+This device tree concept is too much to swallow in a single serving.
+Please tell me if I'm going down the correct rabbit hole, and I'll
+do some LWN readings to try to wrap my mind around the concept.
 
---Sig_/049JUzqsR+tEC6nh5fa6big--
+
+Anyway, if anyone can help me out on some of these topics, I'd be
+eternally grateful.
+
+Regards.
