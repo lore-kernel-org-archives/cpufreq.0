@@ -1,157 +1,142 @@
 From: Mason <mpeg.blue@free.fr>
-Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Thu, 29 Jan 2015 14:57:37 +0100
-Message-ID: <54CA3C51.2030802@free.fr>
-References: <54C8E125.3070905@free.fr>
+Subject: Re: RFC on cpufreq implementation
+Date: Thu, 29 Jan 2015 17:43:19 +0100
+Message-ID: <54CA6327.5070707@free.fr>
+References: <54B7F7CD.7030903@free.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <54C8E125.3070905@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Type: multipart/mixed;
+ boundary="------------020703030303040803070404"
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <54B7F7CD.7030903@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DT <devicetree@vger.kernel.org>
+To: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-[ I am aware that my message is way too long, and that few people would have
-the time to answer all these questions. So maybe, if someone feels inclined
-to answer just one or two, that might kickstart some discussion, and I might
-learn something along the way. Regards. ]
+This is a multi-part message in MIME format.
+--------------020703030303040803070404
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-FTR, I've been reading about DeviceTree:
+On 15/01/2015 18:24, Mason wrote:
 
-http://lwn.net/Articles/573409/
-http://www.carbondesignsystems.com/virtual-prototype-blog/bid/195122/Running-the-Latest-Linux-Kernel-on-a-Minimal-ARM-Cortex-A15-System
-http://devicetree.org/Device_Tree_Usage
+> This is a follow-up to my previous thread.
+> "How many frequencies would cpufreq optimally like to manage?"
+> http://thread.gmane.org/gmane.linux.ports.arm.kernel/373669
 
-And I am resisting the urge to pile on a few more questions ;-/
+OK, so this is my TAKE 2 on the cpufreq driver, trying to remove
+some dependencies on machine-specific definitions by getting the
+virtual address at init via ioremap. (Is -EFAULT the right error
+to return if ioremap fails?)
+
+I'm not sure where machine-specific information is supposed to
+be stored though? Such as register definitions, or the physical
+addresses/offsets. What if they need to be shared among several
+source files? I can't just duplicate them... (I've tentatively
+called it temp.h for the time being.)
 
 Regards.
 
-On 28/01/2015 14:16, Mason wrote:
-> Hello,
->
-> I am swimming in a sea of confusion, and am hoping someone would toss
-> me a life-jacket (of enlightenment). Please forgive me if some of my
-> questions are poorly asked or appear in seemingly random order.
->
-> Working on a Cortex A9 based SoC, I set out to "clean up" the platform
-> specific timer code, by using as much generic framework as possible.
-> (Right now, there's a lot of "redundant" code in the mach dir.)
->
->
-> Q1. the {n,u,m}delay function family
->
-> arch/arm/include/asm/delay.h mentions
-> "Delay routines, using a pre-computed "loops_per_second" value."
-> *BUT* if the frequency changes dynamically (thanks to cpufreq)
-> the "loops_per_second" value cannot be pre-computed, as it would
-> change dynamically too, right?
->
-> Looking at arch/arm/lib/delay.c it seems the default implementation
-> is a busy loop (in delay-loop.S) which looks up "loops_per_jiffy"
-> in the prolog to determine the number of times to loop, right?
->
-> http://lxr.free-electrons.com/source/arch/arm/lib/delay-loop.S
->
-> (Side issue, why is the loop unrolled in __loop_delay? What is the
-> point of unrolling a busy loop? This is commented code however.)
->
-> What happens if loops_per_jiffy changes while one core is in the
-> busy loop? It seems we might exit the loop too early, which could
-> break some drivers with some weird heisenbug, no?
->
-> Also, is the update of loops_per_jiffy atomic? Is it possible that
-> if one core reads it while another updates it, we get garbage?
->
-> I suppose this is one reason why the default functions are overridden
-> by register_current_timer_delay(&arch_delay_timer) right? I think the
-> property of a timer is that its frequency doesn't change, even if the
-> CPU's frequency changes? So we are still busy looping, but we are
-> checking the actual time spent in the loop, whatever the cpufreq?
->
-> Reference
-> https://www.kernel.org/doc/Documentation/timers/timers-howto.txt
->
->
-> Q2. Cortex A9 global and private timers
->
-> http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0407f/CIHGECHJ.html
->
-> (What are private timers used for?)
->
-> In my platform-specific code, there is a config option to choose between
->
-> 1) the ARM global timer
-> 2) a platform-specific timer (timer0)
->
-> I noticed that there is generic code to support the global timer in
-> drivers/clocksource/arm_global_timer.c
->
-> config ARM_GLOBAL_TIMER
->      bool
->      select CLKSRC_OF if OF
->      help
->        This options enables support for the ARM global timer unit
->
-> config CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
->      bool
->      depends on ARM_GLOBAL_TIMER
->      default y
->      help
->       Use ARM global timer clock source as sched_clock
->
-> I was thinking it would be better to use the "standard" option (ARM global timer)
-> as it is "officially" supported in the vanilla kernel. So less code to write and
-> to debug, and it has likely received more testing. Why would one rely on
-> platform-specific timers then?
->
-> Are high-resolution timers supported with the global timer?
->
->
-> Q3. Using the generic global timer implementation
->
-> So, how do I use that implementation?
-> (Is someone other than STMicro using it?)
->
-> I see:
->
-> static void __init global_timer_of_register(struct device_node *np)
-> CLOCKSOURCE_OF_DECLARE(arm_gt, "arm,cortex-a9-global-timer", global_timer_of_register);
->
-> OF stands for open firmware, yes?
-> So is this related to device tree?
->
-> http://lxr.free-electrons.com/source/Documentation/devicetree/bindings/arm/global_timer.txt
->
-> This file makes no sense to me.
->
-> - interrupts : One interrupt to each core
-> interrupts = <1 13 0xf01>;
-> what are 1 13 0xf01 ??
->
-> - clocks : Should be phandle to a clock.
-> clocks = <&arm_periph_clk>;
->
-> For my (old) 3.14 kernel, I found this:
->
->      /*
->       * ARM Peripheral clock for timers
->       */
->      arm_periph_clk: arm_periph_clk {
->        #clock-cells = <0>;
->        compatible = "fixed-clock";
->        clock-frequency = <600000000>;
->      };
->
-> But it looks like the definitions have moved around since then?
->
-> This device tree concept is too much to swallow in a single serving.
-> Please tell me if I'm going down the correct rabbit hole, and I'll
-> do some LWN readings to try to wrap my mind around the concept.
->
->
-> Anyway, if anyone can help me out on some of these topics, I'd be
-> eternally grateful.
->
-> Regards.
 
+--------------020703030303040803070404
+Content-Type: text/x-csrc;
+ name="cpufreq.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="cpufreq.c"
+
+/*
+ * Copyright 2015 Sigma Designs
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ */
+#include <linux/module.h>
+#include <linux/cpufreq.h>
+#include <linux/io.h>
+#include "temp.h"
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Sigma Designs");
+MODULE_DESCRIPTION("cpufreq driver for Tangox 87xx");
+
+#define TANGOX_XTAL_FREQ	27000 /* in kHz */
+#define CLKGEN_BASE		0x10000
+#define SYS_clkgen0_pll		(clkgen_base + 0x00)
+#define SYS_cpuclk_div_ctrl	(clkgen_base + 0x24)
+
+static void __iomem *clkgen_base;
+
+static struct cpufreq_frequency_table freq_table[] = {
+	{ .driver_data = 1 },
+	{ .driver_data = 2 },
+	{ .driver_data = 3 },
+	{ .driver_data = 5 },
+	{ .driver_data = 9 },
+	{ .frequency = CPUFREQ_TABLE_END },
+};
+
+static unsigned int tangox_get_freq(unsigned int cpu)
+{
+	union SYS_clkgen_pll pll;
+	union SYS_clk_div_ctrl div;
+
+	pll.val = readl_relaxed(SYS_clkgen0_pll);
+	if (pll.f.Isel != 1 || pll.f.M != 0) return 0;
+
+	div.val = readl_relaxed(SYS_cpuclk_div_ctrl);
+	if (div.f.BP != 0 || div.f.F != 0) return 0;
+
+	return TANGOX_XTAL_FREQ * (pll.f.N + 1) / div.f.I >> pll.f.K;
+}
+
+static int tangox_target(struct cpufreq_policy *policy, unsigned int index)
+{
+	while (readl_relaxed(SYS_cpuclk_div_ctrl) >> 31) cpu_relax();
+	writel_relaxed(freq_table[index].driver_data, SYS_cpuclk_div_ctrl);
+	return 0;
+}
+
+static int tangox_cpu_init(struct cpufreq_policy *policy)
+{
+	struct cpufreq_frequency_table *p;
+	unsigned int freq = tangox_get_freq(0);
+	unsigned int transition_latency_ns = freq / SYS_FAST_RAMP_SPEED;
+	if ((clkgen_base = ioremap(CLKGEN_BASE, 0x40)) == NULL) return -EFAULT;
+
+	for (p = freq_table; p->frequency != CPUFREQ_TABLE_END; ++p) {
+		unsigned int I = p->driver_data;
+		union SYS_clk_div_ctrl div = SYS_CLK_DIV_CTRL(I);
+		p->driver_data = div.val;
+		p->frequency = freq / I;
+	}
+
+	return cpufreq_generic_init(policy, freq_table, transition_latency_ns);
+}
+
+static struct cpufreq_driver tangox_cpufreq_driver = {
+	.name		= "tangox-cpufreq",
+	.init		= tangox_cpu_init,
+	.verify		= cpufreq_generic_frequency_table_verify,
+	.target_index	= tangox_target,
+	.get		= tangox_get_freq,
+	.exit		= cpufreq_generic_exit,
+	.attr		= cpufreq_generic_attr,
+};
+
+static int __init tangox_cpufreq_init(void)
+{
+	return cpufreq_register_driver(&tangox_cpufreq_driver);
+}
+
+static void __exit tangox_cpufreq_exit(void)
+{
+	cpufreq_unregister_driver(&tangox_cpufreq_driver);
+}
+
+module_init(tangox_cpufreq_init);
+module_exit(tangox_cpufreq_exit);
+
+--------------020703030303040803070404--
