@@ -1,54 +1,37 @@
-From: Mason <mpeg.blue@free.fr>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: RFC on cpufreq implementation
-Date: Sat, 31 Jan 2015 00:44:15 +0100
-Message-ID: <54CC174F.10703@free.fr>
+Date: Mon, 2 Feb 2015 09:28:19 +0530
+Message-ID: <CAKohpomzCEjXUrxUJjypaA77=r4j_ZPa+x3gM=cNN0kc3ux0uQ@mail.gmail.com>
 References: <54B7F7CD.7030903@free.fr>
 	<54CA6327.5070707@free.fr>
 	<CAKohponrzDb4ZGvRtJ5jtGTPAy4RCfRsYGvdjR5fx51K2=evCg@mail.gmail.com>
+	<54CC174F.10703@free.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponrzDb4ZGvRtJ5jtGTPAy4RCfRsYGvdjR5fx51K2=evCg@mail.gmail.com>
+In-Reply-To: <54CC174F.10703@free.fr>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Content-Transfer-Encoding: 7bit
+To: Mason <mpeg.blue@free.fr>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, =?UTF-8?B?TcOlbnMgUnVsbGfDpXJk?= <mans@mansr.com>
 
-On 30/01/2015 02:15, Viresh Kumar wrote:
+On 31 January 2015 at 05:14, Mason <mpeg.blue@free.fr> wrote:
+> I see some platforms have it in their machine-specific folder, others
+> are in drivers/cpufreq. (When to use mach vs plat?)
 
-> What do you want to do with this driver? If you want to get it reviewed,
-> please send it properly with git-send-email instead of attachments..
-> 
-> If its just an internal one, then sorry, the lists aren't for such reviews.
+drivers/cpufreq/
 
-The long-term goal is to mainline the whole port, but it's rather
-overwhelming, and I haven't found a way to divide-and-conquer, yet.
-I've been reading guides and documentation for weeks, but nothing
-has made my brain click.
+> If it's supposed to go in drivers/cpufreq, I suppose there are naming
+> conventions to follow?
 
-Everything seems to involve DeviceTree, and AFAIU, going down that
-rabbit-hole means making lots of changes all over. (But I probably
-misunderstood that part too.)
+You can check existing drivers.
 
-Right now, all I have is this cleaned up cpufreq driver. And I don't
-even know where to put it!
+> Also, if it's in drivers/cpufreq, we are not supposed to include
+> any machine-specific includes? And I'm back to my original question
+> where am I supposed to store machine-specific information, such as
+> register descriptions and MMIO addresses and offsets?
 
-I see some platforms have it in their machine-specific folder, others
-are in drivers/cpufreq. (When to use mach vs plat?)
-
-If it's supposed to go in drivers/cpufreq, I suppose there are naming
-conventions to follow?
-
-Also, if it's in drivers/cpufreq, we are not supposed to include
-any machine-specific includes? And I'm back to my original question
-where am I supposed to store machine-specific information, such as
-register descriptions and MMIO addresses and offsets?
-
-Two months ago, Arnd wrote:
-> I meant the IO_ADDRESS stuff. Modern code uses ioremap() instead
-> since the IO_ADDRESS was platform specific, and drivers can no longer
-> use platform headers on CONFIG_ARCH_MULTIPLATFORM, which is used
-> for all new code now.
-
-Regards.
+Define registers/etc in your driver only or somewhere in include/ .
+Also, try to see if you can reuse cpufreq-dt.c, your driver wouldn't make
+it to the kernel otherwise.
