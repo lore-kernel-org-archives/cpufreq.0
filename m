@@ -1,168 +1,98 @@
-From: Stefan Agner <stefan@agner.ch>
+From: Mason <mpeg.blue@free.fr>
 Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Fri, 06 Feb 2015 21:25:44 +0100
-Message-ID: <e028a4eb604a491f4438557f4a1373ef@agner.ch>
-References: <54C8E125.3070905@free.fr>
+Date: Fri, 06 Feb 2015 13:03:19 -0800
+Message-ID: <54D52C17.8000402@free.fr>
+References: <54C8E125.3070905@free.fr> <20150203120925.GM8656@n2100.arm.linux.org.uk> <54D509EC.7020708@free.fr> <20150206191419.GA8656@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=agner.ch; s=dkim;
-	t=1423254236; bh=HDBs8BfEKfv0G2AubarGJbN1wYZgkZT5AeY/B4DdcjI=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=KdtGvuA20lJAUpbzKI+ARdThWriKeSFTYgUxZoKAz3JoVWYtZIAohqCgz4tExextC
-	 CHKz305uoeGJdHbTKcllmT99XCNRSRcOTMDF52GDhAm55EfiTgAatVarbMK/zlBjXw
-	 MWMzzCntkQlBl7gZ/ZnUUc/WOzlhfGbS/XEsLZg8=
-In-Reply-To: <54C8E125.3070905@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20150206191419.GA8656@n2100.arm.linux.org.uk>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DT <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>
 
-On 2015-01-28 14:16, Mason wrote:
-> Hello,
-> 
-> I am swimming in a sea of confusion, and am hoping someone would toss
-> me a life-jacket (of enlightenment). Please forgive me if some of my
-> questions are poorly asked or appear in seemingly random order.
-> 
-> Working on a Cortex A9 based SoC, I set out to "clean up" the platform
-> specific timer code, by using as much generic framework as possible.
-> (Right now, there's a lot of "redundant" code in the mach dir.)
-> 
-> 
-> Q1. the {n,u,m}delay function family
-> 
-> arch/arm/include/asm/delay.h mentions
-> "Delay routines, using a pre-computed "loops_per_second" value."
-> *BUT* if the frequency changes dynamically (thanks to cpufreq)
-> the "loops_per_second" value cannot be pre-computed, as it would
-> change dynamically too, right?
-> 
-> Looking at arch/arm/lib/delay.c it seems the default implementation
-> is a busy loop (in delay-loop.S) which looks up "loops_per_jiffy"
-> in the prolog to determine the number of times to loop, right?
-> 
-> http://lxr.free-electrons.com/source/arch/arm/lib/delay-loop.S
-> 
-> (Side issue, why is the loop unrolled in __loop_delay? What is the
-> point of unrolling a busy loop? This is commented code however.)
-> 
-> What happens if loops_per_jiffy changes while one core is in the
-> busy loop? It seems we might exit the loop too early, which could
-> break some drivers with some weird heisenbug, no?
-> 
-> Also, is the update of loops_per_jiffy atomic? Is it possible that
-> if one core reads it while another updates it, we get garbage?
-> 
-> I suppose this is one reason why the default functions are overridden
-> by register_current_timer_delay(&arch_delay_timer) right? I think the
-> property of a timer is that its frequency doesn't change, even if the
-> CPU's frequency changes? So we are still busy looping, but we are
-> checking the actual time spent in the loop, whatever the cpufreq?
-> 
-> Reference
-> https://www.kernel.org/doc/Documentation/timers/timers-howto.txt
-> 
-> 
-> Q2. Cortex A9 global and private timers
-> 
-> http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0407f/CIHGECHJ.html
-> 
-> (What are private timers used for?)
-> 
-> In my platform-specific code, there is a config option to choose between
-> 
-> 1) the ARM global timer
-> 2) a platform-specific timer (timer0)
-> 
-> I noticed that there is generic code to support the global timer in
-> drivers/clocksource/arm_global_timer.c
-> 
-> config ARM_GLOBAL_TIMER
-> bool
-> select CLKSRC_OF if OF
-> help
->   This options enables support for the ARM global timer unit
-> 
-> config CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
-> bool
-> depends on ARM_GLOBAL_TIMER
-> default y
-> help
->  Use ARM global timer clock source as sched_clock
-> 
-> I was thinking it would be better to use the "standard" option (ARM
-> global timer)
-> as it is "officially" supported in the vanilla kernel. So less code to write and
-> to debug, and it has likely received more testing. Why would one rely on
-> platform-specific timers then?
-> 
-> Are high-resolution timers supported with the global timer?
-> 
-> 
-> Q3. Using the generic global timer implementation
-> 
-> So, how do I use that implementation?
-> (Is someone other than STMicro using it?)
-> 
-> I see:
-> 
-> static void __init global_timer_of_register(struct device_node *np)
-> CLOCKSOURCE_OF_DECLARE(arm_gt, "arm,cortex-a9-global-timer",
-> global_timer_of_register);
-> 
-> OF stands for open firmware, yes?
-> So is this related to device tree?
-> 
-> http://lxr.free-electrons.com/source/Documentation/devicetree/bindings/arm/global_timer.txt
-> 
-> This file makes no sense to me.
-> 
-> - interrupts : One interrupt to each core
-> interrupts = <1 13 0xf01>;
-> what are 1 13 0xf01 ??
-> 
-> - clocks : Should be phandle to a clock.
-> clocks = <&arm_periph_clk>;
-> 
-> For my (old) 3.14 kernel, I found this:
-> 
->     /*
->      * ARM Peripheral clock for timers
->      */
->     arm_periph_clk: arm_periph_clk {
->       #clock-cells = <0>;
->       compatible = "fixed-clock";
->       clock-frequency = <600000000>;
->     };
-> 
-> But it looks like the definitions have moved around since then?
+Russell King - ARM Linux wrote:
 
-Hi Mason,
+> Mason wrote:
+>
+>> Hmmm, I'm confused (again).
+>>
+>> CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK means "use the global timer
+>> for the scheduler clock", right? In that case, are the local timers
+>> unused by Linux?
+>>
+>> #ifdef CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
+>>    sched_clock_register(gt_sched_clock_read, 64, gt_clk_rate);
+>> #endif
+>>
+>> Is there generic code to set up local timers? (If so, where?)
+>> sched_clock_register only seems to appear in machine-specific code.
+>>
+>> What are the pros/cons of global timer vs local timers?
+>> Or is such a question irrelevant?
+>> (Because they are used for different purposes?)
+>
+> Correct.
+>
+> The sched_clock itself is about providing the scheduler with a stable,
+> monotonically increasing 64-bit nanosecond value which it can use to
+> account for the passing of time (so it can accurately measure how long
+> a thread is running for, and make a decision when to pre-empt it.)
+>
+> Local timers are used to set "alarms" to cause an interrupt at a certain
+> point in time to do something (like, run the scheduler to switch from
+> the current thread to another thread.)  It can also be used to update
+> the current time of day as well.
+>
+> Global timers are used as a fallback when local timers are not available,
+> and are less efficient - the CPU receiving the global timer interrupt
+> has to broadcast the interrupt to other CPUs, and it also has to take
+> account of the earliest event across all CPUs.
+>
+> There is a fourth "timer" which is used as a monotonically incrementing
+> counter - this is called the "clocksource".  This is used to maintain
+> the kernel's time-of-day.  This may be the same as the sched_clock.
 
-Just recently I added support of ARM global timer as clocksource for
-Vybrid SoC. This SoC doesn't use cpufreq, hence it is safe to use the
-ARM global timer. The nice thing of device tree is, the patch to add
-support for that did not change a single line of code:
+Where is this sched_clock set up?
 
-http://thread.gmane.org/gmane.linux.kernel/1794460
+I see sched_clock_register() in kernel/time/sched_clock.c
 
---
-Stefan
+setup_sched_clock() wraps sched_clock_register() but I only see one
+user of setup_sched_clock() -- arch/arm/mach-footbridge
 
-> 
-> This device tree concept is too much to swallow in a single serving.
-> Please tell me if I'm going down the correct rabbit hole, and I'll
-> do some LWN readings to try to wrap my mind around the concept.
-> 
-> 
-> Anyway, if anyone can help me out on some of these topics, I'd be
-> eternally grateful.
-> 
-> Regards.
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+sched_clock_postinit() is used to set up an acceptable default,
+I suppose? (i.e. jiffy_sched_clock_read)
+
+But this still needs a time source (an actual crystal). I must be
+missing something important from the big picture.
+
+>> There is trouble in paradise. I was planning to give the global timer a try,
+>> instead of the platform-specific timer, until I noticed: "The global timer
+>> is clocked by PERIPHCLK." And it turns PERIPHCLK is connected to the SoC's
+>> CPU_CLK (the clock that drives the CPU cores); the same clock that is managed
+>> by cpufreq. I imagine it's double plus ungood for precise time-keeping to
+>> have frequency changes of the clocksource input?
+>
+> Yes and no.  You can use that for local timers and/or a global timer, but
+> you really don't want to use that for the sched_clock nor clocksource as
+> these are really the fundamentals of time keeping.  I'd advise against
+> using a timer derived from the CPU clock in general though, but if you
+> have no other possible timers, then it has to do.
+
+I do have several platform-specific timers available, but I was
+considering using "standard" architected resources to minimize
+the code needed for the port.
+
+Also, reading Cortex-A9 MPCore Technical Reference Manual, section
+5.1 Clocks, I see that, by definition, PERIPHCLK is tied to CLK
+(the main clock). This means that, by definition, when using cpufreq,
+CLK will change, thus PERIPHCLK will necessarily be variable too.
+
+So the question I am trying to answer is: how do other SoCs use the
+Cortex A9 global timer and local timers, along with cpufreq, and
+make everything work correctly?
+
+Regards.
+
