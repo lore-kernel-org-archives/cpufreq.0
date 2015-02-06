@@ -1,72 +1,90 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: cpuidle vs suspend vs something else
-Date: Fri, 6 Feb 2015 09:37:33 +0100
-Message-ID: <CAJKOXPdOu3AUFv50i_WJ-JxGErJxi1RRXD6j2uqYpZ3t1WOMzw@mail.gmail.com>
-References: <54D43143.2010403@free.fr>
+From: Mason <mpeg.blue@free.fr>
+Subject: Re: Delays, clocks, timers, hrtimers, etc
+Date: Fri, 06 Feb 2015 10:37:32 -0800
+Message-ID: <54D509EC.7020708@free.fr>
+References: <54C8E125.3070905@free.fr> <20150203120925.GM8656@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=ybT6vHoADoXmJ49I0sfLLpp/o5MH0P5H1FY3Xp6z+tw=;
-        b=h8WmD7USIDTrJ/UWMm+kyym1rDDTt0O5CAh4nWflrxcgAu8QtLMvofjdGVDnRfjyiG
-         IqX3hQi6qWTCx0YpT6D//BPpm/Jmejt40klYS9Vf7iRCs49XuLXVEiFT80tp0tMQRBWq
-         LKHSlQ2GS7hqLXPxN8I3kcyqIhJHbWhbZFLyTpSE443lRN00lsRLjT6FanX4YflE8Vby
-         8Meri0R/TyDKjMraXzNXYAXo3haSR/LZCew5y3yn6im5DN9MqSnyk9TQ8ew4M0BKUHN/
-         7MomWGyp3Z7UcLx3DNOYdRCyT8TBSb3tCF4/qaA+/vRpUtr6oQPH0SWNw1TL0N8rGAc5
-         fuvw==
-In-Reply-To: <54D43143.2010403@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20150203120925.GM8656@n2100.arm.linux.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>
 
-2015-02-06 4:13 GMT+01:00 Mason <mpeg.blue@free.fr>:
-> Hello everyone,
->
-> I've been reading about related sub-systems (cpuidle and suspend)
-> and I'm not sure I understand how they relate / interact.
->
-> If I understand correctly (please do point out any misconceptions)
-> on ARM Cortex A9, the first level of power saving is WFI, which is
-> typically called from the idle loop.
->
-> This places the core in low-power mode ("Standby mode" in ARM docs).
-> "RAM arrays" (don't know what they are), "processor logic", and
-> "data engine" (not sure what any of these exactly refers to, guess
-> I have more reading to do) are still powered-up, but most of the
-> clocks are disabled.
->
-> In ARM's exact words, "WFI and WFE Standby modes disable most of the
-> clocks in a processor, while keeping its logic powered up. This reduces
-> the power drawn to the static leakage current, leaving a tiny clock
-> power overhead requirement to enable the device to wake up."
->
-> Some CPUs like Intel's have several levels of sleep (deeper levels
-> mean less power, but have a higher wake-up latency). AFAIU, cpuidle
-> is used to describe and manage these levels?
->
-> Isn't suspend somewhat like the deepest level of sleep?
-> (Or is it different in that things like RAM state are only a concern
-> for suspend, not cpuidle?)
+Hello Russell,
 
-Actually on some ARM SoCs the deeper cpuidle states behave like
-suspend. For example there isn't a deeper low power mode for one core
-on Exynos but there are low power modes for whole SoC. Entering most
-of these modes is controlled by cpuidle subsystem. The deepest mode is
-sleep which on Linux is entered during Suspend to RAM. So actually to
-answer your question - it depends on SoC and how you integrate it with
-Linux.
+First of all, thanks for the insight you've been providing. It helps a lot.
+(And thanks to everyone who's been answering some of my questions.)
 
-I am not that familiar with other SoCs but I think on Qualcomm each
-CPU may enter standalone low power mode?
+Russell King - ARM Linux wrote:
 
-> Are both subsystems still actively used?
+> On Wed, Jan 28, 2015 at 02:16:21PM +0100, Mason wrote:
+>
+>> [snip udelay discussion]
+>>
+>> Q2. Cortex A9 global and private timers
+>>
+>> http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0407f/CIHGECHJ.html
+>>
+>> (What are private timers used for?)
+>
+> The per-cpu private timers are mostly scheduling of threads.
 
-Yes, both are used: cpuidle and suspend.
+Hmmm, I'm confused (again).
 
-Best regards,
-Krzysztof
+CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK means "use the global timer
+for the scheduler clock", right? In that case, are the local timers
+unused by Linux?
+
+#ifdef CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
+   sched_clock_register(gt_sched_clock_read, 64, gt_clk_rate);
+#endif
+
+Is there generic code to set up local timers? (If so, where?)
+sched_clock_register only seems to appear in machine-specific code.
+
+What are the pros/cons of global timer vs local timers?
+Or is such a question irrelevant?
+(Because they are used for different purposes?)
+
+>> In my platform-specific code, there is a config option to choose between
+>>
+>> 1) the ARM global timer
+>> 2) a platform-specific timer (timer0)
+>
+> Most platforms implement their own timer, because its really sexy for
+> hardware engineers to create yet another different timer implementation
+> which is soo much better than every other timer implementation that has
+> already been created.  You wouldn't believe how many different ways that
+> there are to create a timer - and we still have people coming up with
+> new novel implementations!
+
+There is trouble in paradise. I was planning to give the global timer a try,
+instead of the platform-specific timer, until I noticed: "The global timer
+is clocked by PERIPHCLK." And it turns PERIPHCLK is connected to the SoC's
+CPU_CLK (the clock that drives the CPU cores); the same clock that is managed
+by cpufreq. I imagine it's double plus ungood for precise time-keeping to
+have frequency changes of the clocksource input?
+
+>> Q3. Using the generic global timer implementation
+>>
+>> So, how do I use that implementation?
+>> (Is someone other than STMicro using it?)
+
+To answer that question:
+
+$ grep -rn ARM_GLOBAL_TIMER | grep -v SCHED_CLOCK
+arch/arm/mach-vexpress/Kconfig:7:	select ARM_GLOBAL_TIMER
+arch/arm/mach-bcm/Kconfig:87:	select ARM_GLOBAL_TIMER
+arch/arm/mach-bcm/Kconfig:108:	select ARM_GLOBAL_TIMER
+arch/arm/mach-rockchip/Kconfig:14:	select ARM_GLOBAL_TIMER
+arch/arm/mach-sti/Kconfig:4:	select ARM_GLOBAL_TIMER
+arch/arm/mach-zynq/Kconfig:6:	select ARM_GLOBAL_TIMER if !CPU_FREQ
+
+There are indeed a few users; also I wonder why mach-zynq enables
+ARM_GLOBAL_TIMER only if !CPU_FREQ. (Could it be that they have
+the CPU CLOCK driving PERIPHCLK?)
+
+Regards.
