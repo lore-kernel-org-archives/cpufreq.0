@@ -1,60 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: RFC on cpufreq implementation
-Date: Wed, 4 Feb 2015 09:42:48 +0530
-Message-ID: <CAKohpokPseRu9jGEKc7gL+y8O6j8WvV72RCYzm_J-J4wKwf3eQ@mail.gmail.com>
-References: <54B7F7CD.7030903@free.fr>
-	<54CA6327.5070707@free.fr>
-	<CAKohponrzDb4ZGvRtJ5jtGTPAy4RCfRsYGvdjR5fx51K2=evCg@mail.gmail.com>
-	<54CC174F.10703@free.fr>
-	<CAKohpomzCEjXUrxUJjypaA77=r4j_ZPa+x3gM=cNN0kc3ux0uQ@mail.gmail.com>
-	<54D162B6.2050602@free.fr>
+From: Mason <mpeg.blue@free.fr>
+Subject: cpuidle vs suspend vs something else
+Date: Thu, 05 Feb 2015 19:13:07 -0800
+Message-ID: <54D43143.2010403@free.fr>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <54D162B6.2050602@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, =?UTF-8?B?TcOlbnMgUnVsbGfDpXJk?= <mans@mansr.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Mike Turquette <mturquette@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 4 February 2015 at 05:37, Mason <mpeg.blue@free.fr> wrote:
-> All of them?
->
-> ~/linux-3.19-rc7$ wc drivers/cpufreq/*
->  31542  95730 813482 total
->
-> Are there perhaps 1 or 2 "golden standard" drivers that are well-written
-> and up-to-date with respect to current conventions?
+Hello everyone,
 
-cpufreq-dt.c
+I've been reading about related sub-systems (cpuidle and suspend)
+and I'm not sure I understand how they relate / interact.
 
-> Like Samsung did with include/dt-bindings/clock/exynos*.h ?
+If I understand correctly (please do point out any misconceptions)
+on ARM Cortex A9, the first level of power saving is WFI, which is
+typically called from the idle loop.
 
-Yeah.
+This places the core in low-power mode ("Standby mode" in ARM docs).
+"RAM arrays" (don't know what they are), "processor logic", and
+"data engine" (not sure what any of these exactly refers to, guess
+I have more reading to do) are still powered-up, but most of the
+clocks are disabled.
 
-> Are you saying that use of DeviceTree is mandatory for new ARM ports?
+In ARM's exact words, "WFI and WFE Standby modes disable most of the
+clocks in a processor, while keeping its logic powered up. This reduces
+the power drawn to the static leakage current, leaving a tiny clock
+power overhead requirement to enable the device to wake up."
 
-Yes.
+Some CPUs like Intel's have several levels of sleep (deeper levels
+mean less power, but have a higher wake-up latency). AFAIU, cpuidle
+is used to describe and manage these levels?
 
-> In other words, ports using "board files" will not be accepted into
-> mainline, nor will drivers not using DT?
+Isn't suspend somewhat like the deepest level of sleep?
+(Or is it different in that things like RAM state are only a concern
+for suspend, not cpuidle?)
 
-It wouldn't be good for you as well, that's all I can say.
+Are both subsystems still actively used?
 
-> If that is correct, then my proposed cpufreq driver has exactly 0%
-> chance of being mainlined as-is, right?
+I saw plans to merge cpufreq into cpuidle / scheduler decisions.
 
-:)
+LCA14: LCA14-306: CPUidle & CPUfreq integration with scheduler
+http://www.slideshare.net/linaroorg/lca14-306-cpuidlecpufreqintegrationwithscheduler
 
-> I took a look at cpufreq-dt.c but I think it doesn't quite fit my use-case.
-> In my driver, I define "clock dividers" (typically 1,2,3,5,9) and these are
-> used to divide some baseline frequency that the cpufreq code doesn't need to
-> know. The baseline frequency is set by the boot loader, and Linux is not
-> supposed to change that, only apply the dividers if necessary.
->
-> What do you think of this use-case?
+This presentation doesn't mention suspend, I think.
 
-You need to write a backend clock driver for this. Most of the other platforms
-are doing this. cpufreq-dt driver does clk_get(), clk_get_rate(), clk_set_rate()
-and your backend driver should handle these to change the frequencies.
+ARM has a mode called "Dormant Mode". Is suspend typically
+used to put the SoC in that mode?
+
+I think I need to read this document carefully:
+Power Management In The Linux Kernel -- Current Status And Future
+http://events.linuxfoundation.org/sites/events/files/slides/kernel_PM_plain.pdf
+
+There's also an older document that may prove insightful:
+CPUIdle versus Suspend
+http://www.linuxplumbersconf.org/2010/ocw/proposals/789
+
+But things move so fast in kernel-land, that I don't know how relevant
+a 4 year-old document can be.
+
+Regards.
+
