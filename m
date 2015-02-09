@@ -1,128 +1,48 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+From: Michal Simek <michal.simek@xilinx.com>
 Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Sat, 7 Feb 2015 10:42:53 +0000
-Message-ID: <20150207104253.GD8656@n2100.arm.linux.org.uk>
+Date: Mon, 9 Feb 2015 08:45:42 +0100
+Message-ID: <83b8298aa6384cbda3650b9ce1b5c842@BN1AFFO11OLC003.protection.gbl>
 References: <54C8E125.3070905@free.fr>
- <20150203120925.GM8656@n2100.arm.linux.org.uk>
- <54D509EC.7020708@free.fr>
+ <20150203120925.GM8656@n2100.arm.linux.org.uk> <54D509EC.7020708@free.fr>
  <20150206191419.GA8656@n2100.arm.linux.org.uk>
- <54D52C17.8000402@free.fr>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=pandora-2014;
-	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=TtVF4ledVVwuwSUSUsLLYPbi7K6/7GOboLylQu6y6+k=;
-	b=iG1BQY07/SbLLHIWo5ca6kGiogmqXSVS+dAKjeau5YQmEZ0H0s5whm6LDL8X91ta62NWRRYPufZWR8wCbWFzvRG9uU/et0uB8PsBtpKgFrcGgnA+Dc862s7KRhAjRx5HB830yaKVNaEVAfa2X0CbHBatHImAJwjD6wm7lKKCjcs=;
-Content-Disposition: inline
-In-Reply-To: <54D52C17.8000402@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20150206191419.GA8656@n2100.arm.linux.org.uk>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Mason <mpeg.blue@free.fr>
+Cc: Mike Turquette <mturquette@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, cpufreq <cpufreq@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Soren Brinkmann <sorenb@xilinx.com>, Thomas Gleixner <tglx@linutronix.de>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Fri, Feb 06, 2015 at 01:03:19PM -0800, Mason wrote:
-> Russell King - ARM Linux wrote:
++ Soren
+
+>> $ grep -rn ARM_GLOBAL_TIMER | grep -v SCHED_CLOCK
+>> arch/arm/mach-vexpress/Kconfig:7:	select ARM_GLOBAL_TIMER
+>> arch/arm/mach-bcm/Kconfig:87:	select ARM_GLOBAL_TIMER
+>> arch/arm/mach-bcm/Kconfig:108:	select ARM_GLOBAL_TIMER
+>> arch/arm/mach-rockchip/Kconfig:14:	select ARM_GLOBAL_TIMER
+>> arch/arm/mach-sti/Kconfig:4:	select ARM_GLOBAL_TIMER
+>> arch/arm/mach-zynq/Kconfig:6:	select ARM_GLOBAL_TIMER if !CPU_FREQ
+>>
+>> There are indeed a few users; also I wonder why mach-zynq enables
+>> ARM_GLOBAL_TIMER only if !CPU_FREQ. (Could it be that they have
+>> the CPU CLOCK driving PERIPHCLK?)
 > 
-> >Mason wrote:
-> >
-> >>Hmmm, I'm confused (again).
-> >>
-> >>CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK means "use the global timer
-> >>for the scheduler clock", right? In that case, are the local timers
-> >>unused by Linux?
-> >>
-> >>#ifdef CONFIG_CLKSRC_ARM_GLOBAL_TIMER_SCHED_CLOCK
-> >>   sched_clock_register(gt_sched_clock_read, 64, gt_clk_rate);
-> >>#endif
-> >>
-> >>Is there generic code to set up local timers? (If so, where?)
-> >>sched_clock_register only seems to appear in machine-specific code.
-> >>
-> >>What are the pros/cons of global timer vs local timers?
-> >>Or is such a question irrelevant?
-> >>(Because they are used for different purposes?)
-> >
-> >Correct.
-> >
-> >The sched_clock itself is about providing the scheduler with a stable,
-> >monotonically increasing 64-bit nanosecond value which it can use to
-> >account for the passing of time (so it can accurately measure how long
-> >a thread is running for, and make a decision when to pre-empt it.)
-> >
-> >Local timers are used to set "alarms" to cause an interrupt at a certain
-> >point in time to do something (like, run the scheduler to switch from
-> >the current thread to another thread.)  It can also be used to update
-> >the current time of day as well.
-> >
-> >Global timers are used as a fallback when local timers are not available,
-> >and are less efficient - the CPU receiving the global timer interrupt
-> >has to broadcast the interrupt to other CPUs, and it also has to take
-> >account of the earliest event across all CPUs.
-> >
-> >There is a fourth "timer" which is used as a monotonically incrementing
-> >counter - this is called the "clocksource".  This is used to maintain
-> >the kernel's time-of-day.  This may be the same as the sched_clock.
-> 
-> Where is this sched_clock set up?
+> I'm afraid I don't know.
 
-What do you mean "set up" ?
+The reason is that cpu clock input and global timer clock input are not independent
+that's why changing clock for cpu also affect global timer freq which is wrong.
+It is caused by incorrect hw design.
+Soren can give you more detail information if you need.
 
-> I see sched_clock_register() in kernel/time/sched_clock.c
-
-Correct, and most users use sched_clock_register() rather than
-setup_sched_clock().
-
-> setup_sched_clock() wraps sched_clock_register() but I only see one
-> user of setup_sched_clock() -- arch/arm/mach-footbridge
-
-Probably hasn't been converted to use sched_clock_register() yet.
-
-> sched_clock_postinit() is used to set up an acceptable default,
-> I suppose? (i.e. jiffy_sched_clock_read)
-
-That's to finish off the sched clock initialisation at a point where we
-can do so (which should be after sched_clock_register() has been called.)
-
-> But this still needs a time source (an actual crystal). I must be
-> missing something important from the big picture.
-
-All that sched_clock cares about is reading a value from a counter which
-increments (or decrements) at a single, uniform, known rate, and the
-code internal to sched_clock() converts that to a 64-bit nanosecond
-value.
-
-> 
-> >>There is trouble in paradise. I was planning to give the global timer a try,
-> >>instead of the platform-specific timer, until I noticed: "The global timer
-> >>is clocked by PERIPHCLK." And it turns PERIPHCLK is connected to the SoC's
-> >>CPU_CLK (the clock that drives the CPU cores); the same clock that is managed
-> >>by cpufreq. I imagine it's double plus ungood for precise time-keeping to
-> >>have frequency changes of the clocksource input?
-> >
-> >Yes and no.  You can use that for local timers and/or a global timer, but
-> >you really don't want to use that for the sched_clock nor clocksource as
-> >these are really the fundamentals of time keeping.  I'd advise against
-> >using a timer derived from the CPU clock in general though, but if you
-> >have no other possible timers, then it has to do.
-> 
-> I do have several platform-specific timers available, but I was
-> considering using "standard" architected resources to minimize
-> the code needed for the port.
-> 
-> Also, reading Cortex-A9 MPCore Technical Reference Manual, section
-> 5.1 Clocks, I see that, by definition, PERIPHCLK is tied to CLK
-> (the main clock). This means that, by definition, when using cpufreq,
-> CLK will change, thus PERIPHCLK will necessarily be variable too.
-> 
-> So the question I am trying to answer is: how do other SoCs use the
-> Cortex A9 global timer and local timers, along with cpufreq, and
-> make everything work correctly?
-
-You can use them for local and global timers, provided you have a stable
-clocksource and sched_clock (which can both be derived from the same
-counter.)
-
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+Thanks,
+Michal
