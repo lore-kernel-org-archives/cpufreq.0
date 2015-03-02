@@ -1,56 +1,36 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: Delays, clocks, timers, hrtimers, etc
-Date: Wed, 11 Feb 2015 15:26:31 -0800
-Message-ID: <20150211232631.GE11190@codeaurora.org>
-References: <54D52F84.9050600@free.fr>
- <266c7b1ff2d1a8ba0ae4866f4fb4eca5@agner.ch>
- <54D576B1.4000001@free.fr>
- <54D903F6.3050608@codeaurora.org>
- <54D93556.9050008@free.fr>
- <54D93FFA.3090506@codeaurora.org>
- <54D947B4.4080401@free.fr>
- <54DB94B0.8020000@free.fr>
- <20150211184515.GB11190@codeaurora.org>
- <54DBD095.3040800@free.fr>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 91141] acpi-cpufreq cannot be loaded.
+Date: Mon, 02 Mar 2015 03:09:34 +0000
+Message-ID: <bug-91141-12968-8htYi084r5@https.bugzilla.kernel.org/>
+References: <bug-91141-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <54DBD095.3040800@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-91141-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mason <mpeg.blue@free.fr>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Stefan Agner <stefan@agner.ch>, Shawn Guo <shawn.guo@linaro.org>, Rob Herring <robh@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>
+To: cpufreq@vger.kernel.org
 
-On 02/11, Mason wrote:
-> 
-> Looking at the difference between OF and !OF registration functions
-> in smp_twd.c
-> 
-> !OF
->   if (twd_base || twd_evt) return -EBUSY;
->   assign twd_ppi and twd_base
->   twd_local_timer_common_register(NULL)
-> 
-> OF
->   if (!is_smp() || !setup_max_cpus) return; // TO BE DELETED
->   assign twd_ppi and twd_base
->   twd_local_timer_common_register(np)
-> 
-> I suppose OF guarantees that the init code is called only once?
+https://bugzilla.kernel.org/show_bug.cgi?id=91141
 
-It's called as many times as there's a match with the
-corresponding CLOCKSOURCE_OF_DECLARE. In practice that's once.
+--- Comment #11 from Zhang Rui <rui.zhang@intel.com> ---
+(In reply to Brett Johnson from comment #9)
+> The BIOS supports it and all is enabled.
 
-> (Hence the !OF guard code would be unnecessary.)
-> 
+I mean there is no BIOS support for acpi-cpufreq driver, i,e, the _PSS control
+method.
 
-The other difference is that OF based registration needs to use
-OF functions for irqs and ioremap whereas the non-OF code relies
-on the irqs being provided before hand and the ioremap done
-without OF functions.
+> As I stated above, multiple P4's
+> worked under the 2.6 kernels. Under p4-clockmod I can manually change the
+> processor frequencies as seen by cpuinfo_cur_freq. Manual changes don't
+> help, though. Since p4-clockmod isn't used anymore, does acpi-cpufreq
+> support P4's? Or is there another kernel module supposed to do this?
+
+Unlike bug #73781, which has _PSS method in BIOS and the problem can be fixed
+in kernel, for your machine, you can only use p4-clockmod instead of
+acpi-cpufreq driver, even in 3.x kernels.
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+You are receiving this mail because:
+You are the assignee for the bug.
