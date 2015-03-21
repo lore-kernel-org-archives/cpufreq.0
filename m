@@ -1,101 +1,31 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: cpufreq-info and acpi-cpufreq: reporting MSR_IA32_PERF_CTL as
- "actual frequency"
-Date: Sat, 14 Mar 2015 13:18:55 -0400
-Message-ID: <CAJvTdKk8yUeHzEE6G1KNyBi28-fSmVnPnkB6K4fn8U2jNa1Srw@mail.gmail.com>
-References: <CAHOOexvOXKr4s-mg20VdUOAR3o7EN5iAS-ModAk6-vNKbhwT=g@mail.gmail.com>
-	<5475F1EA.7020003@intel.com>
-	<CAHOOexses3--hwcL5Mz=hnk+e1O32T8NXH=y+Se24-VXkWWAcw@mail.gmail.com>
-	<3849711.qUm3dg8PlV@vostro.rjw.lan>
-	<CAHOOextX=QK1-x7SbgKG9_zSUaZFLBX5FU5+iCFzJaqeJ7BYrg@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 60587] Only two p-states visible on AMD FX-8350
+Date: Sat, 21 Mar 2015 09:20:44 +0000
+Message-ID: <bug-60587-12968-XYMKNVfzOA@https.bugzilla.kernel.org/>
+References: <bug-60587-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=0A8pAnwizCfu2wYA0r6FDFSJjb+NH3TUGXVd81ivz/g=;
-        b=xEyEl3vGtOBB6kWI/1xCC7P6GWokuWxa1owLv26/OvrHCh+C0ejwvvNAabWkb0xycW
-         RBPWRM0C73E8tEaHoL/2zjvkottpIkNY84xqpSoItmIQJ4xa3Ob5nBBWLtQ9T2CHblsT
-         y9+umkNjkecb8TvMyZdVlhbsZZsfO8264Tzw6sEDV3l3qn0wr01rm1wGJfsN8A5QFFGg
-         5VATUG4kyTbccOq2WTBOJJ6yEDaunEScGy03WYQx5wrykadhaOzTjpQcHwN57j0FYL9T
-         S74QfN3v+D01v9IyLpGs2DSxQyCE5kscAKPlrzSuquE6cQCPk0mRNdOblpFveRtvE5eS
-         ZjSA==
-In-Reply-To: <CAHOOextX=QK1-x7SbgKG9_zSUaZFLBX5FU5+iCFzJaqeJ7BYrg@mail.gmail.com>
+In-Reply-To: <bug-60587-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Magdalena Dobosz <maj.dobosz@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "cpufreq@vger.kernel.org" <CPUFREQ@vger.kernel.org>, Ross Lagerwall <rosslagerwall@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: cpufreq@vger.kernel.org
 
-> {PERF_STATUS} can be already stale? Why is that?
+https://bugzilla.kernel.org/show_bug.cgi?id=60587
 
-Hello Magdalena,
+Nenad Radulovic <nenad.b.radulovic@gmail.com> changed:
 
-Say two cores share a voltage domain.
-core0 makes a P-state request via PERF_CTRL to run FAST.
-core1 makes a P-state request via PERF_CTRL to run SLOW.
-The hardware is responsible for programming the shared VR to
-support the most demanding request -- FAST.  It does this,
-and since it would be wasteful to have core1 run SLOW when
-the VR supports FAST, core1 also runs fast.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |nenad.b.radulovic@gmail.com
 
-Say core0 then goes idle.
-The SLOW request on core1 may now be the most demanding VR request,
-and so the VR is lowered, and core1 now runs SLOW.
+--- Comment #4 from Nenad Radulovic <nenad.b.radulovic@gmail.com> ---
+This affects me too on M5A99FX Pro 2.0
 
-Say PERF_STATUS is read on core1 before and after this transition.
-One will read FAST, the other will read SLOW.  Which one is the
-real frequency?
+Before fx8350 I had Phenom II X6 1100T on this board. All p-states were
+detected. Now with fx8350 only two p-states are detected.
 
-The problem is that they are *both* the real frequency, and *neither*
-is the real frequency.  Indeed, the concept of instantaneous frequency
-in  many scenarios is extremely mis-leading.
-
-There are other scenarios related to turbo-mode and thermal control
-that make instantaneous frequency even more mis-leading,
-particularly since the frequency can change many times per second.
-Thus, the OS itself, can't depend on PERF_STATUS for anything.
-
-Requested frequency, however, does actually have *some* meaning.
-
-Average frequency is generally more useful.
-It requires is an accurate count of elapsed cycles
-divided by a reliable measurement of elapsed time.
-The problem with this is who decides the interval,
-and what do you do if somebody wants an instantaneous answer?
-
-The turbostat utility computes average frequency this in user-space,
-of course.  intel_pstate can do it in-kernel because it is actually a
-governor+driver, and so it runs periodically.
-
-But if somebody wants to know the instantaneous frequency,
-you have to ask why, and what they'll do with it...
-
-> Anyway, cpufreq documentation is misleading:
-> it says "cpuinfo_cur_freq: Current frequency of the CPU
-> as obtained from the hardware, in KHz.
-> This is the frequency the CPU actually runs at."
-
-Yes, I see this in Documentation/cpu-freq/user-guide.txt
-
-It was added by this commit: da470db16c703d7f9617c366a36c6670f89a9830
-[CPUFREQ] update Doc for cpuinfo_cur_freq and scaling_cur_freq
-
-Maybe it would have been a better idea to not update
-that documentation, and instead leave these as vague?
-
-> while the value is
-> read from MSR_IA32_PERF_STATUS (or MSR_IA32_PERF_CTL
-> in newer kernels).
-
-Both of those are bugs.  The code that does this in acpi-cpufreq
-should be replaced with code that reads no MSR, and simply
-reutrns the last requested frequency (from memory).
-I think I had a patch to remove all that current-frequency
-cruft from the driver a while back -- perhaps time to revive it,
-and to fix the documentation too.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
