@@ -1,34 +1,28 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 81701] OOPS in cpufreq driver with AMD Kaveri CPU - AMD
- Athlon(tm) 5150 APU with Radeon(tm) R3
-Date: Tue, 14 Apr 2015 16:04:13 +0000
-Message-ID: <bug-81701-12968-OQ5BNSV53n@https.bugzilla.kernel.org/>
-References: <bug-81701-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 91141] acpi-cpufreq cannot be loaded.
+Date: Thu, 16 Apr 2015 01:54:53 +0000
+Message-ID: <bug-91141-12968-lFZeAOv3cJ@https.bugzilla.kernel.org/>
+References: <bug-91141-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-81701-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-91141-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=81701
+https://bugzilla.kernel.org/show_bug.cgi?id=91141
 
-Oleksandr Natalenko <oleksandr@natalenko.name> changed:
+Zhang Rui <rui.zhang@intel.com> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
              Status|NEEDINFO                    |CLOSED
-         Resolution|---                         |INVALID
+         Resolution|---                         |DOCUMENTED
 
---- Comment #20 from Oleksandr Natalenko <oleksandr@natalenko.name> ---
-Definitely not a kernel bug.
-
-I've replaced RAM module with another one and the issue went away.
-
-No idea why oopses refered to ACPI, but they seem to be the result of simple
-hardware incompatibility.
+--- Comment #12 from Zhang Rui <rui.zhang@intel.com> ---
+On this box, I think you still need to use p4-clockmod to make it work.
 
 -- 
 You are receiving this mail because:
