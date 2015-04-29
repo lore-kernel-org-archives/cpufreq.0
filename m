@@ -1,139 +1,109 @@
-From: Mason <slash.tmp@free.fr>
+From: Javi Merino <javi.merino@arm.com>
 Subject: Re: Using a temperature sensor with 1-bit output for CPU throttling
-Date: Wed, 29 Apr 2015 15:47:13 +0200
-Message-ID: <5540E0E1.6080504@free.fr>
-References: <553F6E85.5090402@free.fr>
+Date: Wed, 29 Apr 2015 17:36:05 +0100
+Message-ID: <20150429163605.GM3054@e104805>
+References: <553F6E85.5090402@free.fr> <5540E0E1.6080504@free.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <553F6E85.5090402@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <5540E0E1.6080504@free.fr>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="utf-8"
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: cpufreq <cpufreq@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Amit Daniel <amit.kachhap@linaro.org>, Andrew Lunn <andrew@lunn.ch>, Radhesh Fadnis <radhesh.fadnis@ti.com>
+To: Mason <slash.tmp@free.fr>
+Cc: Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Amit Daniel <amit.kachhap@linaro.org>, Andrew Lunn <andrew@lunn.ch>, Radhesh Fadnis <radhesh.fadnis@ti.com>
 
-On 28/04/2015 13:27, Mason wrote:
-
-> The SoC I'm working on provides a temperature sensor (NXP) in the CPU=
- block.
-> The sensor seems to be very primitive, so I wanted to ask experienced=
- people
-> what would be the best way to use it from Linux.
->=20
-> General Description
-> "The sensor generates an output signal that indicates if the die temp=
-erature
-> exceeds a programmable threshold. This makes it particularly suitable=
- for
-> detecting overheating."
->=20
-> So it seems that the original purpose of this sensor was to periodica=
-lly
-> check that the temperature has not exceeded a given threshold.
->=20
-> - Is the CPU temp higher than 100=C2=B0C ?
-> - No.
-> - OK. Business as usual.
->=20
-> (1 second later)
-> - Is the CPU temp higher than 100=C2=B0C ?
-> - Yes.
-> - Uh-oh! I need to do something about it.
->=20
->=20
-> Basic Functions
-> "The temp sensor uses a bandgap type of circuit to compare a voltage =
-which
-> has a negative temperature coefficient with a voltage that is proport=
-ional
-> to absolute temperature. A resistor bank allows 40 different temperat=
-ure
-> thresholds to be selected and the logic output 'out_temperature' will=
- then
-> indicate whether the actual die temperature lies above or below the s=
-elected
-> threshold."
->=20
-> The available thresholds seem to be chosen somewhat arbitrarily:
->=20
->   -45.1, -39.7, -33.7, -29.4, -24.4, -20.4, -15.4, -10.1,
->   -6.4, -1.4, 3.6, 7.6, 12.9, 16.6, 20.6, 25.6, 30.9,
->   34.9, 38.6, 43.9, 48.9, 52.9, 57.9, 61.9, 66.9, 70.9,
->   76.3, 81.3, 85.3, 90.3, 95.3, 98.9, 102.9, 108.3, 111.9,
->   117.3, 122.3, 126.3, 131.3, 135.3, 139.3
->=20
-> The spacing between values seems arbitrary also.
-> (Is there an underlying physical explanation?)
->=20
-> I'm not sure that there is much point in testing for temperatures low=
-er
-> than 50=C2=B0C ? (I'm told that the SoC can reliably function up to 1=
-25=C2=B0C.)
->=20
-> Do higher temperatures shorten the lifespan of a component?
-> In other words, would a CPU running 24/7 at 100=C2=B0C "break" sooner
-> than one running 24/7 at 50=C2=B0C ?
->=20
->=20
-> Characteristics
->=20
-> Symbol      Parameter             Min  Typ  Max  Unit
->=20
-> (Operating conditions)
-> Tjunc      Junction temperature   -40   25   125  =C2=B0C
-> Vdd        Supply voltage         1.0  1.1  1.26   V
->=20
-> (Normal operating mode)
-> Idd         Supply current              50    60  =CE=BCA
-> Vbandgapref Ref output voltage   0.72  0.8  0.88   V
-> =E2=88=86outtemp    Absolute Temp               =C2=B12   =C2=B110  =C2=
-=B0C
->             threshold error
-> T_res       Temp resolution        3    4.5    7  =C2=B0C
->=20
->=20
-> Given the semantics of the temperature sensor hardware block, I was
-> tempted to implement something along these lines:
->=20
-> Create a kernel thread that runs periodically (e.g. every second)
-> to check if the temperature is above 100=C2=B0C.
-> - If not, do nothing
-> - If yes, somehow prevent the CPU from using the highest frequencies
-> defined in cpufreq's freq table
-> (They are 1000, 500, 333, 200, 100 MHz)
->=20
-> Is that a sensible approach?
-> Is there a way to implement this using the thermal framework?
->=20
-> Or am I looking at this wrong, and things should be done a
-> different way? (I'm using 3.14 by the way.)
->=20
-> I suppose I could perform some kind of binary search to zoom in
-> on the current threshold (although it might change during the
-> measurements, so I'd rather not go there.)
-
-I'm aware that I posted many questions. I'd be grateful if someone
-would answer even a tiny subset. That would get the ball rolling.
-
-If I understand correctly, if I want to use the CPU throttling
-framework, I need to define a "thermal zone device" and a
-"cooling device". AFAIU, the cooling device is taken care of
-by cpu_cooling.c
-
-  cpufreq_cooling_register(cpu_present_mask);
-
-My temperature sensor would be the thermal zone device?
-How do I tie the two devices together?
-Is that where a thermal governor comes in play?
-
-I took a look at the dove_thermal driver, because it seems simple
-enough to understand (by me).
-
-Looking at ti-soc-thermal/omap?-thermal-data.c
-the lookup table looks familiar. Are they using the same kind
-of technology as my primitive sensor? (bandgap)
-I do note that the precision is much higher though.
-
-Regards.
+T24gV2VkLCBBcHIgMjksIDIwMTUgYXQgMDI6NDc6MTNQTSArMDEwMCwgTWFzb24gd3JvdGU6DQo+
+IE9uIDI4LzA0LzIwMTUgMTM6MjcsIE1hc29uIHdyb3RlOg0KPiANCj4gPiBUaGUgU29DIEknbSB3
+b3JraW5nIG9uIHByb3ZpZGVzIGEgdGVtcGVyYXR1cmUgc2Vuc29yIChOWFApIGluIHRoZSBDUFUg
+YmxvY2suDQo+ID4gVGhlIHNlbnNvciBzZWVtcyB0byBiZSB2ZXJ5IHByaW1pdGl2ZSwgc28gSSB3
+YW50ZWQgdG8gYXNrIGV4cGVyaWVuY2VkIHBlb3BsZQ0KPiA+IHdoYXQgd291bGQgYmUgdGhlIGJl
+c3Qgd2F5IHRvIHVzZSBpdCBmcm9tIExpbnV4Lg0KPiA+IA0KPiA+IEdlbmVyYWwgRGVzY3JpcHRp
+b24NCj4gPiAiVGhlIHNlbnNvciBnZW5lcmF0ZXMgYW4gb3V0cHV0IHNpZ25hbCB0aGF0IGluZGlj
+YXRlcyBpZiB0aGUgZGllIHRlbXBlcmF0dXJlDQo+ID4gZXhjZWVkcyBhIHByb2dyYW1tYWJsZSB0
+aHJlc2hvbGQuIFRoaXMgbWFrZXMgaXQgcGFydGljdWxhcmx5IHN1aXRhYmxlIGZvcg0KPiA+IGRl
+dGVjdGluZyBvdmVyaGVhdGluZy4iDQo+ID4gDQo+ID4gU28gaXQgc2VlbXMgdGhhdCB0aGUgb3Jp
+Z2luYWwgcHVycG9zZSBvZiB0aGlzIHNlbnNvciB3YXMgdG8gcGVyaW9kaWNhbGx5DQo+ID4gY2hl
+Y2sgdGhhdCB0aGUgdGVtcGVyYXR1cmUgaGFzIG5vdCBleGNlZWRlZCBhIGdpdmVuIHRocmVzaG9s
+ZC4NCj4gPiANCj4gPiAtIElzIHRoZSBDUFUgdGVtcCBoaWdoZXIgdGhhbiAxMDDCsEMgPw0KPiA+
+IC0gTm8uDQo+ID4gLSBPSy4gQnVzaW5lc3MgYXMgdXN1YWwuDQo+ID4gDQo+ID4gKDEgc2Vjb25k
+IGxhdGVyKQ0KPiA+IC0gSXMgdGhlIENQVSB0ZW1wIGhpZ2hlciB0aGFuIDEwMMKwQyA/DQo+ID4g
+LSBZZXMuDQo+ID4gLSBVaC1vaCEgSSBuZWVkIHRvIGRvIHNvbWV0aGluZyBhYm91dCBpdC4NCj4g
+PiANCj4gPiANCj4gPiBCYXNpYyBGdW5jdGlvbnMNCj4gPiAiVGhlIHRlbXAgc2Vuc29yIHVzZXMg
+YSBiYW5kZ2FwIHR5cGUgb2YgY2lyY3VpdCB0byBjb21wYXJlIGEgdm9sdGFnZSB3aGljaA0KPiA+
+IGhhcyBhIG5lZ2F0aXZlIHRlbXBlcmF0dXJlIGNvZWZmaWNpZW50IHdpdGggYSB2b2x0YWdlIHRo
+YXQgaXMgcHJvcG9ydGlvbmFsDQo+ID4gdG8gYWJzb2x1dGUgdGVtcGVyYXR1cmUuIEEgcmVzaXN0
+b3IgYmFuayBhbGxvd3MgNDAgZGlmZmVyZW50IHRlbXBlcmF0dXJlDQo+ID4gdGhyZXNob2xkcyB0
+byBiZSBzZWxlY3RlZCBhbmQgdGhlIGxvZ2ljIG91dHB1dCAnb3V0X3RlbXBlcmF0dXJlJyB3aWxs
+IHRoZW4NCj4gPiBpbmRpY2F0ZSB3aGV0aGVyIHRoZSBhY3R1YWwgZGllIHRlbXBlcmF0dXJlIGxp
+ZXMgYWJvdmUgb3IgYmVsb3cgdGhlIHNlbGVjdGVkDQo+ID4gdGhyZXNob2xkLiINCj4gPiANCj4g
+PiBUaGUgYXZhaWxhYmxlIHRocmVzaG9sZHMgc2VlbSB0byBiZSBjaG9zZW4gc29tZXdoYXQgYXJi
+aXRyYXJpbHk6DQo+ID4gDQo+ID4gICAtNDUuMSwgLTM5LjcsIC0zMy43LCAtMjkuNCwgLTI0LjQs
+IC0yMC40LCAtMTUuNCwgLTEwLjEsDQo+ID4gICAtNi40LCAtMS40LCAzLjYsIDcuNiwgMTIuOSwg
+MTYuNiwgMjAuNiwgMjUuNiwgMzAuOSwNCj4gPiAgIDM0LjksIDM4LjYsIDQzLjksIDQ4LjksIDUy
+LjksIDU3LjksIDYxLjksIDY2LjksIDcwLjksDQo+ID4gICA3Ni4zLCA4MS4zLCA4NS4zLCA5MC4z
+LCA5NS4zLCA5OC45LCAxMDIuOSwgMTA4LjMsIDExMS45LA0KPiA+ICAgMTE3LjMsIDEyMi4zLCAx
+MjYuMywgMTMxLjMsIDEzNS4zLCAxMzkuMw0KPiA+IA0KPiA+IFRoZSBzcGFjaW5nIGJldHdlZW4g
+dmFsdWVzIHNlZW1zIGFyYml0cmFyeSBhbHNvLg0KPiA+IChJcyB0aGVyZSBhbiB1bmRlcmx5aW5n
+IHBoeXNpY2FsIGV4cGxhbmF0aW9uPykNCj4gPiANCj4gPiBJJ20gbm90IHN1cmUgdGhhdCB0aGVy
+ZSBpcyBtdWNoIHBvaW50IGluIHRlc3RpbmcgZm9yIHRlbXBlcmF0dXJlcyBsb3dlcg0KPiA+IHRo
+YW4gNTDCsEMgPyAoSSdtIHRvbGQgdGhhdCB0aGUgU29DIGNhbiByZWxpYWJseSBmdW5jdGlvbiB1
+cCB0byAxMjXCsEMuKQ0KPiA+IA0KPiA+IERvIGhpZ2hlciB0ZW1wZXJhdHVyZXMgc2hvcnRlbiB0
+aGUgbGlmZXNwYW4gb2YgYSBjb21wb25lbnQ/DQo+ID4gSW4gb3RoZXIgd29yZHMsIHdvdWxkIGEg
+Q1BVIHJ1bm5pbmcgMjQvNyBhdCAxMDDCsEMgImJyZWFrIiBzb29uZXINCj4gPiB0aGFuIG9uZSBy
+dW5uaW5nIDI0LzcgYXQgNTDCsEMgPw0KPiA+IA0KPiA+IA0KPiA+IENoYXJhY3RlcmlzdGljcw0K
+PiA+IA0KPiA+IFN5bWJvbCAgICAgIFBhcmFtZXRlciAgICAgICAgICAgICBNaW4gIFR5cCAgTWF4
+ICBVbml0DQo+ID4gDQo+ID4gKE9wZXJhdGluZyBjb25kaXRpb25zKQ0KPiA+IFRqdW5jICAgICAg
+SnVuY3Rpb24gdGVtcGVyYXR1cmUgICAtNDAgICAyNSAgIDEyNSAgwrBDDQo+ID4gVmRkICAgICAg
+ICBTdXBwbHkgdm9sdGFnZSAgICAgICAgIDEuMCAgMS4xICAxLjI2ICAgVg0KPiA+IA0KPiA+IChO
+b3JtYWwgb3BlcmF0aW5nIG1vZGUpDQo+ID4gSWRkICAgICAgICAgU3VwcGx5IGN1cnJlbnQgICAg
+ICAgICAgICAgIDUwICAgIDYwICDOvEENCj4gPiBWYmFuZGdhcHJlZiBSZWYgb3V0cHV0IHZvbHRh
+Z2UgICAwLjcyICAwLjggIDAuODggICBWDQo+ID4g4oiGb3V0dGVtcCAgICBBYnNvbHV0ZSBUZW1w
+ICAgICAgICAgICAgICAgwrEyICAgwrExMCAgwrBDDQo+ID4gICAgICAgICAgICAgdGhyZXNob2xk
+IGVycm9yDQo+ID4gVF9yZXMgICAgICAgVGVtcCByZXNvbHV0aW9uICAgICAgICAzICAgIDQuNSAg
+ICA3ICDCsEMNCj4gPiANCj4gPiANCj4gPiBHaXZlbiB0aGUgc2VtYW50aWNzIG9mIHRoZSB0ZW1w
+ZXJhdHVyZSBzZW5zb3IgaGFyZHdhcmUgYmxvY2ssIEkgd2FzDQo+ID4gdGVtcHRlZCB0byBpbXBs
+ZW1lbnQgc29tZXRoaW5nIGFsb25nIHRoZXNlIGxpbmVzOg0KPiA+IA0KPiA+IENyZWF0ZSBhIGtl
+cm5lbCB0aHJlYWQgdGhhdCBydW5zIHBlcmlvZGljYWxseSAoZS5nLiBldmVyeSBzZWNvbmQpDQo+
+ID4gdG8gY2hlY2sgaWYgdGhlIHRlbXBlcmF0dXJlIGlzIGFib3ZlIDEwMMKwQy4NCj4gPiAtIElm
+IG5vdCwgZG8gbm90aGluZw0KPiA+IC0gSWYgeWVzLCBzb21laG93IHByZXZlbnQgdGhlIENQVSBm
+cm9tIHVzaW5nIHRoZSBoaWdoZXN0IGZyZXF1ZW5jaWVzDQo+ID4gZGVmaW5lZCBpbiBjcHVmcmVx
+J3MgZnJlcSB0YWJsZQ0KPiA+IChUaGV5IGFyZSAxMDAwLCA1MDAsIDMzMywgMjAwLCAxMDAgTUh6
+KQ0KPiA+IA0KPiA+IElzIHRoYXQgYSBzZW5zaWJsZSBhcHByb2FjaD8NCj4gPiBJcyB0aGVyZSBh
+IHdheSB0byBpbXBsZW1lbnQgdGhpcyB1c2luZyB0aGUgdGhlcm1hbCBmcmFtZXdvcms/DQo+ID4g
+DQo+ID4gT3IgYW0gSSBsb29raW5nIGF0IHRoaXMgd3JvbmcsIGFuZCB0aGluZ3Mgc2hvdWxkIGJl
+IGRvbmUgYQ0KPiA+IGRpZmZlcmVudCB3YXk/IChJJ20gdXNpbmcgMy4xNCBieSB0aGUgd2F5LikN
+Cj4gPiANCj4gPiBJIHN1cHBvc2UgSSBjb3VsZCBwZXJmb3JtIHNvbWUga2luZCBvZiBiaW5hcnkg
+c2VhcmNoIHRvIHpvb20gaW4NCj4gPiBvbiB0aGUgY3VycmVudCB0aHJlc2hvbGQgKGFsdGhvdWdo
+IGl0IG1pZ2h0IGNoYW5nZSBkdXJpbmcgdGhlDQo+ID4gbWVhc3VyZW1lbnRzLCBzbyBJJ2QgcmF0
+aGVyIG5vdCBnbyB0aGVyZS4pDQo+IA0KPiBJJ20gYXdhcmUgdGhhdCBJIHBvc3RlZCBtYW55IHF1
+ZXN0aW9ucy4gSSdkIGJlIGdyYXRlZnVsIGlmIHNvbWVvbmUNCj4gd291bGQgYW5zd2VyIGV2ZW4g
+YSB0aW55IHN1YnNldC4gVGhhdCB3b3VsZCBnZXQgdGhlIGJhbGwgcm9sbGluZy4NCj4gDQo+IElm
+IEkgdW5kZXJzdGFuZCBjb3JyZWN0bHksIGlmIEkgd2FudCB0byB1c2UgdGhlIENQVSB0aHJvdHRs
+aW5nDQo+IGZyYW1ld29yaywgSSBuZWVkIHRvIGRlZmluZSBhICJ0aGVybWFsIHpvbmUgZGV2aWNl
+IiBhbmQgYQ0KPiAiY29vbGluZyBkZXZpY2UiLiBBRkFJVSwgdGhlIGNvb2xpbmcgZGV2aWNlIGlz
+IHRha2VuIGNhcmUgb2YNCj4gYnkgY3B1X2Nvb2xpbmcuYw0KPiANCj4gICBjcHVmcmVxX2Nvb2xp
+bmdfcmVnaXN0ZXIoY3B1X3ByZXNlbnRfbWFzayk7DQoNCkNvcnJlY3QNCg0KPiBNeSB0ZW1wZXJh
+dHVyZSBzZW5zb3Igd291bGQgYmUgdGhlIHRoZXJtYWwgem9uZSBkZXZpY2U/DQo+IEhvdyBkbyBJ
+IHRpZSB0aGUgdHdvIGRldmljZXMgdG9nZXRoZXI/DQoNCllvdXIgdGVtcGVyYXR1cmUgc2Vuc29y
+IHdvdWxkIGJlIHRoZSBpbnB1dCB0byB0aGUgdGhlcm1hbCB6b25lDQpkZXZpY2UuICBZb3UgcmVn
+aXN0ZXIgaXQgd2l0aCB0aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyKCkuICBTZWUNCkRvY3Vt
+ZW50YXRpb24vdGhlcm1hbC9zeXNmcy1hcGkudHh0IC4gIFlvdXIgdGhlcm1hbCBzZW5zb3INCmRv
+ZXNuJ3QgYWN0dWFsbHkgcmVwb3J0IHRlbXBlcmF0dXJlIGJ1dCB0aGUgdGhlcm1hbCBmcmFtZXdv
+cmsgZXhwZWN0cw0KYSB0ZW1wZXJhdHVyZSwgc28geW91ciB0aGVybWFsIHpvbmUncyBnZXRfdGVt
+cCgpIGZ1bmN0aW9uIHNob3VsZA0KcmVwb3J0IGEgZmFrZSB0ZW1wZXJhdHVyZS4gIEZvciBleGFt
+cGxlLCBpZiB5b3UndmUgY29uZmlndXJlIHlvdXINCnNlbnNvciBmb3IgNTBDLCB0aGVuIHlvdSBj
+b3VsZCByZXBvcnQgNDVDIGlmIHRoZSBzZW5zb3IgcmVhZHMgYXMgMCBhbmQNCjUwQyBpZiB0aGUg
+c2Vuc29yIHJlYWRzIGFzIDEuICBJdCdzIGEgaGFjaywgYnV0IGl0IHNob3VsZCB3b3JrLiAgQmVh
+cg0KaW4gbWluZCB0aGF0IGdldF90ZW1wKCkgc2hvdWxkIHJlcG9ydCBpbiBtaWxsaWNlbHNpdXMu
+DQoNCj4gSXMgdGhhdCB3aGVyZSBhIHRoZXJtYWwgZ292ZXJub3IgY29tZXMgaW4gcGxheT8NCg0K
+QmVjYXVzZSB5b3Ugd2FudCBvbi9vZmYgYmVoYXZpb3IsIHRoZSBiYW5nYmFuZyBnb3Zlcm5vciBp
+cyB0aGUNCnNpbXBsZXN0IHRvIHVzZSBhbmQgc2hvdWxkIGRvIHRoZSB3b3JrLiAgWW91IGNhbiBj
+aG9vc2UgYXMgdGhlIGRlZmF1bHQNCmluIHlvdXIga2VybmVsIGNvbmZpZ3VyYXRpb24gb3IgeW91
+IGNhbiBjaG9vc2UgaXQgYnkgcGFzc2luZyBpdCBhcw0KcGFydCBvZiB0aGUgdHpwIHRoYXQgeW91
+IHBhc3MgdG8gdGhlcm1hbF96b25lX2RldmljZV9yZWdpc3RlcigpDQoNClB1dCBhIHRyaXAgcG9p
+bnQgYXQgdGhlIHRlbXBlcmF0dXJlIHlvdSd2ZSBzZXQgdXAgeW91ciBzZW5zb3IgdG8gYW5kDQpi
+aW5kIHRoZSBjcHUgY29vbGluZyBkZXZpY2UgdG8gaXQuDQoNCkhvcGUgdGhpcyBoZWxwcywNCkph
+dmkNCg==
 
