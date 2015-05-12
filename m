@@ -1,109 +1,244 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: Using a temperature sensor with 1-bit output for CPU throttling
-Date: Wed, 29 Apr 2015 17:36:05 +0100
-Message-ID: <20150429163605.GM3054@e104805>
-References: <553F6E85.5090402@free.fr> <5540E0E1.6080504@free.fr>
+From: Mason <slash.tmp@free.fr>
+Subject: schedule_timeout sleeps too long after dividing CPU frequency
+Date: Tue, 12 May 2015 16:32:47 +0200
+Message-ID: <55520F0F.5010906@free.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <5540E0E1.6080504@free.fr>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed;
+ boundary="------------080704020907030400010002"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Mason <slash.tmp@free.fr>
-Cc: Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Amit Daniel <amit.kachhap@linaro.org>, Andrew Lunn <andrew@lunn.ch>, Radhesh Fadnis <radhesh.fadnis@ti.com>
+To: Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-T24gV2VkLCBBcHIgMjksIDIwMTUgYXQgMDI6NDc6MTNQTSArMDEwMCwgTWFzb24gd3JvdGU6DQo+
-IE9uIDI4LzA0LzIwMTUgMTM6MjcsIE1hc29uIHdyb3RlOg0KPiANCj4gPiBUaGUgU29DIEknbSB3
-b3JraW5nIG9uIHByb3ZpZGVzIGEgdGVtcGVyYXR1cmUgc2Vuc29yIChOWFApIGluIHRoZSBDUFUg
-YmxvY2suDQo+ID4gVGhlIHNlbnNvciBzZWVtcyB0byBiZSB2ZXJ5IHByaW1pdGl2ZSwgc28gSSB3
-YW50ZWQgdG8gYXNrIGV4cGVyaWVuY2VkIHBlb3BsZQ0KPiA+IHdoYXQgd291bGQgYmUgdGhlIGJl
-c3Qgd2F5IHRvIHVzZSBpdCBmcm9tIExpbnV4Lg0KPiA+IA0KPiA+IEdlbmVyYWwgRGVzY3JpcHRp
-b24NCj4gPiAiVGhlIHNlbnNvciBnZW5lcmF0ZXMgYW4gb3V0cHV0IHNpZ25hbCB0aGF0IGluZGlj
-YXRlcyBpZiB0aGUgZGllIHRlbXBlcmF0dXJlDQo+ID4gZXhjZWVkcyBhIHByb2dyYW1tYWJsZSB0
-aHJlc2hvbGQuIFRoaXMgbWFrZXMgaXQgcGFydGljdWxhcmx5IHN1aXRhYmxlIGZvcg0KPiA+IGRl
-dGVjdGluZyBvdmVyaGVhdGluZy4iDQo+ID4gDQo+ID4gU28gaXQgc2VlbXMgdGhhdCB0aGUgb3Jp
-Z2luYWwgcHVycG9zZSBvZiB0aGlzIHNlbnNvciB3YXMgdG8gcGVyaW9kaWNhbGx5DQo+ID4gY2hl
-Y2sgdGhhdCB0aGUgdGVtcGVyYXR1cmUgaGFzIG5vdCBleGNlZWRlZCBhIGdpdmVuIHRocmVzaG9s
-ZC4NCj4gPiANCj4gPiAtIElzIHRoZSBDUFUgdGVtcCBoaWdoZXIgdGhhbiAxMDDCsEMgPw0KPiA+
-IC0gTm8uDQo+ID4gLSBPSy4gQnVzaW5lc3MgYXMgdXN1YWwuDQo+ID4gDQo+ID4gKDEgc2Vjb25k
-IGxhdGVyKQ0KPiA+IC0gSXMgdGhlIENQVSB0ZW1wIGhpZ2hlciB0aGFuIDEwMMKwQyA/DQo+ID4g
-LSBZZXMuDQo+ID4gLSBVaC1vaCEgSSBuZWVkIHRvIGRvIHNvbWV0aGluZyBhYm91dCBpdC4NCj4g
-PiANCj4gPiANCj4gPiBCYXNpYyBGdW5jdGlvbnMNCj4gPiAiVGhlIHRlbXAgc2Vuc29yIHVzZXMg
-YSBiYW5kZ2FwIHR5cGUgb2YgY2lyY3VpdCB0byBjb21wYXJlIGEgdm9sdGFnZSB3aGljaA0KPiA+
-IGhhcyBhIG5lZ2F0aXZlIHRlbXBlcmF0dXJlIGNvZWZmaWNpZW50IHdpdGggYSB2b2x0YWdlIHRo
-YXQgaXMgcHJvcG9ydGlvbmFsDQo+ID4gdG8gYWJzb2x1dGUgdGVtcGVyYXR1cmUuIEEgcmVzaXN0
-b3IgYmFuayBhbGxvd3MgNDAgZGlmZmVyZW50IHRlbXBlcmF0dXJlDQo+ID4gdGhyZXNob2xkcyB0
-byBiZSBzZWxlY3RlZCBhbmQgdGhlIGxvZ2ljIG91dHB1dCAnb3V0X3RlbXBlcmF0dXJlJyB3aWxs
-IHRoZW4NCj4gPiBpbmRpY2F0ZSB3aGV0aGVyIHRoZSBhY3R1YWwgZGllIHRlbXBlcmF0dXJlIGxp
-ZXMgYWJvdmUgb3IgYmVsb3cgdGhlIHNlbGVjdGVkDQo+ID4gdGhyZXNob2xkLiINCj4gPiANCj4g
-PiBUaGUgYXZhaWxhYmxlIHRocmVzaG9sZHMgc2VlbSB0byBiZSBjaG9zZW4gc29tZXdoYXQgYXJi
-aXRyYXJpbHk6DQo+ID4gDQo+ID4gICAtNDUuMSwgLTM5LjcsIC0zMy43LCAtMjkuNCwgLTI0LjQs
-IC0yMC40LCAtMTUuNCwgLTEwLjEsDQo+ID4gICAtNi40LCAtMS40LCAzLjYsIDcuNiwgMTIuOSwg
-MTYuNiwgMjAuNiwgMjUuNiwgMzAuOSwNCj4gPiAgIDM0LjksIDM4LjYsIDQzLjksIDQ4LjksIDUy
-LjksIDU3LjksIDYxLjksIDY2LjksIDcwLjksDQo+ID4gICA3Ni4zLCA4MS4zLCA4NS4zLCA5MC4z
-LCA5NS4zLCA5OC45LCAxMDIuOSwgMTA4LjMsIDExMS45LA0KPiA+ICAgMTE3LjMsIDEyMi4zLCAx
-MjYuMywgMTMxLjMsIDEzNS4zLCAxMzkuMw0KPiA+IA0KPiA+IFRoZSBzcGFjaW5nIGJldHdlZW4g
-dmFsdWVzIHNlZW1zIGFyYml0cmFyeSBhbHNvLg0KPiA+IChJcyB0aGVyZSBhbiB1bmRlcmx5aW5n
-IHBoeXNpY2FsIGV4cGxhbmF0aW9uPykNCj4gPiANCj4gPiBJJ20gbm90IHN1cmUgdGhhdCB0aGVy
-ZSBpcyBtdWNoIHBvaW50IGluIHRlc3RpbmcgZm9yIHRlbXBlcmF0dXJlcyBsb3dlcg0KPiA+IHRo
-YW4gNTDCsEMgPyAoSSdtIHRvbGQgdGhhdCB0aGUgU29DIGNhbiByZWxpYWJseSBmdW5jdGlvbiB1
-cCB0byAxMjXCsEMuKQ0KPiA+IA0KPiA+IERvIGhpZ2hlciB0ZW1wZXJhdHVyZXMgc2hvcnRlbiB0
-aGUgbGlmZXNwYW4gb2YgYSBjb21wb25lbnQ/DQo+ID4gSW4gb3RoZXIgd29yZHMsIHdvdWxkIGEg
-Q1BVIHJ1bm5pbmcgMjQvNyBhdCAxMDDCsEMgImJyZWFrIiBzb29uZXINCj4gPiB0aGFuIG9uZSBy
-dW5uaW5nIDI0LzcgYXQgNTDCsEMgPw0KPiA+IA0KPiA+IA0KPiA+IENoYXJhY3RlcmlzdGljcw0K
-PiA+IA0KPiA+IFN5bWJvbCAgICAgIFBhcmFtZXRlciAgICAgICAgICAgICBNaW4gIFR5cCAgTWF4
-ICBVbml0DQo+ID4gDQo+ID4gKE9wZXJhdGluZyBjb25kaXRpb25zKQ0KPiA+IFRqdW5jICAgICAg
-SnVuY3Rpb24gdGVtcGVyYXR1cmUgICAtNDAgICAyNSAgIDEyNSAgwrBDDQo+ID4gVmRkICAgICAg
-ICBTdXBwbHkgdm9sdGFnZSAgICAgICAgIDEuMCAgMS4xICAxLjI2ICAgVg0KPiA+IA0KPiA+IChO
-b3JtYWwgb3BlcmF0aW5nIG1vZGUpDQo+ID4gSWRkICAgICAgICAgU3VwcGx5IGN1cnJlbnQgICAg
-ICAgICAgICAgIDUwICAgIDYwICDOvEENCj4gPiBWYmFuZGdhcHJlZiBSZWYgb3V0cHV0IHZvbHRh
-Z2UgICAwLjcyICAwLjggIDAuODggICBWDQo+ID4g4oiGb3V0dGVtcCAgICBBYnNvbHV0ZSBUZW1w
-ICAgICAgICAgICAgICAgwrEyICAgwrExMCAgwrBDDQo+ID4gICAgICAgICAgICAgdGhyZXNob2xk
-IGVycm9yDQo+ID4gVF9yZXMgICAgICAgVGVtcCByZXNvbHV0aW9uICAgICAgICAzICAgIDQuNSAg
-ICA3ICDCsEMNCj4gPiANCj4gPiANCj4gPiBHaXZlbiB0aGUgc2VtYW50aWNzIG9mIHRoZSB0ZW1w
-ZXJhdHVyZSBzZW5zb3IgaGFyZHdhcmUgYmxvY2ssIEkgd2FzDQo+ID4gdGVtcHRlZCB0byBpbXBs
-ZW1lbnQgc29tZXRoaW5nIGFsb25nIHRoZXNlIGxpbmVzOg0KPiA+IA0KPiA+IENyZWF0ZSBhIGtl
-cm5lbCB0aHJlYWQgdGhhdCBydW5zIHBlcmlvZGljYWxseSAoZS5nLiBldmVyeSBzZWNvbmQpDQo+
-ID4gdG8gY2hlY2sgaWYgdGhlIHRlbXBlcmF0dXJlIGlzIGFib3ZlIDEwMMKwQy4NCj4gPiAtIElm
-IG5vdCwgZG8gbm90aGluZw0KPiA+IC0gSWYgeWVzLCBzb21laG93IHByZXZlbnQgdGhlIENQVSBm
-cm9tIHVzaW5nIHRoZSBoaWdoZXN0IGZyZXF1ZW5jaWVzDQo+ID4gZGVmaW5lZCBpbiBjcHVmcmVx
-J3MgZnJlcSB0YWJsZQ0KPiA+IChUaGV5IGFyZSAxMDAwLCA1MDAsIDMzMywgMjAwLCAxMDAgTUh6
-KQ0KPiA+IA0KPiA+IElzIHRoYXQgYSBzZW5zaWJsZSBhcHByb2FjaD8NCj4gPiBJcyB0aGVyZSBh
-IHdheSB0byBpbXBsZW1lbnQgdGhpcyB1c2luZyB0aGUgdGhlcm1hbCBmcmFtZXdvcms/DQo+ID4g
-DQo+ID4gT3IgYW0gSSBsb29raW5nIGF0IHRoaXMgd3JvbmcsIGFuZCB0aGluZ3Mgc2hvdWxkIGJl
-IGRvbmUgYQ0KPiA+IGRpZmZlcmVudCB3YXk/IChJJ20gdXNpbmcgMy4xNCBieSB0aGUgd2F5LikN
-Cj4gPiANCj4gPiBJIHN1cHBvc2UgSSBjb3VsZCBwZXJmb3JtIHNvbWUga2luZCBvZiBiaW5hcnkg
-c2VhcmNoIHRvIHpvb20gaW4NCj4gPiBvbiB0aGUgY3VycmVudCB0aHJlc2hvbGQgKGFsdGhvdWdo
-IGl0IG1pZ2h0IGNoYW5nZSBkdXJpbmcgdGhlDQo+ID4gbWVhc3VyZW1lbnRzLCBzbyBJJ2QgcmF0
-aGVyIG5vdCBnbyB0aGVyZS4pDQo+IA0KPiBJJ20gYXdhcmUgdGhhdCBJIHBvc3RlZCBtYW55IHF1
-ZXN0aW9ucy4gSSdkIGJlIGdyYXRlZnVsIGlmIHNvbWVvbmUNCj4gd291bGQgYW5zd2VyIGV2ZW4g
-YSB0aW55IHN1YnNldC4gVGhhdCB3b3VsZCBnZXQgdGhlIGJhbGwgcm9sbGluZy4NCj4gDQo+IElm
-IEkgdW5kZXJzdGFuZCBjb3JyZWN0bHksIGlmIEkgd2FudCB0byB1c2UgdGhlIENQVSB0aHJvdHRs
-aW5nDQo+IGZyYW1ld29yaywgSSBuZWVkIHRvIGRlZmluZSBhICJ0aGVybWFsIHpvbmUgZGV2aWNl
-IiBhbmQgYQ0KPiAiY29vbGluZyBkZXZpY2UiLiBBRkFJVSwgdGhlIGNvb2xpbmcgZGV2aWNlIGlz
-IHRha2VuIGNhcmUgb2YNCj4gYnkgY3B1X2Nvb2xpbmcuYw0KPiANCj4gICBjcHVmcmVxX2Nvb2xp
-bmdfcmVnaXN0ZXIoY3B1X3ByZXNlbnRfbWFzayk7DQoNCkNvcnJlY3QNCg0KPiBNeSB0ZW1wZXJh
-dHVyZSBzZW5zb3Igd291bGQgYmUgdGhlIHRoZXJtYWwgem9uZSBkZXZpY2U/DQo+IEhvdyBkbyBJ
-IHRpZSB0aGUgdHdvIGRldmljZXMgdG9nZXRoZXI/DQoNCllvdXIgdGVtcGVyYXR1cmUgc2Vuc29y
-IHdvdWxkIGJlIHRoZSBpbnB1dCB0byB0aGUgdGhlcm1hbCB6b25lDQpkZXZpY2UuICBZb3UgcmVn
-aXN0ZXIgaXQgd2l0aCB0aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyKCkuICBTZWUNCkRvY3Vt
-ZW50YXRpb24vdGhlcm1hbC9zeXNmcy1hcGkudHh0IC4gIFlvdXIgdGhlcm1hbCBzZW5zb3INCmRv
-ZXNuJ3QgYWN0dWFsbHkgcmVwb3J0IHRlbXBlcmF0dXJlIGJ1dCB0aGUgdGhlcm1hbCBmcmFtZXdv
-cmsgZXhwZWN0cw0KYSB0ZW1wZXJhdHVyZSwgc28geW91ciB0aGVybWFsIHpvbmUncyBnZXRfdGVt
-cCgpIGZ1bmN0aW9uIHNob3VsZA0KcmVwb3J0IGEgZmFrZSB0ZW1wZXJhdHVyZS4gIEZvciBleGFt
-cGxlLCBpZiB5b3UndmUgY29uZmlndXJlIHlvdXINCnNlbnNvciBmb3IgNTBDLCB0aGVuIHlvdSBj
-b3VsZCByZXBvcnQgNDVDIGlmIHRoZSBzZW5zb3IgcmVhZHMgYXMgMCBhbmQNCjUwQyBpZiB0aGUg
-c2Vuc29yIHJlYWRzIGFzIDEuICBJdCdzIGEgaGFjaywgYnV0IGl0IHNob3VsZCB3b3JrLiAgQmVh
-cg0KaW4gbWluZCB0aGF0IGdldF90ZW1wKCkgc2hvdWxkIHJlcG9ydCBpbiBtaWxsaWNlbHNpdXMu
-DQoNCj4gSXMgdGhhdCB3aGVyZSBhIHRoZXJtYWwgZ292ZXJub3IgY29tZXMgaW4gcGxheT8NCg0K
-QmVjYXVzZSB5b3Ugd2FudCBvbi9vZmYgYmVoYXZpb3IsIHRoZSBiYW5nYmFuZyBnb3Zlcm5vciBp
-cyB0aGUNCnNpbXBsZXN0IHRvIHVzZSBhbmQgc2hvdWxkIGRvIHRoZSB3b3JrLiAgWW91IGNhbiBj
-aG9vc2UgYXMgdGhlIGRlZmF1bHQNCmluIHlvdXIga2VybmVsIGNvbmZpZ3VyYXRpb24gb3IgeW91
-IGNhbiBjaG9vc2UgaXQgYnkgcGFzc2luZyBpdCBhcw0KcGFydCBvZiB0aGUgdHpwIHRoYXQgeW91
-IHBhc3MgdG8gdGhlcm1hbF96b25lX2RldmljZV9yZWdpc3RlcigpDQoNClB1dCBhIHRyaXAgcG9p
-bnQgYXQgdGhlIHRlbXBlcmF0dXJlIHlvdSd2ZSBzZXQgdXAgeW91ciBzZW5zb3IgdG8gYW5kDQpi
-aW5kIHRoZSBjcHUgY29vbGluZyBkZXZpY2UgdG8gaXQuDQoNCkhvcGUgdGhpcyBoZWxwcywNCkph
-dmkNCg==
+This is a multi-part message in MIME format.
+--------------080704020907030400010002
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
+Hello,
+
+I'm working on a Cortex A9 based platform.
+
+I have a basic clock tree, and a very basic cpufreq driver using
+mostly generic driver glue:
+
+static struct cpufreq_driver tangox_cpufreq_driver = {
+	.name		= "tangox-cpufreq",
+	.init		= tangox_cpu_init,
+	.verify		= cpufreq_generic_frequency_table_verify,
+	.target_index	= tangox_target,
+	.get		= cpufreq_generic_get,
+	.exit		= cpufreq_generic_exit,
+	.attr		= cpufreq_generic_attr,
+};
+
+My target_index function is trivial:
+
+static int tangox_target(struct cpufreq_policy *policy, unsigned int idx)
+{
+	return clk_set_rate(policy->clk, freq_table[idx].frequency * 1000);
+}
+
+I was testing an unrelated driver at low frequencies, with the nominal
+frequency (999 MHz) divided by 54 (i.e. freq = 18.5 MHz) and I noticed
+that when the driver calls
+
+    schedule_timeout(HZ);
+
+the thread sleeps 54 seconds instead of 1.
+
+[ 1107.827279] Sleep for 300 jiffies.
+[ 1161.838513] Done sleeping.
+
+(I have HZ set to 300)
+
+I enabled DEBUG in the generic cpufreq driver to see what happens
+when I request a frequency change:
+
+# cd /sys/devices/system/cpu/cpu0/cpufreq
+# cat scaling_governor
+performance
+# cat scaling_available_frequencies
+999000 499500 333000 199800 111000 18500
+# echo 18500 > scaling_max_freq
+[   19.597257] cpufreq: setting new policy for CPU 0: 18500 - 18500 kHz
+[   19.604017] cpufreq: new min and max freqs are 18500 - 18500 kHz
+[   19.610345] cpufreq: governor: change or update limits
+[   19.615596] cpufreq: __cpufreq_governor for CPU 0, event 3
+[   19.621186] cpufreq: target for CPU 0: 18500 kHz, relation 1, requested 18500 kHz
+[   19.628783] cpufreq: __cpufreq_driver_target: cpu: 0, oldfreq: 999000, new freq: 18500
+[   19.636818] cpufreq: notification 0 of frequency transition to 18500 kHz
+[   19.643625] cpufreq: notification 0 of frequency transition to 18500 kHz
+[   19.650454] NEW RATE=9250000
+[   19.653644] NEW RATE=9250000
+[   19.657091] cpufreq: notification 1 of frequency transition to 18500 kHz
+[   19.664176] cpufreq: FREQ: 18500 - CPU: 0
+[   19.668412] cpufreq: notification 1 of frequency transition to 18500 kHz
+[   19.675648] cpufreq: FREQ: 18500 - CPU: 1
+
+The "NEW RATE" traces are ones I added in smp_twd.c:twd_update_frequency()
+(my clockevent source) to check whether the CPU frequency change propagated
+to smp_twd.
+
+I must have made an obvious mistake. Could someone point it out to me?
+(I have attached the output of /proc/timer_list to this message)
+
+Looking more closely at schedule_timeout(), I suppose the work happens
+in __mod_timer()... Hmm, that one is over my head.
+
+What am I missing?
+
+Regards.
+
+--------------080704020907030400010002
+Content-Type: text/plain; charset=UTF-8;
+ name="timer_list"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="timer_list"
+
+Timer List Version: v0.7
+HRTIMER_MAX_CLOCK_BASES: 4
+now at 1996236245543 nsecs
+
+cpu: 0
+ clock 0:
+  .base:       e7ae51e8
+  .index:      0
+  .resolution: 3333333 nsecs
+  .get_time:   ktime_get
+  .offset:     0 nsecs
+active timers:
+ #0: sched_clock_timer, sched_clock_poll, S:01
+ # expires at 2087831315985-2087831315985 nsecs [in 91595070442 to 91595070442 nsecs]
+ clock 1:
+  .base:       e7ae5220
+  .index:      1
+  .resolution: 3333333 nsecs
+  .get_time:   ktime_get_real
+  .offset:     0 nsecs
+active timers:
+ clock 2:
+  .base:       e7ae5258
+  .index:      2
+  .resolution: 3333333 nsecs
+  .get_time:   ktime_get_boottime
+  .offset:     0 nsecs
+active timers:
+ clock 3:
+  .base:       e7ae5290
+  .index:      3
+  .resolution: 3333333 nsecs
+  .get_time:   ktime_get_clocktai
+  .offset:     0 nsecs
+active timers:
+  .expires_next   : 9223372036854775807 nsecs
+  .hres_active    : 0
+  .nr_events      : 0
+  .nr_retries     : 0
+  .nr_hangs       : 0
+  .max_hang_time  : 0 nsecs
+  .nohz_mode      : 0
+  .last_tick      : 0 nsecs
+  .tick_stopped   : 0
+  .idle_jiffies   : 0
+  .idle_calls     : 0
+  .idle_sleeps    : 0
+  .idle_entrytime : 1996229420769 nsecs
+  .idle_waketime  : 0 nsecs
+  .idle_exittime  : 0 nsecs
+  .idle_sleeptime : 1985388003747 nsecs
+  .iowait_sleeptime: 10995516 nsecs
+  .last_jiffies   : 0
+  .next_jiffies   : 0
+  .idle_expires   : 0 nsecs
+jiffies: 4294894041
+
+cpu: 1
+ clock 0:
+  .base:       e7aed1e8
+  .index:      0
+  .resolution: 3333333 nsecs
+  .get_time:   ktime_get
+  .offset:     0 nsecs
+active timers:
+ clock 1:
+  .base:       e7aed220
+  .index:      1
+  .resolution: 3333333 nsecs
+  .get_time:   ktime_get_real
+  .offset:     0 nsecs
+active timers:
+ clock 2:
+  .base:       e7aed258
+  .index:      2
+  .resolution: 3333333 nsecs
+  .get_time:   ktime_get_boottime
+  .offset:     0 nsecs
+active timers:
+ clock 3:
+  .base:       e7aed290
+  .index:      3
+  .resolution: 3333333 nsecs
+  .get_time:   ktime_get_clocktai
+  .offset:     0 nsecs
+active timers:
+  .expires_next   : 9223372036854775807 nsecs
+  .hres_active    : 0
+  .nr_events      : 0
+  .nr_retries     : 0
+  .nr_hangs       : 0
+  .max_hang_time  : 0 nsecs
+  .nohz_mode      : 0
+  .last_tick      : 0 nsecs
+  .tick_stopped   : 0
+  .idle_jiffies   : 0
+  .idle_calls     : 0
+  .idle_sleeps    : 0
+  .idle_entrytime : 1996231929568 nsecs
+  .idle_waketime  : 0 nsecs
+  .idle_exittime  : 0 nsecs
+  .idle_sleeptime : 1992784761637 nsecs
+  .iowait_sleeptime: 40375788 nsecs
+  .last_jiffies   : 0
+  .next_jiffies   : 0
+  .idle_expires   : 0 nsecs
+jiffies: 4294894041
+
+Tick Device: mode:     0
+Broadcast device
+Clock Event Device: <NULL>
+tick_broadcast_mask: 00000000
+tick_broadcast_oneshot_mask: 00000000
+
+Tick Device: mode:     0
+Per CPU device: 0
+Clock Event Device: local_timer
+ max_delta_ns:   464320782665
+ min_delta_ns:   1622
+ mult:           19864224
+ shift:          31
+ mode:           2
+ next_event:     9223372036854775807 nsecs
+ set_next_event: twd_set_next_event
+ set_mode:       twd_set_mode
+ event_handler:  tick_handle_periodic
+ retries:        0
+
+Tick Device: mode:     0
+Per CPU device: 1
+Clock Event Device: local_timer
+ max_delta_ns:   464320782665
+ min_delta_ns:   1622
+ mult:           19864224
+ shift:          31
+ mode:           2
+ next_event:     9223372036854775807 nsecs
+ set_next_event: twd_set_next_event
+ set_mode:       twd_set_mode
+ event_handler:  tick_handle_periodic
+ retries:        0
+
+
+--------------080704020907030400010002--
