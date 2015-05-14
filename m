@@ -1,56 +1,160 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
-Date: Thu, 14 May 2015 07:43:28 +0530
-Message-ID: <CAOh2x==aCLxCWX9K57hOFVEP1eLo_OYZPe0YvbFvpkXcoSp_hQ@mail.gmail.com>
-References: <55520F0F.5010906@free.fr>
-	<CAKohpo=eMA6L9=jK=bAnbFuDxcdtpQNub0WFnSy6MOqB3jOdjA@mail.gmail.com>
-	<555218C7.5050602@free.fr>
-	<20150512155004.GP2067@n2100.arm.linux.org.uk>
-	<555380F8.5050306@free.fr>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: Using a temperature sensor with 1-bit output for CPU throttling
+Date: Thu, 14 May 2015 10:25:35 +0100
+Message-ID: <9hhsiazy0hc.fsf@e105922-lin.cambridge.arm.com>
+References: <553F6E85.5090402@free.fr> <5540E0E1.6080504@free.fr>
+	<5553051E.7080700@free.fr>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=+jY15MNX0TTF8Nya2b7oihKNf4gh5eFea2xqLYN47lA=;
-        b=W7fgGRWBeOIr5VrFfLLIe1vIx7tMxqEez4JEUrksI91ncnpsfosnoKqIvvsLQeB4ZP
-         X2M9OKnCVMK9nPScl2h3mm3ZZyeF7Gdjtk0BDWfL9mFew5bOTMS5cwNmxqwxD4FGGdUc
-         DWU+gCmXBw2ZT6UWXw7lcg+9Ij+spst5KlTabkQtCUHE5Y7ROhVmBz8SF+bmFNXiScwi
-         f79fFuXpO3+TQepx9XG7ohlUEaQTB0fEI5+FV+X1G48lt4PYzQrLJUh4qi8cG9v1sjr/
-         uwyMRYyy61Ej67X9GQ7utD2JbpJJt/nhHMm8CnqullV3a2pQ4F23Ow0AsfDrIMr/zZbB
-         rkXQ==
-In-Reply-To: <555380F8.5050306@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <5553051E.7080700@free.fr> (Mason's message of "Wed, 13 May 2015
+	10:02:38 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
 To: Mason <slash.tmp@free.fr>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Amit Kachhap <amit.kachhap@gmail.com>
 
-On Wed, May 13, 2015 at 10:21 PM, Mason <slash.tmp@free.fr> wrote:
-> $ git diff v3.14.41 HEAD >tango.patch && xz tango.patch
->
-> I don't understand the IRQ-related part yet
-> ( arch/arm/mach-tangox/irq.c and drivers/irqchip/irq-gic.c )
->
-> If anyone spots the problem, that would make my day.
->
-> I tested with a loadable module whose init function is
->
-> static int __init ts_init(void)
-> {
->         long res;
->         printk("ABOUT TO SLEEP\n");
->         set_current_state(TASK_INTERRUPTIBLE);
->         res = schedule_timeout(HZ);
->         printk("WAKE UP res=%ld\n", res);
->         return 0;
-> }
->
-> Loading the module, with cpufreq divided by 9, prints:
-> [ 1738.962982] ABOUT TO SLEEP
-> [ 1747.956191] WAKE UP res=0
+Mason <slash.tmp@free.fr> writes:
 
-I hope you are also matching this time with a physical watch,
-to make sure 38->47 is really 9 seconds :)
+> On 29/04/2015 15:47, Mason wrote:
+>
+>> On 28/04/2015 13:27, Mason wrote:
+>>=20
+>>> The SoC I'm working on provides a temperature sensor (NXP) in the C=
+PU block.
+>>> The sensor seems to be very primitive, so I wanted to ask experienc=
+ed people
+>>> what would be the best way to use it from Linux.
+>>>
+>>> General Description
+>>> "The sensor generates an output signal that indicates if the die te=
+mperature
+>>> exceeds a programmable threshold. This makes it particularly suitab=
+le for
+>>> detecting overheating."
+>>>
+>>> So it seems that the original purpose of this sensor was to periodi=
+cally
+>>> check that the temperature has not exceeded a given threshold.
+>>>
+>>> - Is the CPU temp higher than 100=C2=B0C ?
+>>> - No.
+>>> - OK. Business as usual.
+>>>
+>>> (1 second later)
+>>> - Is the CPU temp higher than 100=C2=B0C ?
+>>> - Yes.
+>>> - Uh-oh! I need to do something about it.
+>>>
+>>>
+>>> Basic Functions
+>>> "The temp sensor uses a bandgap type of circuit to compare a voltag=
+e which
+>>> has a negative temperature coefficient with a voltage that is propo=
+rtional
+>>> to absolute temperature. A resistor bank allows 40 different temper=
+ature
+>>> thresholds to be selected and the logic output 'out_temperature' wi=
+ll then
+>>> indicate whether the actual die temperature lies above or below the=
+ selected
+>>> threshold."
+>>>
+>>> The available thresholds seem to be chosen somewhat arbitrarily:
+>>>
+>>>   -45.1, -39.7, -33.7, -29.4, -24.4, -20.4, -15.4, -10.1,
+>>>   -6.4, -1.4, 3.6, 7.6, 12.9, 16.6, 20.6, 25.6, 30.9,
+>>>   34.9, 38.6, 43.9, 48.9, 52.9, 57.9, 61.9, 66.9, 70.9,
+>>>   76.3, 81.3, 85.3, 90.3, 95.3, 98.9, 102.9, 108.3, 111.9,
+>>>   117.3, 122.3, 126.3, 131.3, 135.3, 139.3
+>>>
+>>> The spacing between values seems arbitrary also.
+>>> (Is there an underlying physical explanation?)
+>>>
+>>> I'm not sure that there is much point in testing for temperatures l=
+ower
+>>> than 50=C2=B0C ? (I'm told that the SoC can reliably function up to=
+ 125=C2=B0C.)
+>>>
+>>> Do higher temperatures shorten the lifespan of a component?
+>>> In other words, would a CPU running 24/7 at 100=C2=B0C "break" soon=
+er
+>>> than one running 24/7 at 50=C2=B0C ?
+>>>
+>>>
+>>> Characteristics
+>>>
+>>> Symbol      Parameter             Min  Typ  Max  Unit
+>>>
+>>> (Operating conditions)
+>>> Tjunc      Junction temperature   -40   25   125  =C2=B0C
+>>> Vdd        Supply voltage         1.0  1.1  1.26   V
+>>>
+>>> (Normal operating mode)
+>>> Idd         Supply current              50    60  =CE=BCA
+>>> Vbandgapref Ref output voltage   0.72  0.8  0.88   V
+>>> =E2=88=86outtemp    Absolute Temp               =C2=B12   =C2=B110 =
+ =C2=B0C
+>>>             threshold error
+>>> T_res       Temp resolution        3    4.5    7  =C2=B0C
+>>>
+>>>
+>>> Given the semantics of the temperature sensor hardware block, I was
+>>> tempted to implement something along these lines:
+>>>
+>>> Create a kernel thread that runs periodically (e.g. every second)
+>>> to check if the temperature is above 100=C2=B0C.
+>>> - If not, do nothing
+>>> - If yes, somehow prevent the CPU from using the highest frequencie=
+s
+>>> defined in cpufreq's freq table
+>>> (They are 1000, 500, 333, 200, 100 MHz)
+>>>
+>>> Is that a sensible approach?
+>>> Is there a way to implement this using the thermal framework?
+>>>
+>>> Or am I looking at this wrong, and things should be done a
+>>> different way? (I'm using 3.14 by the way.)
+>>>
+>>> I suppose I could perform some kind of binary search to zoom in
+>>> on the current threshold (although it might change during the
+>>> measurements, so I'd rather not go there.)
+>>=20
+>> I'm aware that I posted many questions. I'd be grateful if someone
+>> would answer even a tiny subset. That would get the ball rolling.
+>>=20
+>> If I understand correctly, if I want to use the CPU throttling
+>> framework, I need to define a "thermal zone device" and a
+>> "cooling device". AFAIU, the cooling device is taken care of
+>> by cpu_cooling.c
+>>=20
+>>   cpufreq_cooling_register(cpu_present_mask);
+>>=20
+>> My temperature sensor would be the thermal zone device?
+>> How do I tie the two devices together?
+>> Is that where a thermal governor comes in play?
+>>=20
+>> I took a look at the dove_thermal driver, because it seems simple
+>> enough to understand (by me).
+>>=20
+>> Looking at ti-soc-thermal/omap?-thermal-data.c
+>> the lookup table looks familiar. Are they using the same kind
+>> of technology as my primitive sensor? (bandgap)
+>> I do note that the precision is much higher though.
+>
+> Hello everyone,
+>
+> Is there, perhaps, a better place to discuss these issues?
+> (IRC, web forum, other mailing list, Stack Overflow, ...)
+
+There is a ##thermal channel on freenode that might be a good place to
+discuss linux thermal framework related queries.
+
+>
+> Regards.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
