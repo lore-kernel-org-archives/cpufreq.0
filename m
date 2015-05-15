@@ -1,7 +1,7 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
-Date: Fri, 15 May 2015 10:37:31 +0530
-Message-ID: <20150515050731.GH6348@linux>
+Date: Fri, 15 May 2015 10:00:13 +0100
+Message-ID: <20150515090013.GE2067@n2100.arm.linux.org.uk>
 References: <555218C7.5050602@free.fr>
  <20150512155004.GP2067@n2100.arm.linux.org.uk>
  <555380F8.5050306@free.fr>
@@ -14,22 +14,24 @@ References: <555218C7.5050602@free.fr>
  <20150515041632.GG6348@linux>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=pandora-2014;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=tckXa+qZBCutPjQYN99PrPa7cGAabnSHNbFkZY5Uimk=;
+	b=p0YyNxFv6VIZSvah+qoyId583ExI5SJK+7f+7Pn/DnGH2f/Ogvw2ukSN6qwUhzyxP3kD5Wd9HT4v2l7oz3gIW3VVlzJzydTtKrARFRpO56pD4R5mDCO3bFCvs+fkt273hxz9HPOXMQbSeyb6bc3ohA3vVkAUZKB5o7HsZGX+9AY=;
 Content-Disposition: inline
 In-Reply-To: <20150515041632.GG6348@linux>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mason <slash.tmp@free.fr>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mason <slash.tmp@free.fr>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 
-On 15-05-15, 09:46, Viresh Kumar wrote:
-> The logic is this:
-> - Oneshot mode is only useful if we are going to support NO_HZ mode.
->   i.e. we can disable the clkevt device during CPU idle ..
+On Fri, May 15, 2015 at 09:46:32AM +0530, Viresh Kumar wrote:
+> What core does your platform has? Cortex A9? Doesn't that uses this
+> timer instead: drivers/clocksource/arm_arch_timer.c ?
 
-Minor correction. The last line talks about NO_HZ_IDLE instead. NO_HZ
-is about disabling to tick when not required.
+Cortex A9 doesn't always have the architected timer.
 
 -- 
-viresh
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
