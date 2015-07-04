@@ -1,45 +1,91 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: qoriq: optimize the CPU frequency switching time
-Date: Tue, 16 Jun 2015 01:46:16 +0200
-Message-ID: <1528534.foUvvcDHWW@vostro.rjw.lan>
-References: <1433399142-18324-1-git-send-email-Yuantian.Tang@freescale.com> <20150604063636.GH11325@linux>
+From: James Phillips <kernel.org@phillipsjk.ca>
+Subject: Clock speed Display bug when underclocked.
+Date: Sat, 4 Jul 2015 10:40:27 -0600
+Message-ID: <20150704164027.GE14248@workhorse.local>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="DIOMP1UsTsWJauNi"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20150604063636.GH11325@linux>
+Content-Disposition: inline
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Yuantian.Tang@freescale.com, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-
-On Thursday, June 04, 2015 12:06:36 PM Viresh Kumar wrote:
-> On 04-06-15, 14:25, Yuantian.Tang@freescale.com wrote:
-> > From: Tang Yuantian <Yuantian.Tang@freescale.com>
-> > 
-> > Each time the CPU switches its frequency, the clock nodes in
-> > DTS are walked through to find proper clock source. This is
-> > very time-consuming, for example, it is up to 500+ us on T4240.
-> > Besides, switching time varies from clock to clock.
-> > To optimize this, each input clock of CPU is buffered, so that
-> > it can be picked up instantly when needed.
-> > 
-> > Since for each CPU each input clock is stored in a pointer
-> > which takes 4 or 8 bytes memory and normally there are several
-> > input clocks per CPU, that will not take much memory as well.
-> 
-> Not sure how it got included in this form in the first place. :)
-> 
-> > Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> > ---
-> >  drivers/cpufreq/qoriq-cpufreq.c | 32 +++++++++++++++++++++-----------
-> >  1 file changed, 21 insertions(+), 11 deletions(-)
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Queued up for 4.2, thanks!
+To: cpufreq@vger.kernel.org
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--DIOMP1UsTsWJauNi
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello,
+
+I have my old pentium D under-clocked to 2.25GHz. However,
+both /proc/cpuinfo and cpufreq-info report the clock speed
+to be 2800MHz.
+
+I have confirmed by power measurement that the clockspeed is=20
+indeed 2.25GHz=B1250Mhz.
+While under clocking, I made a power consumption table. At
+full load, the power draw is 240W, wich was previously observed
+at 2.0 and 2.5GHz (temperature dependant)=20
+
+james@chester:~/Public$ uname -a
+Linux chester 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt11-1 (2015-05-24) x86_=
+64 GNU/Linux
+
+root@chester:~# cpufreq-info
+cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
+Report errors and bugs to cpufreq@vger.kernel.org, please.
+analyzing CPU 0:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0
+  CPUs which need to have their frequency coordinated by software: 0
+  maximum transition latency: 10.0 us.
+  hardware limits: 2.80 GHz - 3.00 GHz
+  available frequency steps: 3.00 GHz, 2.80 GHz
+  available cpufreq governors: userspace, conservative, powersave, ondemand=
+, performance
+  current policy: frequency should be within 2.80 GHz and 3.00 GHz.
+                  The governor "ondemand" may decide which speed to use
+                  within this range.
+  current CPU frequency is 2.80 GHz (asserted by call to hardware).
+  cpufreq stats: 3.00 GHz:5.73%, 2.80 GHz:94.27%  (76)
+analyzing CPU 1:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 1
+  CPUs which need to have their frequency coordinated by software: 1
+  maximum transition latency: 10.0 us.
+  hardware limits: 2.80 GHz - 3.00 GHz
+  available frequency steps: 3.00 GHz, 2.80 GHz
+  available cpufreq governors: userspace, conservative, powersave, ondemand=
+, performance
+  current policy: frequency should be within 2.80 GHz and 3.00 GHz.
+                  The governor "ondemand" may decide which speed to use
+                  within this range.
+  current CPU frequency is 2.80 GHz (asserted by call to hardware).
+  cpufreq stats: 3.00 GHz:5.55%, 2.80 GHz:94.45%  (60)
+
+Regards,
+
+James Phillips
+
+--=20
+OpenPGP Public Key: http://phillipsjk.ca/OpenPGP0814.asc
+
+--DIOMP1UsTsWJauNi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJVmAx7AAoJELPegf97nVFgd1cH/RfaMY4i5rNNeetck/otxkvE
+XRLpMYsaw9YJN7zHCAMYgTYbwEKBirpgyayr2ZeXr/ggDHSnpmqOWa63I3JXIJzH
+gUTC+0LTlji32gilfA3off8SeX1Y11HssjwVA5zdNhrgh8AR74J/TJ+2JOfrmyC1
+2zQGuueyVl24boBlnh1KMju4+3fod7EiYKagOgI2z8rwwo21LG50M/8nmHKrOhpq
+UDiErOM6yjDBW2ONMsDOOjat9KXSJGcfMy2MJZZ62w+QqZmtIvDFj02vBJ1ZOaEo
+xdMqVKNkGBeCvCy/v9lJhdANMCG8EL+uFPLx7I2FfoZNxDEQv49QbfyCBE2TV/U=
+=K8sn
+-----END PGP SIGNATURE-----
+
+--DIOMP1UsTsWJauNi--
