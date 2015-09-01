@@ -1,57 +1,142 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: vichy <vichy.kuo@gmail.com>
 Subject: Re: about system time incorrect after changing cpu frequency
-Date: Tue, 1 Sep 2015 09:27:13 +0530
-Message-ID: <CAOh2x=ky8_uwqvdH-krKxgMSby5jgovJp7odK6x=MpqNL+YoGg@mail.gmail.com>
+Date: Tue, 1 Sep 2015 13:36:54 +0800
+Message-ID: <CAOVJa8HNQ-s=yDfADCcoL+r22ALpHFtTjWZ=oxTkBUriYbCk+Q@mail.gmail.com>
 References: <CAOVJa8GTDj3UJpgUd4nH1wknUKa6fgac=1SsqC8g=UCG0MGuDw@mail.gmail.com>
+	<CAOh2x=ky8_uwqvdH-krKxgMSby5jgovJp7odK6x=MpqNL+YoGg@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=gPCgcFzW/UjnT5mu/0frqOnazGkhzmJOLvDS9ri8Teg=;
-        b=ELktv8Uo8M4AdfPW27+caTudj9sXKb/3F5Xr72yg0BgqSBmI9BHflGLXlkkNGEjfSx
-         4UQ0/RAVDwjApNhMjbExiVrqCgIBmGBImM6jPtkV85Xb531uLlN3GLkXa2YJ6Jt3JYXb
-         3WzG8stIwkwKeAgRUy2t8IH82uSH1BpuUCrCqLFjm05dXNO6CnBI8LZX+h2CE0yjX4Wr
-         tDcSjKj674I1t+x6Unf6piDjvJbQ7kUAhyue3f/bOJFkTxVrF9cx1yTF8dWp8fCSJe43
-         +S8GCJlzkzYCxhnvgLd2YKhDvJKB0zxaoIbFNUB58NP1qJHoO8uzRtvAaDh8mM1Cy/R/
-         ySMg==
-In-Reply-To: <CAOVJa8GTDj3UJpgUd4nH1wknUKa6fgac=1SsqC8g=UCG0MGuDw@mail.gmail.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        bh=RJXUG6lyC83W+lVTBgkzDZTiIZZ3YabcaRXI5xzx3+k=;
+        b=wWptSP1yO8PjzwHzrm+FGKJq6WF/5ZXnuw3/WgjRWIjv/NnpvtoIPlWNpmrxFjGrUT
+         k0bSqhve5Y1bNFCLCeSrDF4ebCUgfehOV0YoxB/Vm98V9i7No2GbcjIgHad59vvX0ah/
+         luYFTNqrIPx+RvqqwTT/UIiFQQdmCN+KQpxk+668nMsT2peBiDDWHWKOkNHmoG1jfFPS
+         3FOpd+spmQxuPz7d9FO37plWWw4kluBanaQ5V4XT+9ahTMpFN61yL1bF5sG/FzD/enmN
+         54OFQijL7kUbrBNuE4KxkhJ9c6ZwR5evpG5cLe10gBCXz7utlYkdBVFtdu6rMYE7MO++
+         IATA==
+In-Reply-To: <CAOh2x=ky8_uwqvdH-krKxgMSby5jgovJp7odK6x=MpqNL+YoGg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: vichy <vichy.kuo@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Mon, Aug 31, 2015 at 7:33 PM, vichy <vichy.kuo@gmail.com> wrote:
-> hi all:
-> My platform is like below:
-> 1. single core Cortex A9
-> 2. use global timer for system timer
->
-> after I porting cpu frequency driver based on snow ball, the cpu
-> frequency did change as I expected.
-> But the system time is incorrect( since pherial clk is got from cpu frequency)
->
-> for example:
-> a) cpu 1G (pherial clk = 250M) --> sleep 1 sec (OK)
-> b) cpu 500M  (pherial clk = 125M) --> sleep 1 sec (will be measured as 2 sec)
->
-> I try to call below 2 functions to change the frequency of clocksource
-> and clockevent, but the above b) sleep time is still incorrect when
-> cpu runs in 500Mhz.
->     clockevents_update_freq(this_cpu_ptr(gt_evt), gt_clk_rate);
->     __clocksource_updatefreq_hz(&gt_clocksource, gt_clk_rate);
->
-> in Arm cortex A9 single core system with Global timer as system timer,
-> is there any kernel api to change system timer period when cpu/pherial
-> frequency change?
->
-> appreciate your kind help in advance,
+hi Viresh:
 
-The list cpufreq@vger.kernel.org is the wrong list for posting cpufreq queries
-as we have moved to Linux PM list <linux-pm@vger.kernel.org> list now.
 
-Try unsetting CPUFREQ_CONST_LOOPS flag in your driver, if you have it
-set.
+2015-09-01 11:57 GMT+08:00 Viresh Kumar <viresh.kumar@linaro.org>:
+> On Mon, Aug 31, 2015 at 7:33 PM, vichy <vichy.kuo@gmail.com> wrote:
+>> hi all:
+>> My platform is like below:
+>> 1. single core Cortex A9
+>> 2. use global timer for system timer
+>>
+>> after I porting cpu frequency driver based on snow ball, the cpu
+>> frequency did change as I expected.
+>> But the system time is incorrect( since pherial clk is got from cpu frequency)
+>>
+>> for example:
+>> a) cpu 1G (pherial clk = 250M) --> sleep 1 sec (OK)
+>> b) cpu 500M  (pherial clk = 125M) --> sleep 1 sec (will be measured as 2 sec)
+>>
+>> I try to call below 2 functions to change the frequency of clocksource
+>> and clockevent, but the above b) sleep time is still incorrect when
+>> cpu runs in 500Mhz.
+>>     clockevents_update_freq(this_cpu_ptr(gt_evt), gt_clk_rate);
+>>     __clocksource_updatefreq_hz(&gt_clocksource, gt_clk_rate);
+>>
+>> in Arm cortex A9 single core system with Global timer as system timer,
+>> is there any kernel api to change system timer period when cpu/pherial
+>> frequency change?
+>>
+>> appreciate your kind help in advance,
+>
+> The list cpufreq@vger.kernel.org is the wrong list for posting cpufreq queries
+> as we have moved to Linux PM list <linux-pm@vger.kernel.org> list now.
+>
+> Try unsetting CPUFREQ_CONST_LOOPS flag in your driver, if you have it
+> set.
+
+I DIDN'T set the CPUFREQ_CONST_LOOPS when I register my cpufreq driver
+I pasted my cpufreq driver declariation as below:
+
+static struct cpufreq_driver plat_cpufreq_driver = {
+    .flags  = CPUFREQ_STICKY,
+    .verify = plat_cpufreq_verify_speed,
+    .target = plat_cpufreq_target,
+    .get    = plat_cpufreq_getspeed,
+    .init   = plat_cpufreq_init,
+    .name   = "plat-cpufreq",
+    .attr   = plat_cpufreq_attr,
+};
+
+
+I have traced the kernel code
+if I guess correctly, the sleep accurate is based on jiffies and
+tick_handle_periodic will periodically update the next event interval
+
+void tick_handle_periodic
+-->
+  for (;;) {
+          if (!clockevents_program_event(dev, next, false))
+              return;
+          /*
+           * Have to be careful here. If we're in oneshot mode,
+           * before we call tick_periodic() in a loop, we need
+           * to be sure we're using a real hardware clocksource.
+           * Otherwise we could get trapped in an infinite
+           * loop, as the tick_periodic() increments jiffies,
+           * when then will increment time, posibly causing
+           * the loop to trigger again and again.
+           */
+          if (timekeeping_valid_for_hres())
+              tick_periodic(cpu);
+          next = ktime_add(next, tick_period);
+      }
+
+and in clockevents_program_event, we will use mult, shift to calculate
+the cycles need for global timer triggering next interrupt event.
+
+    clc = ((unsigned long long) delta * dev->mult) >> dev->shift;
+    rc = dev->set_next_event((unsigned long) clc, dev);
+
+belwo is my tick device information in /proc/timer_list
+and multi did change to 1/2 when I change cpu freq from 1G to 500Mhz.
+when cpu run 1GHz
+
+except multi and shift, is there any place I need to take care for
+system timer accurate?
+appreciate your kind help,
+
+Tick Device: mode:     1
+Per CPU device: 0
+Clock Event Device: arm_global_timer
+ max_delta_ns:   17043521021
+ min_delta_ns:   1000
+ mult:           541165879
+ shift:          31
+ mode:           3
+ next_event:     2176344000000 nsecs
+ set_next_event: gt_clockevent_set_next_event
+ set_mode:       gt_clockevent_set_mode
+ event_handler:  hrtimer_interrupt
+ retries:        0
+
+when cpu run in 500Mhz
+Tick Device: mode:     1
+Per CPU device: 0
+Clock Event Device: arm_global_timer
+ max_delta_ns:   34087041979
+ min_delta_ns:   1000
+ mult:           270582940
+ shift:          31
+ mode:           3
+ next_event:     2230100000000 nsecs
+ set_next_event: gt_clockevent_set_next_event
+ set_mode:       gt_clockevent_set_mode
+ event_handler:  hrtimer_interrupt
+ retries:        0
