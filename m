@@ -1,65 +1,94 @@
-From: Deirdre Kylie <kylie.deirdre@gmail.com>
-Subject: cpufreq doesn't work quite on Dell GX520 with Pentium D at 2.80gHz
-Date: Thu, 17 Sep 2015 12:24:19 -0700
-Message-ID: <CACs6S=huh52Q6N4t=1bOzfz+ZRMk5p1jy-STHDDr8K32KRVGcQ@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: cpufreq doesn't work quite on Dell GX520 with Pentium D at 2.80gHz
+Date: Thu, 17 Sep 2015 20:24:46 -0700
+Message-ID: <001201d0f1c1$92476900$b6d63b00$@net>
+References: <CACs6S=huh52Q6N4t=1bOzfz+ZRMk5p1jy-STHDDr8K32KRVGcQ@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        bh=s6i2DQ92rvjdV3IyzgVhBCd4YWKTcH8cgpSx1DB1NCk=;
-        b=LdnMs72fhGAxHF7J8PJLHjh0UJu0sQx74ZMVZgu49FhFDeFca/EKObZPDLyTZZwt7D
-         rDzmyAhMBtjbIG0l5JrAj6KrX+5WvD7pSltBD1n1RaFVOrIHgvtzQfyninPbnvtK2I0O
-         uoH7JsAGwMo/8FApVagNsBzMHp8CUNOvhKhI+ndTLGF17TTU27NemACnLHQHNUsFc2wD
-         EVIvDkjHh4YJfRt0JraHuT01t4Q2PRFSfxybM/8cOgO3GTJ8pL+ETGseTxyf4TNCQqtG
-         twr06z0dKns5W3APDWJTpcZDrDzmCAPvB+12B+HmjlBZTM/bhfj4DVPNOO/5ulOBSO1A
-         rZBg==
+In-Reply-To: <CACs6S=huh52Q6N4t=1bOzfz+ZRMk5p1jy-STHDDr8K32KRVGcQ@mail.gmail.com>
+Content-Language: en-ca
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=telus.net; s=neo;
+	t=1442546691; bh=gQ+NZa0eCS+c5AS9EgoKfZcLlZEShZJTWDNlkxSAZFA=;
+	h=From:To:Cc:References:In-Reply-To:Subject:Date:Message-ID:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	b=ju0+lLAFoU+5rFTvXZbYBS9bbgAnJ1jA5Uvvf6975Yrge9PhKG+ymydDStKGkmhVA
+	 D5olyj64F89UjiP3ELZPiU2EBOAFLghO9xXfaUrwx4Xs7HdEOiagVVdr0XNVz4/PDv
+	 Thl9RrG4u/0ddFqwdNEG9N4HGKRZPHQD6I+pBnfJswvoUGJA1SEZGEt5kmYySsSk3r
+	 IwlNGuTzI01SF/nfAdwtPmh85+KppIaysl4GVIQ7CP2zEr/YEQMb4apQBVd2gRDlFn
+	 gLyswRRU+QLRjnPQGT8bkherBtwVRzfZEnHI3AJ1ky+xOYiGm/MvgrXHrYUplohEm+
+	 Q8ZmFTwrhMZeA==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: 'Deirdre Kylie' <kylie.deirdre@gmail.com>
+Cc: cpufreq@vger.kernel.org
 
-Here is the results after "apt-get"-ing it and running cpufreq-info
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-...
-Preparing to unpack .../cpufrequtils_008-1_amd64.deb ...
-Unpacking cpufrequtils (008-1) ...
-Processing triggers for man-db (2.6.7.1-1ubuntu1) ...
-Processing triggers for ureadahead (0.100.0-16) ...
-ureadahead will be reprofiled on next reboot
-Setting up libcpufreq0 (008-1) ...
-Setting up cpufrequtils (008-1) ...
- * Loading cpufreq kernel modules...                                     [fail]
- * CPUFreq Utilities: Setting ondemand CPUFreq governor...
-          * disabled, governor not available...
-           [ OK ]
-Processing triggers for libc-bin (2.19-0ubuntu6.6) ...
-Processing triggers for ureadahead (0.100.0-16) ...
-root@deeDell:/home/dee# cpufreq-info
-cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
-Report errors and bugs to cpufreq@vger.kernel.org, please.
-analyzing CPU 0:
-  no or unknown cpufreq driver is active on this CPU
-  maximum transition latency: 4294.55 ms.
-analyzing CPU 1:
-  no or unknown cpufreq driver is active on this CPU
-  maximum transition latency: 4294.55 ms.
-~~~~~~~~~~~~~~~~~~~~~
+On 2015.09.17 12:24 Deirdre Kylie wrote:
 
-and here is using cpufreq-set (which I knew wouldn't run but I did it
-to get any info I could for you.
-~~~~~~~~~~~~~~~~~~~~
-root@deeDell:/home/dee# cpufreq-set -c 0 -g performance
-Error setting new values. Common errors:
-- Do you have proper administration rights? (super-user?)
-- Is the governor you requested available and modprobed?
-- Trying to set an invalid policy?
-- Trying to set a specific frequency, but userspace governor is not available,
-   for example because of hardware which cannot be set to a specific frequency
-   or because the userspace governor isn't loaded?
-~~~~~~~~~~~~~~~~~~~~~~~~~
+> Here is the results after "apt-get"-ing it and running cpufreq-info
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> ...
+> Preparing to unpack .../cpufrequtils_008-1_amd64.deb ...
+> Unpacking cpufrequtils (008-1) ...
+> Processing triggers for man-db (2.6.7.1-1ubuntu1) ...
+> Processing triggers for ureadahead (0.100.0-16) ...
+> ureadahead will be reprofiled on next reboot
+> Setting up libcpufreq0 (008-1) ...
+> Setting up cpufrequtils (008-1) ...
+>  * Loading cpufreq kernel modules...          [fail]
+>  * CPUFreq Utilities: Setting ondemand CPUFreq governor...
+>          * disabled, governor not available...
+>           [ OK ]
+> Processing triggers for libc-bin (2.19-0ubuntu6.6) ...
+> Processing triggers for ureadahead (0.100.0-16) ...
+> root@deeDell:/home/dee# cpufreq-info
+> cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
+> Report errors and bugs to cpufreq@vger.kernel.org, please.
+> analyzing CPU 0:
+>  no or unknown cpufreq driver is active on this CPU
+>  maximum transition latency: 4294.55 ms.
+> analyzing CPU 1:
+>  no or unknown cpufreq driver is active on this CPU
+>  maximum transition latency: 4294.55 ms.
 
-I hope this is helpful for you
+It sounds as though you do not have any frequency scaling driver,
+which might be a due to a BIOS setting (I don't know),
+and so no you shouldn't try to use cpufrequtils.
 
-Thank you!
+Here is a way to check (there may be better ways):
+
+First there is a scaling driver:
+
+doug@s15:~/temp$ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_driver
+intel_pstate
+intel_pstate
+intel_pstate
+intel_pstate
+intel_pstate
+intel_pstate
+intel_pstate
+intel_pstate
+doug@s15:~/temp$ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+powersave
+powersave
+powersave
+powersave
+powersave
+powersave
+powersave
+powersave
+
+Second there is not a scaling driver:
+
+doug@doug-64:~$ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_driver
+cat: /sys/devices/system/cpu/cpu*/cpufreq/scaling_driver: No such file or directory
+
+In the latter case the CPU frequency is fixed and is always the same:
+
+doug@doug-64:~$ grep MHz /proc/cpuinfo
+cpu MHz         : 3391.586
+cpu MHz         : 3391.586
+
+
+
