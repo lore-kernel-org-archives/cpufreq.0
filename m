@@ -1,112 +1,176 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH] cpufreq: Add Broadcom BCM2835 CPU frequency control
- driver
-Date: Tue, 20 Oct 2015 20:54:23 -0600
-Message-ID: <5626FE5F.8060209@wwwdotorg.org>
-References: <1444592815-15271-1-git-send-email-lkundrak@v3.sk>
+From: plongepe <philippe.longepe@linux.intel.com>
+Subject: [PATCH v2 1/2] cpufreq: intel_pstate: Replace BYT by ATOM
+Date: Thu, 22 Oct 2015 11:01:04 +0200
+Message-ID: <5628A5D0.3030501@linux.intel.com>
+References: <1444987310-5217-1-git-send-email-philippe.longepe@linux.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1444592815-15271-1-git-send-email-lkundrak@v3.sk>
+In-Reply-To: <1444987310-5217-1-git-send-email-philippe.longepe@linux.intel.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: linux-rpi-kernel@lists.infradead.org, Dom Cobley <popcornmix@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@vger.kernel.org
 
-On 10/11/2015 01:46 PM, Lubomir Rintel wrote:
-> This adds a device tree binding for Broadcom BCM2834 CPU frequency
-> control driven via Raspberry Pi VideoCore 4 firmware interface.
+From: Philippe Longepe <philippe.longepe@intel.com>
 
-I don't see any DT binding here; there's a new driver and an addition to
-a DT file.
+The goal is to support several Atoms architectures.
 
-This looks like it should be 3 separate patches:
+Signed-off-by: longepe <philippe.longepe@linux.intel.com>
+---
+  drivers/cpufreq/intel_pstate.c | 56 +++++++++++++++++++++---------------------
+  1 file changed, 28 insertions(+), 28 deletions(-)
 
-1) Document the DT binding for this driver.
-(This one needs to be reviewed by the DT maintainers and sent to the DT
-mailing list).
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 3af9dd7..8716039 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -34,10 +34,10 @@
+  #include <asm/cpu_device_id.h>
+  #include <asm/cpufeature.h>
+  
+-#define BYT_RATIOS		0x66a
+-#define BYT_VIDS		0x66b
+-#define BYT_TURBO_RATIOS	0x66c
+-#define BYT_TURBO_VIDS		0x66d
++#define ATOM_RATIOS		0x66a
++#define ATOM_VIDS		0x66b
++#define ATOM_TURBO_RATIOS	0x66c
++#define ATOM_TURBO_VIDS		0x66d
+  
+  #define FRAC_BITS 8
+  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+@@ -502,31 +502,31 @@ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
+  	wrmsrl_on_cpu(cpudata->cpu, MSR_PM_ENABLE, 0x1);
+  }
+  
+-static int byt_get_min_pstate(void)
++static int atom_get_min_pstate(void)
+  {
+  	u64 value;
+  
+-	rdmsrl(BYT_RATIOS, value);
++	rdmsrl(ATOM_RATIOS, value);
+  	return (value >> 8) & 0x7F;
+  }
+  
+-static int byt_get_max_pstate(void)
++static int atom_get_max_pstate(void)
+  {
+  	u64 value;
+  
+-	rdmsrl(BYT_RATIOS, value);
++	rdmsrl(ATOM_RATIOS, value);
+  	return (value >> 16) & 0x7F;
+  }
+  
+-static int byt_get_turbo_pstate(void)
++static int atom_get_turbo_pstate(void)
+  {
+  	u64 value;
+  
+-	rdmsrl(BYT_TURBO_RATIOS, value);
++	rdmsrl(ATOM_TURBO_RATIOS, value);
+  	return value & 0x7F;
+  }
+  
+-static void byt_set_pstate(struct cpudata *cpudata, int pstate)
++static void atom_set_pstate(struct cpudata *cpudata, int pstate)
+  {
+  	u64 val;
+  	int32_t vid_fp;
+@@ -551,10 +551,10 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+  	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+  }
+  
+-#define BYT_BCLK_FREQS 5
+-static int byt_freq_table[BYT_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
++#define ATOM_BCLK_FREQS 5
++static int atom_freq_table[ATOM_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
+  
+-static int byt_get_scaling(void)
++static int atom_get_scaling(void)
+  {
+  	u64 value;
+  	int i;
+@@ -562,16 +562,16 @@ static int byt_get_scaling(void)
+  	rdmsrl(MSR_FSB_FREQ, value);
+  	i = value & 0x3;
+  
+-	BUG_ON(i > BYT_BCLK_FREQS);
++	BUG_ON(i > ATOM_BCLK_FREQS);
+  
+-	return byt_freq_table[i] * 100;
++	return atom_freq_table[i] * 100;
+  }
+  
+-static void byt_get_vid(struct cpudata *cpudata)
++static void atom_get_vid(struct cpudata *cpudata)
+  {
+  	u64 value;
+  
+-	rdmsrl(BYT_VIDS, value);
++	rdmsrl(ATOM_VIDS, value);
+  	cpudata->vid.min = int_tofp((value >> 8) & 0x7f);
+  	cpudata->vid.max = int_tofp((value >> 16) & 0x7f);
+  	cpudata->vid.ratio = div_fp(
+@@ -579,7 +579,7 @@ static void byt_get_vid(struct cpudata *cpudata)
+  		int_tofp(cpudata->pstate.max_pstate -
+  			cpudata->pstate.min_pstate));
+  
+-	rdmsrl(BYT_TURBO_VIDS, value);
++	rdmsrl(ATOM_TURBO_VIDS, value);
+  	cpudata->vid.turbo = value & 0x7f;
+  }
+  
+@@ -659,7 +659,7 @@ static struct cpu_defaults core_params = {
+  	},
+  };
+  
+-static struct cpu_defaults byt_params = {
++static struct cpu_defaults atom_params = {
+  	.pid_policy = {
+  		.sample_rate_ms = 10,
+  		.deadband = 0,
+@@ -669,12 +669,12 @@ static struct cpu_defaults byt_params = {
+  		.i_gain_pct = 4,
+  	},
+  	.funcs = {
+-		.get_max = byt_get_max_pstate,
+-		.get_min = byt_get_min_pstate,
+-		.get_turbo = byt_get_turbo_pstate,
+-		.set = byt_set_pstate,
+-		.get_scaling = byt_get_scaling,
+-		.get_vid = byt_get_vid,
++		.get_max = atom_get_max_pstate,
++		.get_min = atom_get_min_pstate,
++		.get_turbo = atom_get_turbo_pstate,
++		.set = atom_set_pstate,
++		.get_scaling = atom_get_scaling,
++		.get_vid = atom_get_vid,
+  	},
+  };
+  
+@@ -907,7 +907,7 @@ static void intel_pstate_timer_func(unsigned long __data)
+  static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+  	ICPU(0x2a, core_params),
+  	ICPU(0x2d, core_params),
+-	ICPU(0x37, byt_params),
++	ICPU(0x37, atom_params),
+  	ICPU(0x3a, core_params),
+  	ICPU(0x3c, core_params),
+  	ICPU(0x3d, core_params),
+@@ -916,7 +916,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+  	ICPU(0x45, core_params),
+  	ICPU(0x46, core_params),
+  	ICPU(0x47, core_params),
+-	ICPU(0x4c, byt_params),
++	ICPU(0x4c, atom_params),
+  	ICPU(0x4e, core_params),
+  	ICPU(0x4f, core_params),
+  	ICPU(0x5e, core_params),
+-- 
+1.9.1
 
-2) Add the driver
 
-3) Add the relevant nodes/properties to the DT files.
 
-Patch 2 would typically be applied by the cpufreq maintainer, and patch
-3 by the RPi maintainer.
-
-> diff --git a/drivers/cpufreq/bcm2835-cpufreq.c b/drivers/cpufreq/bcm2835-cpufreq.c
-> new file mode 100644
-> index 0000000..0fc4cb5
-> --- /dev/null
-> +++ b/drivers/cpufreq/bcm2835-cpufreq.c
-> @@ -0,0 +1,199 @@
-> +/*
-> + * This driver dynamically manages the CPU Frequency of the ARM processor.
-> + * Messages are sent to Videocore either setting or requesting the
-> + * frequency of the ARM in order to match an appropriate frequency to the
-> + * current usage of the processor. The policy which selects the frequency
-> + * to use is defined in the kernel .config file, but can be changed during
-> + * runtime.
-> + *
-> + * Copyright 2011 Broadcom Corporation.  All rights reserved.
-> + * Copyright 2013,2015 Lubomir Rintel
-> + *
-> + * Unless you and Broadcom execute a separate written software license
-> + * agreement governing use of this software, this software is licensed to you
-> + * under the terms of the GNU General Public License version 2, available at
-> + * http://www.broadcom.com/licenses/GPLv2.php (the "GPL").
-> + *
-> + * Notwithstanding the above, under no circumstances may you combine this
-> + * software in any way with any other Broadcom software provided under a
-> + * license other than the GPL, without Broadcom's express prior written
-> + * consent.
-> + */
-
-That license doesn't sound right for the kernel. IANAL, but it sounds
-like you (Lubomir) can choose to accept the code under GPLv2 and strip
-out all the other license text. If the last paragraph absolutely has to
-be maintained in the code, I'm not sure that this license is
-GPL-compatible since it imposes additional restrictions beyond the GPL.
-
-> +static u32 bcm2835_cpufreq_set_clock(int cur_rate, int arm_rate)
-> +{
-> +	int ret = 0;
-> +	struct prop msg = {
-> +		.dev_id = VCMSG_ID_ARM_CLOCK,
-> +		.val = arm_rate * 1000,
-> +	};
-> +
-> +	/* send the message */
-> +	ret = rpi_firmware_property(fw, VCMSG_SET_CLOCK_RATE, &msg,
-> +							sizeof(msg));
-
-Why does this driver call the firmware directly, rather than using the
-clock API?
-
-> +static int bcm2835_cpufreq_target(struct cpufreq_policy *policy,
-> +						unsigned int target_freq,
-> +						unsigned int relation)
-> +{
-> +	unsigned int target = target_freq;
-> +	u32 cur;
-> +
-> +	/* if we are above min and using ondemand, then just use max */
-> +	if (strcmp("ondemand", policy->governor->name) == 0 &&
-> +					target > policy->min)
-> +		target = policy->max;
-
-This sounds like a policy decision. Shouldn't the governer implement
-policy, and this driver just do what it's told?
-
-> +static struct platform_driver bcm2835_cpufreq_driver = {
-> +	.probe = bcm2835_cpufreq_probe,
-> +	.remove = bcm2835_cpufreq_remove,
-> +	.driver = {
-> +		.name = "bcm2835-cpufreq",
-> +		.owner = THIS_MODULE,
-
-I think you don't need that .owner line any more.
-
-> +MODULE_LICENSE("GPL v2");
-
-That doesn't match the license header in this file.
