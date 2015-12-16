@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 69821] setting CONFIG_HZ_PERIODIC locks cpu at the lowest
  frequency using ONDEMAND
-Date: Wed, 16 Dec 2015 02:15:17 +0000
-Message-ID: <bug-69821-12968-wxyUeuH3AL@https.bugzilla.kernel.org/>
+Date: Wed, 16 Dec 2015 02:43:29 +0000
+Message-ID: <bug-69821-12968-Kephi1ICeQ@https.bugzilla.kernel.org/>
 References: <bug-69821-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -15,10 +15,11 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=69821
 
---- Comment #6 from Chen Yu <yu.c.chen@intel.com> ---
-Created attachment 197491
-  --> https://bugzilla.kernel.org/attachment.cgi?id=197491&action=edit
-fix idle calc in cpufreq governor  load
+Zhang Rui <rui.zhang@intel.com> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+           Assignee|cpufreq@vger.kernel.org     |yu.c.chen@intel.com
 
 -- 
 You are receiving this mail because:
