@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 71841] cpufreq ondemand ignore_nice_load doesn't work
-Date: Mon, 28 Dec 2015 04:58:00 +0000
-Message-ID: <bug-71841-12968-hOARp3Udcu@https.bugzilla.kernel.org/>
+Date: Wed, 30 Dec 2015 17:49:17 +0000
+Message-ID: <bug-71841-12968-q1yLe5u4Oz@https.bugzilla.kernel.org/>
 References: <bug-71841-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -14,14 +14,16 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=71841
 
-Zhang Rui <rui.zhang@intel.com> changed:
+--- Comment #5 from higuita <higuita@gmx.net> ---
+hi
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
+i'm now using a different cpu, a AMD A10-7850K Radeon R7, 12 Compute Cores
+4C+8G
+that uses acpi-cpufreq...
 
---- Comment #4 from Zhang Rui <rui.zhang@intel.com> ---
-ping...
+testing in this with this cpu and a kernel 4.3.3 it works fine.
+
+maybe this was fixed of just happen in certain HW configs?
 
 -- 
 You are receiving this mail because:
