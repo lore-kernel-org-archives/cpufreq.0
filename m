@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 101241] cpufreq ondemand does not work on AMD GX-416RA SOC
-Date: Tue, 23 Aug 2016 09:34:15 +0000
-Message-ID: <bug-101241-12968-PH0qvOQVI7@https.bugzilla.kernel.org/>
+Date: Tue, 23 Aug 2016 09:34:23 +0000
+Message-ID: <bug-101241-12968-8E8ccAHhCS@https.bugzilla.kernel.org/>
 References: <bug-101241-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -18,12 +18,7 @@ Chen Yu <yu.c.chen@intel.com> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-         Resolution|---                         |INVALID
-
---- Comment #3 from Chen Yu <yu.c.chen@intel.com> ---
-As we did not get response for quite sometime I'm closing this ticket, please
-feel free to reopen if you want to continue to debug on this.
+             Status|RESOLVED                    |CLOSED
 
 -- 
 You are receiving this mail because:
