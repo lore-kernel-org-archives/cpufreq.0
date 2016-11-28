@@ -1,48 +1,107 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [GIT PULL] Integrator DTS and defconfig changes
-Date: Sat, 19 Nov 2016 16:19:08 +0100
-Message-ID: <CACRpkdboZ-TwoHCUy5YFgzUoXbwWEYuSE8kdtAie51spPtZ1rg@mail.gmail.com>
-References: <CACRpkdara5D=kvGVYu-WRh_JYK6Z9NKmQ-eniXsauxdzx-QJbA@mail.gmail.com>
- <20161118072506.GC1785@localhost> <CACRpkdYoornJx1fTN1C5OiR16w9DbTcr9ze4gc9PLkt7LCqqCQ@mail.gmail.com>
- <20161118175301.GA8882@localhost>
-Mime-Version: 1.0
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH] cpufrequtils: Report offline cpus in cpufreq-info
+Date: Mon, 28 Nov 2016 14:12:30 +0530
+Message-ID: <1480322550-13655-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc;
-        bh=U5S2LuJIlpbJIamfwO3k0BjQ0NY8QTdHc92/lfRgFfA=;
-        b=EEA912pz47ihTiqxdl7+arEqvGreWJdwLbwb4GuqFuFcuYxpgrwL1zRG9n1ksj1wnO
-         gSzjY/tipjlC5pOFfg+wkEF46eSwOqk33IqFWwkuBQ3TgSluCoGJxXGTN6fRd9gcw/wS
-         oxXwlAFrROk9yskKOm+DVGTFCsVu+wuiLD/DM=
-In-Reply-To: <20161118175301.GA8882@localhost>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Olof Johansson <olof@lixom.net>
-Cc: "arm@kernel.org" <arm@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org, linux@brodo.de, sergey.dryabzhinsky@gmail.com, linux@dominikbrodowski.net
+Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 
-On Fri, Nov 18, 2016 at 6:53 PM, Olof Johansson <olof@lixom.net> wrote:
-> On Fri, Nov 18, 2016 at 09:26:56AM +0100, Linus Walleij wrote:
->> On Fri, Nov 18, 2016 at 8:25 AM, Olof Johansson <olof@lixom.net> wrote:
->>
->> > I also sympathize that it's extra annoying having to split just three
->> > patches across two branches. So, if it's easier we can just cherry-pick
->> > apart the patches here across the branches (your comment about next
->> > coverage makes me suspect you have no direct downstream users of this
->> > branch). If that's OK, let me know and I'll do that tomorrow.
->>
->> It's fine to cherry-pick, I can also send two separate branches (or
->> just 2+1 stand-alone patches).
->>
->> Any way you like it :) just tell me what to do, all I want is to get this
->> in for v4.10.
->
-> Cherry-picking is actually faster on our side than merging, so I've done that
-> now. Queued into next/dt and next/defconfig for 4.10.
+cpufrequtils did not check if the cpu is online and reported the
+frequency anyways, which could be misleading to the user.
+Added support to detect if the requested cpu is offline and
+report that its offline.
 
-Thanks Olof, much appreciated!
+When cpu 3 is offline the output would look as follows :
+$./cpufreq-info -c 3
+cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
+Report errors and bugs to cpufreq@vger.kernel.org, please.
+CPU 3 is Offline
 
-Yours,
-Linus Walleij
+Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+---
+ lib/sysfs.c  | 28 ++++++++++++++++++++++++++--
+ utils/info.c |  7 ++++++-
+ 2 files changed, 32 insertions(+), 3 deletions(-)
+
+diff --git a/lib/sysfs.c b/lib/sysfs.c
+index 24dd563..9448499 100644
+--- a/lib/sysfs.c
++++ b/lib/sysfs.c
+@@ -28,7 +28,6 @@ unsigned int sysfs_read_file(unsigned int cpu, const char *fname, char *buf, siz
+ 	char path[SYSFS_PATH_MAX];
+ 	int fd;
+ 	size_t numread;
+-
+ 	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s",
+ 			 cpu, fname);
+ 
+@@ -192,14 +191,39 @@ static int sysfs_write_one_value(unsigned int cpu, unsigned int which,
+ 
+ int sysfs_cpu_exists(unsigned int cpu)
+ {
+-	char file[SYSFS_PATH_MAX];
++	char online[2], file[SYSFS_PATH_MAX];
+ 	struct stat statbuf;
++	int len, fd;
+ 
+ 	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/", cpu);
+ 
+ 	if ( stat(file, &statbuf) != 0 )
+ 		return -ENOSYS;
+ 
++	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/online", cpu);
++	fd = open(file, O_RDONLY);
++	if (fd < 0) {
++		/*
++		 * cpuX directory exists but cpuX/online does not. This
++		 * could because of cpu is not hotpluggable, which means
++		 * its online.
++		 */
++		return 0;
++	}
++
++	len = read(fd, online, 2);
++	if (len < 1) {
++		printf("Could not read cpu%u/online file\n", cpu);
++		close(fd);
++		return len;
++	}
++	/* Returning 1 if its offline */
++	if (online[0] == '0')	{
++		close(fd);
++		return 1;
++	}
++	close(fd);
++
+ 	return S_ISDIR(statbuf.st_mode) ? 0 : -ENOSYS;
+ }
+ 
+diff --git a/utils/info.c b/utils/info.c
+index 155e604..3b8fee6 100644
+--- a/utils/info.c
++++ b/utils/info.c
+@@ -159,10 +159,15 @@ static void debug_output_one(unsigned int cpu)
+ 	struct cpufreq_policy *policy;
+ 	struct cpufreq_available_governors * governors;
+ 	struct cpufreq_stats *stats;
++	int offline;
+ 
+-	if (cpufreq_cpu_exists(cpu)) {
++	offline = cpufreq_cpu_exists(cpu);
++	if (offline < 0)  {
+ 		printf(gettext ("couldn't analyze CPU %d as it doesn't seem to be present\n"), cpu);
+ 		return;
++	} else if (offline == 1) {
++		printf(gettext("CPU %d is Offline\n"), cpu);
++		return;
+ 	}
+ 
+ 	printf(gettext ("analyzing CPU %d:\n"), cpu);
+-- 
+2.5.5
+
