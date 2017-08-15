@@ -1,107 +1,43 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: [PATCH] cpufrequtils: Report offline cpus in cpufreq-info
-Date: Mon, 28 Nov 2016 14:12:30 +0530
-Message-ID: <1480322550-13655-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Edward Statham <edward.statham@gmail.com>
+Subject: CPU frequency governor problem
+Date: Tue, 15 Aug 2017 14:47:26 +1200
+Message-ID: <CAMn+H1sk267Er5zS2jRmDUE_s+f8Fguq8K40ZpDQG656LcLnBg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:from:date:message-id:subject:to
+         :content-transfer-encoding;
+        bh=yuGxGJja7VKo9Di3lHRs41jKLFB/hJl4VDbVIKu54DY=;
+        b=i2Q6xEfjIh2iaJWWowyypzdB6/mDxwTJ1wtW5qxhPK3UmJrgssXcINg9hgnVj/iG8X
+         8Unremj1oPpWQgi5TYTR9s2CrkqjlKA25+UPF9ridWY2e1PtEzMtIvykFGIsXc8pKqfK
+         cB5PPI94bCruksjHtWTRVGjDa1IfKM+hL9Ulp58R3SYl16ogyASr+SqU45tCPiLKVceU
+         Elk+LVHE4oAOqVb+gMzQWhb9JJZyA+YqX6+CRfFt2JkvFqFUN9JYUMlwA+q2nn5HC7rw
+         FsFNwSbf+VGpAiJWDRSmPJF2ChHFwx6f6zJ+x7c7NPHFL4JLW28Ua+lZwVCijVWGPHM5
+         TZRw==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux@brodo.de, sergey.dryabzhinsky@gmail.com, linux@dominikbrodowski.net
-Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+To: cpufreq@vger.kernel.org
 
-cpufrequtils did not check if the cpu is online and reported the
-frequency anyways, which could be misleading to the user.
-Added support to detect if the requested cpu is offline and
-report that its offline.
+Hi, sorry for the direct email but I=E2=80=99ve been unable to find a resol=
+ution
+to this in forums etc.  I have a laptop with a Intel i7-7700HQ CPU and am
+running Linux Mint 18.  The frequency governor is set to performance but
+it keeps on throttling down to 70% or even 50% and getting stuck there,
+for example:
 
-When cpu 3 is offline the output would look as follows :
-$./cpufreq-info -c 3
-cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
-Report errors and bugs to cpufreq@vger.kernel.org, please.
-CPU 3 is Offline
+cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+70
 
-Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
----
- lib/sysfs.c  | 28 ++++++++++++++++++++++++++--
- utils/info.c |  7 ++++++-
- 2 files changed, 32 insertions(+), 3 deletions(-)
+I can=E2=80=99t find a way to get it to throttle sensibly i.e. lower the ma=
+x
+when required but revert to full speed when other conditions allow. I=E2=80=
+=99ve
+tried the ondemand and performance governors.
 
-diff --git a/lib/sysfs.c b/lib/sysfs.c
-index 24dd563..9448499 100644
---- a/lib/sysfs.c
-+++ b/lib/sysfs.c
-@@ -28,7 +28,6 @@ unsigned int sysfs_read_file(unsigned int cpu, const char *fname, char *buf, siz
- 	char path[SYSFS_PATH_MAX];
- 	int fd;
- 	size_t numread;
--
- 	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s",
- 			 cpu, fname);
- 
-@@ -192,14 +191,39 @@ static int sysfs_write_one_value(unsigned int cpu, unsigned int which,
- 
- int sysfs_cpu_exists(unsigned int cpu)
- {
--	char file[SYSFS_PATH_MAX];
-+	char online[2], file[SYSFS_PATH_MAX];
- 	struct stat statbuf;
-+	int len, fd;
- 
- 	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/", cpu);
- 
- 	if ( stat(file, &statbuf) != 0 )
- 		return -ENOSYS;
- 
-+	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/online", cpu);
-+	fd = open(file, O_RDONLY);
-+	if (fd < 0) {
-+		/*
-+		 * cpuX directory exists but cpuX/online does not. This
-+		 * could because of cpu is not hotpluggable, which means
-+		 * its online.
-+		 */
-+		return 0;
-+	}
-+
-+	len = read(fd, online, 2);
-+	if (len < 1) {
-+		printf("Could not read cpu%u/online file\n", cpu);
-+		close(fd);
-+		return len;
-+	}
-+	/* Returning 1 if its offline */
-+	if (online[0] == '0')	{
-+		close(fd);
-+		return 1;
-+	}
-+	close(fd);
-+
- 	return S_ISDIR(statbuf.st_mode) ? 0 : -ENOSYS;
- }
- 
-diff --git a/utils/info.c b/utils/info.c
-index 155e604..3b8fee6 100644
---- a/utils/info.c
-+++ b/utils/info.c
-@@ -159,10 +159,15 @@ static void debug_output_one(unsigned int cpu)
- 	struct cpufreq_policy *policy;
- 	struct cpufreq_available_governors * governors;
- 	struct cpufreq_stats *stats;
-+	int offline;
- 
--	if (cpufreq_cpu_exists(cpu)) {
-+	offline = cpufreq_cpu_exists(cpu);
-+	if (offline < 0)  {
- 		printf(gettext ("couldn't analyze CPU %d as it doesn't seem to be present\n"), cpu);
- 		return;
-+	} else if (offline == 1) {
-+		printf(gettext("CPU %d is Offline\n"), cpu);
-+		return;
- 	}
- 
- 	printf(gettext ("analyzing CPU %d:\n"), cpu);
--- 
-2.5.5
+Any suggestions would be much appreciated.
 
+thanks,
+Ed
