@@ -1,58 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/34] cpufreq: cris: remove calls to
- cpufreq_notify_transition()
-Date: Tue, 10 Oct 2017 14:43:01 +0530
-Message-ID: <20171010091301.GH4031@vireshk-i7>
-References: <cover.1376619363.git.viresh.kumar@linaro.org>
- <d8b7b00908f0fa16feca841b1bf7fb1a49c62df1.1376619363.git.viresh.kumar@linaro.org>
- <20171010075742.GL17578@axis.com>
+From: Micha W <cellmw@gmail.com>
+Subject: cpufreq debian 9, intel i7 908x
+Date: Fri, 20 Oct 2017 11:41:54 +0200
+Message-ID: <1508492514.4018.1.camel@gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=1gLm5NSzvSUsNvmh+hlu0XEViQI5dOTjlu4YnoV/ZzQ=;
-        b=TnT92Seuv0wDUk+sS/L14js2H4XxCj0yyGzl66N30je5A7/D4XN0PwjuYAF7WkJPFo
-         26I23VabicUK3qxjfNxtfceGUnlead3U92hP+WdlGQDmUorIHQeSxVyJ/OoALojZ7H+U
-         K46XOErN48PsWzhLj+la0ClE6YI/MIfyNKcTo=
-Content-Disposition: inline
-In-Reply-To: <20171010075742.GL17578@axis.com>
-Sender: linux-kernel-owner@vger.kernel.org
+        d=gmail.com; s=20161025;
+        h=message-id:subject:from:to:date:mime-version
+         :content-transfer-encoding;
+        bh=k06ggXKCA5xM9/i/DutH67Vk3Vs1iSxgbZ0Lr15m0jc=;
+        b=R4BAd6yAj/2rTdUkxfRl0MXBfPOKjS0o/mRuhVHVyPvP1U7NgeGv41kR2LAeG/lE3P
+         RJQjS0PceCBsmLzqJUlGhqIEIzyHi9k+woQvIZYEXEk9YBAUuXN7uIOxQt6vpyyjn6ZI
+         7FXJjSt1QfbNT+xqLjJ16NOTaqi7e9OmsDN5XGJo3ry71RaPtz400F7Bf6CSdsWu1LdV
+         vi0b2i0dvEgCLx7jXlb1PKpgESCyYhiz7fWWhtJ8yhH8FdvFl38DsRolp8vTm59zAGUx
+         PgtqwRPc5fJPT4TqvJyoUhL1VKCPVUihbPu9VkLFn6l1eoIFnqkmseCeOyXJT7rHWQd3
+         oCgQ==
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jesper Nilsson <jespern@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel <linux-cris-kernel@axis.com>
+Content-Type: text/plain; charset="utf-8"
+To: cpufreq@vger.kernel.org
 
-On 10-10-17, 09:57, Jesper Nilsson wrote:
-> On Fri, Aug 16, 2013 at 04:25:04AM +0200, Viresh Kumar wrote:
-> > Most of the drivers do following in their ->target_index() routines:
-> > 
-> > 	struct cpufreq_freqs freqs;
-> > 	freqs.old = old freq...
-> > 	freqs.new = new freq...
-> > 
-> > 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-> > 
-> > 	/* Change rate here */
-> > 
-> > 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-> > 
-> > This is replicated over all cpufreq drivers today and there doesn't exists a
-> > good enough reason why this shouldn't be moved to cpufreq core instead.
-> > 
-> > Earlier patches have added support in cpufreq core to do cpufreq notification on
-> > frequency change, this one removes it from this driver.
-> > 
-> > Some related minor cleanups are also done along with it.
-> > 
-> 
-> Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Hi Dominik, i got this error, using cpufreq on my intel i7 980x,
 
-Wow..
+do you have any info on using the performance settings correctly?
 
-You just Acked a 4 years old patch :)
+It says there is no driver active....
 
--- 
-viresh
+Thanks and greetings, 
+Micha
+
+
+root@monster:/home/micha# cpufreq-info
+cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
+Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
+analysiere CPU 0:
+  kein oder nicht bestimmbarer cpufreq-Treiber aktiv
+  Maximale Dauer eines Taktfrequenzwechsels: 4294.55 ms.
+analysiere CPU 1:
+  kein oder nicht bestimmbarer cpufreq-Treiber aktiv
+  Maximale Dauer eines Taktfrequenzwechsels: 4294.55 ms.
+analysiere CPU 2:
+  kein oder nicht bestimmbarer cpufreq-Treiber aktiv
+  Maximale Dauer eines Taktfrequenzwechsels: 4294.55 ms.
+analysiere CPU 3:
+  kein oder nicht bestimmbarer cpufreq-Treiber aktiv
+  Maximale Dauer eines Taktfrequenzwechsels: 4294.55 ms.
+analysiere CPU 4:
+  kein oder nicht bestimmbarer cpufreq-Treiber aktiv
+  Maximale Dauer eines Taktfrequenzwechsels: 4294.55 ms.
+analysiere CPU 5:
+  kein oder nicht bestimmbarer cpufreq-Treiber aktiv
+  Maximale Dauer eines Taktfrequenzwechsels: 4294.55 ms.
