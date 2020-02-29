@@ -1,114 +1,203 @@
 From: Jelle de Jong <jelledejong@powercraft.nl>
-Subject: can not seem to set cpufreq to max performance with newer kernels for
- xeons X56xx
-Date: Wed, 1 Jan 2020 07:45:11 +0100
-Message-ID: <7c59571c-0693-85e1-6836-64c67399f819@powercraft.nl>
+Subject: Re: can not seem to set cpufreq to max performance with newer kernels
+ for xeons X56xx
+Date: Sat, 29 Feb 2020 15:31:39 +0100
+Message-ID: <dd6f0f29-539b-9508-aca8-98c61c6cd7a3@powercraft.nl>
+References: <7c59571c-0693-85e1-6836-64c67399f819@powercraft.nl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <7c59571c-0693-85e1-6836-64c67399f819@powercraft.nl>
 Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="macroman"; format="flowed"
+Content-Type: text/plain; charset="utf-8"; format="flowed"
 To: cpufreq@vger.kernel.org
 
-SGVsbG8gZXZlcnlib2R5LAoKSG93IGRvIEkgZm9yY2UgdGhlIFg1Nnh4IENQVXMgdG8gc3RvcCBz
-Y2FsaW5nIGFuZCBydW4gb24gbWF4aW11bSBzcGVlZCAKYWdhaW4/CgpJIGJlZW4gZXhwZXJpZW5j
-aW5nIHBlcmZvcm1hbmNlIGlzc3VlcyBmb3Igb24gc29tZSBjZXBoIHN0b3JhZ2UgY2x1c3RlcnMg
-CndpdGggc2xvdyByZXF1ZXN0cywgYW5kIEkgZm91bmQgYXQgbGVhc3QgYSBwYXJ0aWFsIGlzc3Vl
-IGlzc3VlIGluIHRoZSAKQ1BVIGZyZXF1ZW5jeSBzY2FsbGluZy4KCkkgZGVidWdnZWQgb24gdHdv
-IGRpZmZlcmVudCBwbGF0Zm9ybSB0byBhbmQgdGhyZWUgZGlmZmVyZW50IERlYmlhbiAKdmVyc2lv
-bnMgdG8gbWFrZSBzdXJlIGl0IHdhcyBub3QgYSBiaW9zIG9yIHZlcnNpb24gaXNzdWUuCgpUaGUg
-Zm9sbG93aW5nIGtlcm5lbCBpcyB3b3JraW5nIHdpdGggY3B1IHNjYWxsaW5nIHBlcmZvcm1hbmNl
-IG9uIGJvdGggCnBsYXRmb3JtcywgdGhlIGNwdSBjYW4gcnVuIG9uIGhpcyBtYXggd2l0aG91dCBz
-Y2FsbGluZyBiYWNrOgo0LjkuMC0xMS1hbWQ2NCAjMSBTTVAgRGViaWFuIDQuOS4xODktMytkZWI5
-dTIgKDIwMTktMTEtMTEpIHg4Nl82NCBHTlUvTGludXgKCiMgbm90IHdvcmtpbmcgcGVyZm9ybWFu
-Y2Ugc2NhbGxpbmcgSW50ZWwgWGVvbiBYNTY4MCBvbiBJbnRlbCBTNTUyMEhDCjUuNC4wLTEtYW1k
-NjQgIzEgU01QIERlYmlhbiA1LjQuNi0xICgyMDE5LTEyLTI3KSB4ODZfNjQgR05VL0xpbnV4Cgoj
-IG5vdCB3b3JraW5nIHBlcmZvcm1hbmNlIHNjYWxsaW5nIEludGVsIFhlb24gWDU2NzAgb24gSFAg
-WjYwMAo1LjQuMC0xLWFtZDY0ICMxIFNNUCBEZWJpYW4gNS40LjYtMSAoMjAxOS0xMi0yNykgeDg2
-XzY0IEdOVS9MaW51eAo1LjMuMC0wLmJwby4yLWFtZDY0ICMxIFNNUCBEZWJpYW4gNS4zLjktMn5i
-cG8xMCsxICgyMDE5LTExLTEzKSB4ODZfNjQgCkdOVS9MaW51eAo0LjE5LjAtNi1hbWQ2NCAjMSBT
-TVAgRGViaWFuIDQuMTkuNjctMitkZWIxMHUyICgyMDE5LTExLTExKSB4ODZfNjQgR05VL0xpbnV4
-CgpJIG5lZWQgdG8gdXNlIGEgbmV3ZXIga2VybmVsIGZvciBhdGxhbnRpYy5rbyAxMEdiaXQgZHJp
-dmVyIHdoaWNoIGlzIApidWdneSBvbiA0LjkuMC0xMS4KCkkgdHJpZWQgc2V0dGluZyBpbnRlbF9w
-c3RhdGU9ZW5hYmxlIGFjcGk9Zm9yY2UgYW5kIGludGVsX3BzdGF0ZT1kaXNhYmxlIAphY3BpPWZv
-cmNlIGJ1dCBib3RoIGRpZCBub3Qgd29yayB3aXRoIHRoZSA1Lngga2VybmVscyBpIHRyaWVkLgoK
-Qk9PVF9JTUFHRT0vdm1saW51ei01LjQuMC0xLWFtZDY0IHJvb3Q9L2Rldi9tYXBwZXIvbHZtMC0t
-dm9sLXJvb3Qgcm8gCnJvb3Rmc3R5cGU9ZXh0NCBmc2NrLm1vZGU9Zm9yY2UgY29uc29sZT10dHlT
-MCwxMTUyMDAgcm9vdGRlbGF5PTMgCmludGVsX3BzdGF0ZT1lbmFibGUgYWNwaT1mb3JjZSBxdWll
-dAoKVGhlIENQVSBqdXN0IGtlZXBzIGNhbGxpbmcgZG93biB0byBhIGxvd2VyIGZyZXEgd2l0aCBi
-b3RoIHRoZSBuZXcgCmNwdXBvd2VyIGFuZCBvbGRlciBjcHVmcmVxdXRpbHMgdXRpbHMuCgpjcHVw
-b3dlciBzaG93IGRpZmZlcmVudCBjdXJyZW50IGNwdSBzcGVlZHMuCgpyb290QGNlcGgwMzp+IyBj
-cHVwb3dlciBmcmVxdWVuY3ktc2V0IC0tZ292ZXJub3IgcGVyZm9ybWFuY2UgLS1taW4gCjI5Mjcw
-MDAgLS1tYXggMjkyNzAwMApTZXR0aW5nIGNwdTogMApTZXR0aW5nIGNwdTogMQpTZXR0aW5nIGNw
-dTogMgpTZXR0aW5nIGNwdTogMwpTZXR0aW5nIGNwdTogNApTZXR0aW5nIGNwdTogNQpTZXR0aW5n
-IGNwdTogNgpTZXR0aW5nIGNwdTogNwpTZXR0aW5nIGNwdTogOApTZXR0aW5nIGNwdTogOQpTZXR0
-aW5nIGNwdTogMTAKU2V0dGluZyBjcHU6IDExClNldHRpbmcgY3B1OiAxMgpTZXR0aW5nIGNwdTog
-MTMKU2V0dGluZyBjcHU6IDE0ClNldHRpbmcgY3B1OiAxNQpTZXR0aW5nIGNwdTogMTYKU2V0dGlu
-ZyBjcHU6IDE3ClNldHRpbmcgY3B1OiAxOApTZXR0aW5nIGNwdTogMTkKU2V0dGluZyBjcHU6IDIw
-ClNldHRpbmcgY3B1OiAyMQpTZXR0aW5nIGNwdTogMjIKU2V0dGluZyBjcHU6IDIzCgojIGxzY3B1
-CkFyY2hpdGVjdHVyZTogICAgICAgICAgeDg2XzY0CkNQVSBvcC1tb2RlKHMpOiAgICAgICAgMzIt
-Yml0LCA2NC1iaXQKQnl0ZSBPcmRlcjogICAgICAgICAgICBMaXR0bGUgRW5kaWFuCkNQVShzKTog
-ICAgICAgICAgICAgICAgMjQKT24tbGluZSBDUFUocykgbGlzdDogICAwLTIzClRocmVhZChzKSBw
-ZXIgY29yZTogICAgMgpDb3JlKHMpIHBlciBzb2NrZXQ6ICAgIDYKU29ja2V0KHMpOiAgICAgICAg
-ICAgICAyCk5VTUEgbm9kZShzKTogICAgICAgICAgMgpWZW5kb3IgSUQ6ICAgICAgICAgICAgIEdl
-bnVpbmVJbnRlbApDUFUgZmFtaWx5OiAgICAgICAgICAgIDYKTW9kZWw6ICAgICAgICAgICAgICAg
-ICA0NApNb2RlbCBuYW1lOiAgICAgICAgICAgIEludGVsKFIpIFhlb24oUikgQ1BVICAgICAgICAg
-ICBYNTY3MCAgQCAyLjkzR0h6ClN0ZXBwaW5nOiAgICAgICAgICAgICAgMgpDUFUgTUh6OiAgICAg
-ICAgICAgICAgIDE3NzAuMTcwCkNQVSBtYXggTUh6OiAgICAgICAgICAgMjkyNy4wMDAwCkNQVSBt
-aW4gTUh6OiAgICAgICAgICAgMTU5Ni4wMDAwCkJvZ29NSVBTOiAgICAgICAgICAgICAgNTg1Mi4x
-MApWaXJ0dWFsaXphdGlvbjogICAgICAgIFZULXgKTDFkIGNhY2hlOiAgICAgICAgICAgICAzMksK
-TDFpIGNhY2hlOiAgICAgICAgICAgICAzMksKTDIgY2FjaGU6ICAgICAgICAgICAgICAyNTZLCkwz
-IGNhY2hlOiAgICAgICAgICAgICAgMTIyODhLCk5VTUEgbm9kZTAgQ1BVKHMpOiAgICAgMC01LDEy
-LTE3Ck5VTUEgbm9kZTEgQ1BVKHMpOiAgICAgNi0xMSwxOC0yMwpGbGFnczogICAgICAgICAgICAg
-ICAgIGZwdSB2bWUgZGUgcHNlIHRzYyBtc3IgcGFlIG1jZSBjeDggYXBpYyBzZXAgbXRyciAKcGdl
-IG1jYSBjbW92IHBhdCBwc2UzNiBjbGZsdXNoIGR0cyBhY3BpIG1teCBmeHNyIHNzZSBzc2UyIGh0
-IHRtIHBiZSAKc3lzY2FsbCBueCBwZHBlMWdiIHJkdHNjcCBsbSBjb25zdGFudF90c2MgYXJjaF9w
-ZXJmbW9uIHBlYnMgYnRzIHJlcF9nb29kIApub3BsIHh0b3BvbG9neSBub25zdG9wX3RzYyBjcHVp
-ZCBhcGVyZm1wZXJmIHBuaSBwY2xtdWxxZHEgZHRlczY0IG1vbml0b3IgCmRzX2NwbCB2bXggc214
-IGVzdCB0bTIgc3NzZTMgY3gxNiB4dHByIHBkY20gcGNpZCBkY2Egc3NlNF8xIHNzZTRfMiAKcG9w
-Y250IGFlcyBsYWhmX2xtIGVwYiBwdGkgc3NiZCBpYnJzIGlicGIgc3RpYnAgdHByX3NoYWRvdyB2
-bm1pIApmbGV4cHJpb3JpdHkgZXB0IHZwaWQgZHRoZXJtIGlkYSBhcmF0IGZsdXNoX2wxZAoKcm9v
-dEBjZXBoMDM6fiMgY3B1cG93ZXIgZnJlcXVlbmN5LWluZm8KYW5hbHl6aW5nIENQVSAwOgogICBk
-cml2ZXI6IGFjcGktY3B1ZnJlcQogICBDUFVzIHdoaWNoIHJ1biBhdCB0aGUgc2FtZSBoYXJkd2Fy
-ZSBmcmVxdWVuY3k6IDAKICAgQ1BVcyB3aGljaCBuZWVkIHRvIGhhdmUgdGhlaXIgZnJlcXVlbmN5
-IGNvb3JkaW5hdGVkIGJ5IHNvZnR3YXJlOiAwCiAgIG1heGltdW0gdHJhbnNpdGlvbiBsYXRlbmN5
-OiAxMC4wIHVzCiAgIGhhcmR3YXJlIGxpbWl0czogMS42MCBHSHogLSAyLjkzIEdIegogICBhdmFp
-bGFibGUgZnJlcXVlbmN5IHN0ZXBzOiAgMi45MyBHSHosIDIuOTMgR0h6LCAyLjc5IEdIeiwgMi42
-NiBHSHosIAoyLjUzIEdIeiwgMi4zOSBHSHosIDIuMjYgR0h6LCAyLjEzIEdIeiwgMi4wMCBHSHos
-IDEuODYgR0h6LCAxLjczIEdIeiwgCjEuNjAgR0h6CiAgIGF2YWlsYWJsZSBjcHVmcmVxIGdvdmVy
-bm9yczogcG93ZXJzYXZlIHVzZXJzcGFjZSBjb25zZXJ2YXRpdmUgCm9uZGVtYW5kIHBlcmZvcm1h
-bmNlIHNjaGVkdXRpbAogICBjdXJyZW50IHBvbGljeTogZnJlcXVlbmN5IHNob3VsZCBiZSB3aXRo
-aW4gMi45MyBHSHogYW5kIDIuOTMgR0h6LgogICAgICAgICAgICAgICAgICAgVGhlIGdvdmVybm9y
-ICJwZXJmb3JtYW5jZSIgbWF5IGRlY2lkZSB3aGljaCBzcGVlZCB0byB1c2UKICAgICAgICAgICAg
-ICAgICAgIHdpdGhpbiB0aGlzIHJhbmdlLgogICBjdXJyZW50IENQVSBmcmVxdWVuY3k6IDIuOTMg
-R0h6IChhc3NlcnRlZCBieSBjYWxsIHRvIGhhcmR3YXJlKQogICBib29zdCBzdGF0ZSBzdXBwb3J0
-OgogICAgIFN1cHBvcnRlZDogeWVzCiAgICAgQWN0aXZlOiB5ZXMKICAgICAzMjAwIE1IeiBtYXgg
-dHVyYm8gNCBhY3RpdmUgY29yZXMKICAgICAzMjAwIE1IeiBtYXggdHVyYm8gMyBhY3RpdmUgY29y
-ZXMKICAgICAzMzMzIE1IeiBtYXggdHVyYm8gMiBhY3RpdmUgY29yZXMKICAgICAzMzMzIE1IeiBt
-YXggdHVyYm8gMSBhY3RpdmUgY29yZXMKCnJvb3RAY2VwaDAzOn4jIGNhdCAvZXRjL2RlZmF1bHQv
-Y3B1ZnJlcXV0aWxzCkdPVkVSTk9SPSJwZXJmb3JtYW5jZSIKcm9vdEBjZXBoMDM6fiMgc3lzdGVt
-Y3RsIHN0YXR1cyBjcHVmcmVxdXRpbHMK4pePIGNwdWZyZXF1dGlscy5zZXJ2aWNlIC0gTFNCOiBz
-ZXQgQ1BVRnJlcSBrZXJuZWwgcGFyYW1ldGVycwogICAgTG9hZGVkOiBsb2FkZWQgKC9ldGMvaW5p
-dC5kL2NwdWZyZXF1dGlsczsgZ2VuZXJhdGVkOyB2ZW5kb3IgcHJlc2V0OiAKZW5hYmxlZCkKICAg
-IEFjdGl2ZTogYWN0aXZlIChleGl0ZWQpIHNpbmNlIFR1ZSAyMDE5LTEyLTMxIDE0OjEyOjM2IENF
-VDsgNDFtaW4gYWdvCiAgICAgIERvY3M6IG1hbjpzeXN0ZW1kLXN5c3YtZ2VuZXJhdG9yKDgpCiAg
-IFByb2Nlc3M6IDE3MzQ1MTkgRXhlY1N0b3A9L2V0Yy9pbml0LmQvY3B1ZnJlcXV0aWxzIHN0b3Ag
-KGNvZGU9ZXhpdGVkLCAKc3RhdHVzPTAvU1VDQ0VTUykKICAgUHJvY2VzczogMTczNDUyNyBFeGVj
-U3RhcnQ9L2V0Yy9pbml0LmQvY3B1ZnJlcXV0aWxzIHN0YXJ0IAooY29kZT1leGl0ZWQsIHN0YXR1
-cz0wL1NVQ0NFU1MpCgpEZWMgMzEgMTQ6MTI6MzYgY2VwaDAzIHN5c3RlbWRbMV06IFN0YXJ0aW5n
-IExTQjogc2V0IENQVUZyZXEga2VybmVsIApwYXJhbWV0ZXJzLi4uCkRlYyAzMSAxNDoxMjozNiBj
-ZXBoMDMgY3B1ZnJlcXV0aWxzWzE3MzQ1MjddOiBDUFVGcmVxIFV0aWxpdGllczogU2V0dGluZyAK
-cGVyZm9ybWFuY2UgQ1BVRnJlcSAKZ292ZXJub3IuLi5DUFUwLi4uQ1BVMS4uLkNQVTIuLi5DUFUz
-Li4uQ1BVNC4uLkNQVTUuLi5DUFU2Li4uQ1BVNy4uLkNQVTguLi5DUFU5Li4uQ1BVMTAuLi5DUFUx
-MS4uLkNQVTEyLi4uQ1BVMTMuLi5DUFUxNC4uLkNQVTE1Li4uQ1BVMTYuLi5DUFUxNy4uLkNQVTE4
-Li4uQ1BVMTkuLi4KRGVjIDMxIDE0OjEyOjM2IGNlcGgwMyBzeXN0ZW1kWzFdOiBTdGFydGVkIExT
-Qjogc2V0IENQVUZyZXEga2VybmVsIApwYXJhbWV0ZXJzLgoKcm9vdEBjZXBoMDM6fiMgY3B1ZnJl
-cS1pbmZvIC0tZnJlcQoxNTk1ODE2CnJvb3RAY2VwaDAzOn4jIGNwdWZyZXEtaW5mbyAtLWRyaXZl
-cgphY3BpLWNwdWZyZXEKcm9vdEBjZXBoMDM6fiMgY3B1ZnJlcS1pbmZvIC0tcG9saWN5CjI5Mjcw
-MDAgMjkyNzAwMCBwZXJmb3JtYW5jZQpyb290QGNlcGgwMzp+IyBjcHVmcmVxLWluZm8gLS1zdGF0
-cwoyOTI3MDAwOjE2ODg5MDMyLCAyOTI2MDAwOjIsIDI3OTMwMDA6MSwgMjY2MDAwMDozLCAyNTI3
-MDAwOjQsIDIzOTQwMDA6OSwgCjIyNjEwMDA6MTIsIDIxMjgwMDA6MTIsIDE5OTUwMDA6MTUsIDE4
-NjIwMDA6MzAsIDE3MjkwMDA6ODUsIDE1OTYwMDA6MTc2MiAKICAoMTY3KQoKS2luZCByZWdhcmRz
-LAoKSmVsbGUgZGUgSm9uZwo=
+Hello everybody,
+
+I am still having the issue that using the performance driver under 
+newer kernels does not set the cpu frequency to max. How can I run the 
+CPU at his max speed on newer kernels with the older Intel X56XX cpu's.
+
+# cpupower frequency-set -g  performance
+
+# lscpu | grep "CPU MHz:"
+CPU MHz:             1750.195
+
+# uname -a
+Linux virt04 4.19.0-8-amd64 #1 SMP Debian 4.19.98-1 (2020-01-26) x86_64 
+GNU/Linux
+
+# lshw -c processor | grep version
+        version: Intel(R) Xeon(R) CPU X5675 @ 3.07GHz
+        version: Intel(R) Xeon(R) CPU X5675 @ 3.07GHz
+
+Kind regards,
+
+Jelle de Jong
+
+
+On 2020-01-01 07:45, Jelle de Jong wrote:
+> Hello everybody,
+> 
+> How do I force the X56xx CPUs to stop scaling and run on maximum speed 
+> again?
+> 
+> I been experiencing performance issues for on some ceph storage clusters 
+> with slow requests, and I found at least a partial issue issue in the 
+> CPU frequency scalling.
+> 
+> I debugged on two different platform to and three different Debian 
+> versions to make sure it was not a bios or version issue.
+> 
+> The following kernel is working with cpu scalling performance on both 
+> platforms, the cpu can run on his max without scalling back:
+> 4.9.0-11-amd64 #1 SMP Debian 4.9.189-3+deb9u2 (2019-11-11) x86_64 GNU/Linux
+> 
+> # not working performance scalling Intel Xeon X5680 on Intel S5520HC
+> 5.4.0-1-amd64 #1 SMP Debian 5.4.6-1 (2019-12-27) x86_64 GNU/Linux
+> 
+> # not working performance scalling Intel Xeon X5670 on HP Z600
+> 5.4.0-1-amd64 #1 SMP Debian 5.4.6-1 (2019-12-27) x86_64 GNU/Linux
+> 5.3.0-0.bpo.2-amd64 #1 SMP Debian 5.3.9-2~bpo10+1 (2019-11-13) x86_64 
+> GNU/Linux
+> 4.19.0-6-amd64 #1 SMP Debian 4.19.67-2+deb10u2 (2019-11-11) x86_64 
+> GNU/Linux
+> 
+> I need to use a newer kernel for atlantic.ko 10Gbit driver which is 
+> buggy on 4.9.0-11.
+> 
+> I tried setting intel_pstate=enable acpi=force and intel_pstate=disable 
+> acpi=force but both did not work with the 5.x kernels i tried.
+> 
+> BOOT_IMAGE=/vmlinuz-5.4.0-1-amd64 root=/dev/mapper/lvm0--vol-root ro 
+> rootfstype=ext4 fsck.mode=force console=ttyS0,115200 rootdelay=3 
+> intel_pstate=enable acpi=force quiet
+> 
+> The CPU just keeps calling down to a lower freq with both the new 
+> cpupower and older cpufrequtils utils.
+> 
+> cpupower show different current cpu speeds.
+> 
+> root@ceph03:~# cpupower frequency-set --governor performance --min 
+> 2927000 --max 2927000
+> Setting cpu: 0
+> Setting cpu: 1
+> Setting cpu: 2
+> Setting cpu: 3
+> Setting cpu: 4
+> Setting cpu: 5
+> Setting cpu: 6
+> Setting cpu: 7
+> Setting cpu: 8
+> Setting cpu: 9
+> Setting cpu: 10
+> Setting cpu: 11
+> Setting cpu: 12
+> Setting cpu: 13
+> Setting cpu: 14
+> Setting cpu: 15
+> Setting cpu: 16
+> Setting cpu: 17
+> Setting cpu: 18
+> Setting cpu: 19
+> Setting cpu: 20
+> Setting cpu: 21
+> Setting cpu: 22
+> Setting cpu: 23
+> 
+> # lscpu
+> Architecture:          x86_64
+> CPU op-mode(s):        32-bit, 64-bit
+> Byte Order:            Little Endian
+> CPU(s):                24
+> On-line CPU(s) list:   0-23
+> Thread(s) per core:    2
+> Core(s) per socket:    6
+> Socket(s):             2
+> NUMA node(s):          2
+> Vendor ID:             GenuineIntel
+> CPU family:            6
+> Model:                 44
+> Model name:            Intel(R) Xeon(R) CPU           X5670  @ 2.93GHz
+> Stepping:              2
+> CPU MHz:               1770.170
+> CPU max MHz:           2927.0000
+> CPU min MHz:           1596.0000
+> BogoMIPS:              5852.10
+> Virtualization:        VT-x
+> L1d cache:             32K
+> L1i cache:             32K
+> L2 cache:              256K
+> L3 cache:              12288K
+> NUMA node0 CPU(s):     0-5,12-17
+> NUMA node1 CPU(s):     6-11,18-23
+> Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
+> pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ht tm pbe 
+> syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good 
+> nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor 
+> ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid dca sse4_1 sse4_2 
+> popcnt aes lahf_lm epb pti ssbd ibrs ibpb stibp tpr_shadow vnmi 
+> flexpriority ept vpid dtherm ida arat flush_l1d
+> 
+> root@ceph03:~# cpupower frequency-info
+> analyzing CPU 0:
+>    driver: acpi-cpufreq
+>    CPUs which run at the same hardware frequency: 0
+>    CPUs which need to have their frequency coordinated by software: 0
+>    maximum transition latency: 10.0 us
+>    hardware limits: 1.60 GHz - 2.93 GHz
+>    available frequency steps:  2.93 GHz, 2.93 GHz, 2.79 GHz, 2.66 GHz, 
+> 2.53 GHz, 2.39 GHz, 2.26 GHz, 2.13 GHz, 2.00 GHz, 1.86 GHz, 1.73 GHz, 
+> 1.60 GHz
+>    available cpufreq governors: powersave userspace conservative 
+> ondemand performance schedutil
+>    current policy: frequency should be within 2.93 GHz and 2.93 GHz.
+>                    The governor "performance" may decide which speed to use
+>                    within this range.
+>    current CPU frequency: 2.93 GHz (asserted by call to hardware)
+>    boost state support:
+>      Supported: yes
+>      Active: yes
+>      3200 MHz max turbo 4 active cores
+>      3200 MHz max turbo 3 active cores
+>      3333 MHz max turbo 2 active cores
+>      3333 MHz max turbo 1 active cores
+> 
+> root@ceph03:~# cat /etc/default/cpufrequtils
+> GOVERNOR="performance"
+> root@ceph03:~# systemctl status cpufrequtils
+> ● cpufrequtils.service - LSB: set CPUFreq kernel parameters
+>     Loaded: loaded (/etc/init.d/cpufrequtils; generated; vendor preset: 
+> enabled)
+>     Active: active (exited) since Tue 2019-12-31 14:12:36 CET; 41min ago
+>       Docs: man:systemd-sysv-generator(8)
+>    Process: 1734519 ExecStop=/etc/init.d/cpufrequtils stop (code=exited, 
+> status=0/SUCCESS)
+>    Process: 1734527 ExecStart=/etc/init.d/cpufrequtils start 
+> (code=exited, status=0/SUCCESS)
+> 
+> Dec 31 14:12:36 ceph03 systemd[1]: Starting LSB: set CPUFreq kernel 
+> parameters...
+> Dec 31 14:12:36 ceph03 cpufrequtils[1734527]: CPUFreq Utilities: Setting 
+> performance CPUFreq 
+> governor...CPU0...CPU1...CPU2...CPU3...CPU4...CPU5...CPU6...CPU7...CPU8...CPU9...CPU10...CPU11...CPU12...CPU13...CPU14...CPU15...CPU16...CPU17...CPU18...CPU19... 
+> 
+> Dec 31 14:12:36 ceph03 systemd[1]: Started LSB: set CPUFreq kernel 
+> parameters.
+> 
+> root@ceph03:~# cpufreq-info --freq
+> 1595816
+> root@ceph03:~# cpufreq-info --driver
+> acpi-cpufreq
+> root@ceph03:~# cpufreq-info --policy
+> 2927000 2927000 performance
+> root@ceph03:~# cpufreq-info --stats
+> 2927000:16889032, 2926000:2, 2793000:1, 2660000:3, 2527000:4, 2394000:9, 
+> 2261000:12, 2128000:12, 1995000:15, 1862000:30, 1729000:85, 1596000:1762 
+>   (167)
+> 
+> Kind regards,
+> 
+> Jelle de Jong
