@@ -1,203 +1,976 @@
-From: Jelle de Jong <jelledejong@powercraft.nl>
-Subject: Re: can not seem to set cpufreq to max performance with newer kernels
- for xeons X56xx
-Date: Sat, 29 Feb 2020 15:31:39 +0100
-Message-ID: <dd6f0f29-539b-9508-aca8-98c61c6cd7a3@powercraft.nl>
-References: <7c59571c-0693-85e1-6836-64c67399f819@powercraft.nl>
+From: Jonas Bechtel <post@jbechtel.de>
+Subject: cpufreq-info SIGKILL or freeze unkillable in
+ read(.../cpu0/cpufreq/stats/time_in_state)
+Date: Mon, 24 May 2021 14:51:39 +0200
+Message-ID: <20210524145139.5bbcf966@mmluhan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/mixed; boundary="MP_/DHKDSFwCl89tLoR45ui7s6R"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <7c59571c-0693-85e1-6836-64c67399f819@powercraft.nl>
-Content-Language: en-US
-Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
 To: cpufreq@vger.kernel.org
 
-Hello everybody,
-
-I am still having the issue that using the performance driver under 
-newer kernels does not set the cpu frequency to max. How can I run the 
-CPU at his max speed on newer kernels with the older Intel X56XX cpu's.
-
-# cpupower frequency-set -g  performance
-
-# lscpu | grep "CPU MHz:"
-CPU MHz:             1750.195
-
-# uname -a
-Linux virt04 4.19.0-8-amd64 #1 SMP Debian 4.19.98-1 (2020-01-26) x86_64 
-GNU/Linux
-
-# lshw -c processor | grep version
-        version: Intel(R) Xeon(R) CPU X5675 @ 3.07GHz
-        version: Intel(R) Xeon(R) CPU X5675 @ 3.07GHz
-
-Kind regards,
-
-Jelle de Jong
+--MP_/DHKDSFwCl89tLoR45ui7s6R
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
-On 2020-01-01 07:45, Jelle de Jong wrote:
-> Hello everybody,
-> 
-> How do I force the X56xx CPUs to stop scaling and run on maximum speed 
-> again?
-> 
-> I been experiencing performance issues for on some ceph storage clusters 
-> with slow requests, and I found at least a partial issue issue in the 
-> CPU frequency scalling.
-> 
-> I debugged on two different platform to and three different Debian 
-> versions to make sure it was not a bios or version issue.
-> 
-> The following kernel is working with cpu scalling performance on both 
-> platforms, the cpu can run on his max without scalling back:
-> 4.9.0-11-amd64 #1 SMP Debian 4.9.189-3+deb9u2 (2019-11-11) x86_64 GNU/Linux
-> 
-> # not working performance scalling Intel Xeon X5680 on Intel S5520HC
-> 5.4.0-1-amd64 #1 SMP Debian 5.4.6-1 (2019-12-27) x86_64 GNU/Linux
-> 
-> # not working performance scalling Intel Xeon X5670 on HP Z600
-> 5.4.0-1-amd64 #1 SMP Debian 5.4.6-1 (2019-12-27) x86_64 GNU/Linux
-> 5.3.0-0.bpo.2-amd64 #1 SMP Debian 5.3.9-2~bpo10+1 (2019-11-13) x86_64 
-> GNU/Linux
-> 4.19.0-6-amd64 #1 SMP Debian 4.19.67-2+deb10u2 (2019-11-11) x86_64 
-> GNU/Linux
-> 
-> I need to use a newer kernel for atlantic.ko 10Gbit driver which is 
-> buggy on 4.9.0-11.
-> 
-> I tried setting intel_pstate=enable acpi=force and intel_pstate=disable 
-> acpi=force but both did not work with the 5.x kernels i tried.
-> 
-> BOOT_IMAGE=/vmlinuz-5.4.0-1-amd64 root=/dev/mapper/lvm0--vol-root ro 
-> rootfstype=ext4 fsck.mode=force console=ttyS0,115200 rootdelay=3 
-> intel_pstate=enable acpi=force quiet
-> 
-> The CPU just keeps calling down to a lower freq with both the new 
-> cpupower and older cpufrequtils utils.
-> 
-> cpupower show different current cpu speeds.
-> 
-> root@ceph03:~# cpupower frequency-set --governor performance --min 
-> 2927000 --max 2927000
-> Setting cpu: 0
-> Setting cpu: 1
-> Setting cpu: 2
-> Setting cpu: 3
-> Setting cpu: 4
-> Setting cpu: 5
-> Setting cpu: 6
-> Setting cpu: 7
-> Setting cpu: 8
-> Setting cpu: 9
-> Setting cpu: 10
-> Setting cpu: 11
-> Setting cpu: 12
-> Setting cpu: 13
-> Setting cpu: 14
-> Setting cpu: 15
-> Setting cpu: 16
-> Setting cpu: 17
-> Setting cpu: 18
-> Setting cpu: 19
-> Setting cpu: 20
-> Setting cpu: 21
-> Setting cpu: 22
-> Setting cpu: 23
-> 
-> # lscpu
-> Architecture:          x86_64
-> CPU op-mode(s):        32-bit, 64-bit
-> Byte Order:            Little Endian
-> CPU(s):                24
-> On-line CPU(s) list:   0-23
-> Thread(s) per core:    2
-> Core(s) per socket:    6
-> Socket(s):             2
-> NUMA node(s):          2
-> Vendor ID:             GenuineIntel
-> CPU family:            6
-> Model:                 44
-> Model name:            Intel(R) Xeon(R) CPU           X5670  @ 2.93GHz
-> Stepping:              2
-> CPU MHz:               1770.170
-> CPU max MHz:           2927.0000
-> CPU min MHz:           1596.0000
-> BogoMIPS:              5852.10
-> Virtualization:        VT-x
-> L1d cache:             32K
-> L1i cache:             32K
-> L2 cache:              256K
-> L3 cache:              12288K
-> NUMA node0 CPU(s):     0-5,12-17
-> NUMA node1 CPU(s):     6-11,18-23
-> Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
-> pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ht tm pbe 
-> syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good 
-> nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor 
-> ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid dca sse4_1 sse4_2 
-> popcnt aes lahf_lm epb pti ssbd ibrs ibpb stibp tpr_shadow vnmi 
-> flexpriority ept vpid dtherm ida arat flush_l1d
-> 
-> root@ceph03:~# cpupower frequency-info
-> analyzing CPU 0:
->    driver: acpi-cpufreq
->    CPUs which run at the same hardware frequency: 0
->    CPUs which need to have their frequency coordinated by software: 0
->    maximum transition latency: 10.0 us
->    hardware limits: 1.60 GHz - 2.93 GHz
->    available frequency steps:  2.93 GHz, 2.93 GHz, 2.79 GHz, 2.66 GHz, 
-> 2.53 GHz, 2.39 GHz, 2.26 GHz, 2.13 GHz, 2.00 GHz, 1.86 GHz, 1.73 GHz, 
-> 1.60 GHz
->    available cpufreq governors: powersave userspace conservative 
-> ondemand performance schedutil
->    current policy: frequency should be within 2.93 GHz and 2.93 GHz.
->                    The governor "performance" may decide which speed to use
->                    within this range.
->    current CPU frequency: 2.93 GHz (asserted by call to hardware)
->    boost state support:
->      Supported: yes
->      Active: yes
->      3200 MHz max turbo 4 active cores
->      3200 MHz max turbo 3 active cores
->      3333 MHz max turbo 2 active cores
->      3333 MHz max turbo 1 active cores
-> 
-> root@ceph03:~# cat /etc/default/cpufrequtils
-> GOVERNOR="performance"
-> root@ceph03:~# systemctl status cpufrequtils
-> ● cpufrequtils.service - LSB: set CPUFreq kernel parameters
->     Loaded: loaded (/etc/init.d/cpufrequtils; generated; vendor preset: 
-> enabled)
->     Active: active (exited) since Tue 2019-12-31 14:12:36 CET; 41min ago
->       Docs: man:systemd-sysv-generator(8)
->    Process: 1734519 ExecStop=/etc/init.d/cpufrequtils stop (code=exited, 
-> status=0/SUCCESS)
->    Process: 1734527 ExecStart=/etc/init.d/cpufrequtils start 
-> (code=exited, status=0/SUCCESS)
-> 
-> Dec 31 14:12:36 ceph03 systemd[1]: Starting LSB: set CPUFreq kernel 
-> parameters...
-> Dec 31 14:12:36 ceph03 cpufrequtils[1734527]: CPUFreq Utilities: Setting 
-> performance CPUFreq 
-> governor...CPU0...CPU1...CPU2...CPU3...CPU4...CPU5...CPU6...CPU7...CPU8...CPU9...CPU10...CPU11...CPU12...CPU13...CPU14...CPU15...CPU16...CPU17...CPU18...CPU19... 
-> 
-> Dec 31 14:12:36 ceph03 systemd[1]: Started LSB: set CPUFreq kernel 
-> parameters.
-> 
-> root@ceph03:~# cpufreq-info --freq
-> 1595816
-> root@ceph03:~# cpufreq-info --driver
-> acpi-cpufreq
-> root@ceph03:~# cpufreq-info --policy
-> 2927000 2927000 performance
-> root@ceph03:~# cpufreq-info --stats
-> 2927000:16889032, 2926000:2, 2793000:1, 2660000:3, 2527000:4, 2394000:9, 
-> 2261000:12, 2128000:12, 1995000:15, 1862000:30, 1729000:85, 1596000:1762 
->   (167)
-> 
-> Kind regards,
-> 
-> Jelle de Jong
+
+Hi there,
+
+here's some strange bug. Bug is reproducible:
+
+BIOS: Set AMD overclocking configuration to Auto
+Linux: /proc/cpuinfo and cpufreq-info show 1000 MHz on idle
+Reboot
+BIOS: Set AMD overclocking configuration to x7 (1400 MHz)
+Linux: /proc/cpuinfo shows 1000 MHz on idle
+Start Browser
+Start cpufreq-info: output see attachment 01
+	screen flickers 1x, one black block ~9x15px appears in upper left corner
+cpu load ceases (browser loaded)
+Start cpufreq-info: output see attachment 02
+	screen flickers 1x, screen becomes normal again
+	cpufreq-info is in an endless loop, unkillable
+	strace on cpu-freq is unkillable, also
+	Interaction with some programs become very slow (need to wait for file sys=
+tem access?) but xterm with new bash prompt opens/closes in normal speed
+	System cann't reboot but SysRq 'b' is working
+Reboot
+Start cpufreq-info: strace see attachment 03
+	Same effects as 01
+Start cpufreq-info: strace see attachment 04
+	Same effects as 02, but after call 04 the black block keeps flickering
+
+
+CPU AMD Athlon64 X2
+Kernel 4.4.0, 64 bit
+cpufreq-info 32 bit 008-1.1 (Debian)
+Screen driver /usr/lib/xorg/modules/libfb.so for X 1.20.4
+Kernel modules radeon and radeonfb loaded (Most probably radeon is active, =
+radeonfb inactive)
+
+
+All attachments (01, 02, 03, 04) are also copied in this message.
+
+I hope this bug report is right in this list. I hope it helps. I don't need=
+ a reply for my daily work (just leaving "overclocking" set to "Auto") but =
+I want to leave the comment here that I have the impression that the Linux =
+support of old hardware is ceasing (e.g. Irda, graphics) - some things are =
+working with old kernels and don't anymore with newer kernels (drivers stil=
+l present but don't fit to each other).
+
+Best regards
+ Jonas Bechtel
+
+
+
+=3D=3D 01 =3D=3D
+Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
+analysiere CPU 0:
+  Treiber: powernow-k8
+  Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
+  Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 1
+  Maximale Dauer eines Taktfrequenzwechsels: 109 us.
+  Hardwarebedingte Grenzen der Taktfrequenz: 1000 MHz - 2.50 GHz
+  m=C3=B6gliche Taktfrequenzen: 2.50 GHz, 2.40 GHz, 2.20 GHz, 2.00 GHz, 1.8=
+0 GHz, 1000 MHz
+  m=C3=B6gliche Regler: ondemand, performance
+  momentane Taktik: die Frequenz soll innerhalb 1000 MHz und 2.50 GHz.
+                    liegen. Der Regler "ondemand" kann frei entscheiden,
+                    welche Taktfrequenz innerhalb dieser Grenze verwendet w=
+ird.
+  momentane Taktfrequenz ist 2.40 GHz.
+Get=C3=B6tet
+
+=3D=3D 02 =3D=3D
+cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
+Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
+analysiere CPU 0:
+  Treiber: powernow-k8
+  Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
+  Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 1
+  Maximale Dauer eines Taktfrequenzwechsels: 109 us.
+  Hardwarebedingte Grenzen der Taktfrequenz: 1000 MHz - 2.50 GHz
+  m=C3=B6gliche Taktfrequenzen: 2.50 GHz, 2.40 GHz, 2.20 GHz, 2.00 GHz, 1.8=
+0 GHz, 1000 MHz
+  m=C3=B6gliche Regler: ondemand, performance
+  momentane Taktik: die Frequenz soll innerhalb 1000 MHz und 2.50 GHz.
+                    liegen. Der Regler "ondemand" kann frei entscheiden,
+                    welche Taktfrequenz innerhalb dieser Grenze verwendet w=
+ird.
+  momentane Taktfrequenz ist 1000 MHz.
+[Hanging unkillable here]
+
+=3D=3D 03 =3D=3D
+execve("/usr/bin/cpufreq-info", ["cpufreq-info"], 0xfffd36c0 /* 36 vars */)=
+ =3D 0
+brk(NULL)                               =3D 0x565b7000
+access("/etc/ld.so.nohwcap", F_OK)      =3D -1 ENOENT (Datei oder Verzeichn=
+is nicht gefunden)
+mmap2(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
+=3D 0xf770f000
+access("/etc/ld.so.preload", R_OK)      =3D -1 ENOENT (Datei oder Verzeichn=
+is nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/i686/sse2/libcpufreq.so.0", O_RDONLY|O=
+_LARGEFILE|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/i686/sse2", 0xffcc4ed0) =3D -1 ENOENT (Datei ode=
+r Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/i686/libcpufreq.so.0", O_RDONLY|O_LARG=
+EFILE|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/i686", 0xffcc4ed0) =3D -1 ENOENT (Datei oder Ver=
+zeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/sse2/libcpufreq.so.0", O_RDONLY|O_LARG=
+EFILE|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/sse2", 0xffcc4ed0) =3D -1 ENOENT (Datei oder Ver=
+zeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/libcpufreq.so.0", O_RDONLY|O_LARGEFILE=
+|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls", 0xffcc4ed0) =3D -1 ENOENT (Datei oder Verzeich=
+nis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LAR=
+GEFILE|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/i686/sse2", 0xffcc4ed0) =3D -1 ENOENT (Datei oder Ve=
+rzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFIL=
+E|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/i686", 0xffcc4ed0) =3D -1 ENOENT (Datei oder Verzeic=
+hnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFIL=
+E|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/sse2", 0xffcc4ed0) =3D -1 ENOENT (Datei oder Verzeic=
+hnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_C=
+LOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib", {st_mode=3DS_IFDIR|0755, st_size=3D248, ...}) =3D 0
+openat(AT_FDCWD, "tls/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CL=
+OEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC=
+) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC=
+) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D=
+ -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXE=
+C) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =
+=3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =
+=3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 =
+ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D220379, ...}) =3D 0
+mmap2(NULL, 220379, PROT_READ, MAP_PRIVATE, 3, 0) =3D 0xf76d9000
+close(3)                                =3D 0
+access("/etc/ld.so.nohwcap", F_OK)      =3D -1 ENOENT (Datei oder Verzeichn=
+is nicht gefunden)
+openat(AT_FDCWD, "/usr/lib/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC=
+) =3D 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@#\0\0004\0\0\0"...=
+, 512) =3D 512
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D26160, ...}) =3D 0
+mmap2(NULL, 28884, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) =3D 0xf76d10=
+00
+mmap2(0xf76d3000, 8192, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENY=
+WRITE, 3, 0x2000) =3D 0xf76d3000
+mmap2(0xf76d5000, 8192, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, =
+0x4000) =3D 0xf76d5000
+mmap2(0xf76d7000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DEN=
+YWRITE, 3, 0x5000) =3D 0xf76d7000
+close(3)                                =3D 0
+openat(AT_FDCWD, "[redacted]/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =
+=3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC)=
+ =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D =
+-1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D =
+-1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 EN=
+OENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D=
+ -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 E=
+NOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 E=
+NOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 ENOENT=
+ (Datei oder Verzeichnis nicht gefunden)
+access("/etc/ld.so.nohwcap", F_OK)      =3D -1 ENOENT (Datei oder Verzeichn=
+is nicht gefunden)
+openat(AT_FDCWD, "/lib/i386-linux-gnu/libc.so.6", O_RDONLY|O_LARGEFILE|O_CL=
+OEXEC) =3D 3
+read(3, "\177ELF\1\1\1\3\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\300\254\1\0004\0\0=
+\0"..., 512) =3D 512
+fstat64(3, {st_mode=3DS_IFREG|0755, st_size=3D1947056, ...}) =3D 0
+mmap2(NULL, 1955712, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) =3D 0xf74f=
+3000
+mprotect(0xf750c000, 1830912, PROT_NONE) =3D 0
+mmap2(0xf750c000, 1368064, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_D=
+ENYWRITE, 3, 0x19000) =3D 0xf750c000
+mmap2(0xf765a000, 458752, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3=
+, 0x167000) =3D 0xf765a000
+mmap2(0xf76cb000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DE=
+NYWRITE, 3, 0x1d7000) =3D 0xf76cb000
+mmap2(0xf76ce000, 10112, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_AN=
+ONYMOUS, -1, 0) =3D 0xf76ce000
+close(3)                                =3D 0
+set_thread_area({entry_number=3D-1, base_addr=3D0xf7710500, limit=3D0x0ffff=
+f, seg_32bit=3D1, contents=3D0, read_exec_only=3D0, limit_in_pages=3D1, seg=
+_not_present=3D0, useable=3D1}) =3D 0 (entry_number=3D12)
+mprotect(0xf76cb000, 8192, PROT_READ)   =3D 0
+mprotect(0xf76d7000, 4096, PROT_READ)   =3D 0
+mprotect(0x565b5000, 4096, PROT_READ)   =3D 0
+mprotect(0xf773c000, 4096, PROT_READ)   =3D 0
+munmap(0xf76d9000, 220379)              =3D 0
+brk(NULL)                               =3D 0x565b7000
+brk(0x565d8000)                         =3D 0x565d8000
+brk(0x565d9000)                         =3D 0x565d9000
+openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_LARGEFILE|O_C=
+LOEXEC) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D9814000, ...}) =3D 0
+mmap2(NULL, 2097152, PROT_READ, MAP_PRIVATE, 3, 0) =3D 0xf72f3000
+mmap2(NULL, 2596864, PROT_READ, MAP_PRIVATE, 3, 0xb8000) =3D 0xf7079000
+close(3)                                =3D 0
+fstat64(1, {st_mode=3DS_IFCHR|0600, st_rdev=3Dmakedev(0x88, 0), ...}) =3D 0
+write(1, "cpufrequtils 008: cpufreq-info ("..., 63) =3D 63
+openat(AT_FDCWD, "/usr/share/locale/locale.alias", O_RDONLY|O_CLOEXEC) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D2995, ...}) =3D 0
+read(3, "# Locale name alias data base.\n#"..., 4096) =3D 2995
+read(3, "", 4096)                       =3D 0
+close(3)                                =3D 0
+openat(AT_FDCWD, "/usr/share/locale/de/LC_MESSAGES/cpufrequtils.mo", O_RDON=
+LY) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D10540, ...}) =3D 0
+mmap2(NULL, 10540, PROT_READ, MAP_PRIVATE, 3, 0) =3D 0xf770c000
+close(3)                                =3D 0
+openat(AT_FDCWD, "/usr/lib/i386-linux-gnu/gconv/gconv-modules.cache", O_RDO=
+NLY) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D26400, ...}) =3D 0
+mmap2(NULL, 26400, PROT_READ, MAP_SHARED, 3, 0) =3D 0xf7705000
+close(3)                                =3D 0
+openat(AT_FDCWD, "/usr/lib/i386-linux-gnu/gconv/ISO8859-1.so", O_RDONLY|O_L=
+ARGEFILE|O_CLOEXEC) =3D 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\200\20\0\0004\0\0\=
+0"..., 512) =3D 512
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D13736, ...}) =3D 0
+mmap2(NULL, 16420, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) =3D 0xf77000=
+00
+mmap2(0xf7701000, 4096, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENY=
+WRITE, 3, 0x1000) =3D 0xf7701000
+mmap2(0xf7702000, 4096, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, =
+0x2000) =3D 0xf7702000
+mmap2(0xf7703000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DEN=
+YWRITE, 3, 0x2000) =3D 0xf7703000
+close(3)                                =3D 0
+mprotect(0xf7703000, 4096, PROT_READ)   =3D 0
+write(1, "Bitte melden Sie Fehler an cpufr"..., 52) =3D 52
+openat(AT_FDCWD, "/proc/stat", O_RDONLY) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0444, st_size=3D0, ...}) =3D 0
+read(3, "cpu  1071 0 847 11936 5524 0 15 "..., 1024) =3D 1024
+read(3, "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "..., 1024) =3D 263
+read(3, "", 1024)                       =3D 0
+close(3)                                =3D 0
+stat64("/sys/devices/system/cpu/cpu0/", {st_mode=3DS_IFDIR|0755, st_size=3D=
+0, ...}) =3D 0
+stat64("/sys/devices/system/cpu/cpu0/", {st_mode=3DS_IFDIR|0755, st_size=3D=
+0, ...}) =3D 0
+write(1, "analysiere CPU 0:\n", 18)     =3D 18
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", O=
+_RDONLY) =3D 3
+read(3, "1000000\n", 4095)              =3D 8
+close(3)                                =3D 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq", O=
+_RDONLY) =3D -1 EACCES (Keine Berechtigung)
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver", O_R=
+DONLY) =3D 3
+read(3, "powernow-k8\n", 4095)          =3D 12
+close(3)                                =3D 0
+write(1, "  Treiber: powernow-k8\n", 23) =3D 23
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/related_cpus", O_RDO=
+NLY) =3D 3
+read(3, "0 1\n", 4095)                  =3D 4
+close(3)                                =3D 0
+write(1, "  Folgende CPUs laufen mit der g"..., 67) =3D 67
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus", O_RD=
+ONLY) =3D 3
+read(3, "0 1\n", 4095)                  =3D 4
+close(3)                                =3D 0
+write(1, "  Die Taktfrequenz folgender CPU"..., 71) =3D 71
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_transition_l=
+atency", O_RDONLY) =3D 3
+read(3, "109000\n", 4095)               =3D 7
+close(3)                                =3D 0
+write(1, "  Maximale Dauer eines Taktfrequ"..., 53) =3D 53
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq", O=
+_RDONLY) =3D 3
+read(3, "1000000\n", 4095)              =3D 8
+close(3)                                =3D 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", O=
+_RDONLY) =3D 3
+read(3, "2500000\n", 4095)              =3D 8
+close(3)                                =3D 0
+write(1, "  Hardwarebedingte Grenzen der T"..., 65) =3D 65
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_fr=
+equencies", O_RDONLY) =3D 3
+read(3, "2500000 2400000 2200000 2000000 "..., 4095) =3D 49
+close(3)                                =3D 0
+write(1, "  m\303\266gliche Taktfrequenzen: 2.50"..., 87) =3D 87
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_go=
+vernors", O_RDONLY) =3D 3
+read(3, "ondemand performance \n", 4095) =3D 22
+close(3)                                =3D 0
+write(1, "  m\303\266gliche Regler: ondemand, pe"..., 42) =3D 42
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", O=
+_RDONLY) =3D 3
+read(3, "ondemand\n", 4095)             =3D 9
+close(3)                                =3D 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq", O=
+_RDONLY) =3D 3
+read(3, "1000000\n", 4095)              =3D 8
+close(3)                                =3D 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq", O=
+_RDONLY) =3D 3
+read(3, "2500000\n", 4095)              =3D 8
+close(3)                                =3D 0
+write(1, "  momentane Taktik: die Frequenz"..., 71) =3D 71
+write(1, "                    liegen. Der "..., 153) =3D 153
+write(1, "  momentane Taktfrequenz ist 100"..., 39) =3D 39
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state"=
+, O_RDONLY) =3D 3
+read(3,  <unfinished ...>)              =3D ?
++++ killed by SIGKILL +++
+
+
+=3D=3D 04 =3D=3D
+execve("/usr/bin/cpufreq-info", ["cpufreq-info"], 0xffcc8e90 /* 36 vars */)=
+ =3D 0
+brk(NULL)                               =3D 0x5658c000
+access("/etc/ld.so.nohwcap", F_OK)      =3D -1 ENOENT (Datei oder Verzeichn=
+is nicht gefunden)
+mmap2(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
+=3D 0xf771d000
+access("/etc/ld.so.preload", R_OK)      =3D -1 ENOENT (Datei oder Verzeichn=
+is nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/i686/sse2/libcpufreq.so.0", O_RDONLY|O=
+_LARGEFILE|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/i686/sse2", 0xffda9ac0) =3D -1 ENOENT (Datei ode=
+r Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/i686/libcpufreq.so.0", O_RDONLY|O_LARG=
+EFILE|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/i686", 0xffda9ac0) =3D -1 ENOENT (Datei oder Ver=
+zeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/sse2/libcpufreq.so.0", O_RDONLY|O_LARG=
+EFILE|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/sse2", 0xffda9ac0) =3D -1 ENOENT (Datei oder Ver=
+zeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/libcpufreq.so.0", O_RDONLY|O_LARGEFILE=
+|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls", 0xffda9ac0) =3D -1 ENOENT (Datei oder Verzeich=
+nis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LAR=
+GEFILE|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/i686/sse2", 0xffda9ac0) =3D -1 ENOENT (Datei oder Ve=
+rzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFIL=
+E|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/i686", 0xffda9ac0) =3D -1 ENOENT (Datei oder Verzeic=
+hnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFIL=
+E|O_CLOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/sse2", 0xffda9ac0) =3D -1 ENOENT (Datei oder Verzeic=
+hnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_C=
+LOEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib", {st_mode=3DS_IFDIR|0755, st_size=3D248, ...}) =3D 0
+openat(AT_FDCWD, "tls/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CL=
+OEXEC) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC=
+) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC=
+) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D=
+ -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXE=
+C) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =
+=3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =
+=3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 =
+ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D220379, ...}) =3D 0
+mmap2(NULL, 220379, PROT_READ, MAP_PRIVATE, 3, 0) =3D 0xf76e7000
+close(3)                                =3D 0
+access("/etc/ld.so.nohwcap", F_OK)      =3D -1 ENOENT (Datei oder Verzeichn=
+is nicht gefunden)
+openat(AT_FDCWD, "/usr/lib/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC=
+) =3D 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@#\0\0004\0\0\0"...=
+, 512) =3D 512
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D26160, ...}) =3D 0
+mmap2(NULL, 28884, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) =3D 0xf76df0=
+00
+mmap2(0xf76e1000, 8192, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENY=
+WRITE, 3, 0x2000) =3D 0xf76e1000
+mmap2(0xf76e3000, 8192, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, =
+0x4000) =3D 0xf76e3000
+mmap2(0xf76e5000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DEN=
+YWRITE, 3, 0x5000) =3D 0xf76e5000
+close(3)                                =3D 0
+openat(AT_FDCWD, "[redacted]/lib/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC=
+) =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC)=
+ =3D -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D =
+-1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D =
+-1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 EN=
+OENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D=
+ -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 E=
+NOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 E=
+NOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) =3D -1 ENOENT=
+ (Datei oder Verzeichnis nicht gefunden)
+access("/etc/ld.so.nohwcap", F_OK)      =3D -1 ENOENT (Datei oder Verzeichn=
+is nicht gefunden)
+openat(AT_FDCWD, "/lib/i386-linux-gnu/libc.so.6", O_RDONLY|O_LARGEFILE|O_CL=
+OEXEC) =3D 3
+read(3, "\177ELF\1\1\1\3\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\300\254\1\0004\0\0=
+\0"..., 512) =3D 512
+fstat64(3, {st_mode=3DS_IFREG|0755, st_size=3D1947056, ...}) =3D 0
+mmap2(NULL, 1955712, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) =3D 0xf750=
+1000
+mprotect(0xf751a000, 1830912, PROT_NONE) =3D 0
+mmap2(0xf751a000, 1368064, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_D=
+ENYWRITE, 3, 0x19000) =3D 0xf751a000
+mmap2(0xf7668000, 458752, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3=
+, 0x167000) =3D 0xf7668000
+mmap2(0xf76d9000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DE=
+NYWRITE, 3, 0x1d7000) =3D 0xf76d9000
+mmap2(0xf76dc000, 10112, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_AN=
+ONYMOUS, -1, 0) =3D 0xf76dc000
+close(3)                                =3D 0
+set_thread_area({entry_number=3D-1, base_addr=3D0xf771e500, limit=3D0x0ffff=
+f, seg_32bit=3D1, contents=3D0, read_exec_only=3D0, limit_in_pages=3D1, seg=
+_not_present=3D0, useable=3D1}) =3D 0 (entry_number=3D12)
+mprotect(0xf76d9000, 8192, PROT_READ)   =3D 0
+mprotect(0xf76e5000, 4096, PROT_READ)   =3D 0
+mprotect(0x5658a000, 4096, PROT_READ)   =3D 0
+mprotect(0xf774a000, 4096, PROT_READ)   =3D 0
+munmap(0xf76e7000, 220379)              =3D 0
+brk(NULL)                               =3D 0x5658c000
+brk(0x565ad000)                         =3D 0x565ad000
+brk(0x565ae000)                         =3D 0x565ae000
+openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_LARGEFILE|O_C=
+LOEXEC) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D9814000, ...}) =3D 0
+mmap2(NULL, 2097152, PROT_READ, MAP_PRIVATE, 3, 0) =3D 0xf7301000
+mmap2(NULL, 2596864, PROT_READ, MAP_PRIVATE, 3, 0xb8000) =3D 0xf7087000
+close(3)                                =3D 0
+fstat64(1, {st_mode=3DS_IFCHR|0600, st_rdev=3Dmakedev(0x88, 0), ...}) =3D 0
+write(1, "cpufrequtils 008: cpufreq-info ("..., 63) =3D 63
+openat(AT_FDCWD, "/usr/share/locale/locale.alias", O_RDONLY|O_CLOEXEC) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D2995, ...}) =3D 0
+read(3, "# Locale name alias data base.\n#"..., 4096) =3D 2995
+read(3, "", 4096)                       =3D 0
+close(3)                                =3D 0
+openat(AT_FDCWD, "/usr/share/locale/de/LC_MESSAGES/cpufrequtils.mo", O_RDON=
+LY) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D10540, ...}) =3D 0
+mmap2(NULL, 10540, PROT_READ, MAP_PRIVATE, 3, 0) =3D 0xf771a000
+close(3)                                =3D 0
+openat(AT_FDCWD, "/usr/lib/i386-linux-gnu/gconv/gconv-modules.cache", O_RDO=
+NLY) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D26400, ...}) =3D 0
+mmap2(NULL, 26400, PROT_READ, MAP_SHARED, 3, 0) =3D 0xf7713000
+close(3)                                =3D 0
+openat(AT_FDCWD, "/usr/lib/i386-linux-gnu/gconv/ISO8859-1.so", O_RDONLY|O_L=
+ARGEFILE|O_CLOEXEC) =3D 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\200\20\0\0004\0\0\=
+0"..., 512) =3D 512
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D13736, ...}) =3D 0
+mmap2(NULL, 16420, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) =3D 0xf770e0=
+00
+mmap2(0xf770f000, 4096, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENY=
+WRITE, 3, 0x1000) =3D 0xf770f000
+mmap2(0xf7710000, 4096, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, =
+0x2000) =3D 0xf7710000
+mmap2(0xf7711000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DEN=
+YWRITE, 3, 0x2000) =3D 0xf7711000
+close(3)                                =3D 0
+mprotect(0xf7711000, 4096, PROT_READ)   =3D 0
+write(1, "Bitte melden Sie Fehler an cpufr"..., 52) =3D 52
+openat(AT_FDCWD, "/proc/stat", O_RDONLY) =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0444, st_size=3D0, ...}) =3D 0
+read(3, "cpu  1374 0 870 24647 5573 0 16 "..., 1024) =3D 1024
+read(3, "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "..., 1024) =3D 266
+read(3, "", 1024)                       =3D 0
+close(3)                                =3D 0
+stat64("/sys/devices/system/cpu/cpu0/", {st_mode=3DS_IFDIR|0755, st_size=3D=
+0, ...}) =3D 0
+stat64("/sys/devices/system/cpu/cpu0/", {st_mode=3DS_IFDIR|0755, st_size=3D=
+0, ...}) =3D 0
+write(1, "analysiere CPU 0:\n", 18)     =3D 18
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", O=
+_RDONLY) =3D 3
+read(3, "1000000\n", 4095)              =3D 8
+close(3)                                =3D 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq", O=
+_RDONLY) =3D -1 EACCES (Keine Berechtigung)
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver", O_R=
+DONLY) =3D 3
+read(3, "powernow-k8\n", 4095)          =3D 12
+close(3)                                =3D 0
+write(1, "  Treiber: powernow-k8\n", 23) =3D 23
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/related_cpus", O_RDO=
+NLY) =3D 3
+read(3, "0 1\n", 4095)                  =3D 4
+close(3)                                =3D 0
+write(1, "  Folgende CPUs laufen mit der g"..., 67) =3D 67
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus", O_RD=
+ONLY) =3D 3
+read(3, "0 1\n", 4095)                  =3D 4
+close(3)                                =3D 0
+write(1, "  Die Taktfrequenz folgender CPU"..., 71) =3D 71
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_transition_l=
+atency", O_RDONLY) =3D 3
+read(3, "109000\n", 4095)               =3D 7
+close(3)                                =3D 0
+write(1, "  Maximale Dauer eines Taktfrequ"..., 53) =3D 53
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq", O=
+_RDONLY) =3D 3
+read(3, "1000000\n", 4095)              =3D 8
+close(3)                                =3D 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", O=
+_RDONLY) =3D 3
+read(3, "2500000\n", 4095)              =3D 8
+close(3)                                =3D 0
+write(1, "  Hardwarebedingte Grenzen der T"..., 65) =3D 65
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_fr=
+equencies", O_RDONLY) =3D 3
+read(3, "2500000 2400000 2200000 2000000 "..., 4095) =3D 49
+close(3)                                =3D 0
+write(1, "  m\303\266gliche Taktfrequenzen: 2.50"..., 87) =3D 87
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_go=
+vernors", O_RDONLY) =3D 3
+read(3, "ondemand performance \n", 4095) =3D 22
+close(3)                                =3D 0
+write(1, "  m\303\266gliche Regler: ondemand, pe"..., 42) =3D 42
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", O=
+_RDONLY) =3D 3
+read(3, "ondemand\n", 4095)             =3D 9
+close(3)                                =3D 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq", O=
+_RDONLY) =3D 3
+read(3, "1000000\n", 4095)              =3D 8
+close(3)                                =3D 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq", O=
+_RDONLY) =3D 3
+read(3, "2500000\n", 4095)              =3D 8
+close(3)                                =3D 0
+write(1, "  momentane Taktik: die Frequenz"..., 71) =3D 71
+write(1, "                    liegen. Der "..., 153) =3D 153
+write(1, "  momentane Taktfrequenz ist 100"..., 39) =3D 39
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state"=
+, O_RDONLY) =3D 3
+read(3,=20
+
+
+
+
+
+
+
+Bits & B=C3=A4ume Dresden, Tour de Natur, GR=C3=9CNE LIGA, Konglomerat e. V=
+., ADFC, (ex-)tuuwi, Hochschulgruppe Rad, Institut f=C3=BCr Bahntechnik
+
+Schlafende Projekte: CityConcierge, IKaRad, TerKur
+Neueste Idee: Radfernbahn Berlin-Dresden, Dresden-Leipzig -> radfernbahn.de
+& CityConcierge 4 Corona - http://jbechtel.de/site/sonstiges/covid19/CCfC/
+
+
+--MP_/DHKDSFwCl89tLoR45ui7s6R
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename=Bug_cpufreq-info--01_killed.txt
+
+Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
+analysiere CPU 0:
+  Treiber: powernow-k8
+  Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
+  Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 1
+  Maximale Dauer eines Taktfrequenzwechsels: 109 us.
+  Hardwarebedingte Grenzen der Taktfrequenz: 1000 MHz - 2.50 GHz
+  m=C3=B6gliche Taktfrequenzen: 2.50 GHz, 2.40 GHz, 2.20 GHz, 2.00 GHz, 1.8=
+0 GHz, 1000 MHz
+  m=C3=B6gliche Regler: ondemand, performance
+  momentane Taktik: die Frequenz soll innerhalb 1000 MHz und 2.50 GHz.
+                    liegen. Der Regler "ondemand" kann frei entscheiden,
+                    welche Taktfrequenz innerhalb dieser Grenze verwendet w=
+ird.
+  momentane Taktfrequenz ist 2.40 GHz.
+Get=C3=B6tet
+
+--MP_/DHKDSFwCl89tLoR45ui7s6R
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename=Bug_cpufreq-info--02_hang.txt
+
+cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
+Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
+analysiere CPU 0:
+  Treiber: powernow-k8
+  Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
+  Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 1
+  Maximale Dauer eines Taktfrequenzwechsels: 109 us.
+  Hardwarebedingte Grenzen der Taktfrequenz: 1000 MHz - 2.50 GHz
+  m=C3=B6gliche Taktfrequenzen: 2.50 GHz, 2.40 GHz, 2.20 GHz, 2.00 GHz, 1.8=
+0 GHz, 1000 MHz
+  m=C3=B6gliche Regler: ondemand, performance
+  momentane Taktik: die Frequenz soll innerhalb 1000 MHz und 2.50 GHz.
+                    liegen. Der Regler "ondemand" kann frei entscheiden,
+                    welche Taktfrequenz innerhalb dieser Grenze verwendet w=
+ird.
+  momentane Taktfrequenz ist 1000 MHz.
+[Hanging unkillable here]
+
+--MP_/DHKDSFwCl89tLoR45ui7s6R
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename=Bug_cpufreq-info--03_killed_strace_redacted.txt
+
+execve("/usr/bin/cpufreq-info", ["cpufreq-info"], 0xfffd36c0 /* 36 vars */) = 0
+brk(NULL)                               = 0x565b7000
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+mmap2(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xf770f000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/i686/sse2", 0xffcc4ed0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/i686", 0xffcc4ed0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/sse2", 0xffcc4ed0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls", 0xffcc4ed0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/i686/sse2", 0xffcc4ed0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/i686", 0xffcc4ed0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/sse2", 0xffcc4ed0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib", {st_mode=S_IFDIR|0755, st_size=248, ...}) = 0
+openat(AT_FDCWD, "tls/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=220379, ...}) = 0
+mmap2(NULL, 220379, PROT_READ, MAP_PRIVATE, 3, 0) = 0xf76d9000
+close(3)                                = 0
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "/usr/lib/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@#\0\0004\0\0\0"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0644, st_size=26160, ...}) = 0
+mmap2(NULL, 28884, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xf76d1000
+mmap2(0xf76d3000, 8192, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0xf76d3000
+mmap2(0xf76d5000, 8192, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x4000) = 0xf76d5000
+mmap2(0xf76d7000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x5000) = 0xf76d7000
+close(3)                                = 0
+openat(AT_FDCWD, "[redacted]/lib/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "/lib/i386-linux-gnu/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+read(3, "\177ELF\1\1\1\3\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\300\254\1\0004\0\0\0"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0755, st_size=1947056, ...}) = 0
+mmap2(NULL, 1955712, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xf74f3000
+mprotect(0xf750c000, 1830912, PROT_NONE) = 0
+mmap2(0xf750c000, 1368064, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x19000) = 0xf750c000
+mmap2(0xf765a000, 458752, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x167000) = 0xf765a000
+mmap2(0xf76cb000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1d7000) = 0xf76cb000
+mmap2(0xf76ce000, 10112, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xf76ce000
+close(3)                                = 0
+set_thread_area({entry_number=-1, base_addr=0xf7710500, limit=0x0fffff, seg_32bit=1, contents=0, read_exec_only=0, limit_in_pages=1, seg_not_present=0, useable=1}) = 0 (entry_number=12)
+mprotect(0xf76cb000, 8192, PROT_READ)   = 0
+mprotect(0xf76d7000, 4096, PROT_READ)   = 0
+mprotect(0x565b5000, 4096, PROT_READ)   = 0
+mprotect(0xf773c000, 4096, PROT_READ)   = 0
+munmap(0xf76d9000, 220379)              = 0
+brk(NULL)                               = 0x565b7000
+brk(0x565d8000)                         = 0x565d8000
+brk(0x565d9000)                         = 0x565d9000
+openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=9814000, ...}) = 0
+mmap2(NULL, 2097152, PROT_READ, MAP_PRIVATE, 3, 0) = 0xf72f3000
+mmap2(NULL, 2596864, PROT_READ, MAP_PRIVATE, 3, 0xb8000) = 0xf7079000
+close(3)                                = 0
+fstat64(1, {st_mode=S_IFCHR|0600, st_rdev=makedev(0x88, 0), ...}) = 0
+write(1, "cpufrequtils 008: cpufreq-info ("..., 63) = 63
+openat(AT_FDCWD, "/usr/share/locale/locale.alias", O_RDONLY|O_CLOEXEC) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=2995, ...}) = 0
+read(3, "# Locale name alias data base.\n#"..., 4096) = 2995
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/usr/share/locale/de/LC_MESSAGES/cpufrequtils.mo", O_RDONLY) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=10540, ...}) = 0
+mmap2(NULL, 10540, PROT_READ, MAP_PRIVATE, 3, 0) = 0xf770c000
+close(3)                                = 0
+openat(AT_FDCWD, "/usr/lib/i386-linux-gnu/gconv/gconv-modules.cache", O_RDONLY) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=26400, ...}) = 0
+mmap2(NULL, 26400, PROT_READ, MAP_SHARED, 3, 0) = 0xf7705000
+close(3)                                = 0
+openat(AT_FDCWD, "/usr/lib/i386-linux-gnu/gconv/ISO8859-1.so", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\200\20\0\0004\0\0\0"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0644, st_size=13736, ...}) = 0
+mmap2(NULL, 16420, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xf7700000
+mmap2(0xf7701000, 4096, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1000) = 0xf7701000
+mmap2(0xf7702000, 4096, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0xf7702000
+mmap2(0xf7703000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0xf7703000
+close(3)                                = 0
+mprotect(0xf7703000, 4096, PROT_READ)   = 0
+write(1, "Bitte melden Sie Fehler an cpufr"..., 52) = 52
+openat(AT_FDCWD, "/proc/stat", O_RDONLY) = 3
+fstat64(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+read(3, "cpu  1071 0 847 11936 5524 0 15 "..., 1024) = 1024
+read(3, "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "..., 1024) = 263
+read(3, "", 1024)                       = 0
+close(3)                                = 0
+stat64("/sys/devices/system/cpu/cpu0/", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+stat64("/sys/devices/system/cpu/cpu0/", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+write(1, "analysiere CPU 0:\n", 18)     = 18
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", O_RDONLY) = 3
+read(3, "1000000\n", 4095)              = 8
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq", O_RDONLY) = -1 EACCES (Keine Berechtigung)
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver", O_RDONLY) = 3
+read(3, "powernow-k8\n", 4095)          = 12
+close(3)                                = 0
+write(1, "  Treiber: powernow-k8\n", 23) = 23
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/related_cpus", O_RDONLY) = 3
+read(3, "0 1\n", 4095)                  = 4
+close(3)                                = 0
+write(1, "  Folgende CPUs laufen mit der g"..., 67) = 67
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus", O_RDONLY) = 3
+read(3, "0 1\n", 4095)                  = 4
+close(3)                                = 0
+write(1, "  Die Taktfrequenz folgender CPU"..., 71) = 71
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_transition_latency", O_RDONLY) = 3
+read(3, "109000\n", 4095)               = 7
+close(3)                                = 0
+write(1, "  Maximale Dauer eines Taktfrequ"..., 53) = 53
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq", O_RDONLY) = 3
+read(3, "1000000\n", 4095)              = 8
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", O_RDONLY) = 3
+read(3, "2500000\n", 4095)              = 8
+close(3)                                = 0
+write(1, "  Hardwarebedingte Grenzen der T"..., 65) = 65
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies", O_RDONLY) = 3
+read(3, "2500000 2400000 2200000 2000000 "..., 4095) = 49
+close(3)                                = 0
+write(1, "  m\303\266gliche Taktfrequenzen: 2.50"..., 87) = 87
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors", O_RDONLY) = 3
+read(3, "ondemand performance \n", 4095) = 22
+close(3)                                = 0
+write(1, "  m\303\266gliche Regler: ondemand, pe"..., 42) = 42
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", O_RDONLY) = 3
+read(3, "ondemand\n", 4095)             = 9
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq", O_RDONLY) = 3
+read(3, "1000000\n", 4095)              = 8
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq", O_RDONLY) = 3
+read(3, "2500000\n", 4095)              = 8
+close(3)                                = 0
+write(1, "  momentane Taktik: die Frequenz"..., 71) = 71
+write(1, "                    liegen. Der "..., 153) = 153
+write(1, "  momentane Taktfrequenz ist 100"..., 39) = 39
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state", O_RDONLY) = 3
+read(3,  <unfinished ...>)              = ?
++++ killed by SIGKILL +++
+
+--MP_/DHKDSFwCl89tLoR45ui7s6R
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename=Bug_cpufreq-info--04_hang_strace_redacted.txt
+
+execve("/usr/bin/cpufreq-info", ["cpufreq-info"], 0xffcc8e90 /* 36 vars */) = 0
+brk(NULL)                               = 0x5658c000
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+mmap2(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xf771d000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/i686/sse2", 0xffda9ac0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/i686", 0xffda9ac0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls/sse2", 0xffda9ac0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/tls/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/tls", 0xffda9ac0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/i686/sse2", 0xffda9ac0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/i686", 0xffda9ac0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib/sse2", 0xffda9ac0) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "[redacted]/lib/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+stat64("[redacted]/lib", {st_mode=S_IFDIR|0755, st_size=248, ...}) = 0
+openat(AT_FDCWD, "tls/i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "sse2/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=220379, ...}) = 0
+mmap2(NULL, 220379, PROT_READ, MAP_PRIVATE, 3, 0) = 0xf76e7000
+close(3)                                = 0
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "/usr/lib/libcpufreq.so.0", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@#\0\0004\0\0\0"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0644, st_size=26160, ...}) = 0
+mmap2(NULL, 28884, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xf76df000
+mmap2(0xf76e1000, 8192, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0xf76e1000
+mmap2(0xf76e3000, 8192, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x4000) = 0xf76e3000
+mmap2(0xf76e5000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x5000) = 0xf76e5000
+close(3)                                = 0
+openat(AT_FDCWD, "[redacted]/lib/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/i686/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "tls/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "i686/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "sse2/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (Datei oder Verzeichnis nicht gefunden)
+openat(AT_FDCWD, "/lib/i386-linux-gnu/libc.so.6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+read(3, "\177ELF\1\1\1\3\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\300\254\1\0004\0\0\0"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0755, st_size=1947056, ...}) = 0
+mmap2(NULL, 1955712, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xf7501000
+mprotect(0xf751a000, 1830912, PROT_NONE) = 0
+mmap2(0xf751a000, 1368064, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x19000) = 0xf751a000
+mmap2(0xf7668000, 458752, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x167000) = 0xf7668000
+mmap2(0xf76d9000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1d7000) = 0xf76d9000
+mmap2(0xf76dc000, 10112, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xf76dc000
+close(3)                                = 0
+set_thread_area({entry_number=-1, base_addr=0xf771e500, limit=0x0fffff, seg_32bit=1, contents=0, read_exec_only=0, limit_in_pages=1, seg_not_present=0, useable=1}) = 0 (entry_number=12)
+mprotect(0xf76d9000, 8192, PROT_READ)   = 0
+mprotect(0xf76e5000, 4096, PROT_READ)   = 0
+mprotect(0x5658a000, 4096, PROT_READ)   = 0
+mprotect(0xf774a000, 4096, PROT_READ)   = 0
+munmap(0xf76e7000, 220379)              = 0
+brk(NULL)                               = 0x5658c000
+brk(0x565ad000)                         = 0x565ad000
+brk(0x565ae000)                         = 0x565ae000
+openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=9814000, ...}) = 0
+mmap2(NULL, 2097152, PROT_READ, MAP_PRIVATE, 3, 0) = 0xf7301000
+mmap2(NULL, 2596864, PROT_READ, MAP_PRIVATE, 3, 0xb8000) = 0xf7087000
+close(3)                                = 0
+fstat64(1, {st_mode=S_IFCHR|0600, st_rdev=makedev(0x88, 0), ...}) = 0
+write(1, "cpufrequtils 008: cpufreq-info ("..., 63) = 63
+openat(AT_FDCWD, "/usr/share/locale/locale.alias", O_RDONLY|O_CLOEXEC) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=2995, ...}) = 0
+read(3, "# Locale name alias data base.\n#"..., 4096) = 2995
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/usr/share/locale/de/LC_MESSAGES/cpufrequtils.mo", O_RDONLY) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=10540, ...}) = 0
+mmap2(NULL, 10540, PROT_READ, MAP_PRIVATE, 3, 0) = 0xf771a000
+close(3)                                = 0
+openat(AT_FDCWD, "/usr/lib/i386-linux-gnu/gconv/gconv-modules.cache", O_RDONLY) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=26400, ...}) = 0
+mmap2(NULL, 26400, PROT_READ, MAP_SHARED, 3, 0) = 0xf7713000
+close(3)                                = 0
+openat(AT_FDCWD, "/usr/lib/i386-linux-gnu/gconv/ISO8859-1.so", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\200\20\0\0004\0\0\0"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0644, st_size=13736, ...}) = 0
+mmap2(NULL, 16420, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xf770e000
+mmap2(0xf770f000, 4096, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1000) = 0xf770f000
+mmap2(0xf7710000, 4096, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0xf7710000
+mmap2(0xf7711000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0xf7711000
+close(3)                                = 0
+mprotect(0xf7711000, 4096, PROT_READ)   = 0
+write(1, "Bitte melden Sie Fehler an cpufr"..., 52) = 52
+openat(AT_FDCWD, "/proc/stat", O_RDONLY) = 3
+fstat64(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+read(3, "cpu  1374 0 870 24647 5573 0 16 "..., 1024) = 1024
+read(3, "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "..., 1024) = 266
+read(3, "", 1024)                       = 0
+close(3)                                = 0
+stat64("/sys/devices/system/cpu/cpu0/", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+stat64("/sys/devices/system/cpu/cpu0/", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+write(1, "analysiere CPU 0:\n", 18)     = 18
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", O_RDONLY) = 3
+read(3, "1000000\n", 4095)              = 8
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq", O_RDONLY) = -1 EACCES (Keine Berechtigung)
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver", O_RDONLY) = 3
+read(3, "powernow-k8\n", 4095)          = 12
+close(3)                                = 0
+write(1, "  Treiber: powernow-k8\n", 23) = 23
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/related_cpus", O_RDONLY) = 3
+read(3, "0 1\n", 4095)                  = 4
+close(3)                                = 0
+write(1, "  Folgende CPUs laufen mit der g"..., 67) = 67
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus", O_RDONLY) = 3
+read(3, "0 1\n", 4095)                  = 4
+close(3)                                = 0
+write(1, "  Die Taktfrequenz folgender CPU"..., 71) = 71
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_transition_latency", O_RDONLY) = 3
+read(3, "109000\n", 4095)               = 7
+close(3)                                = 0
+write(1, "  Maximale Dauer eines Taktfrequ"..., 53) = 53
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq", O_RDONLY) = 3
+read(3, "1000000\n", 4095)              = 8
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", O_RDONLY) = 3
+read(3, "2500000\n", 4095)              = 8
+close(3)                                = 0
+write(1, "  Hardwarebedingte Grenzen der T"..., 65) = 65
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies", O_RDONLY) = 3
+read(3, "2500000 2400000 2200000 2000000 "..., 4095) = 49
+close(3)                                = 0
+write(1, "  m\303\266gliche Taktfrequenzen: 2.50"..., 87) = 87
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors", O_RDONLY) = 3
+read(3, "ondemand performance \n", 4095) = 22
+close(3)                                = 0
+write(1, "  m\303\266gliche Regler: ondemand, pe"..., 42) = 42
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", O_RDONLY) = 3
+read(3, "ondemand\n", 4095)             = 9
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq", O_RDONLY) = 3
+read(3, "1000000\n", 4095)              = 8
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq", O_RDONLY) = 3
+read(3, "2500000\n", 4095)              = 8
+close(3)                                = 0
+write(1, "  momentane Taktik: die Frequenz"..., 71) = 71
+write(1, "                    liegen. Der "..., 153) = 153
+write(1, "  momentane Taktfrequenz ist 100"..., 39) = 39
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state", O_RDONLY) = 3
+read(3, 
+--MP_/DHKDSFwCl89tLoR45ui7s6R--
